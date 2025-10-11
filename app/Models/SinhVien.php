@@ -2,15 +2,34 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SinhVien extends Model
 {
-    use HasFactory;
+    protected $table = 'sinh_vien';
 
-    public $table = 'sinh_vien';
-    public $fillable = ['ma_sv', 'ho_ten', 'ngay_sinh', 'gioi_tinh', 'lop', 'khoa', 'email', 'so_dien_thoai'];
+    protected $fillable = [
+        'ma_sinh_vien',
+        'ho_ten',
+        'ngay_sinh',
+        'gioi_tinh',
+        'que_quan',
+        'noi_o_hien_tai',
+        'lop',
+        'nganh',
+        'khoa_hoc',
+        'so_dien_thoai',
+        'email',
+        'phong_id',
+        'trang_thai_ho_so',
+    ];
 
-    // Các thuộc tính khác của model...
+    /**
+     * Sinh viên thuộc phòng nào (nullable)
+     */
+    public function phong(): BelongsTo
+    {
+        return $this->belongsTo(Phong::class, 'phong_id', 'id');
+    }
 }
