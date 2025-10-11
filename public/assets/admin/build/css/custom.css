@@ -4971,3 +4971,172 @@ ul.notifications {
 
 .calendar-exibit .calendar-table {
   padding: 0 0 4px 0; }
+/* admin-rooms-override.css
+   Áp trực tiếp lên index hiện tại (không cần chỉnh sửa view)
+*/
+
+/* ---- Layout chính: giới hạn chiều ngang để không bị dàn trải ---- */
+.rooms-page-root { /* will be applied to .container-fluid via layout include (no change index) */
+  background: #f5f7fb;
+  padding: 22px 18px;
+  min-height: 86vh;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  color: #253043;
+}
+
+/* tạo wrapper giới hạn width (căn giữa nội dung chính so với sidebar) */
+.rooms-page-root .content-center {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* ---- Filter block: làm gọn, bo tròn, cùng chiều cao ---- */
+form.row.g-2.mb-3 {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(13,38,59,0.06);
+  align-items: center;
+  gap: 10px;
+}
+form.row.g-2.mb-3 .form-control,
+form.row.g-2.mb-3 .form-select {
+  height:44px;
+  border-radius:8px;
+  border:1px solid #e9eef6;
+  background: linear-gradient(180deg,#fff,#fbfdff);
+  padding:8px 12px;
+  min-width: 150px;
+}
+
+/* nút Lọc / Thêm phòng: cùng height, bo góc */
+form.row.g-2.mb-3 .btn {
+  height:44px;
+  border-radius:8px;
+  padding: 0 14px;
+}
+
+/* ---- Totals dòng (Tổng:, Trống:, ...) ---- */
+p.mb-2 {
+  background: linear-gradient(90deg,#fff,#fbfcff);
+  padding: 8px 12px;
+  border-radius:8px;
+  border:1px solid #eef3fb;
+  color:#4b5563;
+  display:inline-block;
+  font-weight:600;
+  margin-bottom:14px;
+}
+
+/* ---- Table card wrapper ---- */
+.table-responsive { 
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(12,30,60,0.04);
+  overflow: auto;
+  padding: 6px;
+}
+
+/* ---- Table adjustments (works with .table.table-bordered.table-hover) ---- */
+.table.table-bordered.table-hover {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 960px; /* giảm scroll, cân đối trên 1366 */
+}
+.table.table-bordered.table-hover thead th {
+  background: transparent;
+  color:#2f3e4d;
+  font-weight:700;
+  padding:12px 14px;
+  border-bottom: 1px solid #eef3f8;
+}
+.table.table-bordered.table-hover tbody td {
+  padding:14px 14px;
+  vertical-align: middle;
+  border-top: 1px solid #f1f4f8;
+  color:#273444;
+  font-size:14px;
+}
+
+/* giảm khoảng trắng thừa trong ô */
+.table.table-bordered.table-hover td, 
+.table.table-bordered.table-hover th {
+  white-space: nowrap;
+}
+
+/* tên phòng: ellipsis nếu dài */
+.table.table-bordered.table-hover td:first-child {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Badges: consistent style ---- */
+.badge {
+  font-weight:700;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  display:inline-block;
+}
+.badge.bg-success { background:#e9fbf0 !important; color:#157A3F !important; box-shadow: 0 3px 10px rgba(32,93,54,0.06);}
+.badge.bg-warning { background:#fff7e8 !important; color:#8a5c00 !important; box-shadow: 0 3px 10px rgba(138,92,0,0.06);}
+.badge.bg-danger  { background:#fff0f1 !important; color:#a31b2b !important; box-shadow: 0 3px 10px rgba(160,40,60,0.05);}
+
+/* ---- Action buttons: cùng kích thước, căn phải gọn ---- */
+.table .btn-sm {
+  border-radius:8px;
+  padding:6px 10px;
+  min-width:68px;
+  height:36px;
+  margin:4px 4px 0 0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  font-size:13px;
+}
+.table .btn-primary.btn-sm { background: linear-gradient(180deg,#3b82f6,#2563eb); border:0; color:#fff; }
+.table .btn-danger.btn-sm { background: linear-gradient(180deg,#ff7b7b,#e04f5f); border:0; color:#fff; }
+.table .btn-success.btn-sm { background: linear-gradient(180deg,#2dd4bf,#16a085); border:0; color:#fff; }
+
+/* ---- Column "Hiện tại" style ---- */
+.table td:nth-child(7) { font-weight:700; color:#1f3142; }
+
+/* ---- Row hover and subtle zebra for wide screens ---- */
+.table.table-bordered.table-hover tbody tr:hover { background: rgba(6,26,74,0.02); }
+@media (min-width:1200px){
+  .table.table-bordered.table-hover tbody tr:nth-child(odd){ background: rgba(245,247,250,0.6); }
+}
+
+/* ---- Responsive: convert to stacked cards on small screens ---- */
+@media (max-width: 767.98px) {
+  /* giữ filter gọn */
+  form.row.g-2.mb-3 { padding:10px; gap:8px; }
+  form.row.g-2.mb-3 .form-control, form.row.g-2.mb-3 .form-select { min-width:100%; }
+  /* ẩn thead, show stacked data */
+  .table.table-bordered.table-hover thead { display:none; }
+  .table.table-bordered.table-hover tbody td { display:block; width:100%; padding:10px; border:0; }
+  .table.table-bordered.table-hover tbody tr { margin-bottom:12px; background:#fff; border-radius:8px; box-shadow: 0 8px 24px rgba(12,30,60,0.03); padding:8px; }
+  .table.table-bordered.table-hover tbody td[data-label]::before {
+    content: attr(data-label)": ";
+    font-weight:700;
+    color:#475569;
+    display:inline-block;
+    width:110px;
+  }
+  .table .btn-sm { width:100%; min-width:unset; }
+}
+
+/* ---- Small helpers: prevent table from stretching too far right ---- */
+.container-fluid {
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+  box-sizing: border-box;
+}
+
+/* if layout uses a fixed sidebar, this class ensures content doesn't overflow */
+.admin-main-content {
+  max-width: 100%;
+  overflow-x: hidden;
+}

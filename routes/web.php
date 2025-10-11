@@ -28,24 +28,23 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
     Route::get('assign/{svId}', [AssignmentController::class,'showAssignForm'])->name('assign.form');
     Route::post('assign/{svId}', [AssignmentController::class,'assign'])->name('assign.do');
 });
-Route::post('/logout', function (Request $request) {
-    Auth::logout();
+Route::get('', [AuthController::class, 'login'])->name('auth.login');
+Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
+Route::post('/login', [AuthController::class, 'handle_login'])->name('auth.handle.login');
+Route::post('/register', [AuthController::class, 'handle_register'])->name('auth.handle.register');
+Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+/* student route */
+Route::group(['prefix' => 'student', 'middleware' => ['student']], function () {
+    Route::get('', [SinhVienController::class, 'index'])->name('student.index');
 
-    return redirect('/'); // redirect to homepage or login
-})->name('logout');
+});
 
-    /* student route */
-    Route::group(['prefix' => 'student', 'middleware' => ['student']], function () {
-        Route::get('', [SinhVienController::class, 'index'])->name('student.index');
-    });
+/* manager route */
+Route::group(['prefix' => 'manager', 'middleware' => ['manager']], function () {
+    Route::get('', [QuanLyController::class, 'index'])->name('manager.index');
+});
 
-    /* manager route */
-    Route::group(['prefix' => 'manager', 'middleware' => ['manager']], function () {
-        Route::get('', [QuanLyController::class, 'index'])->name('manager.index');
-    });
 
     /* admin route */
     Route::group(['prefix' => 'admin', 'middleware' => ['admin']], function () {
