@@ -9,8 +9,20 @@ class TaiSan extends Model
 {
     use HasFactory;
 
-    public $table = 'tai_san';
-    public $fillable = ['ten_tai_san', 'so_luong', 'tinh_trang', 'ngay_tao'];
+    protected $table = 'tai_san';
 
-    // Các thuộc tính khác của model...
+    protected $fillable = [
+        'ten_tai_san',
+        'so_luong',
+        'tinh_trang',
+        'tinh_trang_hien_tai',
+        'ngay_tao',
+        'phong_id',
+    ];
+
+    // ✅ Thêm quan hệ đến bảng phòng
+    public function phong()
+    {
+        return $this->belongsTo(Phong::class, 'phong_id');
+    }
 }
