@@ -118,8 +118,8 @@
                 <a href="{{ route('auth.register') }}" class="btn btn-outline-success w-100">
                     Tạo tài khoản mới
                 </a>
-
             </div>
+            
         </form>
     </div>
 </main>
