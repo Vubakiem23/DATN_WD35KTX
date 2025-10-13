@@ -112,6 +112,12 @@
             <div class="d-grid mb-3">
                 <button class="btn btn-primary btn-lg" type="submit">Đăng nhập</button>
             </div>
+            <div class="text-center mt-3">
+                <p class="small mb-2 text-muted">Chưa có tài khoản?</p>
+                <a href="{{ route('auth.register') }}" class="btn btn-outline-success w-100">
+                    Tạo tài khoản mới
+                </a>
+            </div>
         </form>
     </div>
 </main>
