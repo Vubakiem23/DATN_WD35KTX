@@ -3,6 +3,12 @@
 @section('title', 'Quản lý lịch bảo trì')
 
 @section('content')
+<style>
+  .small.text-muted {
+    display: none !important;
+  }
+</style>
+
 <div class="container-fluid">
 
   {{-- Thanh công cụ lọc --}}
@@ -32,10 +38,10 @@
 
   {{-- Thông báo --}}
   @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+  <div class="alert alert-success">{{ session('success') }}</div>
   @endif
   @if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
+  <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
   {{-- Bảng dữ liệu --}}
@@ -61,11 +67,11 @@
           <td>{{ $l->mo_ta ?? '-' }}</td>
           <td>
             @if($l->trang_thai == 'Hoàn thành')
-              <span class="badge bg-success">Hoàn thành</span>
+            <span class="badge bg-success">Hoàn thành</span>
             @elseif($l->trang_thai == 'Đang bảo trì')
-              <span class="badge bg-warning text-dark">Đang bảo trì</span>
+            <span class="badge bg-warning text-dark">Đang bảo trì</span>
             @else
-              <span class="badge bg-secondary">Chờ</span>
+            <span class="badge bg-secondary">Chờ</span>
             @endif
           </td>
           <td>{{ $l->ngay_hoan_thanh ?? '-' }}</td>
@@ -99,6 +105,10 @@
         @endforelse
       </tbody>
     </table>
+    <div class="d-flex justify-content-center mt-3">
+      {{ $lich->appends(request()->query())->links('pagination::bootstrap-5') }}
+    </div>
+
   </div>
 </div>
 @endsection
