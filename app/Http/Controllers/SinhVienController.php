@@ -24,14 +24,14 @@ class SinhVienController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(10);
 
-        return view('admin.sinhvien.index', compact('sinhviens', 'keyword'));
+        return view('sinhvien.index', compact('sinhviens', 'keyword'));
     }
 
     // Form thêm mới
     public function create()
     {
         $phongs = Phong::all();
-        return view('admin.sinhvien.create', compact('phongs'));
+        return view('sinhvien.create', compact('phongs'));
     }
 
     // Lưu sinh viên mới
@@ -57,7 +57,7 @@ class SinhVienController extends Controller
         $sinhvien = SinhVien::findOrFail($id);
         $phongs = Phong::all();
 
-        return view('admin.sinhvien.edit', compact('sinhvien', 'phongs'));
+        return view('sinhvien.edit', compact('sinhvien', 'phongs'));
     }
 
     // Cập nhật thông tin
