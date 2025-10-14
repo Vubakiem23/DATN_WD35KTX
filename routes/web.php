@@ -22,6 +22,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
     Route::post('assign/{svId}', [AssignmentController::class, 'assign'])->name('assign.do');
+
+    Route::resource('sinhvien', SinhVienController::class)->except(['show']);
+    Route::patch('sinhvien/{id}/approve', [SinhVienController::class, 'approve'])->name('sinhvien.approve');
 });
 
 Route::get('', [AuthController::class, 'login'])->name('auth.login');
