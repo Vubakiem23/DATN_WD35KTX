@@ -1,7 +1,8 @@
 <div class="col-md-3 left_col">
     <div class="left_col scroll-view">
         <div class="navbar nav_title" style="border: 0;">
-            <a href="{{ route('admin.index') }}" class="site_title"><i class="fa fa-paw"></i> <span>ADMIN Ký Túc Xá Vamos</span></a>
+            <a href="{{ route('admin.index') }}" class="site_title"><i class="fa fa-paw"></i> <span>ADMIN Ký Túc Xá
+                    Vamos</span></a>
         </div>
 
         <div class="clearfix"></div>
@@ -32,7 +33,13 @@
                                     <i class="nav-icon fas fa-door-open"></i>
                                     <p>Quản lý phòng</p>
                                 </a></li>
-                            <li><a href="index2.html">Quản Lý Sinh Viên</a></li>
+                            <li>
+                                <a href="{{ route('sinhvien.index') }}"
+                                    class="nav-link {{ request()->routeIs('sinhvien.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-user-graduate"></i>
+                                    <p>Quản Lý Sinh Viên</p>
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
@@ -40,7 +47,7 @@
                     <li><a><i class="fa fa-table"></i> Cơ Sở Vật Chất <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{ route('taisan.index') }}">Quản Lý Tài Sản , Thiết Bị Phòng</a></li>
-                    
+
                             <li><a href="{{ route('lichbaotri.index') }}">Lịch bảo trì</a></li>
                         </ul>
                     </li>
