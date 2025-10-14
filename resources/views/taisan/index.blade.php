@@ -3,6 +3,12 @@
 @section('title', 'Quản lý tài sản')
 
 @section('content')
+<style>
+    .pagination-info,
+    .small.text-muted {
+        display: none !important;
+    }
+</style>
 <div class="container-fluid">
 
   {{-- Thanh công cụ --}}
@@ -96,6 +102,10 @@
         @endforelse
       </tbody>
     </table>
+    <div class="d-flex justify-content-center mt-3">
+    {{ $listTaiSan->appends(request()->query())->links('pagination::bootstrap-5') }}
+</div>
+
   </div>
 </div>
 @endsection

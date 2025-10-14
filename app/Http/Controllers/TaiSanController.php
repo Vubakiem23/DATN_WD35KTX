@@ -24,7 +24,7 @@ class TaiSanController extends Controller
             $query->where('tai_san.tinh_trang', 'like', '%' . $request->tinhtrang . '%');
         }
 
-        $listTaiSan = $query->orderBy('tai_san.id', 'desc')->get();
+$listTaiSan = $query->orderBy('tai_san.id', 'desc')->paginate(5);
         $totals = [
             'total' => DB::table('tai_san')->count(),
             'moi' => DB::table('tai_san')->where('tinh_trang_hien_tai', 'mới')->count(),

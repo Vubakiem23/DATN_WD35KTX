@@ -10,29 +10,36 @@ class LichBaoTriController extends Controller
 {
     public function index(Request $request)
     {
-        $query = LichBaoTri::with('taiSan')->orderBy('ngay_bao_tri', 'asc');
+        $query = \App\Models\LichBaoTri::with('taiSan');
 
-        // Lọc theo tên tài sản
-        if ($request->filled('ten_tai_san')) {
+        if ($request->ten_tai_san) {
             $query->whereHas('taiSan', function ($q) use ($request) {
                 $q->where('ten_tai_san', 'like', '%' . $request->ten_tai_san . '%');
             });
         }
 
-        // Lọc theo trạng thái (đang bảo trì / đã hoàn thành / chờ)
-        if ($request->filled('trang_thai')) {
+        if ($request->trang_thai) {
             $query->where('trang_thai', $request->trang_thai);
         }
 
-        // Lọc theo ngày bảo trì
-        if ($request->filled('ngay_bao_tri')) {
+        if ($request->ngay_bao_tri) {
             $query->whereDate('ngay_bao_tri', $request->ngay_bao_tri);
         }
 
-        $lich = $query->get();
+        // 🔹 Thay get() bằng paginate()
+        $lich = $query
+            ->orderByRaw("CASE 
+        WHEN trang_thai = 'Hoàn thành' THEN 2
+        WHEN trang_thai = 'Đang bảo trì' THEN 1
+        ELSE 0
+    END") // Sắp trạng thái
+            ->orderBy('ngay_bao_tri', 'desc') // Sau đó sắp theo ngày
+            ->paginate(5);
+
 
         return view('lichbaotri.index', compact('lich'));
     }
+
 
 
     public function create()
@@ -103,13 +110,13 @@ class LichBaoTriController extends Controller
 
 
 
- public function destroy($id)
-{
-    $lichBaoTri = LichBaoTri::findOrFail($id);
-    $lichBaoTri->delete();
+    public function destroy($id)
+    {
+        $lichBaoTri = LichBaoTri::findOrFail($id);
+        $lichBaoTri->delete();
 
-    return redirect()->route('lichbaotri.index')->with('success', 'Đã xóa lịch bảo trì thành công!');
-}
+        return redirect()->route('lichbaotri.index')->with('success', 'Đã xóa lịch bảo trì thành công!');
+    }
 
 
     public function hoanThanh($id)
