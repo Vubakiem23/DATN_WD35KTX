@@ -9,8 +9,12 @@ class ThongBao extends Model
 {
     use HasFactory;
 
-    public $table = 'thong_bao';
-    public $fillable = ['tieu_de', 'noi_dung', 'ngay_tao'];
+    protected $table = 'thong_bao';
 
-    // Các thuộc tính khác của model...
+    protected $fillable = [
+        'tieu_de',
+        'noi_dung',
+        'ngay_dang',
+        'doi_tuong',
+    ];
 }

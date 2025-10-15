@@ -8,6 +8,7 @@ use App\Http\Controllers\PhongController;
 use App\Http\Controllers\TaiSanController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\LichBaoTriController;
+use App\Http\Controllers\ThongBaoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -61,6 +62,8 @@ Route::prefix('taisan')->group(function () {
 
 /* lịch bảo trì */
 Route::resource('lichbaotri', LichBaoTriController::class);
+// thong bao//
+Route::resource('thongbao', ThongBaoController::class);
 
 // 🟢 Route bổ sung để "đánh dấu hoàn thành"
 Route::patch('/lichbaotri/{id}/hoanthanh', [LichBaoTriController::class, 'hoanThanh'])
