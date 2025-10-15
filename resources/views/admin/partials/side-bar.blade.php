@@ -1,90 +1,122 @@
 <div class="col-md-3 left_col">
     <div class="left_col scroll-view">
+        <!-- Logo -->
         <div class="navbar nav_title" style="border: 0;">
-            <a href="{{ route('admin.index') }}" class="site_title"><i class="fa fa-paw"></i> <span>ADMIN Ký Túc Xá
-                    Vamos</span></a>
+            <a href="{{ route('admin.index') }}" class="site_title">
+                <i class="fa fa-paw"></i> <span>ADMIN Ký Túc Xá Vamos</span>
+            </a>
         </div>
 
         <div class="clearfix"></div>
 
-        <!-- menu profile quick info -->
+        <!-- Thông tin admin -->
         <div class="profile clearfix">
             <div class="profile_pic">
-                <img src="images/img.jpg" alt="..." class="img-circle profile_img">
+                <img src="{{ asset('images/img.jpg') }}" alt="..." class="img-circle profile_img">
             </div>
             <div class="profile_info">
                 <span>Welcome,</span>
                 <h2>ADMIN</h2>
             </div>
         </div>
-        <!-- /menu profile quick info -->
 
         <br />
 
-        <!-- sidebar menu -->
+        <!-- Menu chính -->
         <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
             <div class="menu_section">
                 <h3>General</h3>
                 <ul class="nav side-menu">
-                    <li><a><i class="fa fa-home"></i> Ký Túc Xá VaMos <span class="fa fa-chevron-down"></span></a>
+                    <!-- Quản lý ký túc xá -->
+                    <li>
+                        <a><i class="fa fa-home"></i> Ký Túc Xá VaMos <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li> <a href="{{ route('phong.index') }}"
-                                    class="nav-link {{ request()->routeIs('phong.*') ? 'active' : '' }}">
-                                    <i class="nav-icon fas fa-door-open"></i>
-                                    <p>Quản lý phòng</p>
-                                </a></li>
+                            <li>
+                                <a href="{{ route('phong.index') }}"
+                                   class="{{ request()->routeIs('phong.*') ? 'active' : '' }}">
+                                    <i class="fa fa-door-open"></i> Quản lý phòng
+                                </a>
+                            </li>
                             <li>
                                 <a href="{{ route('sinhvien.index') }}"
-                                    class="nav-link {{ request()->routeIs('sinhvien.*') ? 'active' : '' }}">
-                                    <i class="nav-icon fas fa-user-graduate"></i>
-                                    <p>Quản Lý Sinh Viên</p>
+                                   class="{{ request()->routeIs('sinhvien.*') ? 'active' : '' }}">
+                                    <i class="fa fa-user-graduate"></i> Quản lý sinh viên
                                 </a>
                             </li>
                         </ul>
                     </li>
 
-
-                    <li><a><i class="fa fa-table"></i> Cơ Sở Vật Chất <span class="fa fa-chevron-down"></span></a>
+                    <!-- Quản lý cơ sở vật chất -->
+                    <li>
+                        <a><i class="fa fa-table"></i> Cơ Sở Vật Chất <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="{{ route('taisan.index') }}">Quản Lý Tài Sản , Thiết Bị Phòng</a></li>
-
-                            <li><a href="{{ route('lichbaotri.index') }}">Lịch bảo trì</a></li>
+                            <li>
+                                <a href="{{ route('taisan.index') }}"
+                                   class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
+                                   Quản lý tài sản, thiết bị phòng
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('lichbaotri.index') }}"
+                                   class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
+                                   Lịch bảo trì
+                                </a>
+                            </li>
                         </ul>
                     </li>
-                    <li><a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
+
+                    <!-- Ban kế toán -->
+                    <li>
+                        <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="chartjs.html">Quản Lý Thu Phí , Hóa Đơn</a></li>
+                            <li><a href="#">Quản lý thu phí, hóa đơn</a></li>
                         </ul>
                     </li>
-                    <li><a><i class="fa fa-clone"></i> Tiếp Nhận , Sử Lý Sự Cố , Bảo Trì<span
-                                class="fa fa-chevron-down"></span></a>
+
+                    <!-- Quản lý sự cố -->
+                    <li>
+                        <a><i class="fa fa-wrench"></i> Tiếp Nhận, Xử Lý Sự Cố, Bảo Trì
+                            <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="fixed_sidebar.html">Quản lý yêu cầu sửa chữa, bảo trì </a></li>
+                            <li>
+                                <a href="{{ route('suco.index') }}"
+                                   class="{{ request()->routeIs('suco.*') ? 'active' : '' }}">
+                                   Quản lý yêu cầu sửa chữa, bảo trì
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
             </div>
-             <div class="menu_section">
+
+            <!-- Phần khác -->
+            <div class="menu_section">
                 <h3>Live On</h3>
                 <ul class="nav side-menu">
-                    <li><a><i class="fa fa-bug"></i> Thông Báo, Tin Tức <span class="fa fa-chevron-down"></span></a>
+                    <li>
+                        <a><i class="fa fa-bug"></i> Thông Báo, Tin Tức <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="http://127.0.0.1:8000/thongbao"> Thông Báo sự cố</a></li>
+                            <li>
+                                <a href="{{ route('thongbao.index') }}"
+                                   class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
+                                   Thông báo sự cố
+                                </a>
+                            </li>
                         </ul>
                     </li>
-                    <li><a><i class="fa fa-windows"></i> • Báo cáo, thống kê <span
-                                class="fa fa-chevron-down"></span></a>
+
+                    <li>
+                        <a><i class="fa fa-windows"></i> Báo cáo, thống kê <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="page_403.html">403 Error</a></li>
+                            <li><a href="#">Báo cáo hoạt động</a></li>
                         </ul>
                     </li>
                 </ul>
             </div>
-
         </div>
-        <!-- /sidebar menu -->
+        <!-- /Menu -->
 
-        <!-- /menu footer buttons -->
+        <!-- Footer -->
         <div class="sidebar-footer hidden-small">
             <a data-toggle="tooltip" data-placement="top" title="Settings">
                 <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
@@ -95,10 +127,9 @@
             <a data-toggle="tooltip" data-placement="top" title="Lock">
                 <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
             </a>
-            <a data-toggle="tooltip" data-placement="top" title="Logout" href="login.html">
+            <a data-toggle="tooltip" data-placement="top" title="Logout" href="{{ route('auth.logout') }}">
                 <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
             </a>
         </div>
-        <!-- /menu footer buttons -->
     </div>
 </div>
