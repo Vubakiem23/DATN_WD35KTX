@@ -33,13 +33,13 @@
                         <ul class="nav child_menu">
                             <li>
                                 <a href="{{ route('phong.index') }}"
-                                   class="{{ request()->routeIs('phong.*') ? 'active' : '' }}">
+                                    class="{{ request()->routeIs('phong.*') ? 'active' : '' }}">
                                     <i class="fa fa-door-open"></i> Quản lý phòng
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('sinhvien.index') }}"
-                                   class="{{ request()->routeIs('sinhvien.*') ? 'active' : '' }}">
+                                    class="{{ request()->routeIs('sinhvien.*') ? 'active' : '' }}">
                                     <i class="fa fa-user-graduate"></i> Quản lý sinh viên
                                 </a>
                             </li>
@@ -52,40 +52,35 @@
                         <ul class="nav child_menu">
                             <li>
                                 <a href="{{ route('taisan.index') }}"
-                                   class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
-                                   Quản lý tài sản, thiết bị phòng
+                                    class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
+                                    Quản lý tài sản, thiết bị phòng
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('lichbaotri.index') }}"
-                                   class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
-                                   Lịch bảo trì
+                                    class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
+                                    Lịch bảo trì
                                 </a>
                             </li>
                         </ul>
                     </li>
 
-                   <li>
+                    <li>
                         <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{ route('hoadon.index') }}">Quản lý thu phí & hóa đơn</a></li>
                             <li>
-                            <a href="{{ route('hoadon.history') }}">
-                                <i class="fa fa-history"></i> Lịch sử thanh toán
-                            </a>
-                        </li>
+                                <a href="{{ route('hoadon.history') }}">
+                                    <i class="fa fa-history"></i> Lịch sử thanh toán
+                                </a>
+                            </li>
 
 
-                
+
                         </ul>
-                        
+
                     </li>
 
-
-                    <li><a><i class="fa fa-clone"></i> Tiếp Nhận , Sử Lý Sự Cố , Bảo Trì<span
-                                class="fa fa-chevron-down"></span></a>
-
-                    <!-- Quản lý sự cố -->
                     <li>
                         <a><i class="fa fa-wrench"></i> Tiếp Nhận, Xử Lý Sự Cố, Bảo Trì
                             <span class="fa fa-chevron-down"></span></a>
@@ -93,8 +88,8 @@
                         <ul class="nav child_menu">
                             <li>
                                 <a href="{{ route('suco.index') }}"
-                                   class="{{ request()->routeIs('suco.*') ? 'active' : '' }}">
-                                   Quản lý yêu cầu sửa chữa, bảo trì
+                                    class="{{ request()->routeIs('suco.*') ? 'active' : '' }}">
+                                    Quản lý yêu cầu sửa chữa, bảo trì
                                 </a>
                             </li>
                         </ul>
@@ -111,8 +106,8 @@
                         <ul class="nav child_menu">
                             <li>
                                 <a href="{{ route('thongbao.index') }}"
-                                   class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
-                                   Thông báo sự cố
+                                    class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
+                                    Thông báo sự cố
                                 </a>
                             </li>
                         </ul>
