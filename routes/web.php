@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\QuanLyController;
 use App\Http\Controllers\SinhVienController;
 use App\Http\Controllers\PhongController;
+use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\TaiSanController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\LichBaoTriController;
@@ -39,6 +40,26 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::resource('sinhvien', SinhVienController::class)->except(['show']);
     Route::patch('sinhvien/{id}/approve', [SinhVienController::class, 'approve'])->name('sinhvien.approve');
 
+
+    // Route hóa đơn
+    Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
+Route::get('/hoadon/create', [HoaDonController::class, 'create'])->name('hoadon.create');
+Route::post('/hoadon', [HoaDonController::class, 'store'])->name('hoadon.store');
+Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
+Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
+Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
+Route::post('/hoadon/{id}/duplicate', [HoaDonController::class, 'duplicate'])->name('hoadon.duplicate');
+Route::post('/hoadon/{id}/send', [HoaDonController::class, 'send'])->name('hoadon.send');
+Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.pdf');
+Route::post('/hoadon/{id}/pay', [HoaDonController::class, 'pay'])->name('hoadon.pay');
+Route::get('/lich-su-thanh-toan', [HoaDonController::class, 'history'])->name('hoadon.history');
+Route::get('/hoadon/{id}/send-mail', [HoaDonController::class, 'sendMail'])->name('hoadon.sendMail');
+
+
+Route::get('/hoadon/send', [HoaDonController::class, 'send']);
+
+
+
     // Quản lý sự cố bảo trì
     Route::resource('suco', SuCoController::class);
 
@@ -60,6 +81,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::delete('/delete/{id}', [TaiSanController::class, 'destroy'])->name('taisan.destroy');
         Route::put('/{id}/baohong', [TaiSanController::class, 'baoHong'])->name('taisan.baohong');
     });
+
 });
 
 // Đăng nhập / đăng ký / đăng xuất
