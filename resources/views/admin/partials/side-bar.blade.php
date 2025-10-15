@@ -64,12 +64,12 @@
                     </li>
                 </ul>
             </div>
-            <div class="menu_section">
+             <div class="menu_section">
                 <h3>Live On</h3>
                 <ul class="nav side-menu">
                     <li><a><i class="fa fa-bug"></i> Thông Báo, Tin Tức <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="e_commerce.html">E-commerce</a></li>
+                            <li><a href="http://127.0.0.1:8000/thongbao"> Thông Báo sự cố</a></li>
                         </ul>
                     </li>
                     <li><a><i class="fa fa-windows"></i> • Báo cáo, thống kê <span
