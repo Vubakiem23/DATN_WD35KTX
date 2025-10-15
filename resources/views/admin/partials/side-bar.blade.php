@@ -51,11 +51,19 @@
                             <li><a href="{{ route('lichbaotri.index') }}">Lịch bảo trì</a></li>
                         </ul>
                     </li>
-                    <li><a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
+                   <li>
+                        <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="chartjs.html">Quản Lý Thu Phí , Hóa Đơn</a></li>
+                            <li><a href="{{ route('hoadon.index') }}">Quản lý thu phí & hóa đơn</a></li>
+                            <li>
+                            <a href="{{ route('hoadon.history') }}">
+                                <i class="fa fa-history"></i> Lịch sử thanh toán
+                            </a>
+                        </li>
                         </ul>
+                        
                     </li>
+
                     <li><a><i class="fa fa-clone"></i> Tiếp Nhận , Sử Lý Sự Cố , Bảo Trì<span
                                 class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">

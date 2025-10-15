@@ -12,6 +12,10 @@ class HoaDon extends Model
     public $table = 'hoa_don';
     public $fillable = ['sinh_vien_id', 'loai_phi', 'so_tien', 'ngay_tao', 'trang_thai'];
 
+    public function sinhVien()
+{
+    return $this->belongsTo(SinhVien::class, 'sinh_vien_id');
+}
 
     // Các thuộc tính khác của model...
 }
