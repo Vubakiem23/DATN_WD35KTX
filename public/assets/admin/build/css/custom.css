@@ -5140,3 +5140,173 @@ p.mb-2 {
   max-width: 100%;
   overflow-x: hidden;
 }
+/* =============================
+   CUSTOM ADMIN DASHBOARD STYLE
+   ============================= */
+
+/* ====== Màu chủ đạo ====== */
+:root {
+  --brand-primary: #1e88e5;
+  --brand-soft: rgba(30, 136, 229, 0.08);
+  --soft-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* ====== Tổng thể ====== */
+/* .container {
+  max-width: 1280px;
+} */
+
+/* ====== Tiêu đề trang ====== */
+.page-title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin-bottom: 18px;
+}
+
+/* ====== Thanh tìm kiếm ====== */
+.search-bar .form-control {
+  border-radius: 10px 0 0 10px;
+  border-color: #e2e8f0;
+  padding: 0.6rem 0.9rem;
+}
+.search-bar .form-control:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 0.25rem rgba(30, 136, 229, 0.15);
+}
+.search-bar .btn {
+  border-radius: 0 10px 10px 0;
+}
+
+/* ====== Nút thêm sinh viên ====== */
+.btn-add {
+  background: var(--brand-primary);
+  border: none;
+  box-shadow: var(--soft-shadow);
+}
+.btn-add:hover {
+  filter: brightness(0.95);
+}
+
+/* ====== Bảng sinh viên ====== */
+.table.sv-table {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--soft-shadow);
+}
+
+.table.sv-table thead.sticky-head th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.4px;
+  z-index: 2;
+}
+
+.table.sv-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+.table.sv-table tbody tr:hover {
+  background: var(--brand-soft);
+}
+
+/* ====== Cắt bớt text dài ====== */
+.text-truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.max-200 { max-width: 200px; }
+.max-220 { max-width: 220px; }
+
+/* ====== Badge trạng thái ====== */
+.badge.bg-success {
+  background-color: #16a34a !important;
+}
+.badge.bg-warning {
+  background-color: #f59e0b !important;
+  color: #111827;
+}
+.badge.bg-secondary {
+  background-color: #64748b !important;
+}
+ 
+/* ====== Phân trang ====== */
+.pagination {
+  justify-content: center;
+  margin-top: 2px;
+  gap: 1px;
+  margin-left: 5px;
+}
+.page-item .page-link {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  color: #111827;
+}
+.page-item .page-link:hover {
+  background: #f3f4f6;
+}
+.page-item.active .page-link {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #fff;
+  box-shadow: 0 0 0 0.2rem rgba(30, 136, 229, 0.15);
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 991.98px) {
+  .btn-add { width: 100%; }
+  .search-bar .input-group {
+    box-shadow: var(--soft-shadow);
+    border-radius: 12px;
+  }
+  .table-responsive { border-radius: 12px; }
+}
+
+/* ====== Căn giữa cột ====== */
+.table.sv-table td:nth-child(4),
+.table.sv-table td:nth-child(6),
+.table.sv-table td:nth-child(7),
+.table.sv-table td:nth-child(13) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+/* =========================
+   FIX: Căn giữa bảng SV
+   ========================= */
+
+/* 1) Mặc định: mọi ô đều căn giữa theo chiều dọc */
+.table.sv-table th,
+.table.sv-table td {
+  vertical-align: middle !important;
+  line-height: 1.4;
+}
+
+/* 2) Mặc định: căn giữa ngang cho toàn bộ dữ liệu */
+.table.sv-table tbody td {
+  text-align: center;
+}
+
+/* 3) Ngoại lệ: các cột chữ dài nên để trái cho dễ đọc
+   (2) Họ và tên
+   (8) Quê quán
+   (9) Nơi ở hiện tại
+   (11) Email
+*/
+.table.sv-table tbody td:nth-child(2),
+.table.sv-table tbody td:nth-child(8),
+.table.sv-table tbody td:nth-child(9),
+.table.sv-table tbody td:nth-child(11) {
+  text-align: left;
+}
+/* 6) Thu gọn text dài các cột địa chỉ/email (đã có class sẵn) */
+.text-truncate { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.max-200 { max-width: 200px; }
+.max-220 { max-width: 220px; }
+
+
