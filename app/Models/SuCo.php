@@ -9,8 +9,23 @@ class SuCo extends Model
 {
     use HasFactory;
 
-    public $table = 'su_co';
-    public $fillable = ['loai_su_co', 'noi_dung', 'ngay_tao'];
+    protected $table = 'su_co';
 
-    // Các thuộc tính khác của model...
+    protected $fillable = [
+        'sinh_vien_id',
+        'phong_id',
+        'mo_ta',
+        'ngay_gui',
+        'trang_thai',
+    ];
+
+    public function sinhVien()
+    {
+        return $this->belongsTo(SinhVien::class, 'sinh_vien_id');
+    }
+
+    public function phong()
+    {
+        return $this->belongsTo(Phong::class, 'phong_id');
+    }
 }
