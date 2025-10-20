@@ -5,7 +5,7 @@
 @section('content')
 <div class="container">
   <h3>Sửa phòng: {{ $phong->ten_phong }}</h3>
-  <form action="{{ route('phong.update', $phong) }}" method="POST">
+  <form action="{{ route('phong.update', $phong) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     @include('phong._form')
