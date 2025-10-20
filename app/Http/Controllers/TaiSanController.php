@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class TaiSanController extends Controller
 {
@@ -24,7 +25,9 @@ class TaiSanController extends Controller
             $query->where('tai_san.tinh_trang', 'like', '%' . $request->tinhtrang . '%');
         }
 
-$listTaiSan = $query->orderBy('tai_san.id', 'desc')->paginate(5);
+        // Phân trang
+        $listTaiSan = $query->orderBy('tai_san.id', 'desc')->paginate(5);
+
         $totals = [
             'total' => DB::table('tai_san')->count(),
             'moi' => DB::table('tai_san')->where('tinh_trang_hien_tai', 'mới')->count(),
@@ -51,15 +54,21 @@ $listTaiSan = $query->orderBy('tai_san.id', 'desc')->paginate(5);
             'so_luong' => 'required|integer|min:1',
             'tinh_trang' => 'nullable|string|max:255',
             'tinh_trang_hien_tai' => 'nullable|string|max:255',
-
+            'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
+
+        // Xử lý ảnh (nếu có)
+        $hinhAnhPath = null;
+        if ($request->hasFile('hinh_anh')) {
+            $hinhAnhPath = $request->file('hinh_anh')->store('taisans', 'public');
+        }
 
         DB::table('tai_san')->insert([
             'ten_tai_san' => $request->ten_tai_san,
             'so_luong' => $request->so_luong,
             'tinh_trang' => $request->tinh_trang,
             'tinh_trang_hien_tai' => $request->tinh_trang_hien_tai,
-
+            'hinh_anh' => $hinhAnhPath, // ✅ thêm ảnh vào DB
             'phong_id' => $request->phong_id ?: null,
             'created_at' => now(),
             'updated_at' => now(),
@@ -68,7 +77,7 @@ $listTaiSan = $query->orderBy('tai_san.id', 'desc')->paginate(5);
         return redirect()->route('taisan.index')->with('status', 'Thêm tài sản thành công!');
     }
 
-    // Hiển thị form edit (chỉ 1 lần)
+    // Hiển thị form edit
     public function edit($id)
     {
         $taiSan = DB::table('tai_san')->where('id', $id)->first();
@@ -81,7 +90,7 @@ $listTaiSan = $query->orderBy('tai_san.id', 'desc')->paginate(5);
         return view('taisan.edit', compact('taiSan', 'phongs'));
     }
 
-    // Cập nhật
+    // Cập nhật tài sản
     public function update(Request $request, $id)
     {
         $this->validate($request, [
@@ -89,54 +98,70 @@ $listTaiSan = $query->orderBy('tai_san.id', 'desc')->paginate(5);
             'so_luong' => 'required|integer|min:0',
             'tinh_trang' => 'nullable|string|max:255',
             'tinh_trang_hien_tai' => 'nullable|string|max:255',
-
+            'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $updated = DB::table('tai_san')->where('id', $id)->update([
+        $taiSan = DB::table('tai_san')->where('id', $id)->first();
+
+        if (!$taiSan) {
+            return redirect()->route('taisan.index')->with('error', 'Không tìm thấy tài sản!');
+        }
+
+        $data = [
             'ten_tai_san' => $request->ten_tai_san,
             'so_luong' => $request->so_luong,
             'tinh_trang' => $request->tinh_trang,
             'tinh_trang_hien_tai' => $request->tinh_trang_hien_tai,
-
             'phong_id' => $request->phong_id ?: null,
             'updated_at' => now(),
-        ]);
+        ];
 
-        if ($updated) {
-            return redirect()->route('taisan.index')->with('status', 'Cập nhật tài sản thành công!');
+        // Nếu có ảnh mới → xóa ảnh cũ + lưu mới
+        if ($request->hasFile('hinh_anh')) {
+            if ($taiSan->hinh_anh && Storage::disk('public')->exists($taiSan->hinh_anh)) {
+                Storage::disk('public')->delete($taiSan->hinh_anh);
+            }
+            $data['hinh_anh'] = $request->file('hinh_anh')->store('taisans', 'public');
         }
 
-        return redirect()->back()->with('error', 'Không thể cập nhật tài sản!');
+        DB::table('tai_san')->where('id', $id)->update($data);
+
+        return redirect()->route('taisan.index')->with('status', 'Cập nhật tài sản thành công!');
     }
 
-    // Xóa
+    // Xóa tài sản
     public function destroy($id)
     {
         $taiSan = DB::table('tai_san')->where('id', $id)->first();
+
         if (!$taiSan) {
             return redirect()->route('taisan.index')->with('error', 'Tài sản không tồn tại!');
+        }
+
+        // Xóa ảnh vật lý (nếu có)
+        if ($taiSan->hinh_anh && Storage::disk('public')->exists($taiSan->hinh_anh)) {
+            Storage::disk('public')->delete($taiSan->hinh_anh);
         }
 
         DB::table('tai_san')->where('id', $id)->delete();
 
         return redirect()->route('taisan.index')->with('status', 'Xóa tài sản thành công!');
     }
+
+    // Báo hỏng tài sản
     public function baoHong($id)
-{
-    // Kiểm tra xem tài sản có tồn tại không
-    $taiSan = DB::table('tai_san')->where('id', $id)->first();
+    {
+        $taiSan = DB::table('tai_san')->where('id', $id)->first();
 
-    if (!$taiSan) {
-        return redirect()->route('taisan.index')->with('error', 'Không tìm thấy tài sản!');
+        if (!$taiSan) {
+            return redirect()->route('taisan.index')->with('error', 'Không tìm thấy tài sản!');
+        }
+
+        DB::table('tai_san')->where('id', $id)->update([
+            'tinh_trang_hien_tai' => 'đã hỏng',
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('taisan.index')->with('status', 'Đã báo hỏng tài sản thành công!');
     }
-
-    // Cập nhật tình trạng hiện tại thành "đã hỏng"
-    DB::table('tai_san')->where('id', $id)->update([
-        'tinh_trang_hien_tai' => 'đã hỏng',
-        'updated_at' => now(),
-    ]);
-
-    return redirect()->route('taisan.index')->with('status', 'Đã báo hỏng tài sản thành công!');
-}
-
 }

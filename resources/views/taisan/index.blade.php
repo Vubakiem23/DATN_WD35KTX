@@ -4,10 +4,10 @@
 
 @section('content')
 <style>
-    .pagination-info,
-    .small.text-muted {
-        display: none !important;
-    }
+  .pagination-info,
+  .small.text-muted {
+    display: none !important;
+  }
 </style>
 <div class="container-fluid">
 
@@ -52,6 +52,7 @@
         <tr>
           <th>ID</th>
           <th>Tên tài sản</th>
+          <th>Hình ảnh</th>
           <th>Số lượng</th>
           <th>Tình trạng ban đầu</th>
           <th>Tình trạng hiện tại</th>
@@ -64,6 +65,13 @@
         <tr>
           <td>{{ $item->id }}</td>
           <td>{{ $item->ten_tai_san }}</td>
+          <td>
+            @if($item->hinh_anh)
+            <img src="{{ asset('storage/' . $item->hinh_anh) }}" alt="Ảnh" width="80" class="rounded">
+            @else
+            <span class="text-muted badge bg-success">Chưa cập nhật</span>
+            @endif
+          </td>
           <td>{{ $item->so_luong }}</td>
           <td><span class="badge bg-success">{{ $item->tinh_trang }}</span></td>
           <td><span class="badge bg-info">{{ $item->tinh_trang_hien_tai ?? 'Chưa cập nhật' }}</span></td>
@@ -103,8 +111,8 @@
       </tbody>
     </table>
     <div class="d-flex justify-content-center mt-3">
-    {{ $listTaiSan->appends(request()->query())->links('pagination::bootstrap-5') }}
-</div>
+      {{ $listTaiSan->appends(request()->query())->links('pagination::bootstrap-5') }}
+    </div>
 
   </div>
 </div>

@@ -9,7 +9,7 @@
     {{-- Debug --}}
     <p>ID lịch bảo trì: {{ $lichBaoTri->id ?? 'NULL' }}</p>
 
-    <form action="{{ route('lichbaotri.update', $lichBaoTri) }}" method="POST">
+    <form action="{{ route('lichbaotri.update', $lichBaoTri) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -17,13 +17,19 @@
             <label for="tai_san_id">Tài sản</label>
             <select name="tai_san_id" class="form-control" required>
                 @foreach($taiSan as $ts)
-                    <option value="{{ $ts->id }}" {{ $lichBaoTri->tai_san_id == $ts->id ? 'selected' : '' }}>
-                        {{ $ts->ten_tai_san }} (Phòng: {{ $ts->phong->ten_phong ?? 'Chưa gán' }})
-                    </option>
+                <option value="{{ $ts->id }}" {{ $lichBaoTri->tai_san_id == $ts->id ? 'selected' : '' }}>
+                    {{ $ts->ten_tai_san }} (Phòng: {{ $ts->phong->ten_phong ?? 'Chưa gán' }})
+                </option>
                 @endforeach
             </select>
         </div>
-
+        <div class="form-group">
+            <label for="hinh_anh">Hình ảnh:</label>
+            <input type="file" name="hinh_anh" class="form-control">
+            @if($lichBaoTri->hinh_anh)
+            <img src="{{ asset('uploads/lichbaotri/'.$lichBaoTri->hinh_anh) }}" alt="" width="120" class="mt-2">
+            @endif
+        </div>
         <div class="form-group mb-3">
             <label for="ngay_bao_tri">Ngày bảo trì</label>
             <input type="date" name="ngay_bao_tri" value="{{ $lichBaoTri->ngay_bao_tri }}" class="form-control" required>
