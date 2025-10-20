@@ -18,12 +18,19 @@
     </div>
     @endif
 
-    <form action="{{ route('taisan.store') }}" method="POST">
+    <form action="{{ route('taisan.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="mb-3">
             <label for="ten_tai_san" class="form-label">Tên tài sản</label>
             <input type="text" name="ten_tai_san" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="hinh_anh" class="form-label">Hình ảnh</label>
+            <input type="file" name="hinh_anh" class="form-control" accept="image/*">
+            @if(isset($taiSan) && $taiSan->hinh_anh)
+            <img src="{{ asset('storage/' . $taiSan->hinh_anh) }}" alt="Ảnh tài sản" width="100" class="mt-2 rounded">
+            @endif
         </div>
 
         <div class="mb-3">

@@ -18,6 +18,7 @@ class TaiSan extends Model
         'tinh_trang_hien_tai',
         'ngay_tao',
         'phong_id',
+        'hinh_anh',
     ];
 
     // ✅ Thêm quan hệ đến bảng phòng

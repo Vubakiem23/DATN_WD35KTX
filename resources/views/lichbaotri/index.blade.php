@@ -20,7 +20,7 @@
     <div class="col-md-3">
       <select name="trang_thai" class="form-select">
         <option value="">-- Trạng thái --</option>
-        <option value="Chờ" {{ request('trang_thai') == 'Chờ' ? 'selected' : '' }}>Chờ</option>
+        <option value="Chờ bảo trì" {{ request('trang_thai') == 'Chờ bảo trì' ? 'selected' : '' }}>Chờ bảo trì</option>
         <option value="Đang bảo trì" {{ request('trang_thai') == 'Đang bảo trì' ? 'selected' : '' }}>Đang bảo trì</option>
         <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
       </select>
@@ -53,6 +53,7 @@
           <th>Tài sản</th>
           <th>Ngày bảo trì</th>
           <th>Mô tả</th>
+          <th>Hình ảnh</th>
           <th>Trạng thái</th>
           <th>Ngày hoàn thành</th>
           <th>Thao tác</th>
@@ -66,15 +67,27 @@
           <td>{{ $l->ngay_bao_tri }}</td>
           <td>{{ $l->mo_ta ?? '-' }}</td>
           <td>
-            @if($l->trang_thai == 'Hoàn thành')
-            <span class="badge bg-success">Hoàn thành</span>
-            @elseif($l->trang_thai == 'Đang bảo trì')
-            <span class="badge bg-warning text-dark">Đang bảo trì</span>
+            @if($l->hinh_anh)
+              <img src="{{ asset('uploads/lichbaotri/'.$l->hinh_anh) }}" alt="Hình ảnh" width="100">
             @else
-            <span class="badge bg-secondary">Chờ</span>
+              <span class="text-muted">Không có ảnh</span>
             @endif
           </td>
+
+          <td>
+            @if($l->trang_thai == 'Hoàn thành')
+              <span class="badge bg-success">Hoàn thành</span>
+            @elseif($l->trang_thai == 'Đang bảo trì')
+              <span class="badge bg-warning text-dark">Đang bảo trì</span>
+            @elseif($l->trang_thai == 'Chờ bảo trì')
+              <span class="badge bg-secondary">Chờ bảo trì</span>
+            @else
+              <span class="badge bg-light text-dark">{{ $l->trang_thai }}</span>
+            @endif
+          </td>
+
           <td>{{ $l->ngay_hoan_thanh ?? '-' }}</td>
+
           <td>
             {{-- Nút sửa --}}
             <a href="{{ route('lichbaotri.edit', $l->id) }}" class="btn btn-sm btn-primary">Sửa</a>
@@ -100,15 +113,15 @@
         </tr>
         @empty
         <tr>
-          <td colspan="7" class="text-center text-muted">Không có lịch bảo trì nào</td>
+          <td colspan="8" class="text-center text-muted">Không có lịch bảo trì nào</td>
         </tr>
         @endforelse
       </tbody>
     </table>
+
     <div class="d-flex justify-content-center mt-3">
       {{ $lich->appends(request()->query())->links('pagination::bootstrap-5') }}
     </div>
-
   </div>
 </div>
 @endsection
