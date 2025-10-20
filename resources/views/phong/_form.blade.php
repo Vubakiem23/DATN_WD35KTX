@@ -15,8 +15,10 @@
     <label class="form-label">Loại phòng</label>
     <select name="loai_phong" class="form-control">
       <option value="">--Chọn--</option>
-      <option value="Đơn" {{ old('loai_phong', $phong->loai_phong ?? '')=='Đơn'?'selected':'' }}>Đơn</option>
-      <option value="Đôi" {{ old('loai_phong', $phong->loai_phong ?? '')=='Đôi'?'selected':'' }}>Đôi</option>
+      <option value="Đơn" {{ old('loai_phong', $phong->loai_phong ?? '')=='1'?'selected':'' }}>Phòng 1</option>
+      <option value="Đôi" {{ old('loai_phong', $phong->loai_phong ?? '')=='2'?'selected':'' }}>Phòng 2</option>
+      <option value="Đôi" {{ old('loai_phong', $phong->loai_phong ?? '')=='3'?'selected':'' }}>Phòng 3</option>
+      <option value="Đôi" {{ old('loai_phong', $phong->loai_phong ?? '')=='4'?'selected':'' }}>Phòng 4</option>
     </select>
   </div>
 
@@ -51,8 +53,13 @@
     <input type="text" name="ghi_chu" value="{{ old('ghi_chu', $phong->ghi_chu ?? '') }}" class="form-control">
   </div>
 </div>
-
+{{-- Upload ảnh --}}
+<div class="mb-3">
+  <label class="form-label">Ảnh phòng (tùy chọn)</label>
+  <input type="file" name="hinh_anh" class="form-control" accept="image/*">
+</div>
 <div class="mb-3">
   <button class="btn btn-success" type="submit">Lưu</button>
   <a href="{{ route('phong.index') }}" class="btn btn-secondary">Hủy</a>
 </div>
+
