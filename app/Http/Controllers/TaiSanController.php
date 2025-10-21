@@ -88,33 +88,50 @@ public function index(Request $request)
 
     /** 🔄 Cập nhật tài sản */
     public function update(Request $request, $id)
-    {
-        $taiSan = TaiSan::findOrFail($id);
+{
+    $taiSan = TaiSan::findOrFail($id);
 
-        $request->validate([
-            'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
-            'so_luong' => 'required|integer|min:1',
-            'tinh_trang' => 'nullable|string|max:255',
-            'tinh_trang_hien_tai' => 'nullable|string|max:255',
-            'phong_id' => 'nullable|exists:phong,id',
-        ]);
+    $request->validate([
+        'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
+        'so_luong' => 'required|integer|min:1',
+        'tinh_trang' => 'nullable|string|max:255',
+        'tinh_trang_hien_tai' => 'nullable|string|max:255',
+        'phong_id' => 'nullable|exists:phong,id',
+    ]);
 
-        $kho = KhoTaiSan::findOrFail($request->kho_tai_san_id);
+    $kho = KhoTaiSan::findOrFail($request->kho_tai_san_id);
 
-        $taiSan->update([
-            'kho_tai_san_id' => $request->kho_tai_san_id,
-            'ten_tai_san' => $kho->ten_tai_san,
-            'so_luong' => $request->so_luong,
-            'tinh_trang' => $request->tinh_trang,
-            'tinh_trang_hien_tai' => $request->tinh_trang_hien_tai,
-            'phong_id' => $request->phong_id,
-            'hinh_anh' => $kho->hinh_anh,
-        ]);
+    // 🔄 Tính chênh lệch số lượng
+    $chenhLech = $request->so_luong - $taiSan->so_luong;
 
-        return redirect()->route('taisan.index')->with('success', 'Cập nhật thông tin tài sản thành công!');
+    // ✅ Nếu tăng tài sản phòng → trừ kho
+    if ($chenhLech > 0) {
+        if ($kho->so_luong < $chenhLech) {
+            return back()->with('error', 'Không đủ số lượng trong kho!');
+        }
+        $kho->so_luong -= $chenhLech;
+    } 
+    // ✅ Nếu giảm tài sản phòng → cộng lại vào kho
+    elseif ($chenhLech < 0) {
+        $kho->so_luong += abs($chenhLech);
     }
 
-    /** ❌ Xóa tài sản + cộng lại số lượng về kho */
+    $kho->save();
+
+    // 🔧 Cập nhật lại tài sản phòng
+    $taiSan->update([
+        'kho_tai_san_id' => $request->kho_tai_san_id,
+        'ten_tai_san' => $kho->ten_tai_san,
+        'so_luong' => $request->so_luong,
+        'tinh_trang' => $request->tinh_trang,
+        'tinh_trang_hien_tai' => $request->tinh_trang_hien_tai,
+        'phong_id' => $request->phong_id,
+        'hinh_anh' => $kho->hinh_anh,
+    ]);
+
+    return redirect()->route('taisan.index')->with('success', 'Cập nhật tài sản thành công và đồng bộ với kho!');
+}
+
     public function destroy($id)
     {
         $taiSan = TaiSan::findOrFail($id);
