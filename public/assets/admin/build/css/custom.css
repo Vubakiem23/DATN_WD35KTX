@@ -928,6 +928,7 @@
   position: inherit;
   margin-top: 20px;
   border: 1px solid rgba(52, 73, 94, 0.44);
+    max-height: 55px;
   padding: 4px; }
 
 .profile_info {
@@ -1422,7 +1423,7 @@ a:hover, a:focus {
 
 .site_title:hover, .site_title:focus {
   text-decoration: none; }
-  
+
 .site_title span:hover{
   background: #fff;
 }
@@ -5029,7 +5030,7 @@ p.mb-2 {
 }
 
 /* ---- Table card wrapper ---- */
-.table-responsive { 
+.table-responsive {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 12px 36px rgba(12,30,60,0.04);
@@ -5059,7 +5060,7 @@ p.mb-2 {
 }
 
 /* giảm khoảng trắng thừa trong ô */
-.table.table-bordered.table-hover td, 
+.table.table-bordered.table-hover td,
 .table.table-bordered.table-hover th {
   white-space: nowrap;
 }
@@ -5232,7 +5233,7 @@ p.mb-2 {
 .badge.bg-secondary {
   background-color: #64748b !important;
 }
- 
+
 /* ====== Phân trang ====== */
 .pagination {
   justify-content: center;
