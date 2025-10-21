@@ -17,6 +17,7 @@ class LichBaoTri extends Model
         'mo_ta',
         'trang_thai',
         'ngay_hoan_thanh',
+        'hinh_anh',
     ];
 
     public function taiSan()

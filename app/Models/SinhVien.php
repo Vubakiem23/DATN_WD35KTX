@@ -32,8 +32,16 @@ class SinhVien extends Model
     {
         return $this->belongsTo(Phong::class, 'phong_id', 'id');
     }
+
     public function suCos()
 {
     return $this->hasMany(SuCo::class, 'sinh_vien_id');
 }
+
+    public function slot()
+{
+    return $this->hasOne(\App\Models\Slot::class, 'sinh_vien_id');
+}
+
+
 }
