@@ -12,23 +12,19 @@ class TaiSanController extends Controller
     /** 📋 Danh sách tài sản trong phòng */
 public function index(Request $request)
 {
-    $search = $request->input('search');
-    $phongId = $request->input('phong_id');
+    $phongs = Phong::orderBy('ten_phong')->get();
 
-    $listTaiSan = TaiSan::with(['phong', 'khoTaiSan'])
-        ->when($search, function ($query, $search) {
-            $query->whereHas('khoTaiSan', function ($q) use ($search) {
-                $q->where('ten_tai_san', 'like', "%$search%")
-                  ->orWhere('ma_tai_san', 'like', "%$search%");
+    $listTaiSan = TaiSan::with(['khoTaiSan', 'phong'])
+        ->when($request->search, function($query, $search) {
+            $query->whereHas('khoTaiSan', function($q) use ($search) {
+                $q->where('ma_tai_san', 'like', "%$search%")
+                  ->orWhere('ten_tai_san', 'like', "%$search%");
             });
         })
-        ->when($phongId, function ($query, $phongId) {
-            $query->where('phong_id', $phongId);
+        ->when($request->phong_id, function($query, $phong_id) {
+            $query->where('phong_id', $phong_id);
         })
-        ->orderBy('id', 'desc')
-        ->paginate(10);
-
-    $phongs = \App\Models\Phong::orderBy('ten_phong')->get(); // 👈 thêm dòng này
+        ->paginate(5); // 👈 Chỉ hiển thị 5 dòng mỗi trang
 
     return view('taisan.index', compact('listTaiSan', 'phongs'));
 }

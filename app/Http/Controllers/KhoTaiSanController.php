@@ -18,7 +18,7 @@ class KhoTaiSanController extends Controller
                   ->orWhere('ma_tai_san', 'like', "%$search%");
         }
 
-        $kho = $query->orderBy('id', 'desc')->paginate(10);
+        $kho = $query->orderBy('id', 'desc')->paginate(5);
 
         return view('kho.index', compact('kho'));
     }
