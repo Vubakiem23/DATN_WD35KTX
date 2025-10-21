@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PhongRequest;
 use App\Models\Phong;
 use Illuminate\Http\Request;
+use App\Models\SinhVien;
 
 class PhongController extends Controller
 {
@@ -26,7 +27,8 @@ class PhongController extends Controller
         if ($request->filled('trang_thai')) $q->where('trang_thai', $request->trang_thai);
         if ($request->filled('search')) $q->where('ten_phong', 'like', '%' . $request->search . '%');
 
-        $phongs = $q->orderBy('khu')->orderBy('ten_phong')->paginate(15);
+        // Hiển thị tất cả phòng, bỏ phân trang theo yêu cầu
+        $phongs = $q->orderBy('khu')->orderBy('ten_phong')->get();
 
         $totals = [
             'total' => Phong::count(),
@@ -45,7 +47,12 @@ class PhongController extends Controller
 
     public function store(PhongRequest $request)
     {
-        Phong::create($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('hinh_anh')) {
+            $path = $request->file('hinh_anh')->store('phong', 'public');
+            $data['hinh_anh'] = $path;
+        }
+        Phong::create($data);
         return redirect()->route('phong.index')->with('status', 'Thêm phòng thành công');
     }
 
@@ -56,9 +63,28 @@ class PhongController extends Controller
 
     public function update(PhongRequest $request, Phong $phong)
     {
-        $phong->update($request->validated());
-        $phong->updateStatusBasedOnCapacity();
+        $data = $request->validated();
+        if ($request->hasFile('hinh_anh')) {
+            $path = $request->file('hinh_anh')->store('phong', 'public');
+            $data['hinh_anh'] = $path;
+        }
+        $phong->update($data);
+        // If the model has a method to auto-update status, keep it
+        if (method_exists($phong, 'updateStatusBasedOnCapacity')) {
+            $phong->updateStatusBasedOnCapacity();
+        }
         return redirect()->route('phong.index')->with('status', 'Cập nhật phòng thành công');
+    }
+    public function show($id)
+    {
+        $phong = \App\Models\Phong::with(['slots.sinhVien'])->findOrFail($id);
+        // Chỉ lấy sinh viên đã duyệt và CHƯA được gán vào slot nào
+        $assignedIds = \App\Models\Slot::whereNotNull('sinh_vien_id')->pluck('sinh_vien_id');
+        $sinhViens = \App\Models\SinhVien::where('trang_thai_ho_so','Đã duyệt')
+            ->whereNotIn('id', $assignedIds)
+            ->orderBy('ho_ten')
+            ->get();
+        return view('phong.show', compact('phong','sinhViens'));
     }
 
     public function destroy(Phong $phong)

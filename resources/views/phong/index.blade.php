@@ -1,117 +1,141 @@
-
 @extends('admin.layouts.admin')
 
 @section('title','Quản lý phòng')
 
 @section('content')
-<div class="container-fluid">
-  {{-- Thanh thông báo --}}
-  @if(session('status'))
-    <div class="alert alert-success">{{ session('status') }}</div>
-  @endif
-  @if(session('error'))
-    <div class="alert alert-danger">{!! session('error') !!}</div>
-  @endif
+    <div class="container-fluid">
+
+        @if(session('status'))
+            <div class="alert alert-success">{{ session('status') }}</div>
+            <script>setTimeout(() => window.showToast(@json(session('status')), 'success'), 0)</script>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger">{!! session('error') !!}</div>
+            <script>setTimeout(() => window.showToast(@json(strip_tags(session('error'))), 'error'), 0)</script>
+        @endif
+
+        {{--  --}}
+
+        {{-- Extra prominent create button to ensure visibility --}}
 
 
-  {{-- Filter --}}
-  <form method="GET" class="row g-2 mb-3">
-    <div class="col-md-4">
-      <input name="search" value="{{ request('search') }}" class="form-control" placeholder="Tìm tên phòng">
-    </div>
-    <div class="col-md-2">
-      <input name="khu" value="{{ request('khu') }}" class="form-control" placeholder="Khu">
-    </div>
-    <div class="col-md-2">
-      <select name="loai_phong" class="form-select">
-        <option value="">--Loại phòng--</option>
-        <option value="Đơn" {{ request('loai_phong')=='Đơn'?'selected':'' }}>Đơn</option>
-        <option value="Đôi" {{ request('loai_phong')=='Đôi'?'selected':'' }}>Đôi</option>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="gioi_tinh" class="form-select">
-        <option value="">--Giới tính--</option>
-        <option value="Nam" {{ request('gioi_tinh')=='Nam'?'selected':'' }}>Nam</option>
-        <option value="Nữ" {{ request('gioi_tinh')=='Nữ'?'selected':'' }}>Nữ</option>
-        <option value="Cả hai" {{ request('gioi_tinh')=='Cả hai'?'selected':'' }}>Cả hai</option>
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="trang_thai" class="form-select">
-        <option value="">--Trạng thái--</option>
-        <option value="Trống" {{ request('trang_thai')=='Trống'?'selected':'' }}>Trống</option>
-        <option value="Đã ở" {{ request('trang_thai')=='Đã ở'?'selected':'' }}>Đã ở</option>
-        <option value="Bảo trì" {{ request('trang_thai')=='Bảo trì'?'selected':'' }}>Bảo trì</option>
-      </select>
-    </div>
-   <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
-    <div>
-      <button type="submit" class="btn btn-secondary me-2">Lọc</button>
-      <a href="{{ route('phong.create') }}" class="btn btn-primary">Thêm phòng</a>
-    </div>
-  </div>
-  </form>
+        {{-- Tabs by Khu (building) --}}
+        <h4>Khu</h4>
+        @php
+            $khuList = $phongs->groupBy('khu');
+            $firstKhu = $khuList->keys()->first() ?? '';
+        @endphp
 
-  <p class="mb-2">
-    <strong>Tổng:</strong> {{ $totals['total'] }} |
-    <strong>Trống:</strong> {{ $totals['trong'] }} |
-    <strong>Đã ở:</strong> {{ $totals['da_o'] }} |
-    <strong>Bảo trì:</strong> {{ $totals['bao_tri'] }}
-  </p>
+        <ul class="nav nav-tabs mb-3" id="khuTabs" role="tablist">
+            @foreach($khuList->keys() as $k => $khu)
+                @php $slug = \Illuminate\Support\Str::slug($khu) ?: 'khu-'.$k; @endphp
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ $khu == $firstKhu ? 'active' : '' }}" id="tab-{{ $slug }}"
+                            data-bs-toggle="tab" data-bs-target="#khu-{{ $slug }}"
+                            data-toggle="tab" data-target="#khu-{{ $slug }}"
+                            type="button" role="tab">{{ $khu ?: 'Không xác định' }}</button>
+                </li>
+            @endforeach
+        </ul>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Danh sách các phòng</h4>
+            <a href="{{ route('phong.create') }}" class="btn btn-success">Tạo phòng</a>
+        </div>
+        <div class="tab-content">
+            @foreach($khuList as $k => $items)
+                @php $khu = $items->first()->khu ?? ''; $slug = \Illuminate\Support\Str::slug($khu) ?: 'khu-'.$k; @endphp
+                <div class="tab-pane fade {{ $khu == $firstKhu ? 'show active' : '' }}" id="khu-{{ $slug }}"
+                     role="tabpanel">
+                    <div class="row g-3">
+                        @foreach($items as $p)
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <strong>{{ $p->ten_phong }}</strong>
+                                        <span
+                                            class="badge bg-{{ $p->availableSlots() == 0 && $p->totalSlots() > 0 ? 'warning text-dark' : 'success' }}">{{ $p->occupancyLabel() }}</span>
+                                    </div>
+                                    @if(!empty($p->hinh_anh))
+                                        <img src="{{ asset('storage/'.$p->hinh_anh) }}" class="card-img-top"
+                                             style="height:160px;object-fit:cover" alt="{{ $p->ten_phong }}">
+                                    @else
+                                        <div class="card-img-top d-flex align-items-center justify-content-center"
+                                             style="height:160px;background:#f8f9fa">
+                                            {{-- inline SVG placeholder so image always shows even if no file --}}
+                                            <svg width="80" height="60" viewBox="0 0 24 24" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <rect width="24" height="24" rx="2" fill="#e9ecef"/>
+                                                <path d="M3 15L8 9L13 15L21 6" stroke="#adb5bd" stroke-width="1.2"
+                                                      stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Khu:</strong> {{ $p->khu ?? '-' }}</p>
+                                        <p class="mb-1"><strong>Loại:</strong> {{ $p->loai_phong ?? '-' }}</p>
+                                        <p class="mb-1"><strong>Sức chứa:</strong> {{ $p->totalSlots() }} chỗ</p>
+                                        <p class="mb-1"><strong>Hiện tại:</strong> {{ $p->usedSlots() }}
+                                            / {{ $p->totalSlots() }}</p>
+                                        @if($p->ghi_chu)
+                                            <p class="text-muted small">{{ Str::limit($p->ghi_chu, 120) }}</p>
+                                        @endif
+                                    </div>
+                                    <div class="card-footer d-flex gap-2">
+                                        <a href="{{ route('phong.edit', $p) }}" class="btn btn-sm btn-info flex-fill">Chỉnh
+                                            sửa</a>
+                                        <a href="{{ route('phong.show', $p->id) }}"
+                                           class="btn btn-sm btn-secondary flex-fill">Thông Tin</a>
 
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>Tên phòng</th><th>Khu</th><th>Loại</th><th>Sức chứa</th><th>Giới tính</th><th>Trạng thái</th><th>Hiện tại</th><th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($phongs as $p)
-        <tr>
-          <td>{{ $p->ten_phong }}</td>
-          <td>{{ $p->khu }}</td>
-          <td>{{ $p->loai_phong }}</td>
-          <td>{{ $p->suc_chua }}</td>
-          <td>{{ $p->gioi_tinh ?? '-' }}</td>
-          <td>{!! $p->trang_thai == 'Trống' ? '<span class="badge bg-success">Trống</span>' : ($p->trang_thai=='Đã ở' ? '<span class="badge bg-warning">Đã ở</span>' : '<span class="badge bg-danger">Bảo trì</span>') !!}</td>
-          <td>{{ $p->soLuongHienTai() }} / {{ $p->suc_chua }}</td>
-          <td>
-            <a href="{{ route('phong.edit', $p) }}" class="btn btn-sm btn-primary">Sửa</a>
-            <form action="{{ route('phong.destroy', $p) }}" method="POST" style="display:inline">
-              @csrf @method('DELETE')
-              <button class="btn btn-sm btn-danger" onclick="return confirm('Xóa phòng?')">Xóa</button>
-            </form>
-            <button class="btn btn-sm btn-success" onclick="promptAssign({{ $p->id }})">Gán SV</button>
-          </td>
-        </tr>
-        @empty
-        <tr><td colspan="8">Không có phòng</td></tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
+                                        <a href="{{ route('taisan.index') }}?phong_id={{ $p->id }}"
+                                           class="btn btn-sm btn-primary flex-fill">Tài Sản</a>
+                                        <form action="{{ route('phong.destroy', $p) }}" method="POST"
+                                              onsubmit="return confirm('Bạn không thể hoàn tác. Xóa phòng?')"
+                                              style="display:inline">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-sm btn-danger">Xóa</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+        </div>
 
-  <div class="mt-3">
-    {{ $phongs->withQueryString()->links() }}
-  </div>
-</div>
+        {{-- Bỏ phân trang theo yêu cầu --}}
 
-@push('scripts')
-<script>
-function promptAssign(phongId){
-  const svId = prompt('Nhập ID sinh viên muốn gán vào phòng ' + phongId + ':');
-  if(!svId) return;
-  fetch('/assign/' + svId, {
-    method: 'POST',
-    headers: {
-      'Content-Type':'application/json',
-      'X-CSRF-TOKEN':'{{ csrf_token() }}'
-    },
-    body: JSON.stringify({phong_id: phongId})
-  }).then(r => { if(r.redirected) window.location.href = r.url; else return r.text().then(t=>alert(t)); });
-}
-</script>
-@endpush
+    </div>
+
+    @push('scripts')
+        <script>
+            function openAddGuest(phongId) {
+                const url = '/sinhvien/create?phong_id=' + phongId;
+                window.location.href = url;
+            }
+
+            // Ensure tabs activate across Bootstrap versions (fallback)
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('#khuTabs button').forEach(function (btn) {
+                    btn.addEventListener('click', function (e) {
+                        var target = btn.getAttribute('data-bs-target') || btn.getAttribute('data-target');
+                        if (!target) return;
+                        // hide other panes
+                        document.querySelectorAll('.tab-pane').forEach(function (p) {
+                            p.classList.remove('show', 'active');
+                        });
+                        var pane = document.querySelector(target);
+                        if (pane) {
+                            pane.classList.add('show', 'active');
+                        }
+                        document.querySelectorAll('#khuTabs button').forEach(function (b) {
+                            b.classList.remove('active');
+                        });
+                        btn.classList.add('active');
+                    });
+                });
+            });
+        </script>
+    @endpush
+
 @endsection

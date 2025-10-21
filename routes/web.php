@@ -7,10 +7,12 @@ use App\Http\Controllers\SinhVienController;
 use App\Http\Controllers\PhongController;
 use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\TaiSanController;
+use App\Http\Controllers\KhoTaiSanController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\LichBaoTriController;
 use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\SuCoController;
+use App\Http\Controllers\SlotController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -25,12 +27,19 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Trang chủ admin
     Route::get('', [AdminController::class, 'index'])->name('admin.index');
     Route::prefix('admin')->group(function () {
-    Route::resource('suco', SuCoController::class);
-});
+        Route::resource('suco', SuCoController::class);
+    });
 
     // Quản lý phòng
-    Route::resource('phong', PhongController::class)->except(['show']);
+    Route::resource('phong', PhongController::class)->except([]);
     Route::post('phong/{phong}/change-status', [PhongController::class, 'changeStatus'])->name('phong.changeStatus');
+    // Tạo slot cho phòng: POST /admin/phong/{phong}/slots
+    Route::post('phong/{phong}/slots', [SlotController::class, 'store'])
+        ->name('phong.slots.store');
+    // tạo slot
+    Route::post('/slots/{id}/assign', [SlotController::class, 'assignStudent']); // gán sinh viên
+    Route::get('/phong/{id}/slots', [SlotController::class, 'slotsByPhong']);    // lấy sl
+    Route::post('/slots/{id}/update', [SlotController::class, 'update'])->name('slots.update');
 
     // Gán phòng cho sinh viên
     Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
@@ -39,24 +48,25 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Quản lý sinh viên
     Route::resource('sinhvien', SinhVienController::class)->except(['show']);
     Route::patch('sinhvien/{id}/approve', [SinhVienController::class, 'approve'])->name('sinhvien.approve');
+    Route::get('/sinhvien/show/{id}', [SinhVienController::class, 'show'])->name('sinhvien.show.modal');
 
 
     // Route hóa đơn
     Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
-Route::get('/hoadon/create', [HoaDonController::class, 'create'])->name('hoadon.create');
-Route::post('/hoadon', [HoaDonController::class, 'store'])->name('hoadon.store');
-Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
-Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
-Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
-Route::post('/hoadon/{id}/duplicate', [HoaDonController::class, 'duplicate'])->name('hoadon.duplicate');
-Route::post('/hoadon/{id}/send', [HoaDonController::class, 'send'])->name('hoadon.send');
-Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.pdf');
-Route::post('/hoadon/{id}/pay', [HoaDonController::class, 'pay'])->name('hoadon.pay');
-Route::get('/lich-su-thanh-toan', [HoaDonController::class, 'history'])->name('hoadon.history');
-Route::get('/hoadon/{id}/send-mail', [HoaDonController::class, 'sendMail'])->name('hoadon.sendMail');
+    Route::get('/hoadon/create', [HoaDonController::class, 'create'])->name('hoadon.create');
+    Route::post('/hoadon', [HoaDonController::class, 'store'])->name('hoadon.store');
+    Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
+    Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
+    Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
+    Route::post('/hoadon/{id}/duplicate', [HoaDonController::class, 'duplicate'])->name('hoadon.duplicate');
+    Route::post('/hoadon/{id}/send', [HoaDonController::class, 'send'])->name('hoadon.send');
+    Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.pdf');
+    Route::post('/hoadon/{id}/pay', [HoaDonController::class, 'pay'])->name('hoadon.pay');
+    Route::get('/lich-su-thanh-toan', [HoaDonController::class, 'history'])->name('hoadon.history');
+    Route::get('/hoadon/{id}/send-mail', [HoaDonController::class, 'sendMail'])->name('hoadon.sendMail');
 
 
-Route::get('/hoadon/send', [HoaDonController::class, 'send']);
+    Route::get('/hoadon/send', [HoaDonController::class, 'send']);
 
 
 
@@ -81,6 +91,7 @@ Route::get('/hoadon/send', [HoaDonController::class, 'send']);
         Route::delete('/delete/{id}', [TaiSanController::class, 'destroy'])->name('taisan.destroy');
         Route::put('/{id}/baohong', [TaiSanController::class, 'baoHong'])->name('taisan.baohong');
     });
+    Route::resource('kho', \App\Http\Controllers\KhoTaiSanController::class);
 
 });
 

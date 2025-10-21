@@ -3,60 +3,76 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Phong extends Model
 {
     protected $table = 'phong';
+    protected $fillable = ['ten_phong', 'khu', 'loai_phong', 'gioi_tinh', 'suc_chua', 'trang_thai', 'ghi_chu', 'hinh_anh'];
 
-    protected $fillable = [
-        'ten_phong',
-        'khu',
-        'loai_phong',
-        'gioi_tinh',   // nullable (added via migration)
-        'suc_chua',
-        'trang_thai',
-        'ghi_chu',      // nullable
-    ];
-
-    /**
-     * Quan hệ: 1 phòng có nhiều sinh viên
-     */
-    public function sinhviens(): HasMany
+    public function sinhVien()
     {
-        return $this->hasMany(\App\Models\SinhVien::class, 'phong_id', 'id');
+        return $this->hasMany(SinhVien::class, 'phong_id');
     }
 
-    /**
-     * Trả về số sinh viên "hiện đang ở" tính theo cột trang_thai_ho_so = 'Đã duyệt'.
-     * Lý do: dựa trên cấu trúc SQL của dự án, cột trạng thái của sinh viên là trang_thai_ho_so.
-     */
-    public function soLuongHienTai(): int
+    public function taiSan()
     {
-        return $this->sinhviens()->where('trang_thai_ho_so', 'Đã duyệt')->count();
+        return $this->hasMany(TaiSan::class, 'phong_id');
     }
 
-    /**
-     * Cập nhật trạng thái phòng theo sức chứa: Trống / Đã ở / Bảo trì.
-     * Nếu phòng đang Bảo trì giữ nguyên.
-     */
-    public function updateStatusBasedOnCapacity(): void
+    // số slot đã dùng (đếm theo slots có sinh_vien_id)
+    public function usedSlots()
     {
-        if ($this->trang_thai === 'Bảo trì') {
-            return;
+        return $this->slots()->whereNotNull('sinh_vien_id')->count();
+    }
+    public function slots()
+    {
+        return $this->hasMany(\App\Models\Slot::class, 'phong_id');
+    }
+
+    // alias cho code cũ nếu có gọi tiếng việt
+    public function soLuongHienTai()
+    {
+        return $this->usedSlots();
+    }
+
+    public function totalSlots()
+    {
+        return $this->slots()->count();
+    }
+
+    public function availableSlots()
+    {
+        $total = $this->totalSlots();
+        return max(0, $total - $this->usedSlots());
+    }
+
+    public function occupancyLabel(): string
+    {
+        $total = $this->totalSlots();
+        $used = $this->usedSlots();
+        $available = max(0, $total - $used);
+        if ($total === 0) {
+            return 'Chưa có slot';
         }
-
-        $so = $this->soLuongHienTai();
-        $sucChua = (int)$this->suc_chua;
-
-        if ($so >= $sucChua && $sucChua > 0) {
-            $this->trang_thai = 'Đã ở';
-        } elseif ($so === 0) {
-            $this->trang_thai = 'Trống';
-        } else {
-            $this->trang_thai = 'Trống';
+        if ($available === 0) {
+            return 'Đã ở full';
         }
+        return 'Trống ' . $available;
+    }
 
+    public static function labelLoaiPhongBySlots(int $totalSlots): string
+    {
+        if ($totalSlots <= 0) return '';
+        if ($totalSlots === 1) return 'Đơn';
+        if ($totalSlots === 2) return 'Đôi';
+        // Từ 3 trở lên đặt theo số giường
+        return 'Phòng ' . $totalSlots;
+    }
+
+    public function updateLoaiPhongFromSlots(): void
+    {
+        $total = $this->totalSlots();
+        $this->loai_phong = self::labelLoaiPhongBySlots($total);
         $this->save();
     }
 }
