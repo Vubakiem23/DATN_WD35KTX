@@ -32,8 +32,8 @@
                 <th width="25%">Sinh viên</th>
                 <td>
                     @if($suco->sinhVien)
-                        <strong>{{ $suco->sinhVien->ten }}</strong><br>
-                        <small>MSSV: {{ $suco->sinhVien->ma_sv ?? '---' }}</small><br>
+                        <strong>{{ $suco->sinhVien->ho_ten  }}</strong><br>
+                        <small>MSSV: {{ $suco->sinhVien->ma_sinh_vien ?? '---' }}</small><br>
                         <small>Email: {{ $suco->sinhVien->email ?? '---' }}</small>
                     @else
                         ---

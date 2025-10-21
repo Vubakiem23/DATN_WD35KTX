@@ -17,14 +17,27 @@ class SinhVienController extends Controller
         $sinhviens = SinhVien::with('phong')
             ->when($keyword, function ($query) use ($keyword) {
                 $query->where('ho_ten', 'like', "%$keyword%")
-                      ->orWhere('ma_sinh_vien', 'like', "%$keyword%")
-                      ->orWhere('lop', 'like', "%$keyword%")
-                      ->orWhere('nganh', 'like', "%$keyword%");
+                    ->orWhere('ma_sinh_vien', 'like', "%$keyword%")
+                    ->orWhere('lop', 'like', "%$keyword%")
+                    ->orWhere('nganh', 'like', "%$keyword%");
             })
             ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->paginate(6);
 
         return view('sinhvien.index', compact('sinhviens', 'keyword'));
+    }
+
+    /* Show modal */
+    public function show($id)
+    {
+        $sinhvien = SinhVien::with('phong')->find($id);
+        if (!$sinhvien) {
+            return redirect()->route('sinhvien.index');
+        }
+
+        $html = view('sinhvien.show_modal', compact('sinhvien'))->render();
+
+        return response()->json(['data' => $html]);
     }
 
     // Form thêm mới

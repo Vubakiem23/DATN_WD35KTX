@@ -48,6 +48,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Quản lý sinh viên
     Route::resource('sinhvien', SinhVienController::class)->except(['show']);
     Route::patch('sinhvien/{id}/approve', [SinhVienController::class, 'approve'])->name('sinhvien.approve');
+    Route::get('/sinhvien/show/{id}', [SinhVienController::class, 'show'])->name('sinhvien.show.modal');
 
 
     // Route hóa đơn
