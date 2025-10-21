@@ -29,7 +29,7 @@
             {{-- Sinh viên --}}
             <div class="form-group mb-3">
                 <label><strong>Sinh viên</strong></label>
-                <input type="text" class="form-control" value="{{ $suco->sinhVien->ten ?? '---' }}" disabled>
+                <input type="text" class="form-control" value="{{ $suco->sinhVien->ho_ten ?? '---' }}" disabled>
             </div>
 
             {{-- Phòng --}}
