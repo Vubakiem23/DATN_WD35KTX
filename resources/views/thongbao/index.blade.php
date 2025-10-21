@@ -22,6 +22,9 @@
                 <th>Nội dung</th>
                 <th>Ngày đăng</th>
                 <th>Đối tượng</th>
+                <th>Phòng</th>
+                <th>Khu</th>
+                <th>Ảnh</th>
                 <th width="160">Hành động</th>
             </tr>
         </thead>
@@ -29,10 +32,38 @@
             @forelse($thongbaos as $tb)
             <tr>
                 <td>{{ $tb->id }}</td>
-                <td>{{ $tb->tieu_de }}</td>
-                <td>{{ Str::limit($tb->noi_dung, 80) }}</td>
+                <td>
+                    @if(strlen($tb->tieu_de) > 20)
+                        {{ Str::limit($tb->tieu_de, 20, '...') }}
+                        <a href="{{ route('thongbao.show', $tb->id) }}">Xem chi tiết</a>
+                    @else
+                        {{ $tb->tieu_de }}
+                    @endif
+                </td>
+                <td>
+                    @if(strlen($tb->noi_dung) > 30)
+                        {{ Str::limit($tb->noi_dung, 30, '...') }}  
+                    @else
+                        {{ $tb->noi_dung }}
+                    @endif
+                </td>
                 <td>{{ \Carbon\Carbon::parse($tb->ngay_dang)->format('d/m/Y') }}</td>
                 <td>{{ $tb->doi_tuong }}</td>
+                <td>{{ $tb->phong->ten_phong ?? 'Chưa có phòng' }}</td>
+                <td>
+                    @if($tb->phong)
+                        {{ $tb->phong->khu }}
+                    @else
+                        <span class="text-danger">Chưa có khu</span>
+                    @endif
+                </td>
+                <td>
+                    @if($tb->anh)
+                        <img src="{{ asset('storage/' . $tb->anh) }}" alt="Ảnh thông báo" width="80">
+                    @else
+                        Không có
+                    @endif
+                </td>
                 <td>
                     <a href="{{ route('thongbao.show', $tb->id) }}" class="btn btn-info btn-sm">Xem</a>
                     <a href="{{ route('thongbao.edit', $tb->id) }}" class="btn btn-warning btn-sm">Sửa</a>
@@ -45,7 +76,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center">Không có thông báo nào.</td>
+                <td colspan="9" class="text-center">Không có thông báo nào.</td>
             </tr>
             @endforelse
         </tbody>
