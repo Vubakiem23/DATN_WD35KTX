@@ -7,6 +7,7 @@ use App\Http\Controllers\SinhVienController;
 use App\Http\Controllers\PhongController;
 use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\TaiSanController;
+use App\Http\Controllers\KhoTaiSanController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\LichBaoTriController;
 use App\Http\Controllers\ThongBaoController;
@@ -89,6 +90,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::delete('/delete/{id}', [TaiSanController::class, 'destroy'])->name('taisan.destroy');
         Route::put('/{id}/baohong', [TaiSanController::class, 'baoHong'])->name('taisan.baohong');
     });
+    Route::resource('kho', \App\Http\Controllers\KhoTaiSanController::class);
+
 });
 
 // Đăng nhập / đăng ký / đăng xuất

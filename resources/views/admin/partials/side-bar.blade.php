@@ -62,6 +62,12 @@
                                     Lịch bảo trì
                                 </a>
                             </li>
+                             <li>
+                                <a href="{{ route('kho.index') }}"
+                                    class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
+                                   Kho đồ
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
