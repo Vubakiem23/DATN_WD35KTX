@@ -3,7 +3,7 @@
         <i class="bi bi-box-seam me-2"></i>{{ $taiSan->khoTaiSan->ten_tai_san ?? 'Không xác định' }}
     </h4>
 
-    <div class="row g-3">
+    <div class="row g-3 table">
         <div class="col-md-6">
             <p><strong>Mã tài sản:</strong> {{ $taiSan->khoTaiSan->ma_tai_san ?? '-' }}</p>
             <p><strong>Phòng:</strong> {{ $taiSan->phong->ten_phong ?? '-' }}</p>

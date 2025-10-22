@@ -24,56 +24,52 @@ class TaiSanController extends Controller
             ->when($request->phong_id, function ($query, $phong_id) {
                 $query->where('phong_id', $phong_id);
             })
-            ->paginate(6); // 👈 Chỉ hiển thị 5 dòng mỗi trang
+            ->paginate(6);
 
         return view('taisan.index', compact('listTaiSan', 'phongs'));
     }
 
-    /** ➕ Hiển thị form thêm tài sản */
+    /** ➕ Form thêm tài sản vào phòng */
     public function create()
     {
         $phongs = Phong::all();
-        $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)->orderBy('ten_tai_san')->get(); // 📦 chỉ lấy còn hàng
+        $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)
+            ->orderBy('ten_tai_san')
+            ->get(); // chỉ lấy tài sản còn trong kho
         return view('taisan.create', compact('phongs', 'khoTaiSans'));
     }
 
-    /** 💾 Lưu tài sản mới + trừ số lượng kho */
+    /** 💾 Lưu tài sản phòng và trừ kho */
     public function store(Request $request)
     {
         $request->validate([
             'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
+            'phong_id' => 'required|exists:phong,id',
             'so_luong' => 'required|integer|min:1',
             'tinh_trang' => 'nullable|string|max:255',
-            'tinh_trang_hien_tai' => 'nullable|string|max:255',
-            'phong_id' => 'nullable|exists:phong,id',
         ]);
 
         $kho = KhoTaiSan::findOrFail($request->kho_tai_san_id);
 
-        // 🔸 Kiểm tra số lượng còn đủ không
         if ($kho->so_luong < $request->so_luong) {
-            return back()->with('error', 'Số lượng trong kho không đủ để cấp cho phòng!');
+            return back()->with('error', 'Số lượng trong kho không đủ!');
         }
 
-        // 🔸 Tạo tài sản phòng
         TaiSan::create([
-            'kho_tai_san_id' => $request->kho_tai_san_id,
+            'kho_tai_san_id' => $kho->id,
             'ten_tai_san' => $kho->ten_tai_san,
+            'phong_id' => $request->phong_id,
             'so_luong' => $request->so_luong,
             'tinh_trang' => $request->tinh_trang,
-            'tinh_trang_hien_tai' => $request->tinh_trang_hien_tai,
-            'phong_id' => $request->phong_id,
-            'hinh_anh' => $kho->hinh_anh,
+            'hinh_anh' => 'taisan/' . $kho->hinh_anh,
         ]);
 
-        // 🔸 Trừ số lượng trong kho
-        $kho->so_luong -= $request->so_luong;
-        $kho->save();
+        $kho->decrement('so_luong', $request->so_luong);
 
-        return redirect()->route('taisan.index')->with('success', 'Thêm tài sản cho phòng thành công và đã trừ kho!');
+        return redirect()->route('taisan.index')->with('success', 'Thêm tài sản thành công và trừ kho!');
     }
 
-    /** ✏️ Form chỉnh sửa */
+    /** ✏️ Form chỉnh sửa tài sản phòng */
     public function edit($id)
     {
         $taiSan = TaiSan::findOrFail($id);
@@ -82,50 +78,47 @@ class TaiSanController extends Controller
         return view('taisan.edit', compact('taiSan', 'phongs', 'khoTaiSans'));
     }
 
-    /** 🔄 Cập nhật tài sản */
+    /** 🔄 Cập nhật tài sản phòng */
+    /** 🔄 Cập nhật tài sản phòng */
     public function update(Request $request, $id)
     {
         $taiSan = TaiSan::findOrFail($id);
 
         $request->validate([
-            'kho_tai_san_id' => 'nullable|exists:kho_tai_san,id',
+            'ten_tai_san' => 'required|string|max:255',
+            'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
+            'phong_id' => 'required|exists:phong,id',
             'so_luong' => 'required|integer|min:1',
             'tinh_trang' => 'nullable|string|max:255',
             'tinh_trang_hien_tai' => 'nullable|string|max:255',
-            'phong_id' => 'nullable|exists:phong,id',
         ]);
 
         $kho = KhoTaiSan::findOrFail($request->kho_tai_san_id);
-
-        // 🔄 Tính chênh lệch số lượng
         $chenhLech = $request->so_luong - $taiSan->so_luong;
 
-        // ✅ Nếu tăng tài sản phòng → trừ kho
+        // Kiểm tra tồn kho khi tăng số lượng
+        if ($chenhLech > 0 && $kho->so_luong < $chenhLech) {
+            return back()->with('error', 'Không đủ số lượng trong kho để tăng tài sản!');
+        }
+
+        // Cập nhật lại kho nếu số lượng thay đổi
         if ($chenhLech > 0) {
-            if ($kho->so_luong < $chenhLech) {
-                return back()->with('error', 'Không đủ số lượng trong kho!');
-            }
-            $kho->so_luong -= $chenhLech;
-        }
-        // ✅ Nếu giảm tài sản phòng → cộng lại vào kho
-        elseif ($chenhLech < 0) {
-            $kho->so_luong += abs($chenhLech);
+            $kho->decrement('so_luong', $chenhLech);
+        } elseif ($chenhLech < 0) {
+            $kho->increment('so_luong', abs($chenhLech));
         }
 
-        $kho->save();
-
-        // 🔧 Cập nhật lại tài sản phòng
+        // Cập nhật thông tin tài sản
         $taiSan->update([
-            'kho_tai_san_id' => $request->kho_tai_san_id,
+            'kho_tai_san_id' => $kho->id,
             'ten_tai_san' => $kho->ten_tai_san,
+            'phong_id' => $request->phong_id,
             'so_luong' => $request->so_luong,
             'tinh_trang' => $request->tinh_trang,
             'tinh_trang_hien_tai' => $request->tinh_trang_hien_tai,
-            'phong_id' => $request->phong_id,
-            'hinh_anh' => $kho->hinh_anh,
         ]);
 
-        return redirect()->route('taisan.index')->with('success', 'Cập nhật tài sản thành công và đồng bộ với kho!');
+        return redirect()->route('taisan.index')->with('success', 'Cập nhật tài sản thành công!');
     }
 
     public function destroy($id)
@@ -134,14 +127,15 @@ class TaiSanController extends Controller
         $kho = KhoTaiSan::find($taiSan->kho_tai_san_id);
 
         if ($kho) {
-            $kho->so_luong += $taiSan->so_luong;
-            $kho->save();
+            $kho->increment('so_luong', $taiSan->so_luong);
         }
 
         $taiSan->delete();
 
-        return redirect()->route('taisan.index')->with('success', 'Đã xóa tài sản khỏi phòng và hoàn kho thành công!');
+        return redirect()->route('taisan.index')->with('success', 'Đã xóa tài sản và hoàn kho thành công!');
     }
+
+    /** 🖼️ Modal xem chi tiết */
     public function showModal($id)
     {
         $taiSan = TaiSan::with(['phong', 'khoTaiSan'])->find($id);

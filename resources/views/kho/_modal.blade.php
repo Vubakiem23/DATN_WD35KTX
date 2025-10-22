@@ -1,3 +1,6 @@
+<div class="table">
+
+</div>
 <div class="modal fade" id="modalKho" tabindex="-1" aria-labelledby="modalKhoLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -17,7 +20,7 @@
                         <h4 class="fw-bold text-primary">{{ $taiSan->ten_tai_san }}</h4>
                     </div>
 
-                    <div class="row g-3">
+                    <div class="row g-3 text-center">
                         <div class="col-md-6">
                             <p><strong>📋 Mã tài sản:</strong> {{ $taiSan->ma_tai_san }}</p>
                             <p><strong>📏 Đơn vị tính:</strong> {{ $taiSan->don_vi_tinh ?? '-' }}</p>
