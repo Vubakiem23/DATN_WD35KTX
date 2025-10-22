@@ -17,7 +17,7 @@ class SuCoController extends Controller
             ->orderByDesc('id')
             ->paginate(10);
 
-        return view('admin.su_co.index', compact('suco'));
+        return view('su_co.index', compact('suco'));
     }
 
     // 🆕 Form thêm mới (Báo sự cố)
@@ -25,7 +25,7 @@ class SuCoController extends Controller
     {
         $sinhviens = SinhVien::all();
         $phongs = Phong::all();
-        return view('admin.su_co.create', compact('sinhviens', 'phongs'));
+        return view('su_co.create', compact('sinhviens', 'phongs'));
     }
 
     // 💾 Lưu sự cố mới
@@ -65,7 +65,7 @@ class SuCoController extends Controller
     public function show($id)
     {
         $suco = SuCo::with(['sinhVien', 'phong'])->findOrFail($id);
-        return view('admin.su_co.show', compact('suco'));
+        return view('su_co.show', compact('suco'));
     }
 
     // ✏️ Form cập nhật sự cố
@@ -74,7 +74,7 @@ class SuCoController extends Controller
         $suco = SuCo::with(['sinhVien', 'phong'])->findOrFail($id);
         $sinhviens = SinhVien::all();
         $phongs = Phong::all();
-        return view('admin.su_co.edit', compact('suco', 'sinhviens', 'phongs'));
+        return view('su_co.edit', compact('suco', 'sinhviens', 'phongs'));
     }
 
     // 🔄 Cập nhật sự cố
