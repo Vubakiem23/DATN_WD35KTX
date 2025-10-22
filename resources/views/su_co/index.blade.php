@@ -1,157 +1,142 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-@php use Illuminate\Support\Str; @endphp
+    @php use Illuminate\Support\Str; @endphp
 
-<div class="x_panel">
-    <div class="x_title d-flex justify-content-between align-items-center">
-        <h2>Danh sách sự cố</h2>
-        <a href="{{ route('suco.create') }}" class="btn btn-primary btn-modern">
-            <i class="fa fa-plus"></i> Thêm sự cố
-        </a>
-    </div>
+    <div class="container mt-4">
+        <h3 class="page-title">🧯 Danh sách sự cố</h3>
 
-    <div class="x_content">
+        {{-- Ô tìm kiếm (giữ giống trang sinh viên) --}}
+        <form method="GET" class="mb-3 search-bar">
+            <div class="input-group">
+                <input type="text" name="search" value="{{ request('search') ?? '' }}" class="form-control"
+                    placeholder="Tìm kiếm (MSSV, họ tên, phòng, mô tả, trạng thái)">
+                <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+                @if (!empty(request('search')))
+                    <a href="{{ route('suco.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                @endif
+            </div>
+        </form>
 
-        @if(session('success'))
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Danh sách các sự cố</h4>
+            <a href="{{ route('suco.create') }}" class="btn btn-primary mb-3 btn-add">+ Thêm sự cố</a>
+        </div>
+
+        {{-- Thông báo --}}
+        @if (session('success'))
             <div class="alert alert-success shadow-sm">{{ session('success') }}</div>
         @endif
 
-        <table class="table table-striped table-bordered text-center align-middle shadow-sm">
-            <thead class="thead-dark">
-                <tr>
-                    <th>#</th>
-                    <th>Ảnh</th>
-                    <th>Sinh viên</th>
-                    <th>Phòng</th>
-                    <th>Mô tả</th>
-                    <th>Ngày gửi</th>
-                    <th>Trạng thái</th>
-                    <th width="150px">Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($suco as $item)
-                <tr>
-                    <td>{{ $item->id }}</td>
+        {{-- Lưới thẻ giống trang Sinh viên --}}
+        <div class="tab-content">
+            <div class="row g-3">
+                @forelse($suco as $sc)
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm">
+                            {{-- Header: tiêu đề + id --}}
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <strong>
+                                    {{ $sc->sinhVien->ho_ten ?? 'Không rõ sinh viên' }}
+                                </strong>
+                                <span class="font-weight-bold">#{{ $sc->id }}</span>
+                            </div>
 
-                    {{-- ✅ Hiển thị ảnh --}}
-                    <td>
-                        @if(!empty($item->anh))
-                            <img src="{{ asset($item->anh) }}" 
-                                 alt="Ảnh sự cố" 
-                                 width="60" height="60" 
-                                 class="rounded shadow-sm"
-                                 style="object-fit: cover;">
-                        @else
-                            <img src="{{ asset('images/no-image.png') }}" 
-                                 alt="Không có ảnh" 
-                                 width="60" height="60" 
-                                 class="rounded shadow-sm opacity-50"
-                                 style="object-fit: cover;">
-                        @endif
-                    </td>
+                            {{-- Ảnh sự cố / placeholder --}}
+                            @if (!empty($sc->anh))
+                                <img src="{{ asset($sc->anh) }}" class="card-img-top" style="height:160px;object-fit:cover"
+                                    alt="Ảnh sự cố #{{ $sc->id }}">
+                            @else
+                                <div class="card-img-top d-flex align-items-center justify-content-center"
+                                    style="height:160px;background:#f8f9fa">
+                                    <svg width="80" height="60" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-label="no image">
+                                        <rect width="24" height="24" rx="2" fill="#e9ecef" />
+                                        <path d="M3 15L8 9L13 15L21 6" stroke="#adb5bd" stroke-width="1.2"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                            @endif
 
-                    {{-- ✅ Thông tin sinh viên --}}
-                    <td>
-                        @if($item->sinhVien)
-                            <strong>{{ $item->sinhVien->ho_ten }}</strong><br>
-                            <small class="text-muted">MSSV: {{ $item->sinhVien->ma_sinh_vien ?? '---' }}</small>
-                        @else
-                            ---
-                        @endif
-                    </td>
+                            {{-- Nội dung thẻ --}}
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Sinh viên:</strong>
+                                    {{ $sc->sinhVien->ho_ten ?? '---' }}
+                                    @if (!empty($sc->sinhVien?->ma_sinh_vien))
+                                        <small class="text-muted">({{ $sc->sinhVien->ma_sinh_vien }})</small>
+                                    @endif
+                                </p>
+                                <p class="mb-1"><strong>Phòng:</strong> {{ $sc->phong->ten_phong ?? '---' }}</p>
+                                <p class="mb-1"><strong>Ngày gửi:</strong>
+                                    {{ !empty($sc->ngay_gui) ? \Carbon\Carbon::parse($sc->ngay_gui)->format('d/m/Y') : '-' }}
+                                </p>
 
-                    <td>{{ $item->phong->ten_phong ?? '---' }}</td>
-                    <td>{{ Str::limit($item->mo_ta, 60) }}</td>
-                    <td>{{ \Carbon\Carbon::parse($item->ngay_gui)->format('d/m/Y') }}</td>
-                    <td>
-                        <span class="badge 
-                            @if($item->trang_thai == 'Tiếp nhận') bg-secondary
-                            @elseif($item->trang_thai == 'Đang xử lý') bg-info
-                            @elseif($item->trang_thai == 'Hoàn thành') bg-success
-                            @else bg-warning
-                            @endif">
-                            {{ $item->trang_thai }}
-                        </span>
-                    </td>
+                                @php
+                                    $status = $sc->trang_thai ?? 'Khác';
+                                    $badge = match ($status) {
+                                        'Tiếp nhận' => 'bg-secondary',
+                                        'Đang xử lý' => 'bg-warning',
+                                        'Đã xử lý' => 'bg-warning',
+                                        'Hoàn thành' => 'bg-success',
+                                        default => 'bg-info',
+                                    };
+                                @endphp
+                                <p class="mb-1"><strong>Trạng thái:</strong>
+                                    <span class="badge {{ $badge }}">{{ $status }}</span>
+                                </p>
 
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="{{ route('suco.show', $item->id) }}" 
-                               class="btn btn-modern btn-info" 
-                               title="Xem chi tiết">
-                                <i class="fa fa-eye"></i>
-                            </a>
-                            <a href="{{ route('suco.edit', $item->id) }}" 
-                               class="btn btn-modern btn-warning" 
-                               title="Cập nhật">
-                                <i class="fa fa-edit"></i>
-                            </a>
-                            <form action="{{ route('suco.destroy', $item->id) }}" 
-                                  method="POST" 
-                                  style="display:inline-block;">
-                                @csrf @method('DELETE')
-                                <button type="submit" 
-                                        class="btn btn-modern btn-danger" 
-                                        onclick="return confirm('Xóa sự cố này?')">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </form>
+                                <p class="mb-0"><strong>Mô tả:</strong> {{ Str::limit($sc->mo_ta, 120) }}</p>
+                            </div>
+
+                            {{-- Footer: các nút hành động giống bố cục trang Sinh viên --}}
+                            <div class="card-footer d-flex gap-2">
+                                <a href="{{ route('suco.show', $sc->id) }}" class="btn btn-sm flex-fill btn-secondary">Chi
+                                    tiết</a>
+
+                                <a href="{{ route('suco.edit', $sc->id) }}"
+                                    class="btn btn-sm btn-warning flex-fill">Sửa</a>
+
+                                <form action="{{ route('suco.destroy', $sc->id) }}" method="POST"
+                                    style="display:inline-block" class="mb-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger flex-fill"
+                                        onclick="return confirm('Xác nhận xóa sự cố này?')">
+                                        Xóa
+                                    </button>
+                                </form>
+
+                                {{-- nếu cần thêm nút đổi trạng thái có thể đặt ở đây --}}
+                                {{-- <form ...>Duyệt/Xử lý</form> --}}
+                            </div>
                         </div>
-                    </td>
-                </tr>
+                    </div>
                 @empty
-                <tr>
-                    <td colspan="8" class="text-center text-muted py-4">
-                        <i class="fa fa-exclamation-circle"></i> Chưa có sự cố nào được ghi nhận.
-                    </td>
-                </tr>
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center text-muted py-4">
+                                <i class="fa fa-exclamation-circle"></i> Chưa có sự cố nào được ghi nhận.
+                            </div>
+                        </div>
+                    </div>
                 @endforelse
-            </tbody>
-        </table>
+            </div>
+        </div>
 
-        <div class="text-center mt-3">
-            {{ $suco->links('pagination::bootstrap-4') }}
+        {{-- Phân trang --}}
+        <div class="d-flex justify-content-center mt-3">
+            {{ $suco->onEachSide(1)->links() }}
         </div>
     </div>
-</div>
 
-{{-- ✅ CSS hiện đại, vuông đẹp --}}
-<style>
-.table td, .table th {
-    vertical-align: middle !important;
-}
-.badge {
-    padding: 6px 10px;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 12px;
-}
-.bg-secondary { background-color: #6c757d; }
-.bg-info { background-color: #17a2b8; }
-.bg-success { background-color: #28a745; }
-.bg-warning { background-color: #ffc107; color: #000; }
-
-/* 🔹 Nút vuông đẹp, bo nhẹ, đổ bóng */
-.btn-modern {
-    border-radius: 6px !important;
-    padding: 6px 10px !important;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.btn-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-.btn-modern i {
-    margin-right: 2px;
-}
-
-/* Nhóm nút gọn gàng */
-.btn-group .btn {
-    margin-right: 4px;
-}
-</style>
+    @push('styles')
+        <style>
+            /* Đồng bộ nhẹ để giống trang Sinh viên */
+            .badge {
+                border-radius: 10rem;
+                padding: .35rem .6rem;
+                font-weight: 600
+            }
+        </style>
+    @endpush
 @endsection
