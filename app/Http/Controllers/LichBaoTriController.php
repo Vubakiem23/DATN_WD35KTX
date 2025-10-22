@@ -52,12 +52,23 @@ public function index(Request $request)
 }
 
     /** ➕ Form tạo mới */
-    public function create()
-    {
-        $phongs = Phong::all();
-        $taiSan = TaiSan::with('phong')->get();
-        return view('lichbaotri.create', compact('phongs', 'taiSan'));
+  public function create(Request $request)
+{
+    $phongs = Phong::all();
+    $taiSan = TaiSan::with('phong')->get();
+
+    // 🆕 Lấy id tài sản nếu có trong URL
+    $selectedTaiSanId = $request->taisan_id;
+
+    // 🆕 Lấy chi tiết tài sản được chọn (nếu có)
+    $selectedTaiSan = null;
+    if ($selectedTaiSanId) {
+        $selectedTaiSan = TaiSan::with('phong')->find($selectedTaiSanId);
     }
+
+    return view('lichbaotri.create', compact('phongs', 'taiSan', 'selectedTaiSanId', 'selectedTaiSan'));
+}
+
 
     /** 💾 Lưu lịch bảo trì mới */
     public function store(Request $request)
