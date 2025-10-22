@@ -7,7 +7,7 @@
     </div>
 
     {{-- Thông tin chi tiết --}}
-    <div class="row g-3">
+    <div class="row g-3 text-center ">
         <div class="col-md-6">
             <p><strong>🗓️ Ngày bảo trì:</strong> {{ $lich->ngay_bao_tri }}</p>
             <p><strong>✅ Ngày hoàn thành:</strong> {{ $lich->ngay_hoan_thanh ?? '-' }}</p>

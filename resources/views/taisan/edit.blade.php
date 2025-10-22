@@ -3,6 +3,7 @@
 @section('title', 'Chỉnh sửa tài sản')
 
 @section('content')
+
 <div class="container-fluid">
 
     <h3 class="mb-3">Chỉnh sửa tài sản / thiết bị phòng</h3>
@@ -21,39 +22,27 @@
     <form action="{{ route('taisan.update', $taiSan->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
-<input type="hidden" name="kho_tai_san_id" value="{{ $taiSan->kho_tai_san_id }}">
+        <input type="hidden" name="kho_tai_san_id" value="{{ $taiSan->kho_tai_san_id }}">
 
         <div class="mb-3">
             <label for="ten_tai_san" class="form-label">Tên tài sản</label>
-            <input type="text" name="ten_tai_san" class="form-control" 
-                   value="{{ old('ten_tai_san', $taiSan->ten_tai_san) }}" required>
+            <input type="text" name="ten_tai_san" readonly class="form-control"
+                value="{{ old('ten_tai_san', $taiSan->ten_tai_san) }}" required>
         </div>
 
-        <div class="mb-3">
-            <label for="hinh_anh" class="form-label">Hình ảnh</label>
-            <input type="file" name="hinh_anh" class="form-control" accept="image/*" onchange="previewImage(event)">
-            <div class="mt-2">
-                @if($taiSan->hinh_anh)
-                    <img id="preview" src="{{ asset('storage/' . $taiSan->hinh_anh) }}" 
-                         alt="Ảnh tài sản" width="100" class="mt-2 rounded">
-                @else
-                    <img id="preview" src="#" alt="Ảnh xem trước" 
-                         class="mt-2 rounded d-none" width="100">
-                @endif
-            </div>
-        </div>
+       
 
         <div class="mb-3">
             <label for="so_luong" class="form-label">Số lượng</label>
-            <input type="number" name="so_luong" class="form-control" 
-                   required min="1" value="{{ old('so_luong', $taiSan->so_luong) }}">
+            <input type="number" name="so_luong" class="form-control"
+                required min="1" value="{{ old('so_luong', $taiSan->so_luong) }}">
         </div>
 
         <div class="mb-3">
             <label for="tinh_trang" class="form-label">Tình trạng ban đầu</label>
-            <input type="text" name="tinh_trang" class="form-control" 
-                   value="{{ old('tinh_trang', $taiSan->tinh_trang) }}" 
-                   placeholder="Ví dụ: Mới, Hư hỏng...">
+            <input type="text" name="tinh_trang" class="form-control"
+                value="{{ old('tinh_trang', $taiSan->tinh_trang) }}"
+                placeholder="Ví dụ: Mới, Hư hỏng...">
         </div>
 
         <div class="mb-3">
@@ -72,10 +61,10 @@
             <select name="phong_id" class="form-select">
                 <option value="">-- Chọn phòng --</option>
                 @foreach($phongs as $phong)
-                    <option value="{{ $phong->id }}" 
-                        {{ old('phong_id', $taiSan->phong_id) == $phong->id ? 'selected' : '' }}>
-                        {{ $phong->ten_phong }}
-                    </option>
+                <option value="{{ $phong->id }}"
+                    {{ old('phong_id', $taiSan->phong_id) == $phong->id ? 'selected' : '' }}>
+                    {{ $phong->ten_phong }}
+                </option>
                 @endforeach
             </select>
         </div>
