@@ -61,6 +61,7 @@
         .toast-success{background:#10b981; color:#fff}
         .toast-error{background:#ef4444; color:#fff}
     </style>
+    @stack('styles')
     
 </head>
 
