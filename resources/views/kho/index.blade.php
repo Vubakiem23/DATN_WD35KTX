@@ -1,99 +1,136 @@
 @extends('admin.layouts.admin')
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 @section('title', 'Kho tài sản')
 
 @section('content')
-<style>
-    .pagination-info,
-    .small.text-muted {
-        display: none !important;
-    }
-</style>
+<div class="container mt-4">
 
-<div class="container-fluid">
+    <h3 class="page-title">🏢 Danh sách tài sản trong kho</h3>
 
-    {{-- 🔎 Thanh công cụ tìm kiếm và thêm --}}
-    <form method="GET" action="{{ route('kho.index') }}" class="row g-2 mb-3">
-        <div class="col-md-4">
-            <input type="text" name="search" value="{{ request('search') }}" class="form-control"
-                placeholder="Tìm theo mã hoặc tên tài sản...">
-        </div>
-        <div class="col-md-2 text-end d-flex align-items-center justify-content-end">
-            <div>
-                <button type="submit" class="btn btn-secondary me-2">Tìm kiếm</button>
-                <a href="{{ route('kho.create') }}" class="btn btn-primary">+ Thêm</a>
-            </div>
+    {{-- 🔍 Thanh tìm kiếm --}}
+    <form method="GET" action="{{ route('kho.index') }}" class="mb-3 search-bar">
+        <div class="input-group">
+            <input type="text" name="search" value="{{ request('search') }}"
+                class="form-control" placeholder="Tìm theo mã hoặc tên tài sản...">
+            <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+            @if(request('search'))
+            <a href="{{ route('kho.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+            @endif
         </div>
     </form>
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Danh sách tài sản trong kho</h4>
+        <a href="{{ route('kho.create') }}" class="btn btn-primary">+ Thêm tài sản</a>
+    </div>
+
     {{-- 🔔 Thông báo --}}
     @if(session('success'))
-
     <div class="alert alert-success">{{ session('success') }}</div>
     @endif
     @if(session('error'))
     <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    {{-- 🧾 Bảng danh sách --}}
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Mã tài sản</th>
-                    <th>Tên tài sản</th>
-                    <th>Ảnh</th>
-                    <th>Đơn vị tính</th>
-                    <th>Số lượng</th>
-                    <th>Ghi chú</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($kho as $index => $item)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->ma_tai_san }}</td>
-                    <td>{{ $item->ten_tai_san }}</td>
-                    <td>
-                        @if($item->hinh_anh)
-                        <img src="{{ asset('uploads/kho/'.$item->hinh_anh) }}" alt="Ảnh" width="80" class="rounded">
-                        @else
-                        <span class="badge bg-secondary">Không có</span>
-                        @endif
-                    </td>
-                    <td>{{ $item->don_vi_tinh ?? '-' }}</td>
-                    <td >
+    {{-- 🧱 Danh sách thẻ --}}
+    <div class="row g-3">
+        @forelse($kho as $item)
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+
+                {{-- Header --}}
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>{{ $item->ten_tai_san }}</strong>
+                    <span class="text-muted small">{{ $item->ma_tai_san }}</span>
+                </div>
+
+                {{-- Ảnh --}}
+                @if($item->hinh_anh)
+                <img src="{{ asset('uploads/kho/'.$item->hinh_anh) }}"
+                    alt="{{ $item->ten_tai_san }}"
+                    class="card-img-top"
+                    style="height:180px;object-fit:cover">
+                @else
+                <div class="card-img-top d-flex align-items-center justify-content-center"
+                    style="height:180px;background:#f8f9fa">
+                    <svg width="80" height="60" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <rect width="24" height="24" rx="2" fill="#e9ecef" />
+                        <path d="M3 15L8 9L13 15L21 6" stroke="#adb5bd" stroke-width="1.2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                @endif
+
+                {{-- Nội dung --}}
+                <div class="card-body">
+                    <p class="mb-1"><strong>Đơn vị tính:</strong> {{ $item->don_vi_tinh ?? '-' }}</p>
+                    <p class="mb-1">
+                        <strong>Số lượng:</strong>
                         @if($item->so_luong == 0)
                         <span class="badge bg-danger">Không còn</span>
                         @else
-                        <span class="badge bg-info">{{ $item->so_luong }}</span>
+                        <span class="badge bg-success">{{ $item->so_luong }}</span>
                         @endif
-                    </td>
+                    </p>
+                    <p class="mb-1"><strong>Ghi chú:</strong> {{ $item->ghi_chu ?? '-' }}</p>
+                </div>
 
-                    <td>{{ $item->ghi_chu ?? '-' }}</td>
-                    <td>
-                        <a href="{{ route('kho.edit', $item->id) }}" class="btn btn-sm btn-warning">Sửa</a>
-                        <form action="{{ route('kho.destroy', $item->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button onclick="return confirm('Xóa tài sản này khỏi kho?')" class="btn btn-sm btn-danger">Xóa</button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="8" class="text-center text-muted">Chưa có tài sản nào trong kho</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+                {{-- Footer hành động --}}
+                <div class="card-footer d-flex gap-2">
+                    <a href="{{ route('kho.edit', $item->id) }}"
+                        class="btn btn-sm btn-warning flex-fill">Sửa</a>
+                    <button class="btn btn-sm btn-info flex-fill btn-xem-chi-tiet" data-id="{{ $item->id }}">
+                        Xem chi tiết
+                    </button>
 
-        <div class="d-flex justify-content-center mt-3">
-            {{ $kho->appends(request()->query())->links('pagination::bootstrap-5') }}
+                    <form action="{{ route('kho.destroy', $item->id) }}"
+                        method="POST" class="mb-0 flex-fill"
+                        style="display:inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger w-100"
+                            onclick="return confirm('Xóa tài sản này khỏi kho?')">
+                            Xóa
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
+        @empty
+        <div class="col-12 text-center text-muted py-4">
+            Chưa có tài sản nào trong kho
+        </div>
+        @endforelse
     </div>
 
+    {{-- 📄 Phân trang --}}
+    <div class="d-flex justify-content-center mt-3">
+        {{ $kho->appends(request()->query())->links('pagination::bootstrap-5') }}
+    </div>
 </div>
+<div id="modalContainer"></div>
+
+<script>
+    $(document).ready(function() {
+        $('.btn-xem-chi-tiet').click(function() {
+            var id = $(this).data('id');
+
+            $.ajax({
+                url: '{{ url("admin/kho/show") }}/' + id, // thêm 'admin' vào đúng prefix
+                type: 'GET',
+                success: function(res) {
+                    $('#modalContainer').html(res.data);
+                    $('#modalKho').modal('show');
+                },
+                error: function(xhr) {
+                    console.log(xhr.responseText); // xem lỗi chi tiết trong console
+                    alert('Không thể tải dữ liệu.');
+                }
+            });
+
+        });
+    });
+</script>
 @endsection

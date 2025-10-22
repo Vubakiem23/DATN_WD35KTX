@@ -13,6 +13,7 @@ use App\Http\Controllers\LichBaoTriController;
 use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\SuCoController;
 use App\Http\Controllers\SlotController;
+use App\Models\KhoTaiSan;
 use Illuminate\Support\Facades\Route;
 
 
@@ -77,6 +78,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::resource('lichbaotri', LichBaoTriController::class);
     Route::patch('/lichbaotri/{id}/hoanthanh', [LichBaoTriController::class, 'hoanThanh'])
         ->name('lichbaotri.hoanthanh');
+    Route::get('/lichbaotri/show/{id}', [LichBaoTriController::class, 'showModal'])
+        ->name('lichbaotri.show.modal');
 
     // Thông báo
     Route::resource('thongbao', ThongBaoController::class);
@@ -90,8 +93,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::put('/update/{id}', [TaiSanController::class, 'update'])->name('taisan.update');
         Route::delete('/delete/{id}', [TaiSanController::class, 'destroy'])->name('taisan.destroy');
         Route::put('/{id}/baohong', [TaiSanController::class, 'baoHong'])->name('taisan.baohong');
+        Route::get('/chitiet/{id}', [TaiSanController::class, 'showModal'])->name('taisan.showModal');
+
     });
     Route::resource('kho', \App\Http\Controllers\KhoTaiSanController::class);
+    Route::get('/kho/show/{id}', [KhoTaiSanController::class, 'showModal'])->name('kho.show.modal');
 
 });
 
