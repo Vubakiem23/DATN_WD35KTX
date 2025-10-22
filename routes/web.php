@@ -53,21 +53,15 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
 
     // Route hóa đơn
+    
+
+    Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
     Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
-    Route::get('/hoadon/create', [HoaDonController::class, 'create'])->name('hoadon.create');
-    Route::post('/hoadon', [HoaDonController::class, 'store'])->name('hoadon.store');
-    Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
-    Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
+    Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
     Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
-    Route::post('/hoadon/{id}/duplicate', [HoaDonController::class, 'duplicate'])->name('hoadon.duplicate');
-    Route::post('/hoadon/{id}/send', [HoaDonController::class, 'send'])->name('hoadon.send');
-    Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.pdf');
-    Route::post('/hoadon/{id}/pay', [HoaDonController::class, 'pay'])->name('hoadon.pay');
-    Route::get('/lich-su-thanh-toan', [HoaDonController::class, 'history'])->name('hoadon.history');
-    Route::get('/hoadon/{id}/send-mail', [HoaDonController::class, 'sendMail'])->name('hoadon.sendMail');
+    Route::get('/hoadon/{id}/export-pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
+    Route::get('/hoadon/export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
 
-
-    Route::get('/hoadon/send', [HoaDonController::class, 'send']);
 
 
 
