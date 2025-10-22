@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
         'admin' => Admin::class,
         'manager' => Manager::class,
         'student' => Student::class,
+        'phong.error' => \App\Http\Middleware\PhongErrorHandler::class,
     ];
 }

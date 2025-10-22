@@ -30,4 +30,11 @@ class TaiSan extends Model
     {
         return $this->belongsTo(Phong::class, 'phong_id');
     }
+
+    public function slots()
+    {
+        return $this->belongsToMany(Slot::class, 'slot_tai_san', 'tai_san_id', 'slot_id')
+            ->withPivot('so_luong')
+            ->withTimestamps();
+    }
 }
