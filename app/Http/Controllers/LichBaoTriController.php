@@ -46,7 +46,7 @@ public function index(Request $request)
             END ASC
         ")
         ->orderBy('ngay_bao_tri', 'asc')
-        ->paginate(5);
+        ->paginate(6);
 
     return view('lichbaotri.index', compact('lich'));
 }
@@ -199,4 +199,17 @@ public function index(Request $request)
 
         return redirect()->route('lichbaotri.index')->with('success', 'Đã cập nhật trạng thái hoàn thành!');
     }
+    public function showModal($id)
+{
+    $lich = LichBaoTri::with('taiSan')->find($id);
+
+    if (!$lich) {
+        return response()->json(['data' => '<p class="text-danger">Không tìm thấy lịch bảo trì.</p>']);
+    }
+
+    $html = view('lichbaotri._modal', compact('lich'))->render();
+
+    return response()->json(['data' => $html]);
+}
+
 }
