@@ -443,6 +443,16 @@ class SlotController extends Controller
 
             Log::info('Xóa slot thành công', ['ma_slot' => $maSlot]);
 
+            // Sau khi xóa slot, cập nhật lại loại phòng dựa trên tổng slot hiện có
+            try {
+                $phong = \App\Models\Phong::find($slot->phong_id);
+                if ($phong && method_exists($phong, 'updateLoaiPhongFromSlots')) {
+                    $phong->updateLoaiPhongFromSlots();
+                }
+            } catch (\Throwable $e) {
+                // ignore non-critical
+            }
+
             return response()->json([
                 'message' => 'Xóa slot thành công'
             ]);

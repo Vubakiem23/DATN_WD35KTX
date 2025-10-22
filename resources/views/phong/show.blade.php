@@ -41,7 +41,7 @@
     <div class="card-body">
       <div class="d-flex flex-wrap gap-2 mb-2">
         <span class="badge bg-primary">Khu: {{ $phong->khu ?: '-' }}</span>
-        <span class="badge bg-info text-dark">Loại: {{ $phong->loai_phong ?: \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</span>
+        <span class="badge bg-info text-dark">Loại: {{ \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</span>
         <span class="badge bg-secondary">Sức chứa: {{ $phong->totalSlots() }}</span>
         <span class="badge {{ $phong->availableSlots()==0 ? 'bg-warning text-dark' : 'bg-success' }}">{{ $phong->usedSlots() }} / {{ $phong->totalSlots() }} ({{ $phong->occupancyLabel() }})</span>
         @if(!is_null($phong->gia_phong))

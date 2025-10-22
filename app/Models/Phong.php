@@ -151,6 +151,60 @@ class Phong extends Model
     }
 
     /**
+     * Thu gọn các slot đang trống để khớp với sức chứa mới.
+     * Chỉ xóa slot TRỐNG, ưu tiên xóa slot có id lớn (cuối cùng).
+     * Trả về số slot đã xóa.
+     */
+    public function pruneEmptySlotsToCapacity(?int $targetCapacity = null): int
+    {
+        $removed = 0;
+        try {
+            $capacity = $targetCapacity !== null ? (int) $targetCapacity : (int) $this->suc_chua;
+            if ($capacity < 0) { $capacity = 0; }
+
+            $totalSlots = $this->totalSlots();
+            if ($totalSlots <= $capacity) {
+                return 0; // không cần xóa
+            }
+
+            $needRemove = $totalSlots - $capacity;
+
+            // Xác định các slot trống (không có sinh viên)
+            $emptySlotsQuery = $this->slots()
+                ->whereNull('sinh_vien_id')
+                ->orderBy('id', 'desc');
+
+            $emptyCount = (clone $emptySlotsQuery)->count();
+            if ($emptyCount <= 0) {
+                return 0; // không có slot trống để xóa
+            }
+
+            $removeCount = min($needRemove, $emptyCount);
+            $ids = $emptySlotsQuery->limit($removeCount)->pluck('id');
+
+            if ($ids->isNotEmpty()) {
+                \App\Models\Slot::whereIn('id', $ids)->delete();
+                $removed = $ids->count();
+            }
+
+            // Cập nhật loại phòng theo số slot còn lại
+            $this->updateLoaiPhongFromSlots();
+
+            Log::info('Thu gọn slot trống về sức chứa', [
+                'phong_id' => $this->id,
+                'target_capacity' => $capacity,
+                'removed' => $removed
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Lỗi khi thu gọn slot: ' . $e->getMessage(), [
+                'phong_id' => $this->id
+            ]);
+        }
+
+        return $removed;
+    }
+
+    /**
      * Tự động cập nhật trạng thái phòng dựa trên tình trạng slot
      */
     public function updateStatusBasedOnCapacity(): void

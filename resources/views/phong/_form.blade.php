@@ -113,15 +113,16 @@
 
   <div class="col-md-4 mb-3">
     <label class="form-label">Loại phòng</label>
-    <select name="loai_phong" class="form-control @error('loai_phong') is-invalid @enderror">
+    <select name="loai_phong_display" class="form-control @error('loai_phong') is-invalid @enderror" disabled>
       <option value="">--Chọn--</option>
-      <option value="Phòng 1" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Phòng 1' ? 'selected' : '' }}>Phòng 1</option>
-      <option value="Phòng 2" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Phòng 2' ? 'selected' : '' }}>Phòng 2</option>
-      <option value="Phòng 3" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Phòng 3' ? 'selected' : '' }}>Phòng 3</option>
-      <option value="Phòng 4" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Phòng 4' ? 'selected' : '' }}>Phòng 4</option>
-      <option value="Phòng 6" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Phòng 6' ? 'selected' : '' }}>Phòng 6</option>
-      <option value="Phòng 8" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Phòng 8' ? 'selected' : '' }}>Phòng 8</option>
+      <option value="Đơn" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Đơn' ? 'selected' : '' }}>Đơn</option>
+      <option value="Đôi" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Đôi' ? 'selected' : '' }}>Đôi</option>
+      {{-- Từ 3 trở lên đặt theo số giường: Phòng N --}}
+      @for($i=3;$i<=12;$i++)
+        <option value="Phòng {{ $i }}" {{ old('loai_phong', $phong->loai_phong ?? '') == ('Phòng '.$i) ? 'selected' : '' }}>Phòng {{ $i }}</option>
+      @endfor
     </select>
+    <input type="hidden" name="loai_phong" value="{{ old('loai_phong', $phong->loai_phong ?? '') }}">
     @error('loai_phong')
       <div class="invalid-feedback">{{ $message }}</div>
     @enderror
@@ -207,4 +208,43 @@
 
   </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const capacityInput = document.querySelector('input[name="suc_chua"]');
+  const typeSelect = document.querySelector('select[name="loai_phong_display"]');
+  const typeHidden = document.querySelector('input[name="loai_phong"]');
+  if(!capacityInput || !typeSelect) return;
+
+  const computeLabel = (n) => {
+    const cap = parseInt(n, 10);
+    if (isNaN(cap) || cap <= 0) return '';
+    if (cap === 1) return 'Đơn';
+    if (cap === 2) return 'Đôi';
+    return 'Phòng ' + cap;
+  };
+
+  const applyTypeFromCapacity = () => {
+    const label = computeLabel(capacityInput.value);
+    if (!label) return;
+    // If option not exists (e.g. capacity > 12), add it temporarily
+    let opt = Array.from(typeSelect.options).find(o => o.value === label);
+    if (!opt) {
+      opt = new Option(label, label);
+      typeSelect.add(opt);
+    }
+    typeSelect.value = label;
+    if (typeHidden) typeHidden.value = label;
+  };
+
+  // Initial apply on load
+  applyTypeFromCapacity();
+
+  // Update on change/input
+  capacityInput.addEventListener('input', applyTypeFromCapacity);
+  capacityInput.addEventListener('change', applyTypeFromCapacity);
+});
+</script>
+@endpush
 

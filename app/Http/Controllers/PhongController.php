@@ -281,6 +281,11 @@ class PhongController extends Controller
             // Cập nhật thông tin phòng
             $phong->update($data);
 
+            // Nếu có điều chỉnh sức chứa, thu gọn bớt slot TRỐNG cho khớp
+            if (array_key_exists('suc_chua', $data) && method_exists($phong, 'pruneEmptySlotsToCapacity')) {
+                $phong->pruneEmptySlotsToCapacity((int)$data['suc_chua']);
+            }
+
             // Cập nhật trạng thái dựa trên sức chứa (nếu có method)
             if (method_exists($phong, 'updateStatusBasedOnCapacity')) {
                 $phong->updateStatusBasedOnCapacity();
