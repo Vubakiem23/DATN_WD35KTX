@@ -64,4 +64,15 @@ public function exportExcelPhong($id)
 }
 
 
+public function thanhtoan(Request $request, $id)
+{
+    $hoaDon = Hoadon::findOrFail($id);
+    $hoaDon->trang_thai = 'Đã thanh toán';
+    $hoaDon->hinh_thuc_thanh_toan = $request->input('payment_method');
+    $hoaDon->save();
+
+    return redirect()->back()->with('success', 'Thanh toán thành công!');
+}
+
+
 }

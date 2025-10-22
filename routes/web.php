@@ -6,6 +6,7 @@ use App\Http\Controllers\QuanLyController;
 use App\Http\Controllers\SinhVienController;
 use App\Http\Controllers\PhongController;
 use App\Http\Controllers\HoaDonController;
+use App\Http\Controllers\ThanhtoanController;
 use App\Http\Controllers\TaiSanController;
 use App\Http\Controllers\KhoTaiSanController;
 use App\Http\Controllers\AssignmentController;
@@ -61,6 +62,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
     Route::get('/hoadon/{id}/export-pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
     Route::get('/hoadon/export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
+    // hiển thị form thanh toán
+   Route::post('/hoadon/{id}/thanh-toan', [HoadonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
 
 
