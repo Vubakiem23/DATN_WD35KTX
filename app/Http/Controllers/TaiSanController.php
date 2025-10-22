@@ -88,7 +88,7 @@ public function index(Request $request)
     $taiSan = TaiSan::findOrFail($id);
 
     $request->validate([
-        'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
+'kho_tai_san_id' => 'nullable|exists:kho_tai_san,id',
         'so_luong' => 'required|integer|min:1',
         'tinh_trang' => 'nullable|string|max:255',
         'tinh_trang_hien_tai' => 'nullable|string|max:255',
