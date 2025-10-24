@@ -7,18 +7,18 @@
         <!-- Ô tìm kiếm -->
         <form method="GET" class="mb-3 search-bar">
             <div class="input-group">
-                <input type="text"
-                       name="search"
-                       value="{{ $keyword ?? '' }}"
-                       class="form-control"
-                       placeholder="Tìm kiếm sinh viên (mã SV, họ tên, lớp, ngành)">
+                <input type="text" name="search" value="{{ $keyword ?? '' }}" class="form-control"
+                    placeholder="Tìm kiếm tên sinh viên">
                 <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
-                @if(!empty($keyword))
-                    <a href="{{ route('sinhvien.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#filterModal">
+                    <i class="fa fa-filter mr-1"></i> Bộ lọc
+                </button>
+                @if (!empty($keyword))
+                    <a href="{{ route('sinhvien.index') }}" class="btn btn-outline-secondary">Xóa</a>
                 @endif
             </div>
-        </form>
 
+        </form>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>Danh sách các sinh viên</h4>
             <!-- Nút thêm sinh viên -->
@@ -26,25 +26,25 @@
         </div>
         <div class="tab-content">
             <div class="row g-3">
-                @foreach($sinhviens as $sv)
+                @foreach ($sinhviens as $sv)
                     <div class="col-12 col-md-6 col-lg-4">
                         <div class="card h-100 shadow-sm">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <strong>{{ $sv->ho_ten }}</strong>
                                 <span class="font-weight-bold">{{ $sv->ma_sinh_vien }}</span>
                             </div>
-                            @if(!empty($sv->anh_sinh_vien))
-                                <img src="{{ asset('storage/'.$sv->anh_sinh_vien) }}" class="card-img-top"
-                                     style="height:160px;object-fit:cover" alt="{{ $sv->ho_ten }}">
+                            @if (!empty($sv->anh_sinh_vien))
+                                <img src="{{ asset('storage/' . $sv->anh_sinh_vien) }}" class="card-img-top"
+                                    style="height:160px;object-fit:cover" alt="{{ $sv->ho_ten }}">
                             @else
                                 <div class="card-img-top d-flex align-items-center justify-content-center"
-                                     style="height:160px;background:#f8f9fa">
+                                    style="height:160px;background:#f8f9fa">
                                     {{-- inline SVG placeholder so image always shows even if no file --}}
                                     <svg width="80" height="60" viewBox="0 0 24 24" fill="none"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="24" height="24" rx="2" fill="#e9ecef"/>
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="24" height="24" rx="2" fill="#e9ecef" />
                                         <path d="M3 15L8 9L13 15L21 6" stroke="#adb5bd" stroke-width="1.2"
-                                              stroke-linecap="round" stroke-linejoin="round"/>
+                                            stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </div>
                             @endif
@@ -57,10 +57,10 @@
                                 <p class="mb-1"><strong>Trạng thái:</strong>
                                     @php
                                         $status = $sv->trang_thai_ho_so ?? 'Khác';
-                                        $badge = match($status) {
+                                        $badge = match ($status) {
                                             'Đã duyệt' => 'bg-success',
                                             'Chờ duyệt' => 'bg-warning',
-                                            default => 'bg-secondary'
+                                            default => 'bg-secondary',
                                         };
                                     @endphp
                                     <span class="badge {{ $badge }}">{{ $status }}</span>
@@ -68,26 +68,25 @@
                             </div>
                             <div class="card-footer d-flex gap-2">
                                 <button type="button" data-id="{{ $sv->id }}"
-                                        class="btn btn-sm flex-fill btn-secondary openModalBtn">
+                                    class="btn btn-sm flex-fill btn-secondary openModalBtn">
                                     Thông Tin
                                 </button>
                                 <a href="{{ route('sinhvien.edit', $sv->id) }}"
-                                   class="btn btn-sm btn-warning flex-fill">Sửa</a>
+                                    class="btn btn-sm btn-warning flex-fill">Sửa</a>
 
                                 <form action="{{ route('sinhvien.destroy', $sv->id) }}" method="POST"
-                                      style="display:inline-block" class="mb-0">
+                                    style="display:inline-block" class="mb-0">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit"
-                                            class="btn btn-sm btn-danger flex-fill"
-                                            onclick="return confirm('Xác nhận xóa sinh viên này?')">
+                                    <button type="submit" class="btn btn-sm btn-danger flex-fill"
+                                        onclick="return confirm('Xác nhận xóa sinh viên này?')">
                                         Xóa
                                     </button>
                                 </form>
 
-                                @if(($sv->trang_thai_ho_so ?? '') !== 'Đã duyệt')
+                                @if (($sv->trang_thai_ho_so ?? '') !== 'Đã duyệt')
                                     <form action="{{ route('sinhvien.approve', $sv->id) }}" method="POST"
-                                          style="display:inline-block" class="mb-0">
+                                        style="display:inline-block" class="mb-0">
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="btn btn-sm btn-success flex-fill">Duyệt</button>
@@ -99,6 +98,106 @@
                 @endforeach
             </div>
         </div>
+
+        {{-- MODAL BỘ LỌC --}}
+        <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="filterModalLabel">Bộ lọc sinh viên</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <form method="GET" id="filterForm">
+                        <div class="modal-body">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    {{-- Hàng 1: Tìm nhanh – Giới tính – Tình trạng – Phòng – Khu --}}
+                                    <div class="col-md-4 mb-3">
+                                        <label class="small text-muted">Tìm nhanh</label>
+                                        <input type="text" name="q" value="{{ request('q', $keyword ?? '') }}"
+                                            class="form-control" placeholder="Mã SV, Họ tên, SĐT, Email">
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label class="small text-muted">Giới tính</label>
+                                        <select name="gender" class="form-control">
+                                            <option value="">-- Tất cả --</option>
+                                            <option value="Nam" @selected(request('gender') == 'Nam')>Nam</option>
+                                            <option value="Nữ" @selected(request('gender') == 'Nữ')>Nữ</option>
+                                            <option value="Khác" @selected(request('gender') == 'Khác')>Khác</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label class="small text-muted">Tình trạng hồ sơ</label>
+                                        <select name="status" class="form-control">
+                                            <option value="">-- Tất cả --</option>
+                                            <option value="Đã duyệt" @selected(request('status') == 'Đã duyệt')>Đã duyệt</option>
+                                            <option value="Chờ duyệt" @selected(request('status') == 'Chờ duyệt')>Chờ duyệt</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2 mb-3">
+                                        <label class="small text-muted">Phòng</label>
+                                        <select name="room_id" class="form-control">
+                                            <option value="">-- Tất cả --</option>
+                                            @isset($phongs)
+                                                @foreach ($phongs as $p)
+                                                    <option value="{{ $p->id }}" @selected(request('room_id') == $p->id)>
+                                                        {{ $p->ten_phong ?? 'P' . $p->id }}
+                                                    </option>
+                                                @endforeach
+                                            @endisset
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3 mb-3">
+                                        <label class="small text-muted">Khu</label>
+                                        <select name="khu" class="form-control">
+                                            <option value="">-- Tất cả --</option>
+                                            @isset($dsKhu)
+                                                @foreach ($dsKhu as $k)
+                                                    <option value="{{ $k }}" @selected(request('khu') == $k)>
+                                                        {{ $k }}</option>
+                                                @endforeach
+                                            @endisset
+                                        </select>
+                                    </div>
+
+                                    {{-- Hàng 2: Lớp – Ngành – Niên khóa --}}
+                                    <div class="col-md-4 mb-3">
+                                        <label class="small text-muted">Lớp</label>
+                                        <input type="text" name="class_id" class="form-control"
+                                            value="{{ request('class_id') }}" placeholder="VD: CNTT01">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="small text-muted">Ngành</label>
+                                        <input type="text" name="major_id" class="form-control"
+                                            value="{{ request('major_id') }}" placeholder="VD: CNTT">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="small text-muted">Niên khóa</label>
+                                        <input type="text" name="intake_year" class="form-control"
+                                            value="{{ request('intake_year') }}" placeholder="VD: 2022/K17">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <a href="{{ route('sinhvien.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                            <button type="submit" class="btn btn-primary">Áp dụng</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
 
         <!-- Phân trang -->
         <div class="d-flex justify-content-center mt-3">
@@ -127,8 +226,8 @@
     </div>
 
     <script>
-        $(document).ready(function () {
-            $('.openModalBtn').on('click', function () {
+        $(document).ready(function() {
+            $('.openModalBtn').on('click', function() {
                 let id = $(this).data('id');
                 get_sinh_vien(id);
                 $('#exampleModal').modal('show');
@@ -137,19 +236,19 @@
 
 
         async function get_sinh_vien(id) {
-            let url = `{{ route('sinhvien.show.modal', ['id'=>':id']) }}`;
+            let url = `{{ route('sinhvien.show.modal', ['id' => ':id']) }}`;
             url = url.replace(':id', id);
 
             $.ajax({
                 url: url,
                 type: 'GET',
                 async: false,
-                success: function (res, textStatus) {
+                success: function(res, textStatus) {
                     console.log(res);
                     const response = res.data ?? '';
                     renderSinhvien(response);
                 },
-                error: function (request, status, error) {
+                error: function(request, status, error) {
                     let data = JSON.parse(request.responseText);
                     alert(data.message);
                 }
@@ -159,6 +258,5 @@
         function renderSinhvien(html) {
             $('#modalBody').html(html);
         }
-
     </script>
 @endsection
