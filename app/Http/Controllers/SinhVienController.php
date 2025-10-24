@@ -12,20 +12,42 @@ class SinhVienController extends Controller
     // Danh sách sinh viên (hiển thị + tìm kiếm)
     public function index(Request $request)
     {
-        $keyword = $request->input('search');
+        // giữ tương thích ?search= cũ
+        $q          = $request->input('q', $request->input('search'));
+        $gender     = $request->input('gender');         // Nam/Nữ/Khác
+        $status     = $request->input('status');         // Đã duyệt/Chờ duyệt
+        $roomId     = $request->input('room_id');        // phong_id
+        $khu        = $request->input('khu');            // khu ở bảng phong
+        $classLike  = $request->input('class_id');       // map vào 'lop'
+        $majorLike  = $request->input('major_id');       // map vào 'nganh'
+        $intakeYear = $request->input('intake_year');    // map vào 'khoa_hoc'
 
-        $sinhviens = SinhVien::with('phong')
-            ->when($keyword, function ($query) use ($keyword) {
-                $query->where('ho_ten', 'like', "%$keyword%")
-                    ->orWhere('ma_sinh_vien', 'like', "%$keyword%")
-                    ->orWhere('lop', 'like', "%$keyword%")
-                    ->orWhere('nganh', 'like', "%$keyword%");
-            })
+        $sinhviens = SinhVien::query()
+            ->with('phong')
+            ->search($q)
+            ->gender($gender)
+            ->hoSoStatus($status)
+            ->inRoom($roomId)
+            ->inKhu($khu)
+            ->classLike($classLike)
+            ->majorLike($majorLike)
+            ->intakeYear($intakeYear)
             ->orderBy('id', 'desc')
-            ->paginate(6);
+            ->paginate(6)
+            ->appends($request->query());
 
-        return view('sinhvien.index', compact('sinhviens', 'keyword'));
+        // dữ liệu cho dropdown
+        $phongs = \App\Models\Phong::select('id', 'ten_phong')->orderBy('ten_phong')->get();
+        $dsKhu  = \App\Models\Phong::query()->select('khu')->distinct()->orderBy('khu')->pluck('khu');
+
+        return view('sinhvien.index', [
+            'sinhviens' => $sinhviens,
+            'keyword'   => $q,
+            'phongs'    => $phongs,
+            'dsKhu'     => $dsKhu,
+        ]);
     }
+
 
     /* Show modal */
     public function show($id)

@@ -2,6 +2,7 @@
 
 @section('content')
     @php use Illuminate\Support\Str; @endphp
+    
 
     <div class="container mt-4">
         <h3 class="page-title">🧯 Danh sách sự cố</h3>
