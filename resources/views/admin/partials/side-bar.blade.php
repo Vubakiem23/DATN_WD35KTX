@@ -64,8 +64,14 @@
                             </li>
                              <li>
                                 <a href="{{ route('kho.index') }}"
-                                    class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
+                                    class="{{ request()->routeIs('kho.*') ? 'active' : '' }}">
                                    Kho đồ
+                                </a>
+                            </li>
+                             <li>
+                                <a href="{{ route('loaitaisan.index') }}"
+                                    class="{{ request()->routeIs('loaitaisan.*') ? 'active' : '' }}">
+                                  Loại tài sản
                                 </a>
                             </li>
                         </ul>

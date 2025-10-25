@@ -2,138 +2,144 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoaiTaiSan;
 use App\Models\KhoTaiSan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class KhoTaiSanController extends Controller
 {
-    /** 🧱 Danh sách kho */
-    public function index(Request $request)
+    /** 🧱 Trang kho: hiển thị danh sách loại tài sản */
+    public function index()
     {
-        $query = KhoTaiSan::query();
-
-        if ($search = $request->input('search')) {
-            $query->where('ten_tai_san', 'like', "%$search%")
-                  ->orWhere('ma_tai_san', 'like', "%$search%");
-        }
-
-        $kho = $query->orderBy('id', 'desc')->paginate(6);
-
-        return view('kho.index', compact('kho'));
+        $loaiTaiSan = LoaiTaiSan::withSum('khoTaiSan', 'so_luong')
+            ->orderBy('id', 'desc')
+            ->get();
+        return view('kho.index', compact('loaiTaiSan'));
     }
 
-    /** ➕ Form thêm mới */
-    public function create()
+    /** 🔁 Hiển thị các tài sản cùng loại */
+    public function related($loai_id)
     {
-        return view('kho.create');
+        $loai = LoaiTaiSan::findOrFail($loai_id);
+
+        $taiSan = KhoTaiSan::where('loai_id', $loai_id)
+            ->orderBy('id', 'desc')
+            ->paginate(8);
+
+        return view('kho.related', compact('loai', 'taiSan'));
     }
 
-    /** 💾 Lưu dữ liệu */
-    public function store(Request $request)
+    /** ➕ Hiển thị form thêm tài sản mới cho loại này */
+    public function create($loai_id)
     {
+        $loai = LoaiTaiSan::findOrFail($loai_id);
+        $tinhTrangOptions = ['Mới', 'Hỏng', 'Cũ', 'Bảo trì', 'Bình thường'];
+        return view('kho.create', compact('loai', 'tinhTrangOptions'));
+    }
+
+    /** 💾 Lưu tài sản mới vào kho */
+    public function store(Request $request, $loai_id)
+    {
+        $loai = LoaiTaiSan::findOrFail($loai_id);
+
         $request->validate([
             'ten_tai_san' => 'required|string|max:255',
+            'so_luong' => 'required|integer|min:1',
             'don_vi_tinh' => 'nullable|string|max:50',
-            'so_luong' => 'required|integer|min:0',
-            'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'tinh_trang' => 'nullable|in:Mới,Hỏng,Cũ,Bảo trì,Bình thường',
             'ghi_chu' => 'nullable|string',
+            'hinh_anh' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // 📦 Tạo mã tài sản random: ví dụ TS20251021-AB12CD
-        $maTaiSan = 'TS' .'-'. strtoupper(Str::random(6));
+        $maTaiSan = $this->generateMaTaiSan();
 
-        $fileName = null;
+        $hinhAnhPath = null;
         if ($request->hasFile('hinh_anh')) {
-            if (!file_exists(public_path('uploads/kho'))) {
-                mkdir(public_path('uploads/kho'), 0777, true);
-            }
-
-            $file = $request->file('hinh_anh');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/kho'), $fileName);
+            $hinhAnhPath = $request->file('hinh_anh')->store('kho', 'public');
         }
 
         KhoTaiSan::create([
             'ma_tai_san' => $maTaiSan,
+            'loai_id' => $loai->id,
             'ten_tai_san' => $request->ten_tai_san,
-            'don_vi_tinh' => $request->don_vi_tinh,
             'so_luong' => $request->so_luong,
-            'hinh_anh' => $fileName,
+            'don_vi_tinh' => $request->don_vi_tinh,
+            'tinh_trang' => $request->tinh_trang,
             'ghi_chu' => $request->ghi_chu,
+            'hinh_anh' => $hinhAnhPath,
         ]);
 
-        return redirect()->route('kho.index')->with('success', 'Thêm tài sản vào kho thành công!');
+        return redirect()->route('kho.related', $loai_id)
+            ->with('success', 'Thêm tài sản mới vào kho thành công!');
     }
 
-    /** ✏️ Sửa */
+    /** ✏️ Hiển thị form chỉnh sửa */
     public function edit($id)
     {
-        $kho = KhoTaiSan::findOrFail($id);
-        return view('kho.edit', compact('kho'));
+        $taiSan = KhoTaiSan::findOrFail($id);
+        $tinhTrangOptions = ['Mới', 'Hỏng', 'Cũ', 'Bảo trì', 'Bình thường'];
+        return view('kho.edit', compact('taiSan', 'tinhTrangOptions'));
     }
 
-    /** 🔄 Cập nhật */
+    /** 💾 Cập nhật tài sản */
     public function update(Request $request, $id)
     {
-        $kho = KhoTaiSan::findOrFail($id);
+        $taiSan = KhoTaiSan::findOrFail($id);
 
         $request->validate([
             'ten_tai_san' => 'required|string|max:255',
+            'so_luong' => 'required|integer|min:1',
             'don_vi_tinh' => 'nullable|string|max:50',
-            'so_luong' => 'required|integer|min:0',
-            'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'tinh_trang' => 'nullable|in:Mới,Hỏng,Cũ,Bảo trì,Bình thường',
             'ghi_chu' => 'nullable|string',
+            'hinh_anh' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $fileName = $kho->hinh_anh;
+        // Xử lý upload hình ảnh mới, xóa hình cũ nếu có
         if ($request->hasFile('hinh_anh')) {
-            if (!file_exists(public_path('uploads/kho'))) {
-                mkdir(public_path('uploads/kho'), 0777, true);
+            if ($taiSan->hinh_anh && Storage::disk('public')->exists($taiSan->hinh_anh)) {
+                Storage::disk('public')->delete($taiSan->hinh_anh);
             }
-
-            if ($fileName && file_exists(public_path('uploads/kho/' . $fileName))) {
-                unlink(public_path('uploads/kho/' . $fileName));
-            }
-
-            $file = $request->file('hinh_anh');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/kho'), $fileName);
+            $taiSan->hinh_anh = $request->file('hinh_anh')->store('kho', 'public');
         }
 
-        $kho->update([
+        $taiSan->update([
             'ten_tai_san' => $request->ten_tai_san,
-            'don_vi_tinh' => $request->don_vi_tinh,
             'so_luong' => $request->so_luong,
-            'hinh_anh' => $fileName,
+            'don_vi_tinh' => $request->don_vi_tinh,
+            'tinh_trang' => $request->tinh_trang,
             'ghi_chu' => $request->ghi_chu,
         ]);
 
-        return redirect()->route('kho.index')->with('success', 'Cập nhật tài sản kho thành công!');
+        return redirect()->route('kho.related', $taiSan->loai_id)
+            ->with('success', 'Cập nhật tài sản thành công!');
     }
 
-    /** ❌ Xóa */
+    /** 🗑️ Xóa tài sản khỏi kho */
     public function destroy($id)
     {
-        $kho = KhoTaiSan::findOrFail($id);
+        $taiSan = KhoTaiSan::findOrFail($id);
 
-        if ($kho->hinh_anh && file_exists(public_path('uploads/kho/' . $kho->hinh_anh))) {
-            unlink(public_path('uploads/kho/' . $kho->hinh_anh));
+        // Xóa hình ảnh nếu có
+        if ($taiSan->hinh_anh && Storage::disk('public')->exists($taiSan->hinh_anh)) {
+            Storage::disk('public')->delete($taiSan->hinh_anh);
         }
 
-        $kho->delete();
+        $loai_id = $taiSan->loai_id;
+        $taiSan->delete();
 
-        return redirect()->route('kho.index')->with('success', 'Đã xóa tài sản khỏi kho!');
-    }
-    public function showModal($id)
-{
-    $taiSan = KhoTaiSan::find($id); // hoặc model bạn đang dùng (ví dụ: TaiSanKho)
-    if (!$taiSan) {
-        return response()->json(['data' => '<p class="text-danger">Không tìm thấy tài sản.</p>']);
+        return redirect()->route('kho.related', $loai_id)
+            ->with('success', 'Đã xóa tài sản khỏi kho!');
     }
 
-    $html = view('kho._modal', compact('taiSan'))->render();
-    return response()->json(['data' => $html]);
-}
+    /** 🔧 Hàm sinh mã tài sản tự động */
+    private function generateMaTaiSan()
+    {
+        do {
+            $code = 'TS' . rand(1000, 9999);
+        } while (KhoTaiSan::where('ma_tai_san', $code)->exists());
 
+        return $code;
+    }
 }

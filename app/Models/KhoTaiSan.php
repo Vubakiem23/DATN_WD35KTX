@@ -13,8 +13,10 @@ class KhoTaiSan extends Model
 
     protected $fillable = [
         'ma_tai_san',
+        'loai_id',
         'ten_tai_san',
         'don_vi_tinh',
+        'tinh_trang',
         'so_luong',
         'hinh_anh',
         'ghi_chu',
