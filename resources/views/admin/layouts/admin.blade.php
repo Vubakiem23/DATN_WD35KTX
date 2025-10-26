@@ -279,6 +279,51 @@
         }
     </style>
 
+<!-- css vi phạm-->
+    <style>
+        .table-violations thead th {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 1;
+        }
+
+        .table-violations th,
+        .table-violations td {
+            vertical-align: middle;
+        }
+
+        .table-violations .fit {
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        .badge-soft-warning {
+            background: #fff7e6;
+            color: #ad6800;
+            border-radius: 999px;
+            padding: .35rem .6rem;
+            font-weight: 600;
+        }
+
+        .badge-soft-success {
+            background: #e8fff3;
+            color: #107154;
+            border-radius: 999px;
+            padding: .35rem .6rem;
+            font-weight: 600;
+        }
+
+        .font-weight-600 {
+            font-weight: 600;
+        }
+
+        /* filter controls height */
+        .card .form-control,
+        .card .form-select {
+            height: 40px;
+        }
+    </style>
 
 
 

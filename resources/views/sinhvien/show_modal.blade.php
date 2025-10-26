@@ -30,7 +30,7 @@
             <td>{{ $sinhvien->gioi_tinh ?? '-' }}</td>
         </tr>
 
-          <tr>
+        <tr>
             <th scope="row">Người thân</th>
             <td>
                 {{ $sinhvien->guardian_name ? $sinhvien->guardian_name . ' (' . $sinhvien->guardian_relationship . ')' : '-' }}
@@ -97,3 +97,73 @@
         </tr>
     </tbody>
 </table>
+{{-- ========== Lịch sử vi phạm ========== --}}
+<div class="card mt-3">
+    <div class="card-body p-3">
+        <div class="d-flex align-items-center justify-content-between">
+            <h5 class="mb-0">⚠️ Vi phạm đã ghi</h5>
+
+            <div class="d-flex gap-2">
+                {{-- Ghi vi phạm mới (prefill sinh viên hiện tại) --}}
+                <a href="{{ route('vipham.create', ['student_id' => $sinhvien->id]) }}" class="btn btn-sm btn-primary">
+                    + Ghi vi phạm
+                </a>
+
+                {{-- Xem tất cả vi phạm của SV này (trang danh sách) --}}
+                <a href="{{ route('vipham.index', ['student_id' => $sinhvien->id]) }}"
+                    class="btn btn-sm btn-outline-secondary">
+                    Xem tất cả
+                </a>
+            </div>
+        </div>
+
+        @php
+            $violations = $sinhvien->violations->sortByDesc('occurred_at');
+        @endphp
+
+        @if ($violations->isEmpty())
+            <div class="text-muted mt-2">Chưa có vi phạm nào.</div>
+        @else
+            <div class="table-responsive mt-3">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="white-space:nowrap">Thời điểm</th>
+                            <th>Loại</th>
+                            <th style="white-space:nowrap">Trạng thái</th>
+                            <th class="text-right" style="white-space:nowrap">Tiền phạt</th>
+                            <th style="white-space:nowrap">Biên lai</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($violations as $v)
+                            @php
+                                $statusText = $v->status === 'resolved' ? 'Resolved' : 'Open';
+                                $statusClass = $v->status === 'resolved' ? 'badge bg-success' : 'badge bg-warning';
+                            @endphp
+                            <tr>
+                                <td style="white-space:nowrap">
+                                    {{ $v->occurred_at ? \Carbon\Carbon::parse($v->occurred_at)->format('d/m/Y H:i') : '-' }}
+                                </td>
+                                <td>{{ $v->type->name ?? '-' }}</td>
+                                <td><span class="{{ $statusClass }}">{{ $statusText }}</span></td>
+                                <td class="text-right">
+                                    {{ $v->penalty_amount ? number_format($v->penalty_amount, 0, ',', '.') : '-' }}
+                                </td>
+                                <td>{{ $v->receipt_no ?? '-' }}</td>
+                                <td>
+                                    @if (!empty($v->note))
+                                        {{ \Illuminate\Support\Str::limit($v->note, 60) }}
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
