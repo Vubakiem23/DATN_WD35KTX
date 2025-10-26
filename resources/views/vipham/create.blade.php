@@ -12,7 +12,8 @@
             </a>
         </div>
 
-        <form method="POST" action="{{ route('vipham.store') }}" class="card shadow-sm border-0">
+        <form method="POST" action="{{ route('vipham.store') }}" enctype="multipart/form-data"
+            class="card shadow-sm border-0">
             @csrf
             <div class="card-body">
                 {{-- Hàng 1: Sinh viên - Loại --}}
@@ -31,6 +32,7 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
+
                     <div class="form-group col-md-6">
                         <label class="small text-muted mb-1">Loại vi phạm</label>
                         <select name="violation_type_id" class="form-control" required>
@@ -43,18 +45,23 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Hình ảnh (nếu có)</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                    </div>
                 </div>
 
                 {{-- Hàng 2: Thời điểm - Trạng thái - Tiền phạt --}}
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label class="small text-muted mb-1">Thời điểm xảy ra</label>
-                        <input type="datetime-local" name="occurred_at" value="{{ old('occurred_at') }}"
-                            class="form-control" required>
+                        <label class="small text-muted mb-1">Ngày xảy ra</label>
+                        <input type="date" name="occurred_at" value="{{ old('occurred_at') }}" class="form-control"
+                            required>
                         @error('occurred_at')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
+
                     <div class="form-group col-md-4">
                         <label class="small text-muted mb-1">Trạng thái</label>
                         <select name="status" class="form-control" required>

@@ -12,7 +12,9 @@
             </a>
         </div>
 
-        <form method="POST" action="{{ route('vipham.update', $violation->id) }}" class="card shadow-sm border-0">
+        <<form method="POST" action="{{ route('vipham.update', $violation->id) }}" enctype="multipart/form-data"
+            class="card shadow-sm border-0">
+            >
             @csrf @method('PUT')
             <div class="card-body">
                 <div class="form-row">
@@ -41,18 +43,23 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Hình ảnh (nếu có)</label>
+                        <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                    </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label class="small text-muted mb-1">Thời điểm xảy ra</label>
-                        <input type="datetime-local" name="occurred_at"
-                            value="{{ $violation->occurred_at ? $violation->occurred_at->format('Y-m-d\TH:i') : '' }}"
+                        <label class="small text-muted mb-1">Ngày xảy ra</label>
+                        <input type="date" name="occurred_at"
+                            value="{{ old('occurred_at', optional($violation->occurred_at)->format('Y-m-d')) }}"
                             class="form-control" required>
                         @error('occurred_at')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
+
                     <div class="form-group col-md-4">
                         <label class="small text-muted mb-1">Trạng thái</label>
                         <select name="status" class="form-control" required>
@@ -97,7 +104,7 @@
             <div class="card-footer bg-white d-flex justify-content-end">
                 <button class="btn btn-success"><i class="fa fa-save mr-1"></i> Cập nhật</button>
             </div>
-        </form>
+            </form>
     </div>
 @endsection
 

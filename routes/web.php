@@ -17,6 +17,7 @@ use App\Http\Controllers\SuCoController;
 use App\Http\Controllers\SlotController;
 use App\Http\Controllers\ViolationController;
 use App\Http\Controllers\ViolationTypeController;
+use App\Models\Violation;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +87,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     // ====== VI PHẠM (violations) ======
     Route::resource('vipham', ViolationController::class);
+    Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
+
     // đánh dấu đã xử lý
     Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
         ->name('vipham.resolve');

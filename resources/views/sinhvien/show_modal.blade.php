@@ -139,7 +139,7 @@
                     <tbody>
                         @foreach ($violations as $v)
                             @php
-                                $statusText = $v->status === 'resolved' ? 'Resolved' : 'Open';
+                                $statusText = $v->status === 'resolved' ? 'Đã xử lý' : 'Chưa xử lý';
                                 $statusClass = $v->status === 'resolved' ? 'badge bg-success' : 'badge bg-warning';
                             @endphp
                             <tr>
