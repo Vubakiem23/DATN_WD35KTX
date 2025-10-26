@@ -3,62 +3,69 @@
 
 @section('content')
 <div class="container mt-4">
-  <h4>➕ Thêm tài sản vào loại: {{ $loai->ten_loai }}</h4>
+    <h4 class="mb-3">➕ Thêm tài sản mới cho loại: {{ $loai->ten_loai }}</h4>
 
-  @if ($errors->any())
-  <div class="alert alert-danger">
-    <ul>
-      @foreach ($errors->all() as $error)
-      <li>{{ $error }}</li>
-      @endforeach
-    </ul>
-  </div>
-  @endif
+    <a href="{{ route('kho.related', $loai->id) }}" class="btn btn-outline-secondary mb-3">
+        ← Quay lại
+    </a>
 
-  <form action="{{ route('kho.store', $loai->id) }}" method="POST" enctype="multipart/form-data">
-    @csrf
-    <div class="mb-3">
-      <label>Tên tài sản</label>
-      <input type="text" name="ten_tai_san" class="form-control" value="{{ old('ten_tai_san') }}" required>
-    </div>
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-    <div class="mb-3">
-      <label>Số lượng</label>
-      <input type="number" name="so_luong" class="form-control" value="{{ old('so_luong', 1) }}" required>
-    </div>
+    <form action="{{ route('kho.store', $loai->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
 
-    <div class="mb-3">
-      <label>Đơn vị</label>
-      <input type="text" name="don_vi_tinh" class="form-control" value="{{ old('don_vi_tinh') }}">
-    </div>
+        {{-- Hiển thị tên tài sản nhưng disable --}}
+        <div class="mb-3">
+            <label class="form-label">Tên tài sản</label>
+            <input type="text" class="form-control" 
+                   value="{{ $loai->ten_loai }}" disabled>
+            <input type="hidden" name="ten_tai_san" value="{{ $loai->ten_loai }}">
+        </div>
 
-    <div class="mb-3">
-      <div class="mb-3">
-        <label>Tình trạng</label>
-        <select name="tinh_trang" class="form-control">
-          <option value="">-- Chọn tình trạng --</option>
-          @foreach($tinhTrangOptions as $tt)
-          <option value="{{ $tt }}" {{ old('tinh_trang') == $tt ? 'selected' : '' }}>
-            {{ $tt }}
-          </option>
-          @endforeach
-        </select>
-      </div>
+        {{-- Số lượng --}}
+        <div class="mb-3">
+            <label for="quantity" class="form-label">Số lượng</label>
+            <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1">
+        </div>
 
-    </div>
+        {{-- Đơn vị tính --}}
+        <div class="mb-3">
+            <label for="don_vi_tinh" class="form-label">Đơn vị tính</label>
+            <input type="text" name="don_vi_tinh" id="don_vi_tinh" class="form-control">
+        </div>
 
-    <div class="mb-3">
-      <label>Ghi chú</label>
-      <textarea name="ghi_chu" class="form-control">{{ old('ghi_chu') }}</textarea>
-    </div>
+        {{-- Tình trạng --}}
+        <div class="mb-3">
+            <label for="tinh_trang" class="form-label">Tình trạng</label>
+            <select name="tinh_trang" id="tinh_trang" class="form-select form-control">
+                <option value="">-- Chọn tình trạng --</option>
+                @foreach($tinhTrangOptions as $status)
+                    <option value="{{ $status }}">{{ $status }}</option>
+                @endforeach
+            </select>
+        </div>
 
-    <div class="mb-3">
-      <label>Hình ảnh</label>
-      <input type="file" name="hinh_anh" class="form-control">
-    </div>
+        {{-- Ghi chú --}}
+        <div class="mb-3">
+            <label for="ghi_chu" class="form-label">Ghi chú</label>
+            <textarea name="ghi_chu" id="ghi_chu" class="form-control" rows="3"></textarea>
+        </div>
 
-    <button type="submit" class="btn btn-success">💾 Thêm tài sản</button>
-    <a href="{{ route('kho.related', $loai->id) }}" class="btn btn-secondary">🔙 Quay lại</a>
-  </form>
+        {{-- Hình ảnh --}}
+        <div class="mb-3">
+            <label for="hinh_anh" class="form-label">Hình ảnh</label>
+            <input type="file" name="hinh_anh" id="hinh_anh" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-success">💾 Lưu tài sản</button>
+    </form>
 </div>
 @endsection
