@@ -19,16 +19,27 @@ class KhoTaiSanController extends Controller
     }
 
     /** 🔁 Hiển thị các tài sản cùng loại */
-    public function related($loai_id)
-    {
-        $loai = LoaiTaiSan::findOrFail($loai_id);
+   public function related(Request $request, $loai_id)
+{
+    $loai = LoaiTaiSan::findOrFail($loai_id);
 
-        $taiSan = KhoTaiSan::where('loai_id', $loai_id)
-            ->orderBy('id', 'desc')
-            ->paginate(8);
+    $query = KhoTaiSan::where('loai_id', $loai_id);
 
-        return view('kho.related', compact('loai', 'taiSan'));
+    // Lọc theo tình trạng nếu có
+    if ($request->filled('tinh_trang')) {
+        $query->where('tinh_trang', $request->tinh_trang);
     }
+
+    // Lọc theo mã tài sản nếu có
+    if ($request->filled('ma_tai_san')) {
+        $query->where('ma_tai_san', 'like', '%' . $request->ma_tai_san . '%');
+    }
+
+    $taiSan = $query->orderBy('id', 'desc')->paginate(5)->withQueryString();
+
+    return view('kho.related', compact('loai', 'taiSan'));
+}
+
 
     /** ➕ Hiển thị form thêm tài sản mới cho loại này */
     public function create($loai_id)
@@ -38,43 +49,43 @@ class KhoTaiSanController extends Controller
         return view('kho.create', compact('loai', 'tinhTrangOptions'));
     }
 
-    /** 💾 Lưu tài sản mới vào kho */
-    public function store(Request $request, $loai_id)
-    {
-        $loai = LoaiTaiSan::findOrFail($loai_id);
 
-        $request->validate([
-            'ten_tai_san' => 'required|string|max:255',
-            'so_luong' => 'required|integer|min:1',
-            'don_vi_tinh' => 'nullable|string|max:50',
-            'tinh_trang' => 'nullable|in:Mới,Hỏng,Cũ,Bảo trì,Bình thường',
-            'ghi_chu' => 'nullable|string',
-            'hinh_anh' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+public function store(Request $request, $loai_id)
+{
+    $loai = LoaiTaiSan::findOrFail($loai_id);
 
-        $maTaiSan = $this->generateMaTaiSan();
+   $request->validate([
+    'quantity' => 'nullable|integer|min:1',
+    'don_vi_tinh' => 'nullable|string|max:50',
+    'tinh_trang' => 'nullable|in:Mới,Hỏng,Cũ,Bảo trì,Bình thường',
+    'ghi_chu' => 'nullable|string',
+    'hinh_anh' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+]);
 
-        $hinhAnhPath = null;
-        if ($request->hasFile('hinh_anh')) {
-            $hinhAnhPath = $request->file('hinh_anh')->store('kho', 'public');
-        }
+$hinhAnhPath = null;
+if ($request->hasFile('hinh_anh')) {
+    $hinhAnhPath = $request->file('hinh_anh')->store('kho', 'public');
+}
 
-        KhoTaiSan::create([
-            'ma_tai_san' => $maTaiSan,
-            'loai_id' => $loai->id,
-            'ten_tai_san' => $request->ten_tai_san,
-            'so_luong' => $request->so_luong,
-            'don_vi_tinh' => $request->don_vi_tinh,
-            'tinh_trang' => $request->tinh_trang,
-            'ghi_chu' => $request->ghi_chu,
-            'hinh_anh' => $hinhAnhPath,
-        ]);
+$quantity = $request->quantity ?? 1;
 
-        return redirect()->route('kho.related', $loai_id)
-            ->with('success', 'Thêm tài sản mới vào kho thành công!');
-    }
+for ($i = 0; $i < $quantity; $i++) {
+    KhoTaiSan::create([
+        'ma_tai_san' => $this->generateMaTaiSan(),
+        'loai_id' => $loai->id,
+        'ten_tai_san' => $loai->ten_loai , // Tên mặc định
+        'so_luong' => 1,
+        'don_vi_tinh' => $request->don_vi_tinh,
+        'tinh_trang' => $request->tinh_trang,
+        'ghi_chu' => $request->ghi_chu,
+        'hinh_anh' => $hinhAnhPath,
+    ]);
+}
 
-    /** ✏️ Hiển thị form chỉnh sửa */
+    return redirect()->route('kho.related', $loai_id)
+        ->with('success', "Đã tạo $quantity tài sản mới cho loại {$loai->ten_loai}!");
+}
+
     public function edit($id)
     {
         $taiSan = KhoTaiSan::findOrFail($id);

@@ -19,9 +19,10 @@
         @csrf
         @method('PUT')
 
+        {{-- Tên tài sản (disable, không sửa được) --}}
         <div class="mb-3">
             <label class="form-label">Tên tài sản</label>
-            <input type="text" name="ten_tai_san" class="form-control" value="{{ old('ten_tai_san', $taiSan->ten_tai_san) }}" required>
+            <input type="text" class="form-control" value="{{ $taiSan->ten_tai_san }}" disabled>
         </div>
 
         <div class="mb-3">
