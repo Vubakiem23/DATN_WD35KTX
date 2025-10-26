@@ -15,6 +15,8 @@ use App\Http\Controllers\LichBaoTriController;
 use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\SuCoController;
 use App\Http\Controllers\SlotController;
+use App\Http\Controllers\ViolationController;
+use App\Http\Controllers\ViolationTypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,13 +76,22 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::resource('lichbaotri', LichBaoTriController::class);
     Route::patch('lichbaotri/{id}/hoanthanh', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
     Route::get('lichbaotri/show/{id}', [LichBaoTriController::class, 'showModal'])->name('lichbaotri.show.modal');
-Route::get('lichbaotri/tai-san', [LichBaoTriController::class, 'getTaiSanByPhong'])->name('lichbaotri.taiSanByPhong');
+    Route::get('lichbaotri/tai-san', [LichBaoTriController::class, 'getTaiSanByPhong'])->name('lichbaotri.taiSanByPhong');
 
     // ---------------- THÔNG BÁO ----------------
     Route::resource('thongbao', ThongBaoController::class);
 
     // ---------------- SỰ CỐ ----------------
     Route::resource('suco', SuCoController::class);
+
+    // ====== VI PHẠM (violations) ======
+    Route::resource('vipham', ViolationController::class);
+    // đánh dấu đã xử lý
+    Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
+        ->name('vipham.resolve');
+
+    // ====== LOẠI VI PHẠM (violation_types) ======
+    Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
     // ---------------- QUẢN LÝ TÀI SẢN ----------------
     Route::prefix('taisan')->group(function () {

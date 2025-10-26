@@ -97,7 +97,6 @@
 
                                             <a href="{{ route('sinhvien.edit', $sv->id) }}"
                                                 class="btn btn-warning btn-sm equal-width">Sửa</a>
-
                                             @if (($sv->trang_thai_ho_so ?? '') !== 'Đã duyệt')
                                                 <form action="{{ route('sinhvien.approve', $sv->id) }}" method="POST"
                                                     class="d-inline">
@@ -109,6 +108,7 @@
                                         </div>
                                     </td>
                                 </tr>
+
                             @empty
                                 <tr>
                                     <td colspan="8" class="text-center text-muted py-4">Không có sinh viên nào phù hợp.
