@@ -2,31 +2,32 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Role;
-use App\Models\RoleUser;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
 
 class Admin
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
-            $role_user = RoleUser::where('user_id', $user->id)->first();
-            $roleNames = Role::where('id', $role_user->role_id)->pluck('ten_quyen');
-            if ($roleNames->contains('admin')) {
-                return $next($request);
-            }
-            return redirect(route('error'));
+        // Nếu chưa đăng nhập -> chuyển về login
+        if (!Auth::check()) {
+            return redirect()->route('auth.login');
         }
-        return redirect(route('auth.login'));
+
+        $user = Auth::user();
+
+        // Kiểm tra user có role admin không
+        // Giả sử user->roles là quan hệ Many-to-Many với bảng roles
+        if ($user->roles->contains('ten_quyen', 'admin')) {
+            return $next($request);
+        }
+
+        // Nếu không phải admin -> logout và chuyển về login
+        Auth::logout();
+        return redirect()->route('auth.login')->with('error', 'Chỉ tài khoản admin mới được truy cập.');
     }
 }

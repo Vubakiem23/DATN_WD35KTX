@@ -5,6 +5,7 @@
 @section('content')
 <div class="container">
   <h3>Chi tiết phòng: {{ $phong->ten_phong }}</h3>
+  @push('styles')
   <style>
     /* Trang trí riêng cho trang chi tiết phòng */
     .room-cover{aspect-ratio: 4 / 3; width:100%; object-fit:cover; border-radius:.25rem;}
@@ -30,6 +31,7 @@
       .slots-table th:nth-child(6){width:20%}
     }
   </style>
+  @endpush
   <div class="row g-3">
     <div class="col-12 col-lg-4">
       <div class="card mb-3 shadow-sm h-100">
@@ -39,9 +41,12 @@
     <div class="card-body">
       <div class="d-flex flex-wrap gap-2 mb-2">
         <span class="badge bg-primary">Khu: {{ $phong->khu ?: '-' }}</span>
-        <span class="badge bg-info text-dark">Loại: {{ $phong->loai_phong ?: \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</span>
+        <span class="badge bg-info text-dark">Loại: {{ \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</span>
         <span class="badge bg-secondary">Sức chứa: {{ $phong->totalSlots() }}</span>
         <span class="badge {{ $phong->availableSlots()==0 ? 'bg-warning text-dark' : 'bg-success' }}">{{ $phong->usedSlots() }} / {{ $phong->totalSlots() }} ({{ $phong->occupancyLabel() }})</span>
+        @if(!is_null($phong->gia_phong))
+          <span class="badge bg-dark">Giá: {{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</span>
+        @endif
       </div>
       <div class="progress mb-3" style="height:10px;max-width:420px;">
         @php $total=$phong->totalSlots(); $used=$phong->usedSlots(); $pct=$total?round($used*100/$total):0; @endphp

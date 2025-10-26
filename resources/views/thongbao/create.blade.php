@@ -7,7 +7,7 @@
 
     <h3 class="mb-3">Thêm thông báo mới</h3>
 
-    {{-- Hiển thị thông báo lỗi nếu có --}}
+    {{-- Hiển thị lỗi --}}
     @if ($errors->any())
     <div class="alert alert-danger">
         <ul class="mb-0">
@@ -18,8 +18,7 @@
     </div>
     @endif
 
-    {{-- Form thêm thông báo --}}
-    <form action="{{ route('thongbao.store') }}" method="POST">
+    <form action="{{ route('thongbao.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="mb-3">
@@ -47,8 +46,55 @@
             </select>
         </div>
 
+        {{-- Chọn phòng --}}
+        <div class="mb-3">
+            <label for="phong_id" class="form-label">Chọn phòng (tùy chọn)</label>
+            <select name="phong_id" class="form-select" id="phong_id">
+                <option value="">-- Không chọn phòng --</option>
+                @foreach($phongs as $phong)
+                    <option value="{{ $phong->id }}" {{ old('phong_id') == $phong->id ? 'selected' : '' }}>
+                        {{ $phong->ten_phong }} ({{ $phong->khu }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Chọn khu --}}
+        <div class="mb-3">
+            <label for="khu" class="form-label">Khu (có thể bỏ trống nếu đã chọn phòng)</label>
+            <select name="khu" class="form-select" id="khu">
+                <option value="">-- Không chọn khu --</option>
+                @foreach($phongs->pluck('khu')->unique() as $khu)
+                    <option value="{{ $khu }}" {{ old('khu') == $khu ? 'selected' : '' }}>{{ $khu }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted">Nếu chọn phòng, khu sẽ tự điền theo phòng.</small>
+        </div>
+
+        <div class="mb-3">
+            <label for="anh" class="form-label">Ảnh thông báo (tùy chọn)</label>
+            <input type="file" name="anh" class="form-control" accept="image/*">
+        </div>
+
         <button type="submit" class="btn btn-success">Lưu</button>
         <a href="{{ route('thongbao.index') }}" class="btn btn-secondary">Quay lại</a>
     </form>
 </div>
+
+{{-- Script tự động điền khu khi chọn phòng --}}
+@push('scripts')
+<script>
+document.getElementById('phong_id').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    if(selectedOption.value) {
+        const text = selectedOption.text; // ví dụ: "Phòng A (Khu X)"
+        const khu = text.match(/\(([^)]+)\)/); // lấy Khu X
+        if(khu) {
+            document.getElementById('khu').value = khu[1];
+        }
+    }
+});
+</script>
+@endpush
+
 @endsection

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SinhVien extends Model
 {
@@ -33,15 +34,19 @@ class SinhVien extends Model
         return $this->belongsTo(Phong::class, 'phong_id', 'id');
     }
 
-    public function suCos()
-{
-    return $this->hasMany(SuCo::class, 'sinh_vien_id');
-}
+    /**
+     * Quan hệ: Một sinh viên có nhiều sự cố
+     */
+    public function suCos(): HasMany
+    {
+        return $this->hasMany(SuCo::class, 'sinh_vien_id');
+    }
 
+    /**
+     * Quan hệ với slot
+     */
     public function slot()
-{
-    return $this->hasOne(\App\Models\Slot::class, 'sinh_vien_id');
-}
-
-
+    {
+        return $this->hasOne(\App\Models\Slot::class, 'sinh_vien_id');
+    }
 }

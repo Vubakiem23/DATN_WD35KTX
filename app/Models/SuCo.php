@@ -16,8 +16,18 @@ class SuCo extends Model
         'phong_id',
         'mo_ta',
         'ngay_gui',
-        'trang_thai',
-        'anh', // ✅ thêm dòng này để lưu ảnh minh chứng
+        'trang_thai',      // trạng thái tiếp nhận: pending/in_progress/resolved
+        'payment_amount',   // số tiền
+        'is_paid',          // thanh toán: true/false
+        'anh',              // ảnh minh chứng
+        'nguoi_tao',        // sinh_vien hoặc nhan_vien
+        'ngay_hoan_thanh',  // 🆕 ngày hoàn thành sự cố
+    ];
+
+    protected $casts = [
+        'payment_amount' => 'decimal:2',
+        'is_paid' => 'boolean',
+        'ngay_hoan_thanh' => 'datetime', // 🆕 cast ngày hoàn thành
     ];
 
     // 🧩 Quan hệ: Một sự cố thuộc về một sinh viên

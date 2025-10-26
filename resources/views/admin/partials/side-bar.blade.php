@@ -27,6 +27,21 @@
             <div class="menu_section">
                 <h3>General</h3>
                 <ul class="nav side-menu">
+                    <li>
+    <a><i class="fa fa-users"></i> Quản Lý Người Dùng <span class="fa fa-chevron-down"></span></a>
+    <ul class="nav child_menu">
+        <!-- Danh sách tài khoản -->
+        <li>
+            <a href="{{ route('users.index') }}"
+               class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
+                <i class="fa fa-list"></i> Danh sách tài khoản
+            </a>
+        </li>
+
+        
+    </ul>
+</li>
+
                     <!-- Quản lý ký túc xá -->
                     <li>
                         <a><i class="fa fa-home"></i> Ký Túc Xá VaMos <span class="fa fa-chevron-down"></span></a>
@@ -75,11 +90,7 @@
                         <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li><a href="{{ route('hoadon.index') }}">Quản lý thu phí & hóa đơn</a></li>
-                            <li>
-                                <a href="{{ route('hoadon.history') }}">
-                                    <i class="fa fa-history"></i> Lịch sử thanh toán
-                                </a>
-                            </li>
+                            
 
 
 

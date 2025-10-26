@@ -11,4 +11,9 @@ class Slot extends Model
 
     public function phong() { return $this->belongsTo(Phong::class, 'phong_id'); }
     public function sinhVien() { return $this->belongsTo(SinhVien::class, 'sinh_vien_id'); }
+    public function taiSans() {
+        return $this->belongsToMany(TaiSan::class, 'slot_tai_san', 'slot_id', 'tai_san_id')
+            ->withPivot('so_luong')
+            ->withTimestamps();
+    }
 }

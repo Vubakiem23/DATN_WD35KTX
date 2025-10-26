@@ -3,65 +3,94 @@
 namespace App\Http\Controllers;
 
 use App\Models\ThongBao;
+use App\Models\Phong;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ThongBaoController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
-        $thongbaos = ThongBao::orderBy('id', 'desc')->paginate(10);
+        $thongbaos = ThongBao::with('phong:id,ten_phong,khu')
+            ->orderBy('id', 'desc')
+            ->paginate(10);
+
         return view('thongbao.index', compact('thongbaos'));
     }
 
     public function create()
     {
-        return view('thongbao.create');
+        $phongs = Phong::orderBy('khu')->orderBy('ten_phong')->get();
+        return view('thongbao.create', compact('phongs'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'tieu_de' => 'required|max:255',
             'noi_dung' => 'required',
             'ngay_dang' => 'required|date',
             'doi_tuong' => 'required|max:255',
+            'phong_id' => 'nullable|exists:phong,id',
+            'anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        ThongBao::create($request->all());
+        if ($request->hasFile('anh')) {
+            $data['anh'] = $request->file('anh')->store('thongbao', 'public');
+        }
+
+        ThongBao::create($data);
 
         return redirect()->route('thongbao.index')->with('success', 'Thêm thông báo thành công!');
     }
 
-    public function show($id)
+    public function show(ThongBao $thongbao)
     {
-        $thongbao = ThongBao::findOrFail($id);
+        $thongbao->load('phong:id,ten_phong,khu');
         return view('thongbao.show', compact('thongbao'));
     }
 
-    public function edit($id)
+    public function edit(ThongBao $thongbao)
     {
-        $thongbao = ThongBao::findOrFail($id);
-        return view('thongbao.edit', compact('thongbao'));
+        $phongs = Phong::orderBy('khu')->orderBy('ten_phong')->get();
+        return view('thongbao.edit', compact('thongbao', 'phongs'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, ThongBao $thongbao)
     {
-        $request->validate([
+        $data = $request->validate([
             'tieu_de' => 'required|max:255',
             'noi_dung' => 'required',
             'ngay_dang' => 'required|date',
             'doi_tuong' => 'required|max:255',
+            'phong_id' => 'nullable|exists:phong,id',
+            'anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $thongbao = ThongBao::findOrFail($id);
-        $thongbao->update($request->all());
+        if ($request->hasFile('anh')) {
+            // xóa ảnh cũ nếu tồn tại
+            if ($thongbao->anh && Storage::disk('public')->exists($thongbao->anh)) {
+                Storage::disk('public')->delete($thongbao->anh);
+            }
+            $data['anh'] = $request->file('anh')->store('thongbao', 'public');
+        }
+
+        $thongbao->update($data);
 
         return redirect()->route('thongbao.index')->with('success', 'Cập nhật thông báo thành công!');
     }
 
-    public function destroy($id)
+    public function destroy(ThongBao $thongbao)
     {
-        $thongbao = ThongBao::findOrFail($id);
+        if ($thongbao->anh && Storage::disk('public')->exists($thongbao->anh)) {
+            Storage::disk('public')->delete($thongbao->anh);
+        }
+
         $thongbao->delete();
 
         return redirect()->route('thongbao.index')->with('success', 'Xóa thông báo thành công!');

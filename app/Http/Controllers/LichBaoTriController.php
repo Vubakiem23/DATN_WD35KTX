@@ -46,18 +46,29 @@ public function index(Request $request)
             END ASC
         ")
         ->orderBy('ngay_bao_tri', 'asc')
-        ->paginate(5);
+        ->paginate(6);
 
     return view('lichbaotri.index', compact('lich'));
 }
 
     /** ➕ Form tạo mới */
-    public function create()
-    {
-        $phongs = Phong::all();
-        $taiSan = TaiSan::with('phong')->get();
-        return view('lichbaotri.create', compact('phongs', 'taiSan'));
+  public function create(Request $request)
+{
+    $phongs = Phong::all();
+    $taiSan = TaiSan::with('phong')->get();
+
+    // 🆕 Lấy id tài sản nếu có trong URL
+    $selectedTaiSanId = $request->taisan_id;
+
+    // 🆕 Lấy chi tiết tài sản được chọn (nếu có)
+    $selectedTaiSan = null;
+    if ($selectedTaiSanId) {
+        $selectedTaiSan = TaiSan::with('phong')->find($selectedTaiSanId);
     }
+
+    return view('lichbaotri.create', compact('phongs', 'taiSan', 'selectedTaiSanId', 'selectedTaiSan'));
+}
+
 
     /** 💾 Lưu lịch bảo trì mới */
     public function store(Request $request)
@@ -188,4 +199,17 @@ public function index(Request $request)
 
         return redirect()->route('lichbaotri.index')->with('success', 'Đã cập nhật trạng thái hoàn thành!');
     }
+    public function showModal($id)
+{
+    $lich = LichBaoTri::with('taiSan')->find($id);
+
+    if (!$lich) {
+        return response()->json(['data' => '<p class="text-danger">Không tìm thấy lịch bảo trì.</p>']);
+    }
+
+    $html = view('lichbaotri._modal', compact('lich'))->render();
+
+    return response()->json(['data' => $html]);
+}
+
 }

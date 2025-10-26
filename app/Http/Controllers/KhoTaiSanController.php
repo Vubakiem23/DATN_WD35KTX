@@ -18,7 +18,7 @@ class KhoTaiSanController extends Controller
                   ->orWhere('ma_tai_san', 'like', "%$search%");
         }
 
-        $kho = $query->orderBy('id', 'desc')->paginate(10);
+        $kho = $query->orderBy('id', 'desc')->paginate(6);
 
         return view('kho.index', compact('kho'));
     }
@@ -125,4 +125,15 @@ class KhoTaiSanController extends Controller
 
         return redirect()->route('kho.index')->with('success', 'Đã xóa tài sản khỏi kho!');
     }
+    public function showModal($id)
+{
+    $taiSan = KhoTaiSan::find($id); // hoặc model bạn đang dùng (ví dụ: TaiSanKho)
+    if (!$taiSan) {
+        return response()->json(['data' => '<p class="text-danger">Không tìm thấy tài sản.</p>']);
+    }
+
+    $html = view('kho._modal', compact('taiSan'))->render();
+    return response()->json(['data' => $html]);
+}
+
 }
