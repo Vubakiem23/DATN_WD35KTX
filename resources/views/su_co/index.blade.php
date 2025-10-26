@@ -1,143 +1,178 @@
 @extends('admin.layouts.admin')
 
 @section('content')
-    @php use Illuminate\Support\Str; @endphp
-    
 
-    <div class="container mt-4">
-        <h3 class="page-title">🧯 Danh sách sự cố</h3>
-
-        {{-- Ô tìm kiếm (giữ giống trang sinh viên) --}}
-        <form method="GET" class="mb-3 search-bar">
-            <div class="input-group">
-                <input type="text" name="search" value="{{ request('search') ?? '' }}" class="form-control"
-                    placeholder="Tìm kiếm (MSSV, họ tên, phòng, mô tả, trạng thái)">
-                <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
-                @if (!empty(request('search')))
-                    <a href="{{ route('suco.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
-                @endif
-            </div>
-        </form>
-
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>Danh sách các sự cố</h4>
-            <a href="{{ route('suco.create') }}" class="btn btn-primary mb-3 btn-add">+ Thêm sự cố</a>
-        </div>
-
-        {{-- Thông báo --}}
-        @if (session('success'))
-            <div class="alert alert-success shadow-sm">{{ session('success') }}</div>
-        @endif
-
-        {{-- Lưới thẻ giống trang Sinh viên --}}
-        <div class="tab-content">
-            <div class="row g-3">
-                @forelse($suco as $sc)
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 shadow-sm">
-                            {{-- Header: tiêu đề + id --}}
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <strong>
-                                    {{ $sc->sinhVien->ho_ten ?? 'Không rõ sinh viên' }}
-                                </strong>
-                                <span class="font-weight-bold">#{{ $sc->id }}</span>
-                            </div>
-
-                            {{-- Ảnh sự cố / placeholder --}}
-                            @if (!empty($sc->anh))
-                                <img src="{{ asset($sc->anh) }}" class="card-img-top" style="height:160px;object-fit:cover"
-                                    alt="Ảnh sự cố #{{ $sc->id }}">
-                            @else
-                                <div class="card-img-top d-flex align-items-center justify-content-center"
-                                    style="height:160px;background:#f8f9fa">
-                                    <svg width="80" height="60" viewBox="0 0 24 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg" aria-label="no image">
-                                        <rect width="24" height="24" rx="2" fill="#e9ecef" />
-                                        <path d="M3 15L8 9L13 15L21 6" stroke="#adb5bd" stroke-width="1.2"
-                                            stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </div>
-                            @endif
-
-                            {{-- Nội dung thẻ --}}
-                            <div class="card-body">
-                                <p class="mb-1"><strong>Sinh viên:</strong>
-                                    {{ $sc->sinhVien->ho_ten ?? '---' }}
-                                    @if (!empty($sc->sinhVien?->ma_sinh_vien))
-                                        <small class="text-muted">({{ $sc->sinhVien->ma_sinh_vien }})</small>
-                                    @endif
-                                </p>
-                                <p class="mb-1"><strong>Phòng:</strong> {{ $sc->phong->ten_phong ?? '---' }}</p>
-                                <p class="mb-1"><strong>Ngày gửi:</strong>
-                                    {{ !empty($sc->ngay_gui) ? \Carbon\Carbon::parse($sc->ngay_gui)->format('d/m/Y') : '-' }}
-                                </p>
-
-                                @php
-                                    $status = $sc->trang_thai ?? 'Khác';
-                                    $badge = match ($status) {
-                                        'Tiếp nhận' => 'bg-secondary',
-                                        'Đang xử lý' => 'bg-warning',
-                                        'Đã xử lý' => 'bg-warning',
-                                        'Hoàn thành' => 'bg-success',
-                                        default => 'bg-info',
-                                    };
-                                @endphp
-                                <p class="mb-1"><strong>Trạng thái:</strong>
-                                    <span class="badge {{ $badge }}">{{ $status }}</span>
-                                </p>
-
-                                <p class="mb-0"><strong>Mô tả:</strong> {{ Str::limit($sc->mo_ta, 120) }}</p>
-                            </div>
-
-                            {{-- Footer: các nút hành động giống bố cục trang Sinh viên --}}
-                            <div class="card-footer d-flex gap-2">
-                                <a href="{{ route('suco.show', $sc->id) }}" class="btn btn-sm flex-fill btn-secondary">Chi
-                                    tiết</a>
-
-                                <a href="{{ route('suco.edit', $sc->id) }}"
-                                    class="btn btn-sm btn-warning flex-fill">Sửa</a>
-
-                                <form action="{{ route('suco.destroy', $sc->id) }}" method="POST"
-                                    style="display:inline-block" class="mb-0">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger flex-fill"
-                                        onclick="return confirm('Xác nhận xóa sự cố này?')">
-                                        Xóa
-                                    </button>
-                                </form>
-
-                                {{-- nếu cần thêm nút đổi trạng thái có thể đặt ở đây --}}
-                                {{-- <form ...>Duyệt/Xử lý</form> --}}
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-12">
-                        <div class="card shadow-sm">
-                            <div class="card-body text-center text-muted py-4">
-                                <i class="fa fa-exclamation-circle"></i> Chưa có sự cố nào được ghi nhận.
-                            </div>
-                        </div>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        {{-- Phân trang --}}
-        <div class="d-flex justify-content-center mt-3">
-            {{ $suco->onEachSide(1)->links() }}
-        </div>
+<div class="x_panel">
+    <div class="x_title d-flex justify-content-between align-items-center flex-wrap">
+        <h2><i class="fa fa-exclamation-circle text-primary"></i> Danh sách sự cố</h2>
+        <a href="{{ route('suco.create') }}" class="btn btn-sm btn-primary mt-2 mt-sm-0">
+            <i class="fa fa-plus"></i> Thêm sự cố
+        </a>
     </div>
 
-    @push('styles')
-        <style>
-            /* Đồng bộ nhẹ để giống trang Sinh viên */
-            .badge {
-                border-radius: 10rem;
-                padding: .35rem .6rem;
-                font-weight: 600
-            }
-        </style>
-    @endpush
+
+    <div class="x_content">
+        {{-- 🔍 Ô tìm kiếm --}}
+        <form method="GET" action="{{ route('suco.index') }}" class="mb-3 d-flex align-items-center flex-wrap gap-2">
+            <input type="text" name="search" value="{{ request('search') ?? '' }}"
+                   class="form-control form-control-sm w-auto"
+                   placeholder="Tìm theo MSSV hoặc Họ tên">
+            <button type="submit" class="btn btn-sm btn-primary">Tìm</button>
+            @if (request('search'))
+                <a href="{{ route('suco.index') }}" class="btn btn-sm btn-light">Xóa lọc</a>
+            @endif
+        </form>
+
+        {{-- 🟢 Thông báo --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fa fa-check-circle"></i> {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>
+        @endif
+
+        {{-- 📋 Danh sách --}}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover align-middle text-center small mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width:40px;">ID</th>
+                        <th style="width:120px;">Sinh viên</th>
+                        <th style="width:80px;">Phòng</th>
+                        <th style="width:80px;">Ngày gửi</th>
+                        <th style="width:100px;">Hoàn thành</th>
+                        <th style="width:60px;">Ảnh</th>
+                        <th style="max-width:200px;">Mô tả</th>
+                        <th style="width:90px;">Trạng thái</th>
+                        <th style="width:80px;">Giá tiền</th>
+                        <th style="width:100px;">Thanh toán</th>
+                        <th style="width:110px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($su_cos as $sc)
+                        <tr>
+                            <td>{{ $sc->id }}</td>
+                            <td class="text-start">
+                                <div class="text-truncate" style="max-width:120px;">
+                                    {{ $sc->sinhVien->ho_ten ?? '---' }}
+                                    <br>
+                                    <small class="text-muted">MSSV: {{ $sc->sinhVien->ma_sinh_vien ?? '---' }}</small>
+                                </div>
+                            </td>
+                            <td>{{ $sc->phong->ten_phong ?? '---' }}</td>
+                            <td>{{ $sc->ngay_gui ? \Carbon\Carbon::parse($sc->ngay_gui)->format('d/m/Y') : '-' }}</td>
+                            <td>
+                                @if($sc->ngay_hoan_thanh)
+                                    {{ \Carbon\Carbon::parse($sc->ngay_hoan_thanh)->format('d/m/Y') }}
+                                @else
+                                    <span class="text-muted">---</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($sc->anh && file_exists(public_path($sc->anh)))
+                                    <img src="{{ asset($sc->anh) }}" class="img-thumbnail shadow-sm"
+                                         style="width:35px; height:35px; object-fit:cover;">
+                                @else
+                                    <span class="text-muted">---</span>
+                                @endif
+                            </td>
+
+                            {{-- ✏️ Mô tả --}}
+                            <td class="text-start">
+                                <div class="desc-truncate" title="{{ $sc->mo_ta }}">
+                                    {{ $sc->mo_ta }}
+                                </div>
+                            </td>
+
+                            <td>
+                                @php
+                                    $badge = match($sc->trang_thai) {
+                                        'Tiếp nhận' => 'bg-secondary',
+                                        'Đang xử lý' => 'bg-info',
+                                        'Hoàn thành' => 'bg-success',
+                                        default => 'bg-light text-dark'
+                                    };
+                                @endphp
+                                <span class="badge {{ $badge }}">{{ $sc->trang_thai }}</span>
+                            </td>
+
+                            <td>{{ $sc->payment_amount > 0 ? number_format($sc->payment_amount, 0, ',', '.') . ' ₫' : '0 ₫' }}</td>
+
+                            <td>
+                                @if($sc->payment_amount == 0)
+                                    <span class="badge bg-secondary">Không TT</span>
+                                @elseif($sc->is_paid)
+                                    <span class="badge bg-success">Đã TT</span>
+                                @else
+                                    <span class="badge bg-warning text-dark">Chưa TT</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                <div class="d-flex justify-content-center gap-1 flex-wrap">
+                                    <a href="{{ route('suco.show', $sc->id) }}" class="btn btn-secondary btn-xs" title="Xem">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('suco.edit', $sc->id) }}" class="btn btn-warning btn-xs" title="Sửa">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('suco.destroy', $sc->id) }}" method="POST" onsubmit="return confirm('Xác nhận xóa?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-xs" title="Xóa">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="11" class="text-center text-muted py-3">Chưa có sự cố nào.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            {{ $su_cos->onEachSide(1)->links('pagination::bootstrap-4') }}
+        </div>
+    </div>
+</div>
+
+<style>
+.table th, .table td {
+    vertical-align: middle !important;
+    padding: 0.45rem !important;
+    font-size: 13px;
+    white-space: nowrap;
+}
+.badge {
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+}
+.btn-xs {
+    padding: 4px 6px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.table-responsive {
+    overflow-x: auto;
+}
+.desc-truncate {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
+    font-size: 13px;
+    color: #333;
+}
+</style>
 @endsection

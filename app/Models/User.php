@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,50 +11,36 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
-     ];
+    ];
 
-    public static function checkEmail($email)
+    // Quan hệ n-n với Role
+    public function roles()
     {
-        $is_valid = true;
-        $user = User::where('email', $email)->first();
-        if ($user) {
-            $is_valid = false;
-        }
-        return $is_valid;
+        return $this->belongsToMany(Role::class, 'role_users', 'user_id', 'role_id');
     }
 
-    public function getRole(User $user)
+    // Lấy tên quyền đầu tiên (hiển thị trực tiếp trong view)
+    public function getRoleNameAttribute()
     {
-        $role_user = RoleUser::where('user_id', $user->id)->first();
-        $roleName = Role::where('id', $role_user->role_id)->first();
-        return $roleName->ten_quyen;
+        return $this->roles->first()?->ten_quyen ?? 'Chưa gán';
+    }
+
+    // Hàm lấy mã quyền (hoặc tên quyền) của user
+    public function getRole()
+    {
+        return $this->roles->first()?->ma_quyen ?? null;
     }
 }

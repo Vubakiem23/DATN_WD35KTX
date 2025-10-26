@@ -41,17 +41,31 @@
         </div>
 
         <div class="col-12">
-            @if(session('error'))
-                <div class="alert alert-danger" role="alert">
-                    {{ session('error') }}
-                </div>
-            @endif
-            @if(session('success'))
-                <div class="alert alert-success" role="alert">
-                    {{ session('success') }}
-                </div>
-            @endif
+    @if(session('error'))
+        <div class="alert alert-danger" role="alert">
+            {{ session('error') }}
         </div>
+    @endif
+    @if(session('success'))
+        <div class="alert alert-success" role="alert">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <!-- Hiển thị lỗi đăng nhập -->
+    @if ($errors->has('access'))
+        <div class="alert alert-danger">
+            {{ $errors->first('access') }}
+        </div>
+    @endif
+
+    @if ($errors->has('email'))
+        <div class="alert alert-danger">
+            {{ $errors->first('email') }}
+        </div>
+    @endif
+</div>
+
 
         <form method="post" action="{{ route('auth.handle.login') }}" id="loginForm" class="needs-validation mt-3" novalidate>
             @csrf

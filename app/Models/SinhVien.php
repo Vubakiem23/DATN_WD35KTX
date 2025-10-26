@@ -4,7 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use Illuminate\Support\Facades\Schema;
+
 
 class SinhVien extends Model
 {
@@ -63,6 +67,22 @@ class SinhVien extends Model
         return $this->belongsTo(Phong::class, 'phong_id', 'id');
     }
 
+
+    /**
+     * Quan hệ: Một sinh viên có nhiều sự cố
+     */
+    public function suCos(): HasMany
+    {
+        return $this->hasMany(SuCo::class, 'sinh_vien_id');
+    }
+
+    /**
+     * Quan hệ với slot
+     */
+    public function slot()
+    {
+        return $this->hasOne(\App\Models\Slot::class, 'sinh_vien_id');
+
     /* ===== Scopes lọc ===== */
 
     // q: mã SV, họ tên, SĐT, email + lớp/ngành
@@ -120,5 +140,6 @@ class SinhVien extends Model
     public function scopeIntakeYear($q, $year)
     {
         return $year ? $q->where('khoa_hoc', $year) : $q;
+
     }
 }

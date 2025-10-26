@@ -3,16 +3,12 @@
 @section('content')
 <div class="x_panel">
     <div class="x_title">
-        <h2>Cập nhật sự cố #{{ $suco->id }}</h2>
+        <h2><i class="fa fa-edit text-warning"></i> Chỉnh sửa sự cố #{{ $suco->id }}</h2>
         <div class="clearfix"></div>
     </div>
 
     <div class="x_content">
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        @if($errors->any())
+        @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
                     @foreach($errors->all() as $error)
@@ -26,98 +22,76 @@
             @csrf
             @method('PUT')
 
-            {{-- Sinh viên --}}
-            <div class="form-group mb-3">
-                <label><strong>Sinh viên</strong></label>
-                <input type="text" class="form-control" value="{{ $suco->sinhVien->ho_ten ?? '---' }}" disabled>
+            <div class="mb-3">
+                <label class="form-label">Sinh viên</label>
+                <input type="text" class="form-control" 
+                       value="{{ $suco->sinhVien->ho_ten }} ({{ $suco->sinhVien->ma_sinh_vien }})" disabled>
             </div>
 
-            {{-- Phòng --}}
-            <div class="form-group mb-3">
-                <label><strong>Phòng</strong></label>
-                <input type="text" class="form-control" value="{{ $suco->phong->ten_phong ?? '---' }}" disabled>
+            <div class="mb-3">
+                <label class="form-label">Phòng</label>
+                <input type="text" class="form-control" 
+                       value="{{ $suco->phong->ten_phong ?? '-' }}" disabled>
             </div>
 
-            {{-- Mô tả --}}
-            <div class="form-group mb-3">
-                <label><strong>Mô tả sự cố</strong></label>
-                <textarea class="form-control" rows="4" disabled>{{ $suco->mo_ta }}</textarea>
+            <div class="mb-3">
+                <label for="mo_ta" class="form-label">Mô tả sự cố</label>
+                <textarea name="mo_ta" class="form-control" rows="4" required>{{ old('mo_ta', $suco->mo_ta) }}</textarea>
             </div>
 
-            {{-- Ảnh minh chứng hiện tại --}}
-            <div class="form-group mb-3">
-                <label><strong>Ảnh minh chứng hiện tại</strong></label><br>
-                @if(!empty($suco->anh))
-                    <img src="{{ asset('uploads/suco/' . $suco->anh) }}" 
-                         alt="Ảnh sự cố" width="200" 
-                         style="border-radius: 10px; object-fit: cover; border: 1px solid #ccc;">
-                @else
-                    <img src="{{ asset('images/no-image.png') }}" 
-                         alt="Không có ảnh" width="200" 
-                         style="border-radius: 10px; object-fit: cover; border: 1px solid #ccc;">
-                @endif
-            </div>
-
-            {{-- Cập nhật ảnh mới --}}
-            <div class="form-group mb-4">
-                <label><strong>Thay ảnh mới </strong></label>
-                <input type="file" name="anh" id="anh" class="form-control" accept="image/*" onchange="previewImage(event)">
-                <div class="mt-3">
-                    <img id="preview" src="" 
-                         alt="Xem trước ảnh mới" 
-                         width="200" 
-                         style="border-radius: 10px; object-fit: cover; display: none; border: 1px solid #ccc;">
-                </div>
-            </div>
-
-            {{-- Trạng thái --}}
-            <div class="form-group mb-3">
-                <label><strong>Trạng thái</strong></label>
-                <select name="trang_thai" class="form-control" required>
+            <div class="mb-3">
+                <label for="trang_thai" class="form-label">Trạng thái xử lý</label>
+                <select name="trang_thai" id="trang_thai" class="form-control" required>
                     <option value="Tiếp nhận" {{ $suco->trang_thai == 'Tiếp nhận' ? 'selected' : '' }}>Tiếp nhận</option>
                     <option value="Đang xử lý" {{ $suco->trang_thai == 'Đang xử lý' ? 'selected' : '' }}>Đang xử lý</option>
                     <option value="Hoàn thành" {{ $suco->trang_thai == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
-                    <option value="Hủy" {{ $suco->trang_thai == 'Hủy' ? 'selected' : '' }}>Hủy</option>
                 </select>
             </div>
 
-            <div class="text-end">
-                <button type="submit" class="btn btn-success">
-                    <i class="fa fa-save"></i> Cập nhật
-                </button>
-                <a href="{{ route('suco.index') }}" class="btn btn-secondary">
-                    <i class="fa fa-arrow-left"></i> Quay lại
-                </a>
+            {{-- 🗓️ Ngày hoàn thành (chỉ hiển thị khi trạng thái = Hoàn thành) --}}
+            <div class="mb-3" id="hoan_thanh_field" 
+                 style="display: {{ $suco->trang_thai == 'Hoàn thành' ? 'block' : 'none' }}">
+                <label for="ngay_hoan_thanh" class="form-label">Ngày hoàn thành</label>
+                <input type="date" name="ngay_hoan_thanh" class="form-control"
+                       value="{{ old('ngay_hoan_thanh', $suco->ngay_hoan_thanh ? \Carbon\Carbon::parse($suco->ngay_hoan_thanh)->format('Y-m-d') : '') }}">
             </div>
+
+            <div class="mb-3">
+                <label for="payment_amount" class="form-label">Giá tiền (₫)</label>
+                <input type="number" name="payment_amount" class="form-control" 
+                       value="{{ old('payment_amount', $suco->payment_amount) }}">
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_paid" class="form-check-input" id="is_paid"
+                       value="1" {{ $suco->is_paid ? 'checked' : '' }}>
+                <label class="form-check-label" for="is_paid">Đã thanh toán</label>
+            </div>
+
+            <div class="mb-3">
+                <label for="anh" class="form-label">Ảnh minh chứng</label>
+                @if($suco->anh)
+                    <div class="mb-2">
+                        <img src="{{ asset($suco->anh) }}" alt="Ảnh sự cố" 
+                             style="width:120px; height:80px; object-fit:cover; border-radius:6px;">
+                    </div>
+                @endif
+                <input type="file" name="anh" class="form-control">
+            </div>
+
+            <button type="submit" class="btn btn-warning">
+                <i class="fa fa-save"></i> Cập nhật
+            </button>
+            <a href="{{ route('suco.index') }}" class="btn btn-light">Hủy</a>
         </form>
     </div>
 </div>
 
-{{-- Preview ảnh mới --}}
+{{-- ✅ Script: Tự động ẩn/hiện ngày hoàn thành --}}
 <script>
-function previewImage(event) {
-    const preview = document.getElementById('preview');
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    } else {
-        preview.src = '';
-        preview.style.display = 'none';
-    }
-}
+document.getElementById('trang_thai').addEventListener('change', function() {
+    const field = document.getElementById('hoan_thanh_field');
+    field.style.display = (this.value === 'Hoàn thành') ? 'block' : 'none';
+});
 </script>
-
-<style>
-.form-group label {
-    font-weight: 600;
-}
-.btn i {
-    margin-right: 4px;
-}
-</style>
 @endsection
