@@ -11,9 +11,52 @@ class SinhVien extends Model
     protected $table = 'sinh_vien';
 
     protected $fillable = [
-        'ma_sinh_vien','ho_ten','ngay_sinh','gioi_tinh','que_quan','noi_o_hien_tai',
-        'lop','nganh','khoa_hoc','so_dien_thoai','email','phong_id','trang_thai_ho_so',
+        'ma_sinh_vien',
+        'ho_ten',
+        'ngay_sinh',
+        'gioi_tinh',
+        'que_quan',
+        'noi_o_hien_tai',
+        'lop',
+        'nganh',
+        'khoa_hoc',
+        'so_dien_thoai',
+        'email',
+        'phong_id',
+        'trang_thai_ho_so',
+        'anh_sinh_vien',
+        // mới
+        'citizen_id_number',
+        'citizen_issue_date',
+        'citizen_issue_place',
+        'guardian_name',
+        'guardian_phone',
+        'guardian_relationship',
     ];
+
+    protected $casts = [
+        'ngay_sinh' => 'date',
+        'citizen_issue_date' => 'date',
+    ];
+
+    // lịch sử phòng
+    public function roomAssignments()
+    {
+        return $this->hasMany(\App\Models\RoomAssignment::class, 'sinh_vien_id');
+    }
+
+    public function currentRoomAssignment()
+    {
+        return $this->hasOne(\App\Models\RoomAssignment::class, 'sinh_vien_id')
+            ->whereNull('end_date')
+            ->latest('start_date');
+    }
+
+    // vi phạm
+    public function violations()
+    {
+        return $this->hasMany(\App\Models\Violation::class, 'sinh_vien_id');
+    }
 
     public function phong(): BelongsTo
     {
@@ -29,11 +72,11 @@ class SinhVien extends Model
         $like = "%{$term}%";
         return $q->where(function ($s) use ($like) {
             $s->where('ma_sinh_vien', 'like', $like)
-              ->orWhere('ho_ten', 'like', $like)
-              ->orWhere('so_dien_thoai', 'like', $like)
-              ->orWhere('email', 'like', $like)
-              ->orWhere('lop', 'like', $like)
-              ->orWhere('nganh', 'like', $like);
+                ->orWhere('ho_ten', 'like', $like)
+                ->orWhere('so_dien_thoai', 'like', $like)
+                ->orWhere('email', 'like', $like)
+                ->orWhere('lop', 'like', $like)
+                ->orWhere('nganh', 'like', $like);
         });
     }
 
