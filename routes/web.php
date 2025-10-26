@@ -17,7 +17,6 @@ use App\Http\Controllers\SuCoController;
 use App\Http\Controllers\SlotController;
 
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\ViolationController;
 use App\Http\Controllers\ViolationTypeController;

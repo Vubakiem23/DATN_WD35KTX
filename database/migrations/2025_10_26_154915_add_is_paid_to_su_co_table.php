@@ -9,9 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('su_co', function (Blueprint $table) {
-            $table->boolean('is_paid')->default(false)->after('payment_amount');
+            if (!Schema::hasColumn('su_co', 'is_paid')) {
+                $table->boolean('is_paid')->default(false)->after('payment_amount');
+            }
         });
     }
+
 
     public function down(): void
     {
