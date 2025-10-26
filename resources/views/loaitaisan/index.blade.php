@@ -10,8 +10,33 @@
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
 
+  {{-- ✅ Form lọc tìm kiếm --}}
+ <form action="{{ route('loaitaisan.index') }}" method="GET" class="mb-4">
+  <div class="input-group">
+    {{-- Ô nhập từ khóa --}}
+    <span class="  text-white">
+      <i class="bi bi-search"></i>
+    </span>
+    <input type="text" name="keyword" value="{{ request('keyword') }}" 
+           class="form-control" placeholder="Nhập tên loại tài sản cần tìm...">
+
+    {{-- Nút tìm kiếm --}}
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-filter"></i> Lọc
+    </button>
+
+    {{-- Nút làm mới --}}
+    <a href="{{ route('loaitaisan.index') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-clockwise"></i> Làm mới
+    </a>
+  </div>
+</form>
+
+
+  {{-- Nút thêm mới --}}
   <a href="{{ route('loaitaisan.create') }}" class="btn btn-success mb-3">➕ Thêm loại tài sản</a>
 
+  {{-- Bảng danh sách --}}
   <table class="table table-bordered table-striped align-middle">
     <thead class="table-light">
       <tr>
@@ -25,11 +50,9 @@
       </tr>
     </thead>
     <tbody>
-      @foreach ($loais as $loai)
+      @forelse ($loais as $loai)
         <tr>
-          <td>{{ $loop->iteration }}</td>
-
-          {{-- Hình ảnh --}}
+          <td>{{ $loais->firstItem() + $loop->index }}</td>
           <td class="text-center">
             @if ($loai->hinh_anh && file_exists(public_path('uploads/loai/'.$loai->hinh_anh)))
               <img src="{{ asset('uploads/loai/'.$loai->hinh_anh) }}"
@@ -58,8 +81,18 @@
             </form>
           </td>
         </tr>
-      @endforeach
+      @empty
+        <tr>
+          <td colspan="7" class="text-center text-muted">Không tìm thấy loại tài sản nào.</td>
+        </tr>
+      @endforelse
     </tbody>
   </table>
+
+  {{-- ✅ Phân trang --}}
+  <div class="d-flex justify-content-center mt-3">
+      {{ $loais->links('pagination::bootstrap-5') }}
+  </div>
 </div>
 @endsection
+

@@ -9,13 +9,24 @@ use Illuminate\Support\Str;
 class LoaiTaiSanController extends Controller
 {
     // Danh sách loại tài sản
-    public function index()
-    {
-        $loais = LoaiTaiSan::orderBy('id', 'desc')->get();
-        return view('loaitaisan.index', compact('loais'));
+  public function index(Request $request)
+{
+    $query = LoaiTaiSan::orderBy('id', 'desc');
+
+    // ✅ Lọc theo tên loại (nếu có nhập)
+    if ($request->filled('keyword')) {
+        $query->where('ten_loai', 'like', '%' . $request->keyword . '%');
     }
 
-    // Form thêm mới
+    // ✅ Phân trang 5 dòng
+    $loais = $query->paginate(5);
+
+    // Giữ lại từ khóa khi chuyển trang
+    $loais->appends($request->only('keyword'));
+
+    return view('loaitaisan.index', compact('loais'));
+}
+
     public function create()
     {
         return view('loaitaisan.create');
@@ -25,9 +36,12 @@ class LoaiTaiSanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ten_loai' => 'required',
+            'ten_loai' => 'required|unique:loai_tai_san,ten_loai',
             'mo_ta' => 'nullable',
             'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ], [
+            'ten_loai.required' => 'Vui lòng nhập tên loại tài sản!',
+            'ten_loai.unique' => 'Tên loại tài sản đã tồn tại!',
         ]);
 
         // Tạo mã loại tự động
@@ -40,7 +54,7 @@ class LoaiTaiSanController extends Controller
         // Xử lý hình ảnh
         if ($request->hasFile('hinh_anh')) {
             $file = $request->file('hinh_anh');
-            $filename = time().'_'.Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)).'.'.$file->getClientOriginalExtension();
+            $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/loai'), $filename);
             $data['hinh_anh'] = $filename;
         }
@@ -63,21 +77,25 @@ class LoaiTaiSanController extends Controller
         $loai = LoaiTaiSan::findOrFail($id);
 
         $request->validate([
-            'ten_loai' => 'required',
+            'ten_loai' => 'required|unique:loai_tai_san,ten_loai,' . $id,
             'mo_ta' => 'nullable',
             'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ], [
+            'ten_loai.required' => 'Vui lòng nhập tên loại tài sản!',
+            'ten_loai.unique' => 'Tên loại tài sản đã tồn tại!',
         ]);
+
 
         $data = $request->only(['ten_loai', 'mo_ta']);
 
         // Upload ảnh mới, xóa ảnh cũ nếu có
         if ($request->hasFile('hinh_anh')) {
-            if ($loai->hinh_anh && file_exists(public_path('uploads/loai/'.$loai->hinh_anh))) {
-                unlink(public_path('uploads/loai/'.$loai->hinh_anh));
+            if ($loai->hinh_anh && file_exists(public_path('uploads/loai/' . $loai->hinh_anh))) {
+                unlink(public_path('uploads/loai/' . $loai->hinh_anh));
             }
 
             $file = $request->file('hinh_anh');
-            $filename = time().'_'.Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)).'.'.$file->getClientOriginalExtension();
+            $filename = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('uploads/loai'), $filename);
             $data['hinh_anh'] = $filename;
         }
@@ -93,8 +111,8 @@ class LoaiTaiSanController extends Controller
         $loai = LoaiTaiSan::findOrFail($id);
 
         // Xóa ảnh nếu có
-        if ($loai->hinh_anh && file_exists(public_path('uploads/loai/'.$loai->hinh_anh))) {
-            unlink(public_path('uploads/loai/'.$loai->hinh_anh));
+        if ($loai->hinh_anh && file_exists(public_path('uploads/loai/' . $loai->hinh_anh))) {
+            unlink(public_path('uploads/loai/' . $loai->hinh_anh));
         }
 
         $loai->delete();
