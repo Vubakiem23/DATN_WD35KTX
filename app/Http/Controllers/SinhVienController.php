@@ -6,6 +6,8 @@ use App\Models\SinhVien;
 use App\Models\Phong;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 
 class SinhVienController extends Controller
 {
@@ -33,7 +35,7 @@ class SinhVienController extends Controller
             ->majorLike($majorLike)
             ->intakeYear($intakeYear)
             ->orderBy('id', 'desc')
-            ->paginate(6)
+            ->paginate(13)
             ->appends($request->query());
 
         // dữ liệu cho dropdown
@@ -72,18 +74,48 @@ class SinhVienController extends Controller
     // Lưu sinh viên mới
     public function store(Request $request)
     {
-        $request->validate([
-            'ma_sinh_vien' => 'required|unique:sinh_vien',
-            'ho_ten' => 'required',
-            'email' => 'required|email|unique:sinh_vien',
+        $data = $request->validate([
+            'ma_sinh_vien' => 'required|string|unique:sinh_vien,ma_sinh_vien',
+            'ho_ten' => 'required|string',
+            'ngay_sinh' => 'required|date',
+            'gioi_tinh' => 'required|string',
+            'que_quan' => 'required|string',
+            'noi_o_hien_tai' => 'required|string',
+            'lop' => 'required|string',
+            'nganh' => 'required|string',
+            'khoa_hoc' => 'required|string',
+            'so_dien_thoai' => 'required|string',
+            'email' => 'required|email',
+            'phong_id' => 'required|exists:phong,id',
+            'trang_thai_ho_so' => 'nullable|string',
+
+            // mới
+            'citizen_id_number' => 'nullable|string',
+            'citizen_issue_date' => 'nullable|date',
+            'citizen_issue_place' => 'nullable|string',
+            'guardian_name' => 'nullable|string',
+            'guardian_phone' => 'nullable|string',
+            'guardian_relationship' => 'nullable|string',
+
+            // ảnh đã có migration riêng từ trước
+            'anh_sinh_vien' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->all();
-        $data['trang_thai_ho_so'] = $request->input('trang_thai_ho_so', 'Chờ duyệt');
+        if ($request->hasFile('anh_sinh_vien')) {
+            $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public'); // storage/public/students
+        }
 
-        SinhVien::create($data);
+        $sv = \App\Models\SinhVien::create($data);
 
-        return redirect()->route('sinhvien.index')->with('success', 'Thêm sinh viên thành công!');
+        // Ghi lịch sử phòng lần đầu
+        \App\Models\RoomAssignment::create([
+            'sinh_vien_id' => $sv->id,
+            'phong_id' => $sv->phong_id,
+            'start_date' => now()->toDateString(),
+            'end_date' => null,
+        ]);
+
+        return redirect()->route('sinhvien.index')->with('success', 'Đã thêm sinh viên');
     }
 
     // Form chỉnh sửa
@@ -98,16 +130,59 @@ class SinhVienController extends Controller
     // Cập nhật thông tin
     public function update(Request $request, $id)
     {
-        $sinhvien = SinhVien::findOrFail($id);
+        $sv = \App\Models\SinhVien::findOrFail($id);
 
-        $request->validate([
-            'email' => "required|email|unique:sinh_vien,email,$id",
+        $data = $request->validate([
+            'ma_sinh_vien' => 'required|string|unique:sinh_vien,ma_sinh_vien,' . $sv->id,
+            'ho_ten' => 'required|string',
+            'ngay_sinh' => 'required|date',
+            'gioi_tinh' => 'required|string',
+            'que_quan' => 'required|string',
+            'noi_o_hien_tai' => 'required|string',
+            'lop' => 'required|string',
+            'nganh' => 'required|string',
+            'khoa_hoc' => 'required|string',
+            'so_dien_thoai' => 'required|string',
+            'email' => 'required|email',
+            'phong_id' => 'required|exists:phong,id',
+            'trang_thai_ho_so' => 'nullable|string',
+
+            // mới
+            'citizen_id_number' => 'nullable|string',
+            'citizen_issue_date' => 'nullable|date',
+            'citizen_issue_place' => 'nullable|string',
+            'guardian_name' => 'nullable|string',
+            'guardian_phone' => 'nullable|string',
+            'guardian_relationship' => 'nullable|string',
+
+            'anh_sinh_vien' => 'nullable|image|max:2048',
         ]);
 
-        $sinhvien->update($request->all());
+        if ($request->hasFile('anh_sinh_vien')) {
+            // Storage::disk('public')->delete($sv->anh_sinh_vien); // nếu muốn dọn ảnh cũ
+            $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public');
+        }
 
-        return redirect()->route('sinhvien.index')->with('success', 'Cập nhật thông tin thành công!');
+        $oldPhong = $sv->phong_id;
+        $sv->update($data);
+
+        // Nếu đổi phòng, đóng lịch sử cũ và mở lịch sử mới
+        if ((int)$oldPhong !== (int)$sv->phong_id) {
+            \App\Models\RoomAssignment::where('sinh_vien_id', $sv->id)
+                ->whereNull('end_date')
+                ->update(['end_date' => now()->toDateString()]);
+
+            \App\Models\RoomAssignment::create([
+                'sinh_vien_id' => $sv->id,
+                'phong_id' => $sv->phong_id,
+                'start_date' => now()->toDateString(),
+                'end_date' => null,
+            ]);
+        }
+
+        return redirect()->route('sinhvien.index')->with('success', 'Đã cập nhật sinh viên');
     }
+
 
     // 🧹 Xóa sinh viên + dữ liệu liên quan
     public function destroy($id)

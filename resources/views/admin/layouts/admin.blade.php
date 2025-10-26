@@ -170,6 +170,7 @@
             color: #fff
         }
     </style>
+    <!-- css lọc-->
     <style>
         #filterModal .modal-body .form-control {
             height: 40px;
@@ -179,113 +180,113 @@
             margin-bottom: .25rem;
         }
     </style>
+    <!-- css sinh vien mới-->
+    {{-- <style>
+        .sv-list .sv-item {
+            transition: background-color .15s ease, box-shadow .15s ease;
+        }
+
+        .sv-list .sv-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .sv-list .sv-actions {
+            display: none;
+            gap: .5rem;
+        }
+
+        /* Hiện hàng hành động phụ khi hover dòng, hoặc khi có focus trong dòng (hỗ trợ bàn phím/mobile) */
+        .sv-item:hover .sv-actions,
+        .sv-item:focus-within .sv-actions {
+            display: flex;
+        }
+
+        /* Chuẩn hóa tất cả nút trong hàng action */
+        .sv-actions .btn {
+            display: inline-flex;
+            /* đồng bộ <a> và <button> */
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            /* cùng chiều cao */
+            padding: 0 14px;
+            /* cùng padding ngang */
+            line-height: 1;
+            /* tránh kéo dãn */
+            border-radius: 10px;
+            /* cùng bo góc */
+            font-weight: 500;
+        }
+
+        /* Khoảng cách đều giữa các nút */
+        .sv-actions .btn+.btn,
+        .sv-actions form+.btn,
+        .sv-actions .btn+form {
+            margin-left: 8px;
+        }
+
+        /* (Tuỳ chọn) set cùng bề rộng cho thật “đều” */
+        .sv-actions .btn.equal-width {
+            min-width: 140px;
+            /* đổi 120–160 tuỳ thích */
+        }
+    </style> --}}
 
     <style>
-        /* Lưới 5 cột/hàng – 2 hàng cố định, cao đều */
-        .sv-filter {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(190px, 1fr));
-            grid-template-areas:
-                "q gender status room khu"
-                "class major intake actions actions";
-            gap: 12px 16px;
-            align-items: end;
-            /* đáy thẳng hàng */
+        /* Bảng danh sách SV có hàng actions ẩn/hiện */
+        .table-sv .sv-row-actions {
+            display: none;
         }
 
-        /* Map vùng */
-        .item-q {
-            grid-area: q;
+        .table-sv tr.sv-row-main:hover+tr.sv-row-actions,
+        .table-sv tr.sv-row-actions:hover,
+        .table-sv tr.sv-row-main:focus-within+tr.sv-row-actions {
+            display: table-row;
         }
 
-        .item-gender {
-            grid-area: gender;
+        /* Nội dung hàng actions */
+        .table-sv .sv-actions {
+            display: flex;
+            gap: .5rem;
+            padding: .25rem 0;
         }
 
-        .item-status {
-            grid-area: status;
+        .table-sv .sv-actions .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            padding: 0 14px;
+            line-height: 1;
+            border-radius: 10px;
+            font-weight: 500;
         }
 
-        .item-room {
-            grid-area: room;
+        .table-sv .sv-actions .btn.equal-width {
+            min-width: 140px;
         }
 
-        .item-khu {
-            grid-area: khu;
+        /* Hiệu ứng hover nhẹ cho hàng chính (giống list cũ) */
+        .table-sv tr.sv-row-main:hover {
+            background-color: #f8fafc;
         }
 
-        .item-class {
-            grid-area: class;
-        }
-
-        .item-major {
-            grid-area: major;
-        }
-
-        .item-intake {
-            grid-area: intake;
-        }
-
-        .item-actions {
-            grid-area: actions;
-        }
-
-        /* Độ cao & nhãn */
-        .sv-filter .form-control,
-        .sv-filter .form-select {
-            height: 40px;
-        }
-
-        .sv-filter .form-label {
-            margin-bottom: 6px;
-            font-size: .88rem;
-            color: #6c757d;
-            white-space: nowrap;
-        }
-
-        /* Nếu muốn “Khu” dài hơn một chút */
-        .item-khu .form-select {
-            min-width: 260px;
-        }
-
-        /* tuỳ chỉnh 240–340px */
-
-        /* Responsive gọn gàng */
-        @media (max-width: 1199.98px) {
-            .sv-filter {
-                grid-template-columns: repeat(3, minmax(190px, 1fr));
-                grid-template-areas:
-                    "q q q"
-                    "gender status room"
-                    "khu class major"
-                    "intake actions actions";
-            }
-        }
-
-        @media (max-width: 767.98px) {
-            .sv-filter {
-                grid-template-columns: 1fr;
-                grid-template-areas:
-                    "q"
-                    "gender"
-                    "status"
-                    "room"
-                    "khu"
-                    "class"
-                    "major"
-                    "intake"
-                    "actions";
-            }
-
-            .item-actions .d-flex {
-                justify-content: stretch;
-            }
-
-            .item-actions .d-flex>* {
-                flex: 1;
+        /* Mobile: luôn hiện hàng actions để dễ bấm */
+        @media (max-width: 768px) {
+            .table-sv .sv-row-actions {
+                display: table-row;
             }
         }
     </style>
+
+
+
+
+
+
+
+
+
 
 
 
