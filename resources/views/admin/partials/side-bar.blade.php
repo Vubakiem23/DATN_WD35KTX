@@ -58,59 +58,77 @@
                                     <i class="fa fa-user-graduate"></i> Quản lý sinh viên
                                 </a>
                             </li>
-                        </ul>
-                    </li>
-
-                    <!-- Quản lý cơ sở vật chất -->
-                    <li>
-                        <a><i class="fa fa-table"></i> Cơ Sở Vật Chất <span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
                             <li>
-                                <a href="{{ route('taisan.index') }}"
-                                    class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
-                                    Quản lý tài sản, thiết bị phòng
-                                </a>
+                                <a href="{{ route('vipham.index') }}"
+                                class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
+                                Quản lý sinh viên vi phạm
+                            </a>
                             </li>
-                            <li>
-                                <a href="{{ route('lichbaotri.index') }}"
-                                    class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
-                                    Lịch bảo trì
-                                </a>
-                            </li>
-                             <li>
-                                <a href="{{ route('kho.index') }}"
-                                    class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
-                                   Kho đồ
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                </ul>
+                </li>
 
-                    <li>
-                        <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
-                            <li><a href="{{ route('hoadon.index') }}">Quản lý thu phí & hóa đơn</a></li>
-                            
+                <!-- Quản lý cơ sở vật chất -->
+                <li>
+                    <a><i class="fa fa-table"></i> Cơ Sở Vật Chất <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li>
+                            <a href="{{ route('taisan.index') }}"
+                                class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
+                                Quản lý tài sản, thiết bị phòng
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('lichbaotri.index') }}"
+                                class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
+                                Lịch bảo trì
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('kho.index') }}"
+                                class="{{ request()->routeIs('kho.*') ? 'active' : '' }}">
+                                Kho đồ
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('loaitaisan.index') }}"
+                                class="{{ request()->routeIs('loaitaisan.*') ? 'active' : '' }}">
+                                Loại tài sản
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                        <li><a href="{{ route('hoadon.index') }}">Quản lý thu phí & hóa đơn</a></li>
 
 
 
-                        </ul>
 
-                    </li>
+                    </ul>
 
-                    <li>
-                        <a><i class="fa fa-wrench"></i> Tiếp Nhận, Xử Lý Sự Cố, Bảo Trì
-                            <span class="fa fa-chevron-down"></span></a>
+                </li>
 
-                        <ul class="nav child_menu">
-                            <li>
-                                <a href="{{ route('suco.index') }}"
-                                    class="{{ request()->routeIs('suco.*') ? 'active' : '' }}">
-                                    Quản lý yêu cầu sửa chữa, bảo trì
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                <li>
+                    <a><i class="fa fa-wrench"></i> Tiếp Nhận, Xử Lý Sự Cố, Bảo Trì
+                        <span class="fa fa-chevron-down"></span></a>
+
+                    <ul class="nav child_menu">
+                        <li>
+                            <a href="{{ route('suco.index') }}"
+                                class="{{ request()->routeIs('suco.*') ? 'active' : '' }}">
+                                Quản lý yêu cầu sửa chữa, bảo trì
+                            </a>
+                        </li>
+
+                    </ul>
+
+
+
+
+
+                </li>
                 </ul>
             </div>
 

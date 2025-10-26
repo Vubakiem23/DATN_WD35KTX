@@ -1,6 +1,7 @@
 @extends('admin.layouts.admin')
 
 @section('content')
+
 <div class="x_panel">
     <div class="x_title d-flex justify-content-between align-items-center flex-wrap">
         <h2><i class="fa fa-exclamation-circle text-primary"></i> Danh sách sự cố</h2>
@@ -8,6 +9,7 @@
             <i class="fa fa-plus"></i> Thêm sự cố
         </a>
     </div>
+
 
     <div class="x_content">
         {{-- 🔍 Ô tìm kiếm --}}
