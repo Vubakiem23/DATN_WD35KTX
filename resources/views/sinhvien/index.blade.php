@@ -87,7 +87,7 @@
                                 </tr>
 
                                 {{-- Hàng nút (ẩn/hiện khi hover lên hàng chính) --}}
-                                <tr class="sv-row-actions">
+                                <tr class=" sv-row-actions">
                                     <td colspan="8">
                                         <div class="sv-actions">
                                             <button type="button" data-id="{{ $sv->id }}"
@@ -108,7 +108,6 @@
                                         </div>
                                     </td>
                                 </tr>
-
                             @empty
                                 <tr>
                                     <td colspan="8" class="text-center text-muted py-4">Không có sinh viên nào phù hợp.

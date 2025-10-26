@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             QuanLySeeder::class,
             SuCoSeeder::class,
             TaiSanSeeder::class,
+            ViolationTypeSeeder::class,
         ]);
     }
 }

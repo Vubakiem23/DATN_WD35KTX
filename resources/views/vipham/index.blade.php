@@ -55,12 +55,12 @@
                     <a href="{{ route('vipham.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
                 </div>
                 <div>
-                     <a href="{{ route('vipham.create') }}" class="btn btn-primary">
-                <i class="fa fa-plus mr-1"></i> Ghi vi phạm
-            </a>
+                    <a href="{{ route('vipham.create') }}" class="btn btn-primary">
+                        <i class="fa fa-plus mr-1"></i> Ghi vi phạm
+                    </a>
                 </div>
             </div>
-           
+
 
         </form>
 
@@ -73,6 +73,7 @@
                             <tr>
                                 <th class="fit">Thời điểm</th>
                                 <th>Sinh viên</th>
+                                <th>Hình ảnh(Nếu có)</th>
                                 <th>Loại</th>
                                 <th class="fit">Trạng thái</th>
                                 <th class="text-right fit">Tiền phạt</th>
@@ -84,8 +85,10 @@
                         <tbody>
                             @forelse($violations as $v)
                                 @php
-                                    $statusBadge = $v->status == 'open' ? 'badge-soft-warning' : 'badge-soft-success';
-                                    $statusText = $v->status == 'open' ? 'Open' : 'Resolved';
+                                    $isResolved = $v->status === 'resolved'; // true = đã xử lý
+                                    $statusText = $isResolved ? 'Đã xử lý' : 'Chưa xử lý';
+                                    // giữ lớp badge bạn đang dùng
+                                    $statusBadge = $isResolved ? 'badge-soft-success' : 'badge-soft-warning';
                                     $noteShort = \Illuminate\Support\Str::limit($v->note, 50);
                                 @endphp
                                 <tr>
@@ -93,6 +96,14 @@
                                     <td>
                                         <div class="font-weight-600">{{ $v->student->ho_ten ?? 'N/A' }}</div>
                                         <div class="text-muted small">{{ $v->student->ma_sinh_vien ?? '' }}</div>
+                                    </td>
+                                    <td>
+                                        @if ($v->image)
+                                            <img src="{{ asset('storage/' . $v->image) }}" alt="Ảnh vi phạm" width="80"
+                                                class="rounded">
+                                        @else
+                                            <span class="text-muted">Không có ảnh</span>
+                                        @endif
                                     </td>
                                     <td>{{ $v->type->name ?? 'N/A' }}</td>
                                     <td class="fit">
@@ -112,10 +123,16 @@
                                     </td>
                                     <td class="text-right fit">
                                         <div class="btn-group">
+                                            <a href="{{ route('vipham.show', $v->id) }}"
+                                                class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+
                                             <a href="{{ route('vipham.edit', $v->id) }}"
                                                 class="btn btn-sm btn-outline-primary" title="Sửa">
                                                 <i class="fa fa-pencil"></i>
                                             </a>
+
                                             @if ($v->status == 'open')
                                                 <form action="{{ route('vipham.resolve', $v->id) }}" method="POST"
                                                     class="d-inline">
@@ -126,6 +143,7 @@
                                                     </button>
                                                 </form>
                                             @endif
+
                                             <form action="{{ route('vipham.destroy', $v->id) }}" method="POST"
                                                 class="d-inline" onsubmit="return confirm('Xóa vi phạm này?')">
                                                 @csrf @method('DELETE')
