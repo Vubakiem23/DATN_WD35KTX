@@ -82,7 +82,7 @@ class SinhVien extends Model
     public function slot()
     {
         return $this->hasOne(\App\Models\Slot::class, 'sinh_vien_id');
-
+    }
     /* ===== Scopes lọc ===== */
 
     // q: mã SV, họ tên, SĐT, email + lớp/ngành
@@ -140,6 +140,5 @@ class SinhVien extends Model
     public function scopeIntakeYear($q, $year)
     {
         return $year ? $q->where('khoa_hoc', $year) : $q;
-
     }
 }
