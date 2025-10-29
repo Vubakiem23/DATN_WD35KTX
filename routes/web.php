@@ -73,11 +73,27 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('hoadon/export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
     Route::post('hoadon/{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
-    // ---------------- LỊCH BẢO TRÌ ----------------
-    Route::resource('lichbaotri', LichBaoTriController::class);
-    Route::patch('lichbaotri/{id}/hoanthanh', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
-    Route::get('lichbaotri/show/{id}', [LichBaoTriController::class, 'showModal'])->name('lichbaotri.show.modal');
-    Route::get('lichbaotri/tai-san', [LichBaoTriController::class, 'getTaiSanByPhong'])->name('lichbaotri.taiSanByPhong');
+   Route::prefix('lichbaotri')->group(function () {
+    // CRUD cơ bản
+    Route::get('/', [LichBaoTriController::class, 'index'])->name('lichbaotri.index');
+    Route::get('/create', [LichBaoTriController::class, 'create'])->name('lichbaotri.create');
+    Route::post('/', [LichBaoTriController::class, 'store'])->name('lichbaotri.store');
+    Route::get('/{id}/edit', [LichBaoTriController::class, 'edit'])->name('lichbaotri.edit');
+    Route::put('/{id}', [LichBaoTriController::class, 'update'])->name('lichbaotri.update');
+    Route::delete('/{id}', [LichBaoTriController::class, 'destroy'])->name('lichbaotri.destroy');
+
+    // 👁️ Xem chi tiết (modal)
+    Route::get('/show/{id}', [LichBaoTriController::class, 'show'])->name('lichbaotri.show');
+
+    // 🔍 Lấy tài sản theo phòng
+    Route::get('/tai-san', [LichBaoTriController::class, 'getTaiSanByPhong'])->name('lichbaotri.taiSanByPhong');
+
+    // ✅ Hoàn thành bảo trì
+    Route::get('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhForm'])->name('lichbaotri.hoanthanh.form');
+    Route::post('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhSubmit'])->name('lichbaotri.hoanthanh.submit');
+    Route::patch('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
+});
+
 
     // ---------------- THÔNG BÁO ----------------
     Route::resource('thongbao', ThongBaoController::class);
