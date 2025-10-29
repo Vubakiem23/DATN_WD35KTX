@@ -45,10 +45,11 @@ class AssignmentController extends Controller
                 return redirect()->back()->with('error', 'Phòng đang bảo trì, không thể gán.');
             }
 
-            // Kiểm tra giới tính phòng nếu có quy định
-            if (!empty($phong->gioi_tinh) && $phong->gioi_tinh !== 'Cả hai') {
-                if (trim(mb_strtolower($phong->gioi_tinh)) !== trim(mb_strtolower($sv->gioi_tinh))) {
-                    return redirect()->back()->with('error', 'Giới tính sinh viên không phù hợp với quy định phòng.');
+            // Kiểm tra giới tính theo khu (nếu có) hoặc theo phòng
+            $requiredGender = $phong->khu && $phong->khu->gioi_tinh ? $phong->khu->gioi_tinh : $phong->gioi_tinh;
+            if (!empty($requiredGender) && $requiredGender !== 'Cả hai') {
+                if (trim(mb_strtolower($requiredGender)) !== trim(mb_strtolower($sv->gioi_tinh))) {
+                    return redirect()->back()->with('error', 'Giới tính sinh viên không phù hợp với quy định khu/phòng.');
                 }
             }
 

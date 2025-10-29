@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::table('su_co', function (Blueprint $table) {
             if (!Schema::hasColumn('su_co', 'is_paid')) {
-                $table->boolean('is_paid')->default(false)->after('payment_amount');
+                // Không phụ thuộc cột trước đó để tránh lỗi môi trường khác nhau
+                $table->boolean('is_paid')->default(false);
             }
         });
     }
@@ -19,7 +20,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('su_co', function (Blueprint $table) {
-            $table->dropColumn('is_paid');
+            if (Schema::hasColumn('su_co', 'is_paid')) {
+                $table->dropColumn('is_paid');
+            }
         });
     }
 };

@@ -40,7 +40,7 @@ class SinhVienController extends Controller
 
         // dữ liệu cho dropdown
         $phongs = \App\Models\Phong::select('id', 'ten_phong')->orderBy('ten_phong')->get();
-        $dsKhu  = \App\Models\Phong::query()->select('khu')->distinct()->orderBy('khu')->pluck('khu');
+        $dsKhu  = \App\Models\Khu::orderBy('ten_khu')->pluck('ten_khu');
 
         return view('sinhvien.index', [
             'sinhviens' => $sinhviens,

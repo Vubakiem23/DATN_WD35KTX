@@ -30,7 +30,7 @@
         {{-- Tabs by Khu (building) --}}
         <h4>Khu</h4>
         @php
-            $khuList = $phongs->groupBy('khu');
+            $khuList = $phongs->groupBy(function($p){ return optional($p->khu)->ten_khu ?? 'Không xác định'; });
             $firstKhu = $khuList->keys()->first() ?? '';
         @endphp
 
@@ -47,16 +47,55 @@
         </ul>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>Danh sách các phòng</h4>
-            <a href="{{ route('phong.create') }}" class="btn btn-success">Tạo phòng</a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('phong.create') }}" class="btn btn-success">Tạo phòng</a>
+            </div>
         </div>
+        <div class="mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-sm-6 col-lg-4">
+                    <input type="text" id="roomFilterName" class="form-control" placeholder="Tìm theo tên phòng...">
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <select id="roomFilterStatus" class="form-control">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="empty">Trống</option>
+                        <option value="partial">Còn chỗ</option>
+                        <option value="full">Đã ở full</option>
+                        <option value="no-slot">Chưa có slot</option>
+                    </select>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <input type="number" min="0" step="1000" id="roomFilterPriceMin" class="form-control" placeholder="Giá từ">
+                </div>
+                <div class="col-6 col-lg-2">
+                    <input type="number" min="0" step="1000" id="roomFilterPriceMax" class="form-control" placeholder="Giá đến">
+                </div>
+            </div>
+        </div>
+        @push('styles')
+        <style>
+          .room-card-actions .btn-action{width:40px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px}
+          .room-card-actions .btn-action i{font-size:14px}
+        </style>
+        @endpush
         <div class="tab-content">
             @foreach($khuList as $k => $items)
-                @php $khu = $items->first()->khu ?? ''; $slug = \Illuminate\Support\Str::slug($khu) ?: 'khu-'.$k; @endphp
+                @php $khu = optional($items->first()->khu)->ten_khu ?? 'Không xác định'; $slug = \Illuminate\Support\Str::slug($khu) ?: 'khu-'.$k; @endphp
                 <div class="tab-pane fade {{ $khu == $firstKhu ? 'show active' : '' }}" id="khu-{{ $slug }}"
                      role="tabpanel">
                     <div class="row g-3">
                         @foreach($items as $p)
-                            <div class="col-12 col-md-6 col-lg-4">
+                            @php
+                                $totalSlots = $p->totalSlots();
+                                $usedSlots = $p->usedSlots();
+                                $available = max(0, $totalSlots - $usedSlots);
+                                $status = 'partial';
+                                if ($totalSlots === 0) { $status = 'no-slot'; }
+                                elseif ($available === 0) { $status = 'full'; }
+                                elseif ($usedSlots === 0) { $status = 'empty'; }
+                            @endphp
+                            <div class="col-12 col-md-6 col-lg-4 room-card" data-name="{{ Str::lower($p->ten_phong) }}" data-status="{{ $status }}" data-price="{{ (int)($p->gia_phong ?? 0) }}">
                                 <div class="card h-100 shadow-sm">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <strong>{{ $p->ten_phong }}</strong>
@@ -80,7 +119,7 @@
                                         </div>
                                     @endif
                                     <div class="card-body">
-                                        <p class="mb-1"><strong>Khu:</strong> {{ $p->khu ?? '-' }}</p>
+                                        <p class="mb-1"><strong>Khu:</strong> {{ optional($p->khu)->ten_khu ?? '-' }}</p>
                                         <p class="mb-1"><strong>Loại:</strong> {{ \App\Models\Phong::labelLoaiPhongBySlots($p->totalSlots()) }}</p>
                                         <p class="mb-1"><strong>Giới tính:</strong> {{ $p->gioi_tinh ?? '-' }}</p>
                                         <p class="mb-1"><strong>Sức chứa:</strong> {{ $p->totalSlots() }} chỗ</p>
@@ -93,18 +132,14 @@
                                             <p class="text-muted small">{{ Str::limit($p->ghi_chu, 120) }}</p>
                                         @endif
                                     </div>
-                                    <div class="card-footer d-flex gap-2">
-                                        <a href="{{ route('phong.edit', $p) }}" class="btn btn-sm btn-info flex-fill">Chỉnh
-                                            sửa</a>
-                                        <a href="{{ route('phong.show', $p->id) }}"
-                                           class="btn btn-sm btn-secondary flex-fill">Thông Tin</a>
-
-                                        <a href="{{ route('taisan.index') }}?phong_id={{ $p->id }}"
-                                           class="btn btn-sm btn-primary flex-fill">Tài Sản</a>
+                                    <div class="card-footer d-flex gap-2 room-card-actions">
+                                        <a href="{{ route('phong.edit', $p) }}" class="btn btn-outline-primary btn-action" title="Chỉnh sửa"><i class="fa fa-pencil"></i></a>
+                                        <a href="{{ route('phong.show', $p->id) }}" class="btn btn-outline-secondary btn-action" title="Thông tin"><i class="fa fa-eye"></i></a>
+                                        <a href="{{ route('taisan.index') }}?phong_id={{ $p->id }}" class="btn btn-outline-info btn-action" title="Tài sản"><i class="fa fa-archive"></i></a>
                                         <form id="delete-phong-{{ $p->id }}" action="{{ route('phong.destroy', $p) }}" method="POST" style="display:inline">
                                             @csrf @method('DELETE')
                                             <button type="button"
-                                                    class="btn btn-sm btn-danger btn-delete-phong"
+                                                    class="btn btn-outline-danger btn-action btn-delete-phong"
                                                     data-form-id="delete-phong-{{ $p->id }}"
                                                     data-ten="{{ $p->ten_phong }}"
                                                     data-used="{{ $p->usedSlots() }}"
@@ -112,7 +147,7 @@
                                                     data-assets="{{ $p->taiSan()->count() }}"
                                                     {{ ($p->usedSlots() > 0 || $p->taiSan()->count() > 0) ? 'disabled' : '' }}
                                                     title="{{ $p->usedSlots() > 0 ? 'Không thể xóa phòng đang có người ở' : ($p->taiSan()->count() > 0 ? 'Không thể xóa phòng còn tài sản' : '') }}">
-                                                Xóa
+                                                <i class="fa fa-trash"></i>
                                             </button>
                                         </form>
                                     </div>
@@ -218,6 +253,32 @@
                     } else {
                         window.open(src, '_blank');
                     }
+                });
+                // Room filters (by name/status)
+                function applyRoomFilter(){
+                    var term = (document.getElementById('roomFilterName')?.value||'').toLowerCase();
+                    var st = (document.getElementById('roomFilterStatus')?.value||'all');
+                    var min = parseInt(document.getElementById('roomFilterPriceMin')?.value||'');
+                    var max = parseInt(document.getElementById('roomFilterPriceMax')?.value||'');
+                    var activePane = document.querySelector('.tab-pane.show.active') || document.querySelector('.tab-pane');
+                    if(!activePane) return;
+                    activePane.querySelectorAll('.room-card').forEach(function(card){
+                        var name = (card.getAttribute('data-name')||'').toLowerCase();
+                        var status = card.getAttribute('data-status')||'';
+                        var price = parseInt(card.getAttribute('data-price')||'0');
+                        var okName = !term || name.indexOf(term) !== -1;
+                        var okStatus = (st==='all') || (status===st);
+                        var okPrice = (isNaN(min) || price>=min) && (isNaN(max) || price<=max);
+                        card.style.display = (okName && okStatus && okPrice) ? '' : 'none';
+                    });
+                }
+                document.getElementById('roomFilterName')?.addEventListener('input', applyRoomFilter);
+                document.getElementById('roomFilterStatus')?.addEventListener('change', applyRoomFilter);
+                document.getElementById('roomFilterPriceMin')?.addEventListener('input', applyRoomFilter);
+                document.getElementById('roomFilterPriceMax')?.addEventListener('input', applyRoomFilter);
+                // re-apply on tab switch
+                document.querySelectorAll('#khuTabs button').forEach(function(btn){
+                    btn.addEventListener('click', function(){ setTimeout(applyRoomFilter, 0); });
                 });
             })();
             function openAddGuest(phongId) {

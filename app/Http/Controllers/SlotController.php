@@ -47,14 +47,11 @@ class SlotController extends Controller
                 throw SlotException::maSlotTrung($data['ma_slot'], $phongModel->ten_phong);
             }
 
-            // Kiểm tra số lượng slot không vượt quá sức chứa
+            // Đồng bộ sức chứa khi tạo slot mới: nếu đã đạt sức chứa, tự tăng sức chứa thêm 1
             $soSlotHienTai = $phongModel->totalSlots();
-            if ($soSlotHienTai >= $phongModel->suc_chua) {
-                throw SlotException::vuotQuaSucChua(
-                    $phongModel->ten_phong, 
-                    $phongModel->suc_chua, 
-                    $soSlotHienTai
-                );
+            if ($soSlotHienTai >= (int)$phongModel->suc_chua) {
+                $phongModel->suc_chua = $soSlotHienTai + 1;
+                $phongModel->save();
             }
 
             // Nếu gán sinh viên ngay khi tạo slot
@@ -79,13 +76,14 @@ class SlotController extends Controller
                     );
                 }
 
-                // Kiểm tra giới tính phù hợp
-                if ($phongModel->gioi_tinh !== 'Cả hai' && 
-                    $phongModel->gioi_tinh !== $sinhVien->gioi_tinh) {
+                // Kiểm tra giới tính phù hợp (ưu tiên theo khu nếu có)
+                $requiredGender = ($phongModel->khu && $phongModel->khu->gioi_tinh) ? $phongModel->khu->gioi_tinh : $phongModel->gioi_tinh;
+                if ($requiredGender !== 'Cả hai' && 
+                    $requiredGender !== $sinhVien->gioi_tinh) {
                     throw SlotException::gioiTinhKhongPhuHop(
                         $sinhVien->ho_ten,
                         $sinhVien->gioi_tinh,
-                        $phongModel->gioi_tinh
+                        $requiredGender
                     );
                 }
             }
@@ -121,9 +119,12 @@ class SlotController extends Controller
                 'hinh_anh'     => $imagePath,
             ]);
 
-            // Cập nhật loại phòng theo tổng slots
+            // Cập nhật loại phòng theo tổng slots và trạng thái
             if (method_exists($phongModel, 'updateLoaiPhongFromSlots')) {
                 $phongModel->updateLoaiPhongFromSlots();
+            }
+            if (method_exists($phongModel, 'updateStatusBasedOnCapacity')) {
+                $phongModel->updateStatusBasedOnCapacity();
             }
 
             DB::commit();
@@ -180,7 +181,6 @@ class SlotController extends Controller
             // Validate input
             $data = $request->validate([
                 'sinh_vien_id' => ['nullable', 'integer', Rule::exists('sinh_vien', 'id')],
-                'cs_vat_chat'  => ['nullable', 'string'],
                 'hinh_anh'     => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
             ]);
 
@@ -227,9 +227,7 @@ class SlotController extends Controller
             // Cập nhật thông tin slot
             $slot->sinh_vien_id = $data['sinh_vien_id'] ?? null;
             
-            if (array_key_exists('cs_vat_chat', $data)) {
-                $slot->cs_vat_chat = $data['cs_vat_chat'];
-            }
+            // bỏ trường cs_vat_chat: không còn nhận từ form
 
             // Xử lý upload hình ảnh
             if ($request->hasFile('hinh_anh')) {
@@ -258,6 +256,18 @@ class SlotController extends Controller
             }
 
             $slot->save();
+
+            // Tự động bàn giao bộ CSVC mặc định khi gán sinh viên vào slot
+            if (!empty($slot->sinh_vien_id)) {
+                try {
+                    $this->assignDefaultKitToSlot($slot);
+                } catch (\Throwable $e) {
+                    Log::warning('Không thể tự động bàn giao kit cho slot', [
+                        'slot_id' => $slot->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
 
             DB::commit();
 
@@ -303,7 +313,7 @@ class SlotController extends Controller
     }
 
     /**
-     * Cập nhật thông tin slot (mã, ghi chú, cs_vat_chat, ảnh)
+     * Cập nhật thông tin slot (ghi chú, ảnh)
      */
     public function update(Request $request, $id)
     {
@@ -314,7 +324,6 @@ class SlotController extends Controller
             // Validate input
             $data = $request->validate([
                 'ghi_chu'     => ['nullable', 'string', 'max:500'],
-                'cs_vat_chat' => ['nullable', 'string'],
                 'hinh_anh'    => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:5120'],
             ]);
 
@@ -322,10 +331,7 @@ class SlotController extends Controller
             if (array_key_exists('ghi_chu', $data)) {
                 $slot->ghi_chu = $data['ghi_chu'];
             }
-            
-            if (array_key_exists('cs_vat_chat', $data)) {
-                $slot->cs_vat_chat = $data['cs_vat_chat'];
-            }
+            // bỏ trường cs_vat_chat
 
             // Xử lý upload hình ảnh
             if ($request->hasFile('hinh_anh')) {
@@ -414,6 +420,177 @@ class SlotController extends Controller
             return response()->json([
                 'message' => 'Có lỗi xảy ra khi lấy danh sách slot'
             ], 500);
+        }
+    }
+
+    /**
+     * Lấy danh sách tài sản của phòng để bàn giao cho slot
+     */
+    public function assets(Request $request, $slotId)
+    {
+        try {
+            $slot = Slot::with('phong')->findOrFail($slotId);
+            $phong = $slot->phong;
+            if (!$phong) {
+                return response()->json(['message' => 'Slot không thuộc phòng hợp lệ'], 422);
+            }
+
+            // Tài sản ở cấp phòng
+            $assets = \App\Models\TaiSan::where('phong_id', $phong->id)->get();
+
+            // Tính số lượng đã gán cho tất cả slot và cho slot hiện tại
+            // Gợi ý đề xuất theo bộ mặc định
+            $defaultKeywords = ['gối', 'màn', 'chiếu', 'chăn'];
+
+            $response = $assets->map(function($ts) use ($slot, $defaultKeywords) {
+                $assignedAll = (int) $ts->slots()->sum('slot_tai_san.so_luong');
+                $assignedThis = (int) $ts->slots()->where('slot_id', $slot->id)->sum('slot_tai_san.so_luong');
+                $available = max(0, (int)$ts->so_luong - $assignedAll + $assignedThis);
+                $loai = optional(optional($ts->khoTaiSan)->loai)->ten_loai;
+                $name = mb_strtolower(trim($loai ?: $ts->ten_tai_san));
+                $suggested = false;
+                foreach ($defaultKeywords as $kw) {
+                    if (mb_strpos($name, $kw) !== false) { $suggested = true; break; }
+                }
+                return [
+                    'id' => $ts->id,
+                    'ten_tai_san' => $ts->ten_tai_san,
+                    'hinh_anh' => $ts->hinh_anh ? asset('storage/'.$ts->hinh_anh) : null,
+                    'so_luong_phong' => (int) $ts->so_luong,
+                    'da_gan_cho_slot_nay' => $assignedThis,
+                    'con_lai_co_the_gan' => $available,
+                    'tinh_trang' => $ts->tinh_trang,
+                    'ma' => $ts->khoTaiSan ? ($ts->khoTaiSan->ma_tai_san ?? null) : null,
+                    'suggested' => $suggested,
+                ];
+            });
+
+            return response()->json([
+                'slot' => ['id' => $slot->id, 'ma_slot' => $slot->ma_slot],
+                'assets' => $response
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Slot không tồn tại'], 404);
+        } catch (Exception $e) {
+            Log::error('Lỗi lấy tài sản cho slot: '.$e->getMessage(), ['slot' => $slotId]);
+            return response()->json(['message' => 'Không thể lấy tài sản'], 500);
+        }
+    }
+
+    /**
+     * Bàn giao tài sản (set số lượng) cho slot từ tài sản cấp phòng
+     */
+    public function assignAssets(Request $request, $slotId)
+    {
+        DB::beginTransaction();
+        try {
+            $slot = Slot::with('phong')->findOrFail($slotId);
+            $phong = $slot->phong;
+            if (!$phong) {
+                return response()->json(['message' => 'Slot không thuộc phòng hợp lệ'], 422);
+            }
+
+            $data = $request->validate([
+                'assets' => ['required','array'],
+                'assets.*' => ['nullable','integer','min:0']
+            ]);
+
+            $assetsInput = $data['assets'];
+            foreach ($assetsInput as $taiSanId => $qtyRaw) {
+                $qty = (int) $qtyRaw;
+
+                $taiSan = \App\Models\TaiSan::where('phong_id', $phong->id)->findOrFail($taiSanId);
+
+                // Số đã gán cho tất cả slot & cho slot hiện tại
+                $assignedAllOtherSlots = (int) $taiSan->slots()->where('slot_id', '<>', $slot->id)->sum('slot_tai_san.so_luong');
+                $maxAssignable = max(0, (int)$taiSan->so_luong - $assignedAllOtherSlots);
+                if ($qty > $maxAssignable) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'Số lượng vượt quá tồn có thể bàn giao',
+                        'tai_san_id' => $taiSanId,
+                        'max' => $maxAssignable
+                    ], 422);
+                }
+
+                // Upsert pivot: set số lượng cho slot này
+                if ($qty <= 0) {
+                    // Bỏ gán tài sản này khỏi slot
+                    $slot->taiSans()->detach($taiSan->id);
+                } else {
+                    $slot->taiSans()->syncWithoutDetaching([$taiSan->id => ['so_luong' => $qty]]);
+                }
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Bàn giao tài sản cho slot thành công']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Tài sản hoặc slot không tồn tại'], 404);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi bàn giao tài sản cho slot: '.$e->getMessage(), ['slot' => $slotId]);
+            return response()->json(['message' => 'Không thể bàn giao tài sản'], 500);
+        }
+    }
+
+    /**
+     * Xóa toàn bộ tài sản đã gán cho slot
+     */
+    public function clearAssets($slotId)
+    {
+        try {
+            $slot = Slot::findOrFail($slotId);
+            $slot->taiSans()->detach();
+            return response()->json(['message' => 'Đã bỏ gán toàn bộ CSVC cho slot']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Slot không tồn tại'], 404);
+        } catch (Exception $e) {
+            Log::error('Lỗi clear assets: '.$e->getMessage(), ['slot' => $slotId]);
+            return response()->json(['message' => 'Không thể bỏ gán CSVC'], 500);
+        }
+    }
+
+    /**
+     * Bàn giao bộ CSVC mặc định (ví dụ: Gối, Màn, Chiếu …) cho slot nếu còn tồn ở phòng
+     */
+    private function assignDefaultKitToSlot(\App\Models\Slot $slot): void
+    {
+        // Danh sách loại/tên mặc định (có thể mở rộng): mỗi thứ 1 cái
+        $defaultKeywords = ['gối', 'màn', 'chiếu', 'chăn'];
+
+        // Toàn bộ tài sản thuộc phòng của slot
+        $assets = \App\Models\TaiSan::with(['khoTaiSan.loai', 'slots'])
+            ->where('phong_id', $slot->phong_id)
+            ->get();
+
+        foreach ($assets as $taiSan) {
+            $loai = optional(optional($taiSan->khoTaiSan)->loai)->ten_loai;
+            $name = mb_strtolower(trim($loai ?: $taiSan->ten_tai_san));
+
+            // Chỉ áp dụng cho các loại nằm trong danh sách mặc định
+            $isDefault = false;
+            foreach ($defaultKeywords as $kw) {
+                if (mb_strpos($name, $kw) !== false) { $isDefault = true; break; }
+            }
+            if (!$isDefault) { continue; }
+
+            // Tính số lượng còn có thể gán (trừ các slot khác, cộng lại phần đã gán cho slot này)
+            $assignedOther = (int) $taiSan->slots()
+                ->where('slot_id', '<>', $slot->id)
+                ->sum('slot_tai_san.so_luong');
+            $currentThis = (int) $taiSan->slots()
+                ->where('slot_id', $slot->id)
+                ->sum('slot_tai_san.so_luong');
+
+            $maxAssignable = max(0, (int)$taiSan->so_luong - $assignedOther);
+            if ($maxAssignable <= 0) { continue; }
+
+            // Mặc định phát 1 đơn vị/món; nếu đã có thì giữ nguyên, nếu chưa có thì gán 1
+            $targetQty = $currentThis > 0 ? $currentThis : 1;
+            $targetQty = min($targetQty, $maxAssignable);
+
+            $slot->taiSans()->syncWithoutDetaching([$taiSan->id => ['so_luong' => $targetQty]]);
         }
     }
 

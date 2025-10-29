@@ -53,6 +53,12 @@
                                 </a>
                             </li>
                             <li>
+                                <a href="{{ route('khu.index') }}"
+                                    class="{{ request()->routeIs('khu.*') ? 'active' : '' }}">
+                                    <i class="fa fa-door-open"></i> Quản lý khu
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{{ route('sinhvien.index') }}"
                                     class="{{ request()->routeIs('sinhvien.*') ? 'active' : '' }}">
                                     <i class="fa fa-user-graduate"></i> Quản lý sinh viên

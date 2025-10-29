@@ -8,7 +8,7 @@ class PhongException extends Exception
 {
     public static function tenPhongTrung(string $tenPhong): self
     {
-        return new self("Tên phòng \"{$tenPhong}\" đã tồn tại.", 422);
+        return new self("Phòng \"{$tenPhong}\" đã tồn tại, không thể tạo hoặc sửa.", 422);
     }
 
     public static function uploadFailed(string $reason): self
