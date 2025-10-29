@@ -8,6 +8,8 @@ use App\Models\KhoTaiSan;
 use App\Models\TaiSan;
 use App\Models\Slot;
 use App\Models\SinhVien;
+use App\Models\Khu;
+use Illuminate\Support\Facades\Schema;
 use App\Exceptions\PhongException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,11 +30,11 @@ class PhongController extends Controller
     public function index(Request $request)
     {
         try {
-            $q = Phong::query();
+            $q = Phong::query()->with('khu');
 
             // Validate và filter
-            if ($request->filled('khu')) {
-                $q->where('khu', $request->khu);
+            if ($request->filled('khu_id')) {
+                $q->where('khu_id', $request->khu_id);
             }
             if ($request->filled('loai_phong')) {
                 $q->where('loai_phong', $request->loai_phong);
@@ -49,7 +51,7 @@ class PhongController extends Controller
             }
 
             // Hiển thị tất cả phòng
-            $phongs = $q->orderBy('khu')->orderBy('ten_phong')->get();
+            $phongs = $q->orderBy('ten_phong')->get();
 
             // Thống kê tổng quan
             $totals = [
@@ -72,7 +74,8 @@ class PhongController extends Controller
     {
         try {
             $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)->orderBy('ten_tai_san')->get();
-            return view('phong.create', compact('khoTaiSans'));
+            $khus = Schema::hasTable('khu') ? Khu::orderBy('ten_khu')->get() : collect();
+            return view('phong.create', compact('khoTaiSans','khus'));
         } catch (Exception $e) {
             Log::error('Lỗi khi load form tạo phòng: ' . $e->getMessage());
             return redirect()->route('phong.index')->with('error', 'Không thể tải form tạo phòng!');
@@ -84,6 +87,12 @@ class PhongController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->validated();
+
+            // Nếu chọn khu, ép giới tính phòng theo khu
+            if (!empty($data['khu_id'])) {
+                $khu = Khu::findOrFail($data['khu_id']);
+                $data['gioi_tinh'] = $khu->gioi_tinh; // nam/nữ theo khu
+            }
 
             // Validate assets from warehouse (optional)
             $assets = $request->input('assets', []);
@@ -216,7 +225,10 @@ class PhongController extends Controller
     public function edit(Phong $phong)
     {
         try {
-            return view('phong.edit', compact('phong'));
+            $khus = Schema::hasTable('khu') ? Khu::orderBy('ten_khu')->get() : collect();
+            // Hiển thị bảng chọn tài sản giống như tạo mới
+            $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)->orderBy('ten_tai_san')->get();
+            return view('phong.edit', compact('phong','khus','khoTaiSans'));
         } catch (Exception $e) {
             Log::error('Lỗi khi load form sửa phòng: ' . $e->getMessage());
             return redirect()->route('phong.index')->with('error', 'Không thể tải form chỉnh sửa phòng!');
@@ -228,6 +240,12 @@ class PhongController extends Controller
         DB::beginTransaction();
         try {
             $data = $request->validated();
+
+            // Nếu chọn khu, ép giới tính theo khu
+            if (!empty($data['khu_id'])) {
+                $khu = Khu::findOrFail($data['khu_id']);
+                $data['gioi_tinh'] = $khu->gioi_tinh;
+            }
 
             // Kiểm tra tên phòng trùng (trừ phòng hiện tại)
             $exists = Phong::where('ten_phong', $data['ten_phong'])
@@ -279,16 +297,99 @@ class PhongController extends Controller
             }
 
             // Cập nhật thông tin phòng
+            $oldTotalSlots = $phong->totalSlots();
             $phong->update($data);
 
-            // Nếu có điều chỉnh sức chứa, thu gọn bớt slot TRỐNG cho khớp
-            if (array_key_exists('suc_chua', $data) && method_exists($phong, 'pruneEmptySlotsToCapacity')) {
-                $phong->pruneEmptySlotsToCapacity((int)$data['suc_chua']);
+            // Đồng bộ số lượng slot theo sức chứa mới
+            if (array_key_exists('suc_chua', $data)) {
+                $targetCapacity = (int) $data['suc_chua'];
+                $currentTotal = $phong->totalSlots();
+
+                if ($currentTotal < $targetCapacity) {
+                    // Tăng slot: tạo thêm slot TRỐNG cho đủ sức chứa
+                    $need = $targetCapacity - $currentTotal;
+
+                    // Tìm suffix lớn nhất đang dùng để tiếp tục đánh số
+                    $maxSuffix = 0;
+                    foreach ($phong->slots()->pluck('ma_slot') as $code) {
+                        if (preg_match('/-(\d+)$/', (string)$code, $m)) {
+                            $maxSuffix = max($maxSuffix, (int)$m[1]);
+                        }
+                    }
+
+                    for ($i = 1; $i <= $need; $i++) {
+                        $maxSuffix++;
+                        $code = $phong->ten_phong . '-' . sprintf('%02d', $maxSuffix);
+                        // đảm bảo không trùng mã slot trong phòng
+                        if (Slot::where('phong_id', $phong->id)->where('ma_slot', $code)->exists()) {
+                            // fallback: dùng count-based nếu trùng bất thường
+                            $code = $phong->ten_phong . '-' . sprintf('%02d', $currentTotal + $i);
+                        }
+                        Slot::create([
+                            'phong_id' => $phong->id,
+                            'ma_slot'  => $code,
+                            'ghi_chu'  => 'Slot tự động thêm khi tăng sức chứa'
+                        ]);
+                    }
+                } elseif ($currentTotal > $targetCapacity && method_exists($phong, 'pruneEmptySlotsToCapacity')) {
+                    // Giảm slot: chỉ xóa slot TRỐNG cho khớp sức chứa
+                    $phong->pruneEmptySlotsToCapacity($targetCapacity);
+                }
+
+                // Cập nhật loại phòng theo tổng slot hiện tại
+                if (method_exists($phong, 'updateLoaiPhongFromSlots')) {
+                    $phong->updateLoaiPhongFromSlots();
+                }
             }
 
-            // Cập nhật trạng thái dựa trên sức chứa (nếu có method)
+            // Cập nhật trạng thái dựa trên tình trạng slot/sức chứa
             if (method_exists($phong, 'updateStatusBasedOnCapacity')) {
                 $phong->updateStatusBasedOnCapacity();
+            }
+
+            // Nếu người dùng chọn cấp thêm tài sản từ kho khi sửa phòng
+            $assets = $request->input('assets', []);
+            $assets = is_array($assets) ? array_filter($assets, function($qty){ return is_numeric($qty) && (int)$qty > 0; }) : [];
+            if (!empty($assets)) {
+                $slots = $phong->slots()->orderBy('id')->get();
+                $slotCount = $slots->count();
+
+                foreach ($assets as $khoId => $qtyRaw) {
+                    $qty = (int)$qtyRaw;
+                    if ($qty <= 0) { continue; }
+
+                    $kho = KhoTaiSan::lockForUpdate()->findOrFail($khoId);
+                    if ($kho->so_luong < $qty) {
+                        throw new Exception('Kho "' . $kho->ten_tai_san . '" không đủ số lượng (' . $kho->so_luong . ' < ' . $qty . ')');
+                    }
+
+                    // Tạo tài sản cấp cho phòng
+                    $taiSan = TaiSan::create([
+                        'kho_tai_san_id' => $kho->id,
+                        'ten_tai_san' => $kho->ten_tai_san,
+                        'so_luong' => $qty,
+                        'tinh_trang' => 'Mới',
+                        'tinh_trang_hien_tai' => null,
+                        'phong_id' => $phong->id,
+                        'hinh_anh' => $kho->hinh_anh,
+                    ]);
+
+                    // Trừ kho
+                    $kho->so_luong = max(0, (int)$kho->so_luong - $qty);
+                    $kho->save();
+
+                    // Phân tài sản cho slot nếu có slot
+                    if ($slotCount > 0) {
+                        $base = intdiv($qty, $slotCount);
+                        $rem = $qty % $slotCount;
+                        foreach ($slots as $i => $slot) {
+                            $assign = $base + ($i < $rem ? 1 : 0);
+                            if ($assign > 0) {
+                                $slot->taiSans()->attach($taiSan->id, ['so_luong' => $assign]);
+                            }
+                        }
+                    }
+                }
             }
 
             DB::commit();
@@ -312,7 +413,7 @@ class PhongController extends Controller
     public function show($id)
     {
         try {
-            $phong = Phong::with(['slots.sinhVien'])->findOrFail($id);
+            $phong = Phong::with(['slots.sinhVien', 'slots.taiSans.khoTaiSan'])->findOrFail($id);
             
             // Chỉ lấy sinh viên đã duyệt và CHƯA được gán vào slot nào
             $assignedIds = Slot::whereNotNull('sinh_vien_id')->pluck('sinh_vien_id');

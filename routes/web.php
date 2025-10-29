@@ -15,6 +15,7 @@ use App\Http\Controllers\LichBaoTriController;
 use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\SuCoController;
 use App\Http\Controllers\SlotController;
+use App\Http\Controllers\KhuController;
 
 use App\Http\Controllers\UserController;
 
@@ -57,33 +58,19 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
 
     // 🔹 Route xác nhận thanh toán sự cố
     Route::post('suco/{id}/thanhtoan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
-
-    // ======================
-    // PHÒNG
-    // ======================
-    Route::resource('phong', PhongController::class);
-    Route::post('phong/{phong}/change-status', [PhongController::class, 'changeStatus'])->name('phong.changeStatus');
-    Route::post('phong/{phong}/slots', [SlotController::class, 'store'])->name('phong.slots.store');
-    Route::post('slots/{id}/assign', [SlotController::class, 'assignStudent']);
-    Route::get('phong/{id}/slots', [SlotController::class, 'slotsByPhong']);
-    Route::post('slots/{id}/update', [SlotController::class, 'update'])->name('slots.update');
-
-    // ======================
+  
     // PHÂN PHÒNG SINH VIÊN
-    // ======================
-    Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
-    Route::post('assign/{svId}', [AssignmentController::class, 'assign'])->name('assign.do');
-
+    
     // ======================
     // SINH VIÊN
     // ======================
-
+});
 // =================== 🔐 AUTH ===================
-Route::get('', [AuthController::class, 'login'])->name('auth.login');
+// Route::get('', [AuthController::class, 'login'])->name('auth.login');
 Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
-Route::post('/login', [AuthController::class, 'handle_login'])->name('auth.handle.login');
+// Route::post('/login', [AuthController::class, 'handle_login'])->name('auth.handle.login');
 Route::post('/register', [AuthController::class, 'handle_register'])->name('auth.handle.register');
-Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+// Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
 // =================== 🧑‍🎓 STUDENT ===================
 Route::group(['prefix' => 'student', 'middleware' => ['student']], function () {
@@ -108,6 +95,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/slots/{id}/assign', [SlotController::class, 'assignStudent']);
     Route::get('/phong/{id}/slots', [SlotController::class, 'slotsByPhong']);
     Route::post('/slots/{id}/update', [SlotController::class, 'update'])->name('slots.update');
+    Route::get('/slots/{id}/assets', [SlotController::class, 'assets'])->name('slots.assets');
+    Route::post('/slots/{id}/assign-assets', [SlotController::class, 'assignAssets'])->name('slots.assignAssets');
+    Route::post('/slots/{id}/clear-assets', [SlotController::class, 'clearAssets'])->name('slots.clearAssets');
+
+    // ======================
+    Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
+    Route::post('assign/{svId}', [AssignmentController::class, 'assign'])->name('assign.do');
 
     // ---------------- SINH VIÊN ----------------
 
@@ -159,6 +153,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // ======================
     Route::resource('kho', KhoTaiSanController::class);
     Route::get('kho/show/{id}', [KhoTaiSanController::class, 'showModal'])->name('kho.show.modal');
+
+    // ======================
+    // KHU (Khu vực KTX)
+    // ======================
+    Route::resource('khu', KhuController::class);
 
     // ======================
     // NGƯỜI DÙNG
@@ -245,7 +244,7 @@ Route::prefix('manager')->middleware(['auth','manager'])->group(function(){
 
         Route::delete('/delete/{id}', [KhoTaiSanController::class, 'destroy'])->name('kho.destroy');    // xóa
     });
-});
+
 
 // =================== LOẠI TÀI SẢN ===================
 Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);

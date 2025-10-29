@@ -36,11 +36,9 @@ class PhongRequest extends FormRequest
                     ? Rule::unique('phong', 'ten_phong')->ignore($phongId)
                     : Rule::unique('phong', 'ten_phong')
             ],
-            'khu' => [
+            'khu_id' => [
                 'required',
-                'string',
-                'max:100',
-                'in:A,B,C,D,E,F,G,H' // Giới hạn các khu cụ thể
+                'exists:khu,id'
             ],
             'loai_phong' => [
                 'nullable',
@@ -94,13 +92,11 @@ class PhongRequest extends FormRequest
             'ten_phong.min' => 'Tên phòng phải có ít nhất :min ký tự',
             'ten_phong.max' => 'Tên phòng không được vượt quá :max ký tự',
             'ten_phong.regex' => 'Tên phòng chỉ được chứa chữ cái, số, dấu gạch ngang, dấu chấm và khoảng trắng',
-            'ten_phong.unique' => 'Tên phòng này đã tồn tại trong hệ thống',
+            'ten_phong.unique' => 'Phòng tên này đã có, không thể tạo hoặc sửa',
 
             // khu
-            'khu.required' => 'Khu phòng là bắt buộc',
-            'khu.string' => 'Khu phòng phải là chuỗi ký tự',
-            'khu.max' => 'Khu phòng không được vượt quá :max ký tự',
-            'khu.in' => 'Khu phòng phải là một trong các giá trị: A, B, C, D, E, F, G, H',
+            'khu_id.required' => 'Khu là bắt buộc',
+            'khu_id.exists' => 'Khu không hợp lệ',
 
             // loai_phong
             'loai_phong.string' => 'Loại phòng phải là chuỗi ký tự',
@@ -145,7 +141,7 @@ class PhongRequest extends FormRequest
     {
         return [
             'ten_phong' => 'tên phòng',
-            'khu' => 'khu',
+            'khu_id' => 'khu',
             'loai_phong' => 'loại phòng',
             'gioi_tinh' => 'giới tính',
             'suc_chua' => 'sức chứa',
@@ -164,7 +160,6 @@ class PhongRequest extends FormRequest
         // Chuẩn hóa dữ liệu
         $this->merge([
             'ten_phong' => trim($this->ten_phong),
-            'khu' => trim($this->khu ?? ''),
             'ghi_chu' => $this->ghi_chu ? trim($this->ghi_chu) : null,
         ]);
     }

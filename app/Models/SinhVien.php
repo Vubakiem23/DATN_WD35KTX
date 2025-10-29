@@ -118,12 +118,17 @@ class SinhVien extends Model
         return $roomId ? $q->where('phong_id', $roomId) : $q;
     }
 
-    // khu (cột khu nằm ở bảng phong)
-    public function scopeInKhu($q, $khu)
+    // Lọc theo khu (dựa vào bảng khu mới với cột ten_khu)
+    public function scopeInKhu($q, $khuTen)
     {
-        if (!$khu) return $q;
-        if (!Schema::hasTable('phong') || !Schema::hasColumn('phong', 'khu')) return $q;
-        return $q->whereHas('phong', fn($r) => $r->where('khu', $khu));
+        if (!$khuTen) return $q;
+        if (!Schema::hasTable('khu') || !Schema::hasTable('phong')) return $q;
+        // whereHas quan hệ phong -> khu (ten_khu)
+        return $q->whereHas('phong', function($r) use ($khuTen) {
+            $r->whereHas('khu', function($k) use ($khuTen) {
+                $k->where('ten_khu', $khuTen);
+            });
+        });
     }
 
     // lớp/ngành/niên khóa

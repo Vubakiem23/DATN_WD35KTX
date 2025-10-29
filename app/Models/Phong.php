@@ -9,7 +9,7 @@ use App\Exceptions\PhongException;
 class Phong extends Model
 {
     protected $table = 'phong';
-    protected $fillable = ['ten_phong', 'khu', 'loai_phong', 'gioi_tinh', 'suc_chua', 'gia_phong', 'trang_thai', 'ghi_chu', 'hinh_anh'];
+    protected $fillable = ['ten_phong', 'khu', 'khu_id', 'loai_phong', 'gioi_tinh', 'suc_chua', 'gia_phong', 'trang_thai', 'ghi_chu', 'hinh_anh'];
 
     /**
      * Relations
@@ -27,6 +27,11 @@ class Phong extends Model
     public function slots()
     {
         return $this->hasMany(\App\Models\Slot::class, 'phong_id');
+    }
+
+    public function khu()
+    {
+        return $this->belongsTo(\App\Models\Khu::class, 'khu_id');
     }
 
     /**

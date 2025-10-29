@@ -39,23 +39,26 @@
       <img src="{{ asset('storage/'.$phong->hinh_anh) }}" class="room-cover" alt="{{ $phong->ten_phong }}">
     @endif
     <div class="card-body">
-      <div class="d-flex flex-wrap gap-2 mb-2">
-        <span class="badge bg-primary">Khu: {{ $phong->khu ?: '-' }}</span>
+      <div class="d-flex flex-wrap gap-3 mb-3">
+        <span class="badge bg-primary">Khu: {{ optional($phong->khu)->ten_khu ?? '-' }}</span>
         <span class="badge bg-info text-dark">Loại: {{ \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</span>
         <span class="badge bg-secondary">Sức chứa: {{ $phong->totalSlots() }}</span>
-        <span class="badge {{ $phong->availableSlots()==0 ? 'bg-warning text-dark' : 'bg-success' }}">{{ $phong->usedSlots() }} / {{ $phong->totalSlots() }} ({{ $phong->occupancyLabel() }})</span>
-        @if(!is_null($phong->gia_phong))
-          <span class="badge bg-dark">Giá: {{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</span>
-        @endif
       </div>
+      @if(!is_null($phong->gia_phong))
+        <div class="mb-3">
+          <span class="badge bg-dark">Giá: {{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</span>
+        </div>
+      @endif
+      @php $total=$phong->totalSlots(); $used=$phong->usedSlots(); $pct=$total?round($used*100/$total):0; @endphp
+      <div class="small text-muted mb-2">Tỉ lệ lấp đầy: {{ $used }} / {{ $total }} ({{ $pct }}%)</div>
       <div class="progress mb-3" style="height:10px;max-width:420px;">
-        @php $total=$phong->totalSlots(); $used=$phong->usedSlots(); $pct=$total?round($used*100/$total):0; @endphp
         <div class="progress-bar {{ $pct==100 ? 'bg-warning text-dark' : 'bg-success' }}" role="progressbar" style="width: {{ $pct }}%" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
       </div>
       @if($phong->ghi_chu)
-        <p class="text-muted mb-0"><i class="fa fa-sticky-note-o me-1"></i>{{ $phong->ghi_chu }}</p>
+        <ul class="list-unstyled mb-0 mt-2 small text-muted">
+          <li><i class="fa fa-sticky-note-o me-1"></i>{{ $phong->ghi_chu }}</li>
+        </ul>
       @endif
-      
     </div>
       </div>
     </div>
@@ -67,42 +70,78 @@
           <a href="#" class="btn btn-sm btn-primary" onclick="openCreateSlots()">Tạo slots</a>
         </div>
         <div>
+          @push('styles')
+          <style>
+            /* Fix bảng bị bó cột khiến tiêu đề dọc từng ký tự */
+            .slots-table{table-layout:auto;width:100%}
+            .slots-table thead th{font-weight:600;white-space:nowrap}
+            .slots-table th:nth-child(1){width:88px}
+            .slots-table th:nth-child(2){width:220px}
+            .slots-table th:nth-child(3){min-width:340px}
+            .slots-table th:nth-child(4){width:260px}
+            .slots-table th:nth-child(5){width:230px}
+            .slots-table td,.slots-table th{vertical-align:middle}
+            .slot-actions .btn{margin:.15rem .25rem}
+            .slot-actions .btn-action{width:46px;height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px}
+            .slot-row.occupied{border-left:3px solid #20c997}
+            .slot-row.empty{border-left:3px solid #dee2e6}
+            /* Cột CSVC cho phép xuống dòng nội dung nhưng giữ tiêu đề 1 dòng */
+            .slots-table td:nth-child(3){white-space:normal}
+          </style>
+          @endpush
           <table class="table table-striped table-hover align-middle mb-0 slots-table">
             <thead>
               <tr class="table-light">
                 <th>Mã slot</th>
                 <th>Sinh viên</th>
-                <th>Cơ sở vật chất</th>
+                <th>CSVC (bàn giao)</th>
                 <th>Ghi chú</th>
-                <th>Ảnh thực tế</th>
                 <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               @foreach($phong->slots as $slot)
-              <tr>
+              <tr class="slot-row {{ $slot->sinh_vien_id ? 'occupied' : 'empty' }}">
                 <td>{{ $slot->ma_slot }}</td>
                 <td>{{ $slot->sinhVien->ho_ten ?? '-' }}</td>
-                <td><span class="text-trunc" title="{{ $slot->cs_vat_chat }}">{{ $slot->cs_vat_chat }}</span></td>
-                <td><span class="text-trunc" title="{{ $slot->ghi_chu }}">{{ $slot->ghi_chu }}</span></td>
                 <td>
-                  @if ($slot->hinh_anh)
-                    <img src="{{ asset('storage/'.$slot->hinh_anh) }}" alt="Ảnh slot" class="slot-thumb">
-                  @else -
+                  @if(($slot->taiSans ?? collect())->count() > 0)
+                    <style>
+                      .chip{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #e9ecef;border-radius:999px;padding:.15rem .6rem;margin:.12rem;background:#fff;max-width:100%}
+                      .chip img{width:20px;height:20px;border-radius:50%;object-fit:cover;border:1px solid #e9ecef}
+                      .chip .name{font-size:12px;color:#212529;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+                      .chip .code{font-size:11px;color:#6c757d}
+                      .chip .qty{font-size:11px;color:#6c757d}
+                    </style>
+                    <div class="d-flex flex-wrap">
+                      @foreach($slot->taiSans as $ts)
+                        @php
+                          $qty = (int)($ts->pivot->so_luong ?? 0);
+                          $code = optional($ts->khoTaiSan)->ma_tai_san ?? ('TS-'.$ts->id);
+                          $img = $ts->hinh_anh ? asset('storage/'.$ts->hinh_anh) : (optional($ts->khoTaiSan)->hinh_anh ? asset('storage/'.optional($ts->khoTaiSan)->hinh_anh) : null);
+                        @endphp
+                        <span class="chip" title="{{ $ts->ten_tai_san }} ({{ $code }}) x{{ $qty }}">
+                          @if($img)
+                            <img src="{{ $img }}" alt="{{ $ts->ten_tai_san }}">
+                          @endif
+                          <span class="name">{{ $ts->ten_tai_san }}</span>
+                          <span class="code">{{ $code }}</span>
+                          <span class="qty">x{{ $qty }}</span>
+                        </span>
+                      @endforeach
+                    </div>
+                  @else
+                    <span class="text-muted">-</span>
                   @endif
                 </td>
+                <td><span class="text-trunc" title="{{ $slot->ghi_chu }}">{{ $slot->ghi_chu }}</span></td>
                 <td>
                   <div class="slot-actions" role="group">
-                    <button class="btn btn-sm btn-secondary btn-edit-slot"
-                      data-slot-id="{{ $slot->id }}"
-                      data-ma-slot="{{ $slot->ma_slot }}"
-                      data-cs-vat-chat="{{ $slot->cs_vat_chat }}"
-                      data-ghi-chu="{{ $slot->ghi_chu }}"
-                    >Sửa</button>
+                    <button class="btn btn-outline-info btn-action" title="Bàn giao CSVC" onclick="openAssignAssets({{ $slot->id }}, '{{ $slot->ma_slot }}')"><i class="fa fa-eye"></i></button>
                     @if (!$slot->sinh_vien_id)
-                      <button class="btn btn-sm btn-success" onclick="openAssignStudent({{ $slot->id }})">Gán sinh viên</button>
+                      <button class="btn btn-outline-success btn-action" title="Gán sinh viên" onclick="openAssignStudent({{ $slot->id }}, '{{ $slot->ma_slot }}')"><i class="fa fa-user-plus"></i></button>
                     @else
-                      <button class="btn btn-sm btn-danger" onclick="unassignStudent({{ $slot->id }})">Bỏ gán</button>
+                      <button class="btn btn-outline-danger btn-action" title="Bỏ gán sinh viên" onclick="unassignStudent({{ $slot->id }})"><i class="fa fa-trash"></i></button>
                     @endif
                   </div>
                 </td>
@@ -155,14 +194,7 @@
               @endforeach
             </select>
           </div>
-          <div class="form-group mb-2">
-            <label>Cơ sở vật chất riêng cho slot</label>
-            <textarea class="form-control" id="modal_cs_vat_chat" name="cs_vat_chat" rows="2" placeholder="VD: Giường, Đệm, Quạt cá nhân..."></textarea>
-          </div>
-          <div class="form-group mb-2">
-            <label>Ảnh thực tế slot (tùy chọn)</label>
-            <input type="file" class="form-control" id="modal_hinh_anh" name="hinh_anh" accept="image/*">
-          </div>
+          {{-- Bỏ chọn CSVC/ảnh tại đây theo yêu cầu --}}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
@@ -172,41 +204,52 @@
     </form>
   </div>
 </div>
-{{-- Modal sửa slot --}}
-<div class="modal fade" id="editSlotModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <form id="editSlotForm">
+{{-- Modal bàn giao CSVC cho slot (đặt ngoài các modal khác) --}}
+<div class="modal fade" id="assignAssetsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form id="assignAssetsForm">
       @csrf
-      <input type="hidden" id="edit_slot_id" name="slot_id">
+      <input type="hidden" id="assign_assets_slot_id" name="slot_id">
       <div class="modal-content">
-        <div class="modal-header"><h5>Sửa slot</h5></div>
+        <div class="modal-header"><h5>Bàn giao CSVC cho slot <span id="assign_assets_slot_label"></span></h5></div>
         <div class="modal-body">
-          <div class="form-group mb-2">
-            <label>Mã slot</label>
-            <input type="text" class="form-control" id="edit_ma_slot" name="ma_slot" disabled>
-            <small class="text-muted">Mã slot cố định để tránh trùng và sai tham chiếu.</small>
+          <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
+            <div class="input-group" style="max-width:260px">
+              <span class="input-group-text"><i class="fa fa-search"></i></span>
+              <input type="text" id="assetsSearch" class="form-control form-control-sm" placeholder="Tìm theo tên tài sản">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnFillSuggested">Bộ đề xuất</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnFillAllOne">Chọn tất cả (1)</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="btnClearAll">Bỏ hết</button>
+            <span class="ms-auto small text-muted" id="assetsSummary"></span>
           </div>
-          <div class="form-group mb-2">
-            <label>Cơ sở vật chất</label>
-            <textarea class="form-control" id="edit_cs_vat_chat" name="cs_vat_chat" rows="2"></textarea>
-          </div>
-          <div class="form-group mb-2">
-            <label>Ghi chú</label>
-            <textarea class="form-control" id="edit_ghi_chu" name="ghi_chu" rows="2"></textarea>
-          </div>
-          <div class="form-group mb-2">
-            <label>Ảnh thực tế (tùy chọn)</label>
-            <input type="file" class="form-control" id="edit_hinh_anh" name="hinh_anh" accept="image/*">
+          <div id="assetsList" class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Ảnh</th>
+                  <th>Tên</th>
+                  <th>Mã</th>
+                  <th>Tình trạng</th>
+                  <th>Tổng (phòng)</th>
+                  <th>Đã gán (slot này)</th>
+                  <th>Còn có thể gán</th>
+                  <th style="width:160px">Gán số lượng</th>
+                </tr>
+              </thead>
+              <tbody id="assetsRows"></tbody>
+            </table>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-          <button type="submit" class="btn btn-success">Lưu</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-success">Lưu bàn giao</button>
         </div>
       </div>
     </form>
   </div>
-  </div>
+</div>
+{{-- (Đã bỏ modal sửa slot) --}}
 @push('scripts')
 <script>
   let currentSlotId = null;
@@ -227,7 +270,9 @@
     const requests = codes.map(code => $.ajax({ url:'/admin/phong/'+phongId+'/slots', method:'POST', data:{ _token:'{{ csrf_token() }}', ma_slot: code }}));
     Promise.allSettled(requests).then(()=> location.reload());
   });
-  function openAssignStudent(slotId){
+  let __currentAssign = { id: null, ma: '' };
+  function openAssignStudent(slotId, maSlot){
+    __currentAssign = { id: slotId, ma: maSlot||'' };
     $('#modal_slot_id').val(slotId);
     $('#modal_sinh_vien_id').val('');
     $('#assignStudentModal').modal('show');
@@ -236,60 +281,112 @@
     e.preventDefault();
     let slotId = $('#modal_slot_id').val();
     let sinhVienId = $('#modal_sinh_vien_id').val();
-    let csVatChat = $('#modal_cs_vat_chat').val();
     if(!sinhVienId) return alert('Chọn sinh viên!');
     const formData = new FormData();
     formData.append('_token','{{ csrf_token() }}');
     formData.append('sinh_vien_id', sinhVienId);
-    formData.append('cs_vat_chat', csVatChat||'');
-    const file = document.getElementById('modal_hinh_anh').files[0];
-    if(file) formData.append('hinh_anh', file);
     fetch('/admin/slots/'+slotId+'/assign', { method:'POST', body: formData })
       .then(r=>{ if(!r.ok) throw r; return r.json(); })
       .then(()=> location.reload())
       .catch(async (err)=>{ try{ const j=await err.json(); alert(j.message||'Lỗi'); } catch{ alert('Lỗi'); } });
   });
-  // Edit slot
-  // open edit with data attributes (an toàn ký tự)
-  $(document).on('click', '.btn-edit-slot', function(){
-    const id = this.dataset.slotId;
-    const ma = this.dataset.maSlot || '';
-    const csvc = this.dataset.csVatChat || '';
-    const ghichu = this.dataset.ghiChu || '';
-    $('#edit_slot_id').val(id);
-    $('#edit_ma_slot').val(ma);
-    $('#edit_cs_vat_chat').val(csvc);
-    $('#edit_ghi_chu').val(ghichu);
-    $('#edit_hinh_anh').val('');
-    $('#editSlotModal').modal('show');
-  });
-  $('#editSlotForm').on('submit', function(e){
+  // (Đã bỏ nút mở CSVC từ modal gán sinh viên)
+  // Bàn giao CSVC
+  function openAssignAssets(slotId, maSlot){
+    document.getElementById('assign_assets_slot_id').value = slotId;
+    document.getElementById('assign_assets_slot_label').textContent = maSlot;
+    const tbody = document.getElementById('assetsRows');
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Đang tải...</td></tr>';
+    $('#assignAssetsModal').modal('show');
+    fetch('/admin/slots/'+slotId+'/assets', { headers: { 'Accept': 'application/json' }})
+      .then(r=>r.json())
+      .then(data => {
+        window.__assetsCache = data.assets||[];
+        const render = () => {
+          const term = (document.getElementById('assetsSearch').value||'').toLowerCase();
+          const assets = window.__assetsCache.filter(a => !term || (a.ten_tai_san||'').toLowerCase().includes(term));
+          const rows = assets.map(a => {
+            const img = a.hinh_anh ? '<img src="'+a.hinh_anh+'" style="width:46px;height:46px;object-fit:cover;border-radius:6px;border:1px solid #e9ecef">' : '-';
+            const val = a.da_gan_cho_slot_nay;
+            const suggest = a.suggested ? '<span class="badge bg-info text-dark">Đề xuất</span>' : '';
+            return '<tr>'+
+              '<td>'+img+'</td>'+
+              '<td>'+ (a.ten_tai_san||'') + ' ' + suggest + '</td>'+
+              '<td>'+(a.ma || '-')+'</td>'+
+              '<td>'+ (a.tinh_trang||'-') +'</td>'+
+              '<td>'+ a.so_luong_phong +'</td>'+
+              '<td>'+ a.da_gan_cho_slot_nay +'</td>'+
+              '<td>'+ a.con_lai_co_the_gan +'</td>'+
+              '<td>'+
+                '<div class="input-group input-group-sm" style="max-width:150px;margin:0 auto">'+
+                  '<button class="btn btn-outline-secondary btn-dec" data-id="'+a.id+'" type="button">-</button>'+
+                  '<input type="number" class="form-control text-center asset-assign" data-id="'+a.id+'" min="0" max="'+a.con_lai_co_the_gan+'" value="'+val+'">'+
+                  '<button class="btn btn-outline-secondary btn-inc" data-id="'+a.id+'" type="button">+</button>'+
+                '</div>'+
+              '</td>'+
+            '</tr>';
+          }).join('');
+          tbody.innerHTML = rows || '<tr><td colspan="8" class="text-center text-muted">Phòng chưa có tài sản</td></tr>';
+          updateSummary();
+        };
+        const updateSummary = () => {
+          const inputs = document.querySelectorAll('#assetsRows .asset-assign');
+          let total = 0; inputs.forEach(inp => { total += parseInt(inp.value||'0',10)||0; });
+          document.getElementById('assetsSummary').textContent = 'Tổng chọn: ' + total + ' món';
+        };
+        document.getElementById('assetsSearch').oninput = () => render();
+        document.getElementById('btnFillAllOne').onclick = () => {
+          (window.__assetsCache||[]).forEach(a => { if(a.con_lai_co_the_gan>0) a.da_gan_cho_slot_nay = 1; });
+          render();
+        };
+        document.getElementById('btnClearAll').onclick = () => {
+          (window.__assetsCache||[]).forEach(a => { a.da_gan_cho_slot_nay = 0; });
+          render();
+        };
+        document.getElementById('btnFillSuggested').onclick = () => {
+          (window.__assetsCache||[]).forEach(a => {
+            if (a.suggested && a.con_lai_co_the_gan>0 && (parseInt(a.da_gan_cho_slot_nay||'0',10)||0)===0) {
+              a.da_gan_cho_slot_nay = 1;
+            }
+          });
+          render();
+        };
+        // Delegate +/- buttons and inputs
+        document.getElementById('assetsList').addEventListener('click', function(ev){
+          const btn = ev.target.closest('.btn-inc,.btn-dec'); if(!btn) return;
+          const id = parseInt(btn.getAttribute('data-id'),10);
+          const idx = (window.__assetsCache||[]).findIndex(a=>a.id===id); if(idx<0) return;
+          let cur = parseInt(window.__assetsCache[idx].da_gan_cho_slot_nay||0,10)||0;
+          const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
+          if (btn.classList.contains('btn-inc')) cur = Math.min(max, cur+1); else cur = Math.max(0, cur-1);
+          window.__assetsCache[idx].da_gan_cho_slot_nay = cur; render();
+        });
+        document.getElementById('assetsList').addEventListener('input', function(ev){
+          const inp = ev.target.closest('.asset-assign'); if(!inp) return;
+          const id = parseInt(inp.getAttribute('data-id'),10);
+          const idx = (window.__assetsCache||[]).findIndex(a=>a.id===id); if(idx<0) return;
+          let val = parseInt(inp.value||'0',10)||0; const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
+          if (val<0) val=0; if (val>max) val=max; window.__assetsCache[idx].da_gan_cho_slot_nay = val; updateSummary();
+        });
+        render();
+      })
+      .catch(()=>{ tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>'; });
+  }
+
+  document.getElementById('assignAssetsForm').addEventListener('submit', function(e){
     e.preventDefault();
-    const id = $('#edit_slot_id').val();
-    const formData = new FormData(this);
-    $.ajax({
-      url: '/admin/slots/'+id+'/update',
-      method: 'POST',
-      data: formData,
-      processData: false,
-      contentType: false,
-      headers: { 'Accept': 'application/json' },
-      success: function(){ location.reload(); },
-      error: function(xhr){
-        let msg = 'Lỗi';
-        if (xhr.responseJSON) {
-          if (xhr.responseJSON.message) msg = xhr.responseJSON.message;
-          if (xhr.responseJSON.errors) {
-            const firstKey = Object.keys(xhr.responseJSON.errors)[0];
-            if (firstKey) msg = xhr.responseJSON.errors[firstKey][0];
-          }
-        } else if (xhr.responseText) {
-          msg = xhr.status+': '+xhr.responseText.substring(0,200);
-        }
-        alert(msg);
-      }
-    });
+    const slotId = document.getElementById('assign_assets_slot_id').value;
+    const payload = { _token: '{{ csrf_token() }}', assets: {} };
+    (window.__assetsCache||[]).forEach(a => { payload.assets[a.id] = parseInt(a.da_gan_cho_slot_nay||0,10)||0; });
+    fetch('/admin/slots/'+slotId+'/assign-assets', {
+      method:'POST', headers:{ 'Accept':'application/json','Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(async r=>{ if(!r.ok){ const j=await r.json(); throw new Error(j.message||'Lỗi'); } return r.json(); })
+      .then(()=>{ location.reload(); })
+      .catch(err=>{ alert(err.message||'Lỗi'); });
   });
+  // (Đã bỏ tính năng sửa slot)
   // Bỏ gán sinh viên
   function unassignStudent(slotId){
     if(!confirm('Bạn chắc chắn xoá sinh viên khỏi slot này?')) return;
@@ -300,6 +397,15 @@
       success:()=>location.reload(),
       error:x=>alert(x.responseJSON?.message||'Lỗi')
     });
+  }
+
+  // Bỏ toàn bộ CSVC slot
+  function clearAssets(slotId){
+    if(!confirm('Bỏ gán toàn bộ CSVC cho slot này?')) return;
+    fetch('/admin/slots/'+slotId+'/clear-assets', { method:'POST', headers:{ 'X-CSRF-TOKEN':'{{ csrf_token() }}' } })
+      .then(r=>{ if(!r.ok) throw new Error('Lỗi'); return r.json(); })
+      .then(()=> location.reload())
+      .catch(()=> alert('Không thể bỏ CSVC'));
   }
 </script>
 @endpush
