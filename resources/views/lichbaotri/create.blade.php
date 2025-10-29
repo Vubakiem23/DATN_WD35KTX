@@ -23,7 +23,7 @@
         {{-- Chọn tài sản --}}
         <div class="mb-3">
             <label class="form-label">Chọn tài sản</label>
-            <select name="tai_san_or_kho" class="form-select" required>
+            <select name="tai_san_or_kho" class="form-select form-control" required>
                 <option value="">-- Chọn tài sản --</option>
 
                 <optgroup label="Tài sản trong phòng">
@@ -59,7 +59,7 @@
         {{-- Ảnh minh chứng --}}
         <div class="mb-3">
             <label class="form-label">Ảnh minh chứng (nếu có)</label>
-            <input type="file" name="hinh_anh" class="form-control">
+            <input type="file" name="hinh_anh_truoc" class="form-control">
         </div>
 
         <button type="submit" class="btn btn-primary">💾 Lưu lịch bảo trì</button>

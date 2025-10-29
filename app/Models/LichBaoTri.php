@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class LichBaoTri extends Model
 {
-    protected $table = 'lich_bao_tri'; // thêm dòng này để chỉ đúng tên bảng
+    use HasFactory;
+
+    protected $table = 'lich_bao_tri';
 
     protected $fillable = [
         'tai_san_id',
@@ -16,6 +18,7 @@ class LichBaoTri extends Model
         'ngay_hoan_thanh',
         'trang_thai',
         'mo_ta',
+        'hinh_anh_truoc', 
         'hinh_anh',
     ];
 
@@ -29,5 +32,3 @@ class LichBaoTri extends Model
         return $this->belongsTo(KhoTaiSan::class);
     }
 }
-
-

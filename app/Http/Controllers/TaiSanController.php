@@ -56,13 +56,14 @@ class TaiSanController extends Controller
         }
 
         TaiSan::create([
-            'kho_tai_san_id' => $kho->id,
-            'ten_tai_san' => $kho->ten_tai_san,
-            'phong_id' => $request->phong_id,
-            'so_luong' => $request->so_luong,
-            'tinh_trang' => $request->tinh_trang,
-            'hinh_anh' => 'taisan/' . $kho->hinh_anh,
-        ]);
+    'kho_tai_san_id' => $kho->id,
+    'ten_tai_san' => $kho->ten_tai_san,
+    'phong_id' => $request->phong_id,
+    'so_luong' => $request->so_luong,
+    'tinh_trang' => $request->tinh_trang,
+    'hinh_anh' => $kho->hinh_anh, // chỉ lưu tên file
+]);
+
 
         $kho->decrement('so_luong', $request->so_luong);
 
