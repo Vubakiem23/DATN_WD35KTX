@@ -154,47 +154,70 @@ class LichBaoTriController extends Controller
         $lich = LichBaoTri::with(['taiSan.phong', 'khoTaiSan'])->findOrFail($id);
         return view('lichbaotri._modal', compact('lich'));
     }
-   public function edit($id)
-{
-    $lichBaoTri = LichBaoTri::findOrFail($id);
-    $taiSan = TaiSan::all();
-    $khoTaiSan = KhoTaiSan::all(); // nếu cần dùng trong form
-    return view('lichbaotri.edit', compact('lichBaoTri', 'taiSan', 'khoTaiSan'));
-}
+    public function edit($id)
+    {
+        $lichBaoTri = LichBaoTri::findOrFail($id);
+        $taiSan = TaiSan::all();
+        $khoTaiSan = KhoTaiSan::all(); // nếu cần dùng trong form
+        return view('lichbaotri.edit', compact('lichBaoTri', 'taiSan', 'khoTaiSan'));
+    }
 
 
     public function update(Request $request, $id)
+    {
+        // Lấy lịch bảo trì theo ID
+        $lich = LichBaoTri::findOrFail($id);
+
+        // Cập nhật các thông tin cơ bản
+        $lich->ngay_bao_tri = $request->ngay_bao_tri;
+        $lich->ngay_hoan_thanh = $request->ngay_hoan_thanh; // ngày hoàn thành
+        $lich->mo_ta = $request->mo_ta;
+        $lich->trang_thai = $request->trang_thai; // trạng thái
+
+        // Cập nhật ảnh trước bảo trì nếu có
+        if ($request->hasFile('hinh_anh_truoc')) {
+            $file = $request->file('hinh_anh_truoc');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/lichbaotri'), $fileName);
+            $lich->hinh_anh_truoc = $fileName;
+        }
+
+        // Cập nhật ảnh sau bảo trì nếu có
+        if ($request->hasFile('hinh_anh')) {
+            $file = $request->file('hinh_anh');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/lichbaotri'), $fileName);
+            $lich->hinh_anh = $fileName;
+        }
+
+        // Lưu tất cả thay đổi
+        $lich->save();
+
+        // Chuyển hướng về danh sách với thông báo thành công
+        return redirect()->route('lichbaotri.index')->with('success', 'Cập nhật lịch bảo trì thành công!');
+    }
+        /** 🔹 Lấy danh sách tài sản theo loại (AJAX cho dropdown phụ thuộc) */
+    public function getTaiSan($loai)
 {
-    // Lấy lịch bảo trì theo ID
-    $lich = LichBaoTri::findOrFail($id);
-
-    // Cập nhật các thông tin cơ bản
-    $lich->ngay_bao_tri = $request->ngay_bao_tri;
-    $lich->ngay_hoan_thanh = $request->ngay_hoan_thanh; // ngày hoàn thành
-    $lich->mo_ta = $request->mo_ta;
-    $lich->trang_thai = $request->trang_thai; // trạng thái
-
-    // Cập nhật ảnh trước bảo trì nếu có
-    if ($request->hasFile('hinh_anh_truoc')) {
-        $file = $request->file('hinh_anh_truoc');
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/lichbaotri'), $fileName);
-        $lich->hinh_anh_truoc = $fileName;
+    if ($loai === 'phong') {
+        $data = TaiSan::with('phong:id,ten_phong')
+            ->whereNotNull('phong_id')
+            ->whereDoesntHave('lichBaoTri', function($query) {
+                $query->whereNull('ngay_hoan_thanh'); // loại tất cả lịch chưa hoàn thành
+            })
+            ->select('id', 'ten_tai_san', 'phong_id')
+            ->get();
+    } elseif ($loai === 'kho') {
+        $data = KhoTaiSan::whereDoesntHave('lichBaoTri', function($query) {
+                $query->whereNull('ngay_hoan_thanh'); // loại tất cả lịch chưa hoàn thành
+            })
+            ->select('id', 'ten_tai_san', 'so_luong')
+            ->get();
+    } else {
+        $data = [];
     }
 
-    // Cập nhật ảnh sau bảo trì nếu có
-    if ($request->hasFile('hinh_anh')) {
-        $file = $request->file('hinh_anh');
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/lichbaotri'), $fileName);
-        $lich->hinh_anh = $fileName;
-    }
-
-    // Lưu tất cả thay đổi
-    $lich->save();
-
-    // Chuyển hướng về danh sách với thông báo thành công
-    return redirect()->route('lichbaotri.index')->with('success', 'Cập nhật lịch bảo trì thành công!');
+    return response()->json($data);
 }
 
 }

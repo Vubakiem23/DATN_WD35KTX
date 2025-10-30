@@ -37,4 +37,9 @@ class TaiSan extends Model
             ->withPivot('so_luong')
             ->withTimestamps();
     }
+
+    public function lichBaoTri()
+    {
+        return $this->hasMany(LichBaoTri::class, 'tai_san_id');
+    }
 }
