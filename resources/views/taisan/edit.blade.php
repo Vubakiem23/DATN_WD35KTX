@@ -42,12 +42,12 @@
             <label for="tinh_trang" class="form-label">Tình trạng ban đầu</label>
             <input type="text" name="tinh_trang" class="form-control"
                 value="{{ old('tinh_trang', $taiSan->tinh_trang) }}"
-                placeholder="Ví dụ: Mới, Hư hỏng...">
+                placeholder="Ví dụ: Mới, Hư hỏng..." readonly>
         </div>
 
         <div class="mb-3">
             <label for="tinh_trang_hien_tai" class="form-label">Tình trạng hiện tại</label>
-            <select name="tinh_trang_hien_tai" class="form-select">
+            <select name="tinh_trang_hien_tai" class="form-select form-control">
                 <option value="">-- Chọn tình trạng --</option>
                 <option value="Mới" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Mới' ? 'selected' : '' }}>Mới</option>
                 <option value="Cũ" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Cũ' ? 'selected' : '' }}>Cũ</option>
@@ -58,7 +58,7 @@
 
         <div class="mb-3">
             <label for="phong_id" class="form-label">Phòng</label>
-            <select name="phong_id" class="form-select">
+            <select name="phong_id" class="form-select form-control">
                 <option value="">-- Chọn phòng --</option>
                 @foreach($phongs as $phong)
                 <option value="{{ $phong->id }}"
