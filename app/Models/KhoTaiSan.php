@@ -28,7 +28,11 @@ class KhoTaiSan extends Model
         return $this->hasMany(TaiSan::class, 'kho_tai_san_id');
     }
     public function lichBaoTri()
-{
-    return $this->hasMany(LichBaoTri::class, 'kho_tai_san_id');
-}
+    {
+        return $this->hasMany(LichBaoTri::class, 'kho_tai_san_id');
+    }
+    public function loai()
+    {
+        return $this->belongsTo(LoaiTaiSan::class, 'loai_id');
+    }
 }

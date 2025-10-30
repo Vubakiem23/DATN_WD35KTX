@@ -20,22 +20,49 @@
   <form action="{{ route('lichbaotri.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
 
-    {{-- 🔹 Chọn loại tài sản --}}
+    {{-- 🔹 Cấp 1: Chọn vị trí --}}
     <div class="mb-3">
-      <label class="form-label">Chọn loại tài sản</label>
-      <select id="loai_tai_san" class="form-select form-control" required>
-        <option value="">-- Chọn loại --</option>
-        <option value="phong" {{ request('taisan_id') ? 'selected' : '' }}>Tài sản trong phòng</option>
+      <label class="form-label">Chọn vị trí</label>
+      <select id="vi_tri" class="form-select form-control" required>
+        <option value="">-- Chọn vị trí --</option>
+        <option value="phong">Tài sản trong phòng</option>
         <option value="kho">Tài sản trong kho</option>
       </select>
     </div>
 
-    {{-- 🔹 Chọn tài sản --}}
-    <div class="mb-3">
-      <label class="form-label">Chọn tài sản</label>
-      <select name="tai_san_or_kho" id="tai_san_or_kho" class="form-select form-control" required>
-        <option value="">-- Vui lòng chọn loại tài sản trước --</option>
-      </select>
+    {{-- 🔹 Nếu chọn "Kho" --}}
+    <div class="vi-tri-kho d-none">
+      <div class="mb-3">
+        <label class="form-label">Chọn loại tài sản (trong kho)</label>
+        <select id="loai_tai_san_kho" class="form-select form-control">
+          <option value="">-- Chọn loại tài sản --</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Chọn tài sản trong kho</label>
+        <select name="tai_san_id" id="tai_san_kho" class="form-select form-control">
+          <option value="">-- Chọn tài sản --</option>
+        </select>
+      </div>
+    </div>
+
+    {{-- 🔹 Nếu chọn "Phòng" --}}
+    <div class="vi-tri-phong d-none">
+      <div class="mb-3">
+        <label class="form-label">Chọn phòng</label>
+        <select id="phong_id" class="form-select form-control">
+          <option value="">-- Chọn phòng --</option>
+          @foreach ($phongs as $phong)
+            <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Chọn tài sản trong phòng</label>
+        <select name="tai_san_id" id="tai_san_phong" class="form-select form-control">
+          <option value="">-- Chọn tài sản --</option>
+        </select>
+      </div>
     </div>
 
     {{-- 🔹 Ngày bảo trì --}}
@@ -64,50 +91,75 @@
 {{-- 🧠 Script --}}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
-$(document).ready(function() {
-  let loaiSelect = $('#loai_tai_san');
-  let taiSanSelect = $('#tai_san_or_kho');
-  let selectedTaiSanId = "{{ request('taisan_id') ?? '' }}";
+$(document).ready(function () {
+  const viTriSelect = $('#vi_tri');
+  const khoSection = $('.vi-tri-kho');
+  const phongSection = $('.vi-tri-phong');
 
-  // Hàm load tài sản theo loại
-  function loadTaiSan(loai, preselectId = null) {
-    taiSanSelect.html('<option value="">-- Đang tải dữ liệu... --</option>');
-    if (!loai) {
-      taiSanSelect.html('<option value="">-- Vui lòng chọn loại tài sản trước --</option>');
-      return;
+  const loaiSelect = $('#loai_tai_san_kho');
+  const taiSanKhoSelect = $('#tai_san_kho');
+  const phongSelect = $('#phong_id');
+  const taiSanPhongSelect = $('#tai_san_phong');
+
+  // Ẩn/hiện theo vị trí
+  viTriSelect.on('change', function () {
+    const viTri = $(this).val();
+    khoSection.addClass('d-none');
+    phongSection.addClass('d-none');
+
+    if (viTri === 'kho') {
+      khoSection.removeClass('d-none');
+      loadLoaiTaiSanKho();
+    } else if (viTri === 'phong') {
+      phongSection.removeClass('d-none');
     }
+  });
 
-    $.get(`/lichbaotri/get-tai-san/${loai}`, function(data) {
-      taiSanSelect.empty().append('<option value="">-- Chọn tài sản --</option>');
+  // --- Khi chọn loại tài sản (KHO)
+  loaiSelect.on('change', function () {
+    const loaiId = $(this).val();
+    if (!loaiId) return;
+    loadTaiSanKho(loaiId);
+  });
 
-      if (loai === 'phong') {
-        data.forEach(function(item) {
-          let value = "ts_" + item.id;
-          let text = `${item.ten_tai_san} - Phòng: ${item.phong?.ten_phong ?? '-'}`;
-          let selected = preselectId && preselectId == item.id ? 'selected' : '';
-          taiSanSelect.append(`<option value="${value}" ${selected}>${text}</option>`);
-        });
-      } else {
-        data.forEach(function(item) {
-          let value = "kho_" + item.id;
-          let text = `${item.ten_tai_san} (SL: ${item.so_luong})`;
-          taiSanSelect.append(`<option value="${value}">${text}</option>`);
-        });
-      }
-    }).fail(function() {
-      taiSanSelect.html('<option value="">-- Lỗi tải dữ liệu --</option>');
+  // --- Khi chọn phòng
+  phongSelect.on('change', function () {
+    const phongId = $(this).val();
+    if (!phongId) return;
+    loadTaiSanPhong(phongId);
+  });
+
+  // 🧩 Hàm load loại tài sản trong kho
+  function loadLoaiTaiSanKho() {
+    loaiSelect.html('<option>-- Đang tải loại tài sản... --</option>');
+    $.get(`/lichbaotri/get-loai-tai-san`, function (data) {
+      loaiSelect.html('<option value="">-- Chọn loại tài sản --</option>');
+      data.forEach(item => {
+        loaiSelect.append(`<option value="${item.id}">${item.ten_loai}</option>`);
+      });
     });
   }
 
-  // Khi đổi loại
-  loaiSelect.on('change', function() {
-    loadTaiSan($(this).val());
-  });
+  // 🧩 Hàm load tài sản trong kho theo loại
+  function loadTaiSanKho(loaiId) {
+    taiSanKhoSelect.html('<option>-- Đang tải tài sản... --</option>');
+    $.get(`/lichbaotri/get-tai-san-kho/${loaiId}`, function (data) {
+      taiSanKhoSelect.html('<option value="">-- Chọn tài sản --</option>');
+      data.forEach(item => {
+        taiSanKhoSelect.append(`<option value="${item.id}">${item.ten_tai_san} (SL: ${item.so_luong})</option>`);
+      });
+    });
+  }
 
-  // Nếu có sẵn tài sản (từ URL)
-  if (selectedTaiSanId) {
-    let loai = 'phong';
-    loadTaiSan(loai, selectedTaiSanId);
+  // 🧩 Hàm load tài sản trong phòng
+  function loadTaiSanPhong(phongId) {
+    taiSanPhongSelect.html('<option>-- Đang tải tài sản... --</option>');
+    $.get(`/lichbaotri/get-tai-san-phong/${phongId}`, function (data) {
+      taiSanPhongSelect.html('<option value="">-- Chọn tài sản --</option>');
+      data.forEach(item => {
+        taiSanPhongSelect.append(`<option value="${item.id}">${item.ten_tai_san}</option>`);
+      });
+    });
   }
 });
 </script>

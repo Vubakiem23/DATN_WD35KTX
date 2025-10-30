@@ -214,7 +214,9 @@ Route::prefix('lichbaotri')->group(function () {
     Route::post('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhSubmit'])->name('lichbaotri.hoanthanh.submit');
     Route::patch('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
 
-    Route::get('/get-tai-san/{loai}', [LichBaoTriController::class, 'getTaiSan']);
+    Route::get('/get-loai-tai-san', [LichBaoTriController::class, 'getLoaiTaiSan']);
+    Route::get('/get-tai-san-kho/{loaiId}', [LichBaoTriController::class, 'getTaiSanKho']);
+    Route::get('/get-tai-san-phong/{phongId}', [LichBaoTriController::class, 'getTaiSanPhong']);
 });
 
 
@@ -251,7 +253,6 @@ Route::prefix('taisan')->group(function () {
     // ✅ Route dùng cho dropdown lọc tài sản theo loại
     Route::get('related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
     Route::get('taisan/related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
-
 });
 
 
