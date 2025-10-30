@@ -11,13 +11,37 @@ class KhoTaiSanController extends Controller
 
 {
     /** 🧱 Trang kho: hiển thị danh sách loại tài sản */
-    public function index()
-    {
-        $loaiTaiSan = LoaiTaiSan::withSum('khoTaiSan', 'so_luong')
-            ->orderBy('id', 'desc')
-            ->paginate(8);
-        return view('kho.index', compact('loaiTaiSan'));
+    public function index(Request $request)
+{
+    // Lấy danh sách loại tài sản cho dropdown
+    $tatCaLoai = LoaiTaiSan::all();
+
+    // Tạo query cơ bản
+    $query = LoaiTaiSan::withSum('khoTaiSan', 'so_luong');
+
+    // Lọc theo loại tài sản
+    if ($request->filled('loai_id')) {
+        $query->where('id', $request->loai_id);
     }
+
+    // Lọc theo tình trạng
+    if ($request->filled('tinh_trang')) {
+        $query->whereHas('khoTaiSan', function ($q) use ($request) {
+            $q->where('tinh_trang', $request->tinh_trang);
+        });
+    }
+
+    // Lọc theo từ khóa (tên loại)
+    if ($request->filled('keyword')) {
+        $query->where('ten_loai', 'like', '%' . $request->keyword . '%');
+    }
+
+    // Phân trang
+    $loaiTaiSan = $query->orderBy('id', 'desc')->paginate(8);
+
+    return view('kho.index', compact('loaiTaiSan', 'tatCaLoai'));
+}
+
 
     /** 🔁 Hiển thị các tài sản cùng loại */
     public function related(Request $request, $loai_id)

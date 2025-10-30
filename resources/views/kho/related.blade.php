@@ -2,18 +2,20 @@
 @section('title', 'Tài sản cùng loại')
 
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <div class="container mt-4">
 
     <h4 class="mb-3">🔁 Tài sản loại: {{ $loai->ten_loai }}</h4>
 
-    {{-- Nút thêm tài sản mới --}}
-    <a href="{{ route('kho.create', $loai->id) }}" class="btn btn-primary mb-3">
+    <a href="{{ route('kho.index') }}" class="btn btn-outline-dark" title="Quay về kho đồ">
+        <i class="fa fa-warehouse"></i>
+    </a>
+    <a href="{{ route('kho.create', $loai->id) }}" class="btn btn-primary me-2">
         <i class="fa fa-plus"></i> Thêm tài sản mới
     </a>
-
-    {{-- Thông báo --}}
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+    <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     {{-- Form lọc --}}
@@ -28,9 +30,9 @@
                 <select name="tinh_trang" class="form-select form-control">
                     <option value="">-- Chọn tình trạng --</option>
                     @foreach(['Mới', 'Hỏng', 'Cũ', 'Bảo trì', 'Bình thường'] as $status)
-                        <option value="{{ $status }}" {{ request('tinh_trang') == $status ? 'selected' : '' }}>
-                            {{ $status }}
-                        </option>
+                    <option value="{{ $status }}" {{ request('tinh_trang') == $status ? 'selected' : '' }}>
+                        {{ $status }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -68,14 +70,14 @@
                         <td>{{ $taiSan->firstItem() + $loop->index }}</td>
                         <td class="text-center">
                             @if($item->hinh_anh)
-                                <img src="{{ asset('storage/' . $item->hinh_anh) }}"
-                                    alt="{{ $item->ten_tai_san }}"
-                                    style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
+                            <img src="{{ asset('storage/' . $item->hinh_anh) }}"
+                                alt="{{ $item->ten_tai_san }}"
+                                style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
                             @else
-                                <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
-                                    style="width:70px;height:70px;">
-                                    <small>Chưa có hình</small>
-                                </div>
+                            <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
+                                style="width:70px;height:70px;">
+                                <small>Chưa có hình</small>
+                            </div>
                             @endif
                         </td>
                         <td>{{ $item->ma_tai_san }}</td>
@@ -86,7 +88,7 @@
                         <td>{{ $item->ghi_chu ?? '-' }}</td>
                         <td class="text-end kho-actions">
                             <a href="{{ route('kho.edit', $item->id) }}"
-                               class="btn btn-outline-primary btn-action" title="Sửa">
+                                class="btn btn-outline-primary btn-action" title="Sửa">
                                 <i class="fa fa-pencil"></i>
                             </a>
                             <form action="{{ route('kho.destroy', $item->id) }}" method="POST" class="d-inline"
@@ -126,6 +128,7 @@
         justify-content: center;
         border-radius: 10px;
     }
+
     .kho-actions .btn-action i {
         font-size: 14px;
     }

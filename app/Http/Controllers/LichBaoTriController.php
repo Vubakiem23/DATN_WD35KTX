@@ -11,30 +11,48 @@ use Illuminate\Support\Facades\DB;
 class LichBaoTriController extends Controller
 {
     /** 🧭 Hiển thị danh sách lịch bảo trì */
-    public function index()
-    {
-        $today = now()->toDateString();
+   public function index(Request $request)
+{
+    $today = now()->toDateString();
 
-        // 🔄 Cập nhật trạng thái tự động
-        DB::table('lich_bao_tri')
-            ->whereNotNull('ngay_hoan_thanh')
-            ->where('trang_thai', '!=', 'Hoàn thành')
-            ->update(['trang_thai' => 'Hoàn thành', 'updated_at' => now()]);
+    // ✅ Tự động cập nhật trạng thái
+    DB::table('lich_bao_tri')
+        ->whereNotNull('ngay_hoan_thanh')
+        ->where('trang_thai', '!=', 'Hoàn thành')
+        ->update(['trang_thai' => 'Hoàn thành', 'updated_at' => now()]);
 
-        DB::table('lich_bao_tri')
-            ->whereNull('ngay_hoan_thanh')
-            ->whereDate('ngay_bao_tri', '>', $today)
-            ->where('trang_thai', '!=', 'Chờ bảo trì')
-            ->update(['trang_thai' => 'Chờ bảo trì', 'updated_at' => now()]);
+    DB::table('lich_bao_tri')
+        ->whereNull('ngay_hoan_thanh')
+        ->whereDate('ngay_bao_tri', '>', $today)
+        ->where('trang_thai', '!=', 'Chờ bảo trì')
+        ->update(['trang_thai' => 'Chờ bảo trì', 'updated_at' => now()]);
 
-        DB::table('lich_bao_tri')
-            ->whereNull('ngay_hoan_thanh')
-            ->whereDate('ngay_bao_tri', '<=', $today)
-            ->where('trang_thai', '!=', 'Đang bảo trì')
-            ->update(['trang_thai' => 'Đang bảo trì', 'updated_at' => now()]);
+    DB::table('lich_bao_tri')
+        ->whereNull('ngay_hoan_thanh')
+        ->whereDate('ngay_bao_tri', '<=', $today)
+        ->where('trang_thai', '!=', 'Đang bảo trì')
+        ->update(['trang_thai' => 'Đang bảo trì', 'updated_at' => now()]);
 
-        $lich = LichBaoTri::with(['taiSan.phong', 'khoTaiSan'])
-            ->orderByRaw("
+    // 🧩 Bộ lọc
+    $query = LichBaoTri::with(['taiSan.phong', 'khoTaiSan']);
+
+    if ($request->filled('trang_thai')) {
+        $query->where('trang_thai', $request->trang_thai);
+    }
+
+    if ($request->filled('ngay_bao_tri')) {
+        $query->whereDate('ngay_bao_tri', $request->ngay_bao_tri);
+    }
+
+    if ($request->filled('vi_tri')) {
+        if ($request->vi_tri === 'phong') {
+            $query->whereNotNull('tai_san_id');
+        } elseif ($request->vi_tri === 'kho') {
+            $query->whereNotNull('kho_tai_san_id');
+        }
+    }
+
+    $lich = $query->orderByRaw("
                 CASE 
                     WHEN trang_thai = 'Chờ bảo trì' THEN 1
                     WHEN trang_thai = 'Đang bảo trì' THEN 2
@@ -45,8 +63,9 @@ class LichBaoTriController extends Controller
             ->orderBy('ngay_bao_tri', 'asc')
             ->paginate(6);
 
-        return view('lichbaotri.index', compact('lich'));
-    }
+    return view('lichbaotri.index', compact('lich'));
+}
+
 
     /** ➕ Form tạo mới */
     public function create()

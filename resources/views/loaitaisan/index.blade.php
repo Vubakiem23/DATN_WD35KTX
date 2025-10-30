@@ -7,6 +7,24 @@
 
   @push('styles')
   <style>
+    .filter-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      border-left: 5px;
+    }
+    .filter-card label {
+      font-weight: 600;
+      color: #495057;
+    }
+    .filter-card input {
+      border-radius: 10px;
+    }
+    .filter-card .btn {
+      border-radius: 10px;
+    }
     .loai-actions .btn-action {
       width: 40px;
       height: 36px;
@@ -30,27 +48,32 @@
   @endif
 
   {{-- ✅ Form lọc tìm kiếm --}}
-  <form action="{{ route('loaitaisan.index') }}" method="GET" class="mb-4">
-    <div class="input-group">
-      <span class="text-white">
-        <i class="bi bi-search"></i>
-      </span>
-      <input type="text" name="keyword" value="{{ request('keyword') }}" 
-             class="form-control" placeholder="Nhập tên loại tài sản cần tìm...">
-      <button type="submit" class="btn btn-primary">
-        <i class="bi bi-filter"></i> Lọc
-      </button>
-      <a href="{{ route('loaitaisan.index') }}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-clockwise"></i> Làm mới
-      </a>
+  <form action="{{ route('loaitaisan.index') }}" method="GET" class="filter-card">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label">Từ khóa tìm kiếm</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+          <input type="text" name="keyword" value="{{ request('keyword') }}" 
+                 class="form-control" placeholder="Nhập tên loại tài sản...">
+        </div>
+      </div>
+      <div class="col-md-7 d-flex gap-2 justify-content-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-filter"></i> Lọc
+        </button>
+        <a href="{{ route('loaitaisan.index') }}" class="btn btn-outline-secondary">
+          <i class="fa fa-rotate-left"></i> Làm mới
+        </a>
+        <a href="{{ route('loaitaisan.create') }}" class="btn btn-success">
+          <i class="fa fa-plus"></i> Thêm mới
+        </a>
+      </div>
     </div>
   </form>
 
-  {{-- 🔘 Nút thêm mới --}}
-  <a href="{{ route('loaitaisan.create') }}" class="btn btn-success mb-3">➕ Thêm loại tài sản</a>
-
   {{-- 🧾 Bảng danh sách --}}
-  <div class="card">
+  <div class="card shadow-sm">
     <div class="card-body p-0">
       <table class="table table-bordered table-striped align-middle mb-0">
         <thead class="table-light">
