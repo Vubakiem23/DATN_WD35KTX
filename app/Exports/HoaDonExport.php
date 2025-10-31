@@ -12,31 +12,45 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class HoaDonExport implements FromCollection, WithHeadings, WithStyles, WithTitle
 {
-    protected $hoaDon;
+    protected $trangThai;
 
-    public function __construct(HoaDon $hoaDon)
+    public function __construct($trangThai = null)
     {
-        $this->hoaDon = $hoaDon;
+        $this->trangThai = $trangThai;
     }
 
     public function collection()
     {
-        $hoaDon = $this->hoaDon;
+        $hoaDons = HoaDon::with('phong')
+            ->when($this->trangThai === 'da_thanh_toan', fn($q) => $q->where('da_thanh_toan', true))
+            ->when($this->trangThai === 'chua_thanh_toan', fn($q) => $q->where('da_thanh_toan', false))
+            ->get();
 
-        return new Collection([
-            [
-                $hoaDon->phong->ten_phong ?? 'Không rõ',
-                $hoaDon->so_dien_cu,
-                $hoaDon->so_dien_moi,
-                $hoaDon->so_dien_moi - $hoaDon->so_dien_cu,
-                $hoaDon->so_nuoc_cu,
-                $hoaDon->so_nuoc_moi,
-                $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu,
-                number_format($hoaDon->don_gia_dien, 0, ',', '.') . ' VND',
-                number_format($hoaDon->don_gia_nuoc, 0, ',', '.') . ' VND',
-                number_format($hoaDon->thanh_tien, 0, ',', '.') . ' VND',
-            ],
-        ]);
+        return $hoaDons->map(function ($hd) {
+            $so_dien = $hd->so_dien_moi - $hd->so_dien_cu;
+            $so_nuoc = $hd->so_nuoc_moi - $hd->so_nuoc_cu;
+            $gia_phong = $hd->phong->gia_phong ?? 0;
+            $tien_dien = $so_dien * $hd->don_gia_dien;
+            $tien_nuoc = $so_nuoc * $hd->don_gia_nuoc;
+            $tong_tien = $tien_dien + $tien_nuoc + $gia_phong;
+
+            return [
+                $hd->phong->ten_phong ?? 'Không rõ',
+                $hd->so_dien_cu,
+                $hd->so_dien_moi,
+                $so_dien,
+                number_format($hd->don_gia_dien, 0, ',', '.') . ' VND',
+                number_format($tien_dien, 0, ',', '.') . ' VND',
+                $hd->so_nuoc_cu,
+                $hd->so_nuoc_moi,
+                $so_nuoc,
+                number_format($hd->don_gia_nuoc, 0, ',', '.') . ' VND',
+                number_format($tien_nuoc, 0, ',', '.') . ' VND',
+                number_format($gia_phong, 0, ',', '.') . ' VND',
+                number_format($tong_tien, 0, ',', '.') . ' VND',
+                $hd->da_thanh_toan ? 'Đã thanh toán' : 'Chưa thanh toán',
+            ];
+        });
     }
 
     public function headings(): array
@@ -45,56 +59,50 @@ class HoaDonExport implements FromCollection, WithHeadings, WithStyles, WithTitl
             'Phòng',
             'Điện cũ',
             'Điện mới',
-            'Đã dùng (điện)',
+            'Số điện',
+            'Đơn giá điện',
+            'Thành tiền điện',
             'Nước cũ',
             'Nước mới',
-            'Đã dùng (nước)',
-            'Đơn giá điện',
+            'Số nước',
             'Đơn giá nước',
-            'Thành tiền',
+            'Thành tiền nước',
+            'Giá phòng',
+            'Tổng tiền',
+            'Trạng thái',
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Đặt font tổng thể
-        $sheet->getParent()->getDefaultStyle()->getFont()->setName('Calibri')->setSize(12);
-
-        // Tiêu đề hàng đầu tiên (headings)
-        $sheet->getStyle('A1:J1')->getFont()->setBold(true)->setSize(12)->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('A1:J1')->getFill()
-            ->setFillType('solid')
-            ->getStartColor()->setARGB('0070C0'); // Màu xanh dương header
-
-        // Căn giữa tiêu đề
-        $sheet->getStyle('A1:J1')->getAlignment()->setHorizontal('center')->setVertical('center');
-
-        // Căn giữa toàn bộ dữ liệu
-        $sheet->getStyle('A2:J2')->getAlignment()->setHorizontal('center')->setVertical('center');
-
-        // Thêm border cho toàn bảng
-        $sheet->getStyle('A1:J2')->getBorders()->getAllBorders()->setBorderStyle('thin');
-
-        // Auto width cho các cột
-        foreach (range('A', 'J') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        // Đổi màu nền nhẹ cho dòng dữ liệu
-        $sheet->getStyle('A2:J2')->getFill()
-            ->setFillType('solid')
-            ->getStartColor()->setARGB('E9F3FF'); // xanh nhạt
-
-        // Thêm tiêu đề hóa đơn trên đầu (merge ô)
-        $sheet->insertNewRowBefore(1, 2); // chèn 2 dòng trống ở đầu
-        $sheet->mergeCells('A1:J1');
-        $sheet->setCellValue('A1', 'HÓA ĐƠN THANH TOÁN ĐIỆN NƯỚC');
+        $dataRowCount = $this->collection()->count(); // ✅ số dòng dữ liệu
+        $startRow = 4; // ✅ dữ liệu bắt đầu từ dòng 4
+        $endRow = $startRow + $dataRowCount - 1; 
+        // Chèn tiêu đề lớn ở đầu
+        $sheet->insertNewRowBefore(1, 2);
+        $sheet->mergeCells('A1:N1');
+        $sheet->setCellValue('A1', 'DANH SÁCH HÓA ĐƠN');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->getColor()->setARGB('0070C0');
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+
+        // Font tổng thể
+        $sheet->getParent()->getDefaultStyle()->getFont()->setName('Calibri')->setSize(12);
+
+        // Header dòng 3
+        $sheet->getStyle('A3:N3')->getFont()->setBold(true)->setSize(12)->getColor()->setARGB('000000');
+        $sheet->getStyle('A3:N3')->getAlignment()->setHorizontal('center')->setVertical('center');
+
+        // Dữ liệu từ dòng 4 trở đi
+        $sheet->getStyle("A{$startRow}:N{$endRow}")->getAlignment()->setHorizontal('center')->setVertical('center');
+    $sheet->getStyle("A3:N{$endRow}")->getBorders()->getAllBorders()->setBorderStyle('thin');
+           // Auto width cho từng cột
+        foreach (range('A', 'N') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
     }
 
     public function title(): string
     {
-        return 'Hóa đơn phòng ' . ($this->hoaDon->phong->ten_phong ?? '');
+        return 'Danh sách hóa đơn';
     }
 }

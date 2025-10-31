@@ -13,23 +13,24 @@ class SuCoController extends Controller
 {
     // 📋 Danh sách sự cố (có tìm kiếm + phân trang)
     public function index(Request $request)
-    {
-        $query = SuCo::with(['sinhVien', 'phong']);
+{
+    $query = SuCo::with(['sinhVien', 'phong']);
 
-        // 🔍 Tìm kiếm theo MSSV hoặc họ tên sinh viên
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('sinhVien', function ($q) use ($search) {
-                $q->where('ho_ten', 'like', "%$search%")
-                  ->orWhere('ma_sinh_vien', 'like', "%$search%");
-            });
-        }
-
-        $su_cos = $query->orderByDesc('id')->paginate(10);
-        $su_cos->appends($request->all());
-
-        return view('su_co.index', compact('su_cos'));
+    // 🔍 Tìm kiếm theo MSSV hoặc Họ tên (không phân biệt chữ hoa/thường)
+    if ($request->filled('search')) {
+        $search = strtolower($request->search);
+        $query->whereHas('sinhVien', function ($q) use ($search) {
+            $q->whereRaw('LOWER(ho_ten) LIKE ?', ["%{$search}%"])
+              ->orWhereRaw('LOWER(ma_sinh_vien) LIKE ?', ["%{$search}%"]);
+        });
     }
+
+    $su_cos = $query->orderByDesc('id')->paginate(10);
+    $su_cos->appends($request->all());
+
+    return view('su_co.index', compact('su_cos'));
+}
+
 
     // 🆕 Form thêm mới
     public function create()
@@ -176,4 +177,43 @@ class SuCoController extends Controller
         return redirect()->route('suco.show', $id)
             ->with('info', 'Sự cố này không cần hoặc đã được thanh toán!');
     }
+
+    // Nút hoàn thành sự cố 
+    public function hoanThanh(Request $request, SuCo $suco)
+{
+    $request->validate([
+        'ngay_hoan_thanh' => 'required|date',
+        'payment_amount' => 'required|numeric|min:0',
+        'anh' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    ]);
+
+    // Cập nhật thông tin hoàn thành
+    $suco->trang_thai = 'Hoàn thành';
+    $suco->ngay_hoan_thanh = $request->ngay_hoan_thanh;
+    $suco->payment_amount = $request->payment_amount;
+    $suco->is_paid = $request->has('is_paid') ? 1 : 0;
+
+    // Xử lý upload ảnh nếu có
+    if ($request->hasFile('anh')) {
+        // Xóa ảnh cũ nếu tồn tại
+        if ($suco->anh && File::exists(public_path($suco->anh))) {
+            File::delete(public_path($suco->anh));
+        }
+
+        $file = $request->file('anh');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $path = 'uploads/su_co/' . $filename;
+        $file->move(public_path('uploads/su_co'), $filename);
+        $suco->anh = $path;
+    }
+
+    $suco->save();
+
+    return redirect()->back()->with('success', 'Cập nhật hoàn thành thành công!');
+}
+
+
+
+
+
 }
