@@ -114,12 +114,20 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // HÓA ĐƠN
     // ======================
     Route::prefix('hoadon')->group(function(){
-        Route::get('', [HoaDonController::class, 'index'])->name('hoadon.index');
-        Route::post('import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
-        Route::delete('{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
-        Route::get('{id}/export-pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
-        Route::get('export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
-        Route::post('{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+            Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
+    Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
+    Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
+    Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+    Route::get('/hoadon/export', [HoaDonController::class, 'export'])->name('hoadon.export');
+    Route::get('/hoadon/lichsu', [HoaDonController::class, 'lichSu'])->name('hoadon.lichsu');
+    Route::get('/hoadon/{id}', [HoaDonController::class, 'show'])->name('hoadon.show');
+    Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
+    Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
+    Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
+    Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
+
+
+
     });
 
     // ======================
@@ -268,3 +276,4 @@ Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);
 // =================== IMPORT ADMIN EXTRA ===================
 
 require __DIR__ . '/admin.php';
+Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
