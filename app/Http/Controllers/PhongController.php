@@ -88,6 +88,9 @@ class PhongController extends Controller
         try {
             $data = $request->validated();
 
+            // Phòng mới luôn khởi tạo ở trạng thái "Trống"
+            $data['trang_thai'] = 'Trống';
+
             // Nếu chọn khu, ép giới tính phòng theo khu
             if (!empty($data['khu_id'])) {
                 $khu = Khu::findOrFail($data['khu_id']);
@@ -166,7 +169,11 @@ class PhongController extends Controller
 
             // Nếu có chọn tài sản từ kho, tiến hành cấp cho phòng và phân cho slots
             if (!empty($assets)) {
-                $slots = $phong->slots()->orderBy('id')->get();
+                // Chỉ tự động bàn giao cho các slot đã có sinh viên ở
+                $slots = $phong->slots()
+                    ->whereNotNull('sinh_vien_id')
+                    ->orderBy('id')
+                    ->get();
                 $slotCount = $slots->count();
 
                 foreach ($assets as $khoId => $qtyRaw) {
@@ -207,7 +214,7 @@ class PhongController extends Controller
             DB::commit();
 
             Log::info('Tạo phòng thành công', ['phong_id' => $phong->id, 'ten_phong' => $phong->ten_phong]);
-            return redirect()->route('phong.index')->with('status', 'Thêm phòng thành công! Tài sản đã được cấp và bàn giao cho slots.');
+            return redirect()->route('phong.index')->with('status', 'Thêm phòng thành công! Tài sản đã được cấp cho phòng.');
 
         } catch (PhongException $e) {
             DB::rollBack();
@@ -351,7 +358,11 @@ class PhongController extends Controller
             $assets = $request->input('assets', []);
             $assets = is_array($assets) ? array_filter($assets, function($qty){ return is_numeric($qty) && (int)$qty > 0; }) : [];
             if (!empty($assets)) {
-                $slots = $phong->slots()->orderBy('id')->get();
+                // Chỉ tự động bàn giao cho các slot đã có sinh viên ở
+                $slots = $phong->slots()
+                    ->whereNotNull('sinh_vien_id')
+                    ->orderBy('id')
+                    ->get();
                 $slotCount = $slots->count();
 
                 foreach ($assets as $khoId => $qtyRaw) {

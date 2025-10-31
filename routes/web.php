@@ -142,7 +142,7 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     // ======================
     // KHU (Khu vực KTX)
     // ======================
-    Route::resource('khu', KhuController::class);
+    Route::resource('khu', KhuController::class)->except(['edit','update','destroy']);
 
     // ======================
     // NGƯỜI DÙNG
