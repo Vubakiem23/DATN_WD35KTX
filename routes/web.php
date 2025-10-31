@@ -21,9 +21,9 @@ use App\Http\Controllers\UserController;
 
 use App\Http\Controllers\ViolationController;
 use App\Http\Controllers\ViolationTypeController;
+use App\Http\Controllers\MucDoController;
+use App\Http\Controllers\TieuDeController;
 use App\Models\Violation;
-
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -170,6 +170,23 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         Route::put('update/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('delete/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
+
+    // ------------------ TIÊU ĐỀ ------------------
+// Thêm mới tiêu đề
+Route::post('tieude/ajax/create', [TieuDeController::class, 'ajaxCreate'])->name('tieude.ajaxCreate');
+Route::delete('tieude/ajax/delete', [TieuDeController::class, 'ajaxDelete'])->name('tieude.ajaxDelete');
+
+
+
+// ------------------ MỨC ĐỘ ------------------
+// Thêm mới mức độ
+
+
+Route::post('/mucdo/ajax/create', [MucDoController::class, 'ajaxCreate'])->name('mucdo.ajaxCreate');
+Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->name('mucdo.ajaxDelete');
+
+    // ---------------- THÔNG BÁO ----------------
+    Route::resource('thongbao', ThongBaoController::class);
 });
 
 // ======================
@@ -219,9 +236,6 @@ Route::prefix('manager')->middleware(['auth','manager'])->group(function(){
     Route::patch('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
 });
 
-
-    // ---------------- THÔNG BÁO ----------------
-    Route::resource('thongbao', ThongBaoController::class);
 
     // ---------------- SỰ CỐ ----------------
     Route::resource('suco', SuCoController::class);

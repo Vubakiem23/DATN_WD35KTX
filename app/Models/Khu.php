@@ -14,12 +14,12 @@ class Khu extends Model
         'gioi_tinh',
         'mo_ta',
     ];
-
+    public function thongBaos()
+    {
+        return $this->belongsToMany(ThongBao::class, 'thong_bao_khu', 'khu_id', 'thong_bao_id');
+    }
     public function phongs(): HasMany
     {
         return $this->hasMany(Phong::class, 'khu_id');
     }
 }
-
-
-

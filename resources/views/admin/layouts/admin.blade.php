@@ -342,8 +342,12 @@
 <body class="nav-md">
     <div class="container body">
         <div class="main_container">
-            @include('admin.partials.side-bar')
-            @include('admin.partials.top-navigation')
+    @if(empty($noSidebar))
+        @include('admin.partials.side-bar')
+    @endif
+
+    @include('admin.partials.top-navigation')
+
 
             <!-- top navigation -->
 
