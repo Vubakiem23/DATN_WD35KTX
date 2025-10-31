@@ -225,7 +225,7 @@ public function getLoaiTaiSan()
 // 🔹 Lấy tài sản trong KHO theo loại
 public function getTaiSanKho($loaiId)
 {
-    $data = \App\Models\KhoTaiSan::where('loai_id', $loaiId)
+    $data = KhoTaiSan::where('loai_id', $loaiId)
         ->whereDoesntHave('lichBaoTri', function ($q) {
             $q->whereNull('ngay_hoan_thanh');
         })
@@ -238,15 +238,18 @@ public function getTaiSanKho($loaiId)
 // 🔹 Lấy tài sản trong PHÒNG theo phòng_id
 public function getTaiSanPhong($phongId)
 {
-    $data = \App\Models\TaiSan::with('phong:id,ten_phong')
-        ->where('phong_id', $phongId)
-        ->whereDoesntHave('lichBaoTri', function ($q) {
-            $q->whereNull('ngay_hoan_thanh');
-        })
-        ->select('id', 'ten_tai_san', 'phong_id')
+    $taiSans = TaiSan::join('kho_tai_san', 'tai_san.kho_tai_san_id', '=', 'kho_tai_san.id')
+        ->where('tai_san.phong_id', $phongId)
+        ->select(
+            'tai_san.id',
+            'kho_tai_san.ma_tai_san', 
+            'tai_san.ten_tai_san',
+            'tai_san.so_luong'
+        )
         ->get();
 
-    return response()->json($data);
+    return response()->json($taiSans);
 }
+
 
 }
