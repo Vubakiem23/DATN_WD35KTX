@@ -11,30 +11,48 @@ use Illuminate\Support\Facades\DB;
 class LichBaoTriController extends Controller
 {
     /** 🧭 Hiển thị danh sách lịch bảo trì */
-    public function index()
-    {
-        $today = now()->toDateString();
+   public function index(Request $request)
+{
+    $today = now()->toDateString();
 
-        // 🔄 Cập nhật trạng thái tự động
-        DB::table('lich_bao_tri')
-            ->whereNotNull('ngay_hoan_thanh')
-            ->where('trang_thai', '!=', 'Hoàn thành')
-            ->update(['trang_thai' => 'Hoàn thành', 'updated_at' => now()]);
+    // ✅ Tự động cập nhật trạng thái
+    DB::table('lich_bao_tri')
+        ->whereNotNull('ngay_hoan_thanh')
+        ->where('trang_thai', '!=', 'Hoàn thành')
+        ->update(['trang_thai' => 'Hoàn thành', 'updated_at' => now()]);
 
-        DB::table('lich_bao_tri')
-            ->whereNull('ngay_hoan_thanh')
-            ->whereDate('ngay_bao_tri', '>', $today)
-            ->where('trang_thai', '!=', 'Chờ bảo trì')
-            ->update(['trang_thai' => 'Chờ bảo trì', 'updated_at' => now()]);
+    DB::table('lich_bao_tri')
+        ->whereNull('ngay_hoan_thanh')
+        ->whereDate('ngay_bao_tri', '>', $today)
+        ->where('trang_thai', '!=', 'Chờ bảo trì')
+        ->update(['trang_thai' => 'Chờ bảo trì', 'updated_at' => now()]);
 
-        DB::table('lich_bao_tri')
-            ->whereNull('ngay_hoan_thanh')
-            ->whereDate('ngay_bao_tri', '<=', $today)
-            ->where('trang_thai', '!=', 'Đang bảo trì')
-            ->update(['trang_thai' => 'Đang bảo trì', 'updated_at' => now()]);
+    DB::table('lich_bao_tri')
+        ->whereNull('ngay_hoan_thanh')
+        ->whereDate('ngay_bao_tri', '<=', $today)
+        ->where('trang_thai', '!=', 'Đang bảo trì')
+        ->update(['trang_thai' => 'Đang bảo trì', 'updated_at' => now()]);
 
-        $lich = LichBaoTri::with(['taiSan.phong', 'khoTaiSan'])
-            ->orderByRaw("
+    // 🧩 Bộ lọc
+    $query = LichBaoTri::with(['taiSan.phong', 'khoTaiSan']);
+
+    if ($request->filled('trang_thai')) {
+        $query->where('trang_thai', $request->trang_thai);
+    }
+
+    if ($request->filled('ngay_bao_tri')) {
+        $query->whereDate('ngay_bao_tri', $request->ngay_bao_tri);
+    }
+
+    if ($request->filled('vi_tri')) {
+        if ($request->vi_tri === 'phong') {
+            $query->whereNotNull('tai_san_id');
+        } elseif ($request->vi_tri === 'kho') {
+            $query->whereNotNull('kho_tai_san_id');
+        }
+    }
+
+    $lich = $query->orderByRaw("
                 CASE 
                     WHEN trang_thai = 'Chờ bảo trì' THEN 1
                     WHEN trang_thai = 'Đang bảo trì' THEN 2
@@ -45,8 +63,9 @@ class LichBaoTriController extends Controller
             ->orderBy('ngay_bao_tri', 'asc')
             ->paginate(6);
 
-        return view('lichbaotri.index', compact('lich'));
-    }
+    return view('lichbaotri.index', compact('lich'));
+}
+
 
     /** ➕ Form tạo mới */
     public function create()
@@ -154,47 +173,70 @@ class LichBaoTriController extends Controller
         $lich = LichBaoTri::with(['taiSan.phong', 'khoTaiSan'])->findOrFail($id);
         return view('lichbaotri._modal', compact('lich'));
     }
-   public function edit($id)
-{
-    $lichBaoTri = LichBaoTri::findOrFail($id);
-    $taiSan = TaiSan::all();
-    $khoTaiSan = KhoTaiSan::all(); // nếu cần dùng trong form
-    return view('lichbaotri.edit', compact('lichBaoTri', 'taiSan', 'khoTaiSan'));
-}
+    public function edit($id)
+    {
+        $lichBaoTri = LichBaoTri::findOrFail($id);
+        $taiSan = TaiSan::all();
+        $khoTaiSan = KhoTaiSan::all(); // nếu cần dùng trong form
+        return view('lichbaotri.edit', compact('lichBaoTri', 'taiSan', 'khoTaiSan'));
+    }
 
 
     public function update(Request $request, $id)
+    {
+        // Lấy lịch bảo trì theo ID
+        $lich = LichBaoTri::findOrFail($id);
+
+        // Cập nhật các thông tin cơ bản
+        $lich->ngay_bao_tri = $request->ngay_bao_tri;
+        $lich->ngay_hoan_thanh = $request->ngay_hoan_thanh; // ngày hoàn thành
+        $lich->mo_ta = $request->mo_ta;
+        $lich->trang_thai = $request->trang_thai; // trạng thái
+
+        // Cập nhật ảnh trước bảo trì nếu có
+        if ($request->hasFile('hinh_anh_truoc')) {
+            $file = $request->file('hinh_anh_truoc');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/lichbaotri'), $fileName);
+            $lich->hinh_anh_truoc = $fileName;
+        }
+
+        // Cập nhật ảnh sau bảo trì nếu có
+        if ($request->hasFile('hinh_anh')) {
+            $file = $request->file('hinh_anh');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/lichbaotri'), $fileName);
+            $lich->hinh_anh = $fileName;
+        }
+
+        // Lưu tất cả thay đổi
+        $lich->save();
+
+        // Chuyển hướng về danh sách với thông báo thành công
+        return redirect()->route('lichbaotri.index')->with('success', 'Cập nhật lịch bảo trì thành công!');
+    }
+        /** 🔹 Lấy danh sách tài sản theo loại (AJAX cho dropdown phụ thuộc) */
+    public function getTaiSan($loai)
 {
-    // Lấy lịch bảo trì theo ID
-    $lich = LichBaoTri::findOrFail($id);
-
-    // Cập nhật các thông tin cơ bản
-    $lich->ngay_bao_tri = $request->ngay_bao_tri;
-    $lich->ngay_hoan_thanh = $request->ngay_hoan_thanh; // ngày hoàn thành
-    $lich->mo_ta = $request->mo_ta;
-    $lich->trang_thai = $request->trang_thai; // trạng thái
-
-    // Cập nhật ảnh trước bảo trì nếu có
-    if ($request->hasFile('hinh_anh_truoc')) {
-        $file = $request->file('hinh_anh_truoc');
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/lichbaotri'), $fileName);
-        $lich->hinh_anh_truoc = $fileName;
+    if ($loai === 'phong') {
+        $data = TaiSan::with('phong:id,ten_phong')
+            ->whereNotNull('phong_id')
+            ->whereDoesntHave('lichBaoTri', function($query) {
+                $query->whereNull('ngay_hoan_thanh'); // loại tất cả lịch chưa hoàn thành
+            })
+            ->select('id', 'ten_tai_san', 'phong_id')
+            ->get();
+    } elseif ($loai === 'kho') {
+        $data = KhoTaiSan::whereDoesntHave('lichBaoTri', function($query) {
+                $query->whereNull('ngay_hoan_thanh'); // loại tất cả lịch chưa hoàn thành
+            })
+            ->select('id', 'ten_tai_san', 'so_luong')
+            ->get();
+    } else {
+        $data = [];
     }
 
-    // Cập nhật ảnh sau bảo trì nếu có
-    if ($request->hasFile('hinh_anh')) {
-        $file = $request->file('hinh_anh');
-        $fileName = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/lichbaotri'), $fileName);
-        $lich->hinh_anh = $fileName;
-    }
-
-    // Lưu tất cả thay đổi
-    $lich->save();
-
-    // Chuyển hướng về danh sách với thông báo thành công
-    return redirect()->route('lichbaotri.index')->with('success', 'Cập nhật lịch bảo trì thành công!');
+    return response()->json($data);
 }
 
 }
