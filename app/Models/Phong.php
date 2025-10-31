@@ -35,7 +35,7 @@ class Phong extends Model
 
     public function khu()
     {
-        return $this->belongsTo(\App\Models\Khu::class, 'khu_id');
+        return $this->belongsTo(\App\Models\Khu::class, 'khu_id', 'id');
     }
 
     /**

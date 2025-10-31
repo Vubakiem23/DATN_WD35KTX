@@ -34,93 +34,87 @@
                 @endphp
 
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle table-sv">
-                        <thead class="thead-light">
+                    <table class="table table-hover mb-0 table-sv">
+                        <thead>
                             <tr>
-                                <th class="text-center" style="width:70px">STT</th>
+                                <th class="fit text-center">STT</th>
                                 <th>Họ và tên</th>
-                                <th style="width:110px">Hình ảnh</th>
-                                <th style="min-width:140px">Mã sinh viên</th>
-                                <th style="width:120px">Giới tính</th>
-                                <th style="min-width:120px">Phòng</th>
-                                <th style="width:140px">Trạng thái</th>
-                                <th class="text-end" style="width:120px">Xóa</th>
+                                <th class="fit">Mã SV</th>
+                                <th class="fit">Hình ảnh</th>
+                                <th class="fit">Phòng</th>
+                                <th class="fit">Trạng thái</th>
+                                <th class="text-right fit fit text-center" >Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($sinhviens as $sv)
                                 @php
                                     $status = $sv->trang_thai_ho_so ?? 'Khác';
-                                    $badge =
+                                    $badgeClass =
                                         $status === 'Đã duyệt'
-                                            ? 'badge-success'
+                                            ? 'badge-soft-success'
                                             : ($status === 'Chờ duyệt'
-                                                ? 'badge-warning'
-                                                : 'badge-secondary');
+                                                ? 'badge-soft-warning'
+                                                : 'badge-soft-secondary');
                                     $imgUrl = $sv->anh_sinh_vien
                                         ? asset('storage/' . $sv->anh_sinh_vien)
-                                        : asset('images/default-avatar.png'); // tạo ảnh mặc định nếu muốn
+                                        : asset('images/default-avatar.png');
                                 @endphp
-
-                                {{-- Hàng chính --}}
-                                <tr class="sv-row-main">
-                                    <td class="text-center">{{ $sttBase + $loop->iteration }}</td>
-                                    <td class="fw-semibold">{{ $sv->ho_ten }}</td>
-                                    <td>
-                                        <img src="{{ $imgUrl }}" alt="Ảnh {{ $sv->ho_ten }}"
-                                            style="width:56px;height:56px;object-fit:cover;border-radius:8px;">
+                                <tr>
+                                    <td class="fit text-center">{{ $sttBase + $loop->iteration }}</td>
+                                    <td class="font-weight-600">{{ $sv->ho_ten }}</td>
+                                    <td class="fit">{{ $sv->ma_sinh_vien }}</td>
+                                    <td class="fit">
+                                        <img src="{{ $imgUrl }}" alt="Ảnh {{ $sv->ho_ten }}" class="avatar-56">
                                     </td>
-                                    <td>{{ $sv->ma_sinh_vien }}</td>
-                                    <td>{{ $sv->gioi_tinh ?? '-' }}</td>
-                                    <td>{{ $sv->phong->ten_phong ?? '-' }}</td>
-                                    <td><span class="badge {{ $badge }}">{{ $status }}</span></td>
-                                    <td class="text-end">
-                                        <form action="{{ route('sinhvien.destroy', $sv->id) }}" method="POST"
-                                            class="mb-0 d-inline">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm"
-                                                onclick="return confirm('Xác nhận xóa sinh viên này?')">
-                                                Xóa
-                                            </button>
-                                        </form>
+                                    <td class="fit">{{ $sv->phong->ten_phong ?? '-' }}</td>
+                                    <td class="fit"><span class="badge {{ $badgeClass }}">{{ $status }}</span>
                                     </td>
-                                </tr>
-
-                                {{-- Hàng nút (ẩn/hiện khi hover lên hàng chính) --}}
-                                <tr class=" sv-row-actions">
-                                    <td colspan="8">
-                                        <div class="sv-actions">
+                                    <td class="text-right fit">
+                                        <div class="btn-group">
                                             <button type="button" data-id="{{ $sv->id }}"
-                                                class="btn btn-secondary btn-sm equal-width openModalBtn">
-                                                Thông tin chi tiết
+                                                class="btn btn-sm btn-outline-info openModalBtn" title="Xem chi tiết">
+                                                <i class="fa fa-eye"></i>
                                             </button>
-
                                             <a href="{{ route('sinhvien.edit', $sv->id) }}"
-                                                class="btn btn-warning btn-sm equal-width">Sửa</a>
+                                                class="btn btn-sm btn-outline-primary" title="Sửa">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
                                             @if (($sv->trang_thai_ho_so ?? '') !== 'Đã duyệt')
                                                 <form action="{{ route('sinhvien.approve', $sv->id) }}" method="POST"
                                                     class="d-inline">
                                                     @csrf @method('PATCH')
-                                                    <button type="submit"
-                                                        class="btn btn-success btn-sm equal-width">Duyệt</button>
+                                                    <button class="btn btn-sm btn-outline-success" title="Duyệt hồ sơ">
+                                                        <i class="fa fa-check"></i>
+                                                    </button>
                                                 </form>
                                             @endif
+                                            <form action="{{ route('sinhvien.destroy', $sv->id) }}" method="POST"
+                                                class="d-inline" onsubmit="return confirm('Xác nhận xóa sinh viên này?')">
+                                                @csrf @method('DELETE')
+                                                <button class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">Không có sinh viên nào phù hợp.
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <img src="https://dummyimage.com/120x80/eff3f9/9aa8b8&text=No+data" class="mb-2"
+                                            alt="">
+                                        <div>Chưa có sinh viên phù hợp</div>
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-
-
             </div>
         </div>
+
+
 
 
 

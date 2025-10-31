@@ -28,6 +28,7 @@ return new class extends Migration {
 
             $table->foreign('sinh_vien_id')->references('id')->on('sinh_vien')->onDelete('cascade');
             $table->foreign('violation_type_id')->references('id')->on('violation_types')->onDelete('restrict');
+            
         });
     }
 
