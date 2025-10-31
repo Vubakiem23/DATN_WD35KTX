@@ -76,36 +76,4 @@ class KhuController extends Controller
         return redirect()->route('khu.index')->with('status', 'Tạo khu thành công');
     }
 
-    public function edit(Khu $khu)
-    {
-        return view('khu.edit', compact('khu'));
-    }
-
-    public function update(Request $request, Khu $khu)
-    {
-        // Chuẩn hóa tên khu trước khi validate
-        $request->merge(['ten_khu' => trim((string)$request->input('ten_khu'))]);
-
-        $data = $request->validate([
-            'ten_khu' => ['required','string','max:100','unique:khu,ten_khu,'.$khu->id],
-            'gioi_tinh' => ['required','in:Nam,Nữ'],
-            'mo_ta' => ['nullable','string','max:255'],
-        ]);
-
-        $data['ten_khu'] = mb_strtoupper($data['ten_khu']);
-
-        $khu->update($data);
-        return redirect()->route('khu.index')->with('status', 'Cập nhật khu thành công');
-    }
-
-    public function destroy(Khu $khu)
-    {
-        if ($khu->phongs()->exists()) {
-            return redirect()->route('khu.index')->with('error', 'Không thể xóa khu vì còn phòng thuộc khu này');
-        }
-        $khu->delete();
-        return redirect()->route('khu.index')->with('status', 'Xóa khu thành công');
-    }
 }
-
-

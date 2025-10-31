@@ -22,6 +22,32 @@
     .slot-actions{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:flex-end}
     .slot-actions .btn{padding:.35rem .6rem;font-size:13px}
     .table td .text-trunc{display:inline-block;max-width:100%;white-space:normal;overflow:visible;text-overflow:clip;}
+    #assignAssetsModal .modal-dialog{max-width:980px}
+    #assignAssetsModal .modal-body{padding:1.5rem}
+    #assignAssetsModal .assign-assets-toolbar{gap:.5rem;flex-wrap:wrap}
+    #assignAssetsModal .assign-assets-toolbar .input-group{min-width:260px}
+    #assignAssetsModal .assign-assets-toolbar .btn{border-radius:8px}
+    #assignAssetsModal table thead th{font-size:13px;text-transform:uppercase;letter-spacing:.02em}
+    #assignAssetsModal table tbody td{vertical-align:middle}
+    #assignAssetsModal .asset-thumb{width:64px;height:64px;border-radius:12px;border:1px solid #e9ecef;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f8f9fa;margin:0 auto}
+    #assignAssetsModal .asset-thumb img{width:100%;height:100%;object-fit:cover}
+    #assignAssetsModal .asset-info .title{font-weight:600;font-size:15px}
+    #assignAssetsModal .asset-info .code-badge{font-size:11px;margin-left:.5rem}
+    #assignAssetsModal .asset-info .suggest-badge{font-size:11px;margin-left:.5rem}
+    #assignAssetsModal .asset-meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem}
+    #assignAssetsModal .asset-meta span{font-size:12px;color:#6c757d}
+    #assignAssetsModal .asset-meta .highlight{color:#0d6efd;font-weight:600}
+    #assignAssetsModal .asset-meta .danger{color:#dc3545;font-weight:600}
+    #assignAssetsModal .asset-actions .input-group{max-width:180px;margin:0 auto}
+    #assignAssetsModal .asset-actions .btn{min-width:36px}
+    #assignAssetsModal .empty-placeholder{padding:2rem 0}
+    #assignAssetsModal .asset-info .holder-name{font-weight:600;color:#0d6efd}
+    #assignAssetsModal .asset-assignees{list-style:none;margin:0;padding:0;margin-top:.6rem}
+    #assignAssetsModal .asset-assignees li{display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem;font-size:12px;color:#6c757d}
+    #assignAssetsModal .asset-assignees .slot-badge{font-size:11px;background:#e9ecef;color:#495057;border-radius:999px;padding:.15rem .55rem}
+    #assignAssetsModal .asset-assignees .qty{text-wrap:nowrap}
+    #assignAssetsModal .asset-lock-note{font-size:12px;color:#dc3545;font-weight:600;margin-top:.5rem;display:flex;align-items:center;gap:.35rem}
+    #assignAssetsModal .asset-lock-note .fa{font-size:12px}
     @media (max-width: 992px){
       .slots-table th:nth-child(1){width:20%}
       .slots-table th:nth-child(2){width:25%}
@@ -213,28 +239,24 @@
       <div class="modal-content">
         <div class="modal-header"><h5>Bàn giao CSVC cho slot <span id="assign_assets_slot_label"></span></h5></div>
         <div class="modal-body">
-          <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
-            <div class="input-group" style="max-width:260px">
+          <div class="d-flex align-items-center assign-assets-toolbar mb-3">
+            <div class="input-group input-group-sm">
               <span class="input-group-text"><i class="fa fa-search"></i></span>
-              <input type="text" id="assetsSearch" class="form-control form-control-sm" placeholder="Tìm theo tên tài sản">
+              <input type="text" id="assetsSearch" class="form-control" placeholder="Tìm theo tên tài sản">
             </div>
             <button type="button" class="btn btn-sm btn-outline-primary" id="btnFillSuggested">Bộ đề xuất</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnFillAllOne">Chọn tất cả (1)</button>
-            <button type="button" class="btn btn-sm btn-outline-danger" id="btnClearAll">Bỏ hết</button>
-            <span class="ms-auto small text-muted" id="assetsSummary"></span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnFillAllOne">Gán mỗi loại 1</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" id="btnClearAll" disabled>Bỏ hết</button>
+            <span class="ms-auto small text-muted" id="assetsSummary">Đang chọn: 0 món</span>
           </div>
           <div id="assetsList" class="table-responsive">
-            <table class="table table-sm align-middle">
+            <table class="table table-sm align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th>Ảnh</th>
-                  <th>Tên</th>
-                  <th>Mã</th>
-                  <th>Tình trạng</th>
-                  <th>Tổng (phòng)</th>
-                  <th>Đã gán (slot này)</th>
-                  <th>Còn có thể gán</th>
-                  <th style="width:160px">Gán số lượng</th>
+                  <th class="text-center" style="width:90px">Ảnh</th>
+                  <th>Thông tin</th>
+                  <th class="text-center" style="width:240px">Tình trạng & số lượng</th>
+                  <th class="text-center" style="width:210px">Gán cho slot</th>
                 </tr>
               </thead>
               <tbody id="assetsRows"></tbody>
@@ -296,81 +318,187 @@
     document.getElementById('assign_assets_slot_id').value = slotId;
     document.getElementById('assign_assets_slot_label').textContent = maSlot;
     const tbody = document.getElementById('assetsRows');
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Đang tải...</td></tr>';
+    const listWrapper = document.getElementById('assetsList');
+    const searchInput = document.getElementById('assetsSearch');
+    const summaryEl = document.getElementById('assetsSummary');
+    const btnSuggested = document.getElementById('btnFillSuggested');
+    const btnFillOne = document.getElementById('btnFillAllOne');
+    const btnClear = document.getElementById('btnClearAll');
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Đang tải...</td></tr>';
+    summaryEl.textContent = 'Đang chọn: 0 món';
+    btnClear.disabled = true;
+    searchInput.value = '';
     $('#assignAssetsModal').modal('show');
+
+    const escapeHtml = (value) => {
+      return (value ?? '').toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+
     fetch('/admin/slots/'+slotId+'/assets', { headers: { 'Accept': 'application/json' }})
       .then(r=>r.json())
       .then(data => {
-        window.__assetsCache = data.assets||[];
+        window.__assetsCache = (data.assets||[]).map(item => {
+          const rawOthers = Array.isArray(item.assigned_to_other_slots) ? item.assigned_to_other_slots : (Array.isArray(item.dang_duoc_giu) ? item.dang_duoc_giu : []);
+          const normalizedOthers = rawOthers.map(other => ({
+            slot_id: other.slot_id,
+            ma_slot: other.ma_slot,
+            so_luong: parseInt(other.so_luong||0,10)||0,
+            sinh_vien: other.sinh_vien ? {
+              id: other.sinh_vien.id,
+              ho_ten: other.sinh_vien.ho_ten,
+              ma_sinh_vien: other.sinh_vien.ma_sinh_vien
+            } : null
+          }));
+          return {
+            ...item,
+            id: item.id,
+            ten_tai_san: item.ten_tai_san,
+            ma: item.ma,
+            tinh_trang: item.tinh_trang,
+            so_luong_phong: parseInt(item.so_luong_phong||0,10)||0,
+            da_gan_cho_slot_nay: parseInt(item.da_gan_cho_slot_nay||0,10)||0,
+            con_lai_co_the_gan: parseInt(item.con_lai_co_the_gan||0,10)||0,
+            extra_capacity: parseInt(item.extra_capacity||0,10)||0,
+            khong_the_gan_them: Boolean(item.khong_the_gan_them),
+            assigned_to_other_slots: normalizedOthers
+          };
+        });
+
+        btnFillOne.disabled = (window.__assetsCache||[]).every(a => (parseInt(a.con_lai_co_the_gan,10)||0) <= 0);
+        btnSuggested.disabled = !(window.__assetsCache||[]).some(a => a.suggested);
+
+        const updateSummary = () => {
+          const total = (window.__assetsCache||[]).reduce((sum, a) => sum + (parseInt(a.da_gan_cho_slot_nay||0,10)||0), 0);
+          summaryEl.innerHTML = 'Đang chọn: <strong>'+ total +'</strong> món';
+          btnClear.disabled = total === 0;
+        };
+
         const render = () => {
-          const term = (document.getElementById('assetsSearch').value||'').toLowerCase();
-          const assets = window.__assetsCache.filter(a => !term || (a.ten_tai_san||'').toLowerCase().includes(term));
+          const term = (searchInput.value||'').toLowerCase().trim();
+          const assets = (window.__assetsCache||[]).filter(a => !term || (a.ten_tai_san||'').toLowerCase().includes(term));
           const rows = assets.map(a => {
-            const img = a.hinh_anh ? '<img src="'+a.hinh_anh+'" style="width:46px;height:46px;object-fit:cover;border-radius:6px;border:1px solid #e9ecef">' : '-';
-            const val = a.da_gan_cho_slot_nay;
-            const suggest = a.suggested ? '<span class="badge bg-info text-dark">Đề xuất</span>' : '';
+            const current = parseInt(a.da_gan_cho_slot_nay||0,10)||0;
+            const max = parseInt(a.con_lai_co_the_gan||0,10)||0;
+            const imgHtml = a.hinh_anh
+              ? '<img src="'+escapeHtml(a.hinh_anh)+'" alt="'+escapeHtml(a.ten_tai_san||'')+'">'
+              : '<i class="fa fa-cube text-muted"></i>';
+            const remainClass = max === 0 ? 'danger' : 'highlight';
+            const disableDec = current <= 0 ? ' disabled' : '';
+            const disableInc = (max <= 0 || current >= max) ? ' disabled' : '';
+            const assignedOthers = Array.isArray(a.assigned_to_other_slots) ? a.assigned_to_other_slots : [];
+            const assignmentsList = assignedOthers.length ? '<ul class="asset-assignees">'+assignedOthers.map(info => {
+              const slotLabel = 'Slot '+escapeHtml(info.ma_slot || ('#'+info.slot_id));
+              let holderText = 'Slot chưa có sinh viên';
+              if (info.sinh_vien) {
+                holderText = info.sinh_vien.ho_ten || '';
+                if (info.sinh_vien.ma_sinh_vien) {
+                  holderText += ' ('+info.sinh_vien.ma_sinh_vien+')';
+                }
+              }
+              const holder = escapeHtml(holderText);
+              return '<li><span class="slot-badge">'+slotLabel+'</span><span class="holder-name">'+holder+'</span><span class="qty">• '+info.so_luong+' món</span></li>';
+            }).join('')+'</ul>' : '';
+            const lockNotice = a.khong_the_gan_them && assignedOthers.length
+              ? '<div class="asset-lock-note"><i class="fa fa-lock"></i><span>Đã cấp hết cho slot khác. Thu hồi trước khi gán thêm.</span></div>'
+              : '';
             return '<tr>'+
-              '<td>'+img+'</td>'+
-              '<td>'+ (a.ten_tai_san||'') + ' ' + suggest + '</td>'+
-              '<td>'+(a.ma || '-')+'</td>'+
-              '<td>'+ (a.tinh_trang||'-') +'</td>'+
-              '<td>'+ a.so_luong_phong +'</td>'+
-              '<td>'+ a.da_gan_cho_slot_nay +'</td>'+
-              '<td>'+ a.con_lai_co_the_gan +'</td>'+
+              '<td class="text-center"><div class="asset-thumb">'+imgHtml+'</div></td>'+
               '<td>'+
-                '<div class="input-group input-group-sm" style="max-width:150px;margin:0 auto">'+
-                  '<button class="btn btn-outline-secondary btn-dec" data-id="'+a.id+'" type="button">-</button>'+
-                  '<input type="number" class="form-control text-center asset-assign" data-id="'+a.id+'" min="0" max="'+a.con_lai_co_the_gan+'" value="'+val+'">'+
-                  '<button class="btn btn-outline-secondary btn-inc" data-id="'+a.id+'" type="button">+</button>'+
+                '<div class="asset-info">'+
+                  '<div class="d-flex align-items-center flex-wrap gap-2">'+
+                    '<span class="title">'+escapeHtml(a.ten_tai_san||'')+'</span>'+
+                    '<span class="badge bg-light text-dark border code-badge">'+escapeHtml(a.ma || '-')+'</span>'+
+                    (a.suggested ? '<span class="badge bg-info text-dark suggest-badge">Đề xuất</span>' : '')+
+                  '</div>'+
+                  (a.tinh_trang ? '<div class="small text-muted mt-1">Tình trạng: '+escapeHtml(a.tinh_trang)+'</div>' : '')+
+                  assignmentsList+
+                '</div>'+
+              '</td>'+
+              '<td class="text-center">'+
+                '<div class="asset-meta justify-content-center">'+
+                  '<span>Tổng (phòng): <span class="highlight">'+a.so_luong_phong+'</span></span>'+
+                  '<span>Đã gán (slot): <span class="highlight">'+current+'</span></span>'+
+                  '<span class="'+remainClass+'">Còn có thể gán: '+max+'</span>'+
+                '</div>'+lockNotice+
+              '</td>'+
+              '<td class="asset-actions">'+
+                '<div class="input-group input-group-sm">'+
+                  '<button class="btn btn-outline-secondary btn-dec" data-id="'+a.id+'" type="button"'+disableDec+'>-</button>'+
+                  '<input type="number" class="form-control text-center asset-assign" data-id="'+a.id+'" min="0" max="'+max+'" value="'+current+'">'+
+                  '<button class="btn btn-outline-secondary btn-inc" data-id="'+a.id+'" type="button"'+disableInc+'>+</button>'+
                 '</div>'+
               '</td>'+
             '</tr>';
           }).join('');
-          tbody.innerHTML = rows || '<tr><td colspan="8" class="text-center text-muted">Phòng chưa có tài sản</td></tr>';
+          tbody.innerHTML = rows || '<tr><td colspan="4" class="text-center text-muted empty-placeholder">Phòng chưa có tài sản</td></tr>';
           updateSummary();
         };
-        const updateSummary = () => {
-          const inputs = document.querySelectorAll('#assetsRows .asset-assign');
-          let total = 0; inputs.forEach(inp => { total += parseInt(inp.value||'0',10)||0; });
-          document.getElementById('assetsSummary').textContent = 'Tổng chọn: ' + total + ' món';
-        };
-        document.getElementById('assetsSearch').oninput = () => render();
-        document.getElementById('btnFillAllOne').onclick = () => {
-          (window.__assetsCache||[]).forEach(a => { if(a.con_lai_co_the_gan>0) a.da_gan_cho_slot_nay = 1; });
+
+        window.__renderAssetsTable = render;
+        window.__updateAssetsSummary = updateSummary;
+
+        searchInput.oninput = () => render();
+        btnFillOne.onclick = () => {
+          (window.__assetsCache||[]).forEach(a => {
+            if ((parseInt(a.con_lai_co_the_gan||0,10)||0) > 0) {
+              a.da_gan_cho_slot_nay = Math.min(1, parseInt(a.con_lai_co_the_gan||0,10)||0);
+            }
+          });
           render();
         };
-        document.getElementById('btnClearAll').onclick = () => {
+        btnClear.onclick = () => {
           (window.__assetsCache||[]).forEach(a => { a.da_gan_cho_slot_nay = 0; });
           render();
         };
-        document.getElementById('btnFillSuggested').onclick = () => {
+        btnSuggested.onclick = () => {
           (window.__assetsCache||[]).forEach(a => {
-            if (a.suggested && a.con_lai_co_the_gan>0 && (parseInt(a.da_gan_cho_slot_nay||'0',10)||0)===0) {
+            if (a.suggested && (parseInt(a.con_lai_co_the_gan||0,10)||0) > 0 && !a.da_gan_cho_slot_nay) {
               a.da_gan_cho_slot_nay = 1;
             }
           });
           render();
         };
-        // Delegate +/- buttons and inputs
-        document.getElementById('assetsList').addEventListener('click', function(ev){
-          const btn = ev.target.closest('.btn-inc,.btn-dec'); if(!btn) return;
-          const id = parseInt(btn.getAttribute('data-id'),10);
-          const idx = (window.__assetsCache||[]).findIndex(a=>a.id===id); if(idx<0) return;
-          let cur = parseInt(window.__assetsCache[idx].da_gan_cho_slot_nay||0,10)||0;
-          const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
-          if (btn.classList.contains('btn-inc')) cur = Math.min(max, cur+1); else cur = Math.max(0, cur-1);
-          window.__assetsCache[idx].da_gan_cho_slot_nay = cur; render();
-        });
-        document.getElementById('assetsList').addEventListener('input', function(ev){
-          const inp = ev.target.closest('.asset-assign'); if(!inp) return;
-          const id = parseInt(inp.getAttribute('data-id'),10);
-          const idx = (window.__assetsCache||[]).findIndex(a=>a.id===id); if(idx<0) return;
-          let val = parseInt(inp.value||'0',10)||0; const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
-          if (val<0) val=0; if (val>max) val=max; window.__assetsCache[idx].da_gan_cho_slot_nay = val; updateSummary();
-        });
+
+        if (!listWrapper.dataset.bound) {
+          listWrapper.addEventListener('click', function(ev){
+            const btn = ev.target.closest('.btn-inc,.btn-dec'); if(!btn) return;
+            const id = btn.getAttribute('data-id');
+            const idx = (window.__assetsCache||[]).findIndex(a => String(a.id) === String(id));
+            if (idx < 0) return;
+            let current = parseInt(window.__assetsCache[idx].da_gan_cho_slot_nay||0,10)||0;
+            const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
+            if (btn.classList.contains('btn-inc')) {
+              current = Math.min(max, current + 1);
+            } else {
+              current = Math.max(0, current - 1);
+            }
+            window.__assetsCache[idx].da_gan_cho_slot_nay = current;
+            if (typeof window.__renderAssetsTable === 'function') { window.__renderAssetsTable(); }
+          });
+          listWrapper.addEventListener('input', function(ev){
+            const inp = ev.target.closest('.asset-assign'); if(!inp) return;
+            const id = inp.getAttribute('data-id');
+            const idx = (window.__assetsCache||[]).findIndex(a => String(a.id) === String(id));
+            if (idx < 0) return;
+            let val = parseInt(inp.value||'0',10)||0;
+            const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
+            if (val < 0) val = 0;
+            if (val > max) val = max;
+            window.__assetsCache[idx].da_gan_cho_slot_nay = val;
+            inp.value = val;
+            if (typeof window.__updateAssetsSummary === 'function') { window.__updateAssetsSummary(); }
+          });
+          listWrapper.dataset.bound = 'true';
+        }
+
         render();
       })
-      .catch(()=>{ tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>'; });
+      .catch(()=>{ tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>'; });
   }
 
   document.getElementById('assignAssetsForm').addEventListener('submit', function(e){
