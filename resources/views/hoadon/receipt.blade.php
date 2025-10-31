@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hóa đơn phòng {{ $hoaDon->phong->ten_phong ?? 'Không rõ' }}</title>
+    <title>Biên lai hóa đơn phòng {{ $hoaDon->phong->ten_phong ?? 'Không rõ' }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -71,13 +71,14 @@
 </head>
 <body>
     <div class="header">
-        <h2>HÓA ĐƠN THANH TOÁN TIỀN ĐIỆN - NƯỚC</h2>
+        <h2>BIÊN LAI HÓA ĐƠN THANH TOÁN</h2>
         <p><strong>Tháng:</strong> {{ \Carbon\Carbon::parse($hoaDon->created_at)->format('m/Y') }}</p>
     </div>
 
     <div class="info">
     <p><strong>Khu:</strong>{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</p>
     <p><strong>Phòng:</strong> {{ $hoaDon->phong->ten_phong ?? 'Không rõ' }}</p>
+    <p><strong>Loại phòng:</strong> {{ $hoaDon->phong->loai_phong ?? 'Không rõ' }}</p>
     <p><strong>Khoảng thời gian sử dụng:</strong> 
     {{ $hoaDon->created_at ? \Carbon\Carbon::parse($hoaDon->created_at)->format('d/m/Y') : '-' }} → 
     {{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}
