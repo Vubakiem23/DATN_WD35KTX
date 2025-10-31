@@ -42,4 +42,8 @@ class TaiSan extends Model
     {
         return $this->hasMany(LichBaoTri::class, 'tai_san_id');
     }
+    public function loai()
+    {
+        return $this->belongsTo(LoaiTaiSan::class, 'loai_id');
+    }
 }
