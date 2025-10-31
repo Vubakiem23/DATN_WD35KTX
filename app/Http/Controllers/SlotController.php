@@ -435,30 +435,64 @@ class SlotController extends Controller
                 return response()->json(['message' => 'Slot không thuộc phòng hợp lệ'], 422);
             }
 
-            // Tài sản ở cấp phòng
-            $assets = \App\Models\TaiSan::where('phong_id', $phong->id)->get();
+            // Tài sản ở cấp phòng kèm thông tin slot đã nhận
+            $assets = \App\Models\TaiSan::with(['slots.sinhVien'])
+                ->where('phong_id', $phong->id)
+                ->get();
 
             // Tính số lượng đã gán cho tất cả slot và cho slot hiện tại
             // Gợi ý đề xuất theo bộ mặc định
             $defaultKeywords = ['gối', 'màn', 'chiếu', 'chăn'];
 
             $response = $assets->map(function($ts) use ($slot, $defaultKeywords) {
-                $assignedAll = (int) $ts->slots()->sum('slot_tai_san.so_luong');
-                $assignedThis = (int) $ts->slots()->where('slot_id', $slot->id)->sum('slot_tai_san.so_luong');
-                $available = max(0, (int)$ts->so_luong - $assignedAll + $assignedThis);
+                $slots = $ts->slots ?? collect();
+
+                $assignedAll = $slots->sum(function ($slotItem) {
+                    return (int) ($slotItem->pivot->so_luong ?? 0);
+                });
+
+                $currentSlot = $slots->firstWhere('id', $slot->id);
+                $assignedThis = $currentSlot ? (int) ($currentSlot->pivot->so_luong ?? 0) : 0;
+
+                $availableForThisSlot = max(0, (int) $ts->so_luong - $assignedAll + $assignedThis);
+                $extraCapacity = max(0, $availableForThisSlot - $assignedThis);
+
+                $otherAssignments = $slots
+                    ->filter(function ($slotItem) use ($slot) {
+                        return $slotItem->id !== $slot->id && (int) ($slotItem->pivot->so_luong ?? 0) > 0;
+                    })
+                    ->map(function ($slotItem) {
+                        $student = $slotItem->sinhVien;
+                        return [
+                            'slot_id' => $slotItem->id,
+                            'ma_slot' => $slotItem->ma_slot,
+                            'so_luong' => (int) ($slotItem->pivot->so_luong ?? 0),
+                            'sinh_vien' => $student ? [
+                                'id' => $student->id,
+                                'ho_ten' => $student->ho_ten,
+                                'ma_sinh_vien' => $student->ma_sinh_vien,
+                            ] : null,
+                        ];
+                    })
+                    ->values();
+
                 $loai = optional(optional($ts->khoTaiSan)->loai)->ten_loai;
                 $name = mb_strtolower(trim($loai ?: $ts->ten_tai_san));
                 $suggested = false;
                 foreach ($defaultKeywords as $kw) {
                     if (mb_strpos($name, $kw) !== false) { $suggested = true; break; }
                 }
+
                 return [
                     'id' => $ts->id,
                     'ten_tai_san' => $ts->ten_tai_san,
                     'hinh_anh' => $ts->hinh_anh ? asset('storage/'.$ts->hinh_anh) : null,
                     'so_luong_phong' => (int) $ts->so_luong,
                     'da_gan_cho_slot_nay' => $assignedThis,
-                    'con_lai_co_the_gan' => $available,
+                    'con_lai_co_the_gan' => $availableForThisSlot,
+                    'extra_capacity' => $extraCapacity,
+                    'khong_the_gan_them' => $extraCapacity <= 0 && $assignedThis <= 0 && $otherAssignments->isNotEmpty(),
+                    'dang_duoc_giu' => $otherAssignments,
                     'tinh_trang' => $ts->tinh_trang,
                     'ma' => $ts->khoTaiSan ? ($ts->khoTaiSan->ma_tai_san ?? null) : null,
                     'suggested' => $suggested,

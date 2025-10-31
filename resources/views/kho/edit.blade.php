@@ -6,13 +6,13 @@
     <h4>✏️ Chỉnh sửa: {{ $taiSan->ten_tai_san }}</h4>
 
     @if($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
     @endif
 
     <form action="{{ route('kho.update', $taiSan->id) }}" method="POST" enctype="multipart/form-data">
@@ -23,6 +23,7 @@
         <div class="mb-3">
             <label class="form-label">Tên tài sản</label>
             <input type="text" class="form-control" value="{{ $taiSan->ten_tai_san }}" disabled>
+            <input type="hidden" name="ten_tai_san" value="{{ $taiSan->ten_tai_san }}">
         </div>
 
         <div class="mb-3">
@@ -40,7 +41,7 @@
             <select name="tinh_trang" class="form-control">
                 <option value="">-- Chọn --</option>
                 @foreach($tinhTrangOptions as $option)
-                    <option value="{{ $option }}" @selected(old('tinh_trang', $taiSan->tinh_trang) == $option)>{{ $option }}</option>
+                <option value="{{ $option }}" @selected(old('tinh_trang', $taiSan->tinh_trang) == $option)>{{ $option }}</option>
                 @endforeach
             </select>
         </div>
@@ -53,9 +54,9 @@
         <div class="mb-3">
             <label class="form-label">Hình ảnh</label>
             @if($taiSan->hinh_anh)
-                <div class="mb-2">
-                    <img src="{{ asset('storage/' . $taiSan->hinh_anh) }}" width="150" alt="">
-                </div>
+            <div class="mb-2">
+                <img src="{{ asset('storage/' . $taiSan->hinh_anh) }}" width="150" alt="">
+            </div>
             @endif
             <input type="file" name="hinh_anh" class="form-control">
         </div>

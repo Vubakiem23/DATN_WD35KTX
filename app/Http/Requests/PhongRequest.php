@@ -24,6 +24,11 @@ class PhongRequest extends FormRequest
     {
         $phongId = $this->route('phong') ? $this->route('phong')->id : null;
 
+        $isCreating = $this->isMethod('post') && !$phongId;
+        $statusRule = $isCreating
+            ? Rule::in(['Trống'])
+            : Rule::in(['Trống', 'Đã ở', 'Bảo trì']);
+
         return [
             'ten_phong' => [
                 'required',
@@ -63,7 +68,7 @@ class PhongRequest extends FormRequest
             ],
             'trang_thai' => [
                 'required',
-                'in:Trống,Đã ở,Bảo trì'
+                $statusRule
             ],
             'ghi_chu' => [
                 'nullable',
@@ -114,7 +119,7 @@ class PhongRequest extends FormRequest
 
             // trang_thai
             'trang_thai.required' => 'Trạng thái phòng là bắt buộc',
-            'trang_thai.in' => 'Trạng thái phòng phải là: Trống, Đã ở hoặc Bảo trì',
+            'trang_thai.in' => 'Trạng thái phòng không hợp lệ',
 
             // gia_phong
             'gia_phong.required' => 'Giá phòng là bắt buộc',

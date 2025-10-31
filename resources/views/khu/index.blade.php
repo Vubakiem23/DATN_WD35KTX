@@ -44,12 +44,6 @@
             <td>{{ $khu->mo_ta }}</td>
             <td class="text-end khu-actions">
               <a href="{{ route('khu.show', $khu) }}" class="btn btn-outline-info btn-action" title="Chi tiết"><i class="fa fa-eye"></i></a>
-              <a href="{{ route('khu.edit', $khu) }}" class="btn btn-outline-primary btn-action" title="Sửa"><i class="fa fa-pencil"></i></a>
-              <form action="{{ route('khu.destroy', $khu) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa khu này?');">
-                @csrf
-                @method('DELETE')
-                <button class="btn btn-outline-danger btn-action" type="submit" title="Xóa"><i class="fa fa-trash"></i></button>
-              </form>
             </td>
           </tr>
           @empty
