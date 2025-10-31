@@ -31,35 +31,19 @@ use App\Models\Violation;
 */
 
 
-// ======================
-// AUTH
-// ======================
+
+// ADMIN (Chỉ admin mới login được)
 Route::get('', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/login', [AuthController::class, 'handle_login'])->name('auth.handle.login');
 Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-
-// ======================
 // REGISTER cho tài khoản thường
 // ======================
 Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/register', [AuthController::class, 'handle_register'])->name('auth.handle.register');
-
-// ======================
-// ADMIN (Chỉ admin mới login được)
-// ======================
-
-// =================== 🔐 AUTH ===================
-// Route::get('', [AuthController::class, 'login'])->name('auth.login');
-Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
-// Route::post('/login', [AuthController::class, 'handle_login'])->name('auth.handle.login');
-Route::post('/register', [AuthController::class, 'handle_register'])->name('auth.handle.register');
-// Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-
 // =================== 🧑‍🎓 STUDENT ===================
 Route::group(['prefix' => 'student', 'middleware' => ['student']], function () {
     Route::get('', [SinhVienController::class, 'index'])->name('student.index');
 });
-
 // =================== 🧑‍💼 MANAGER ===================
 Route::group(['prefix' => 'manager', 'middleware' => ['manager']], function () {
     Route::get('', [QuanLyController::class, 'index'])->name('manager.index');
@@ -81,7 +65,7 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     Route::get('/slots/{id}/assets', [SlotController::class, 'assets'])->name('slots.assets');
     Route::post('/slots/{id}/assign-assets', [SlotController::class, 'assignAssets'])->name('slots.assignAssets');
     Route::post('/slots/{id}/clear-assets', [SlotController::class, 'clearAssets'])->name('slots.clearAssets');
-
+// ---------------- GÁN PHÒNG ----------------
     // ======================
     Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
     Route::post('assign/{svId}', [AssignmentController::class, 'assign'])->name('assign.do');
@@ -91,7 +75,16 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     Route::resource('sinhvien', SinhVienController::class)->except(['show']);
     Route::patch('sinhvien/{id}/approve', [SinhVienController::class, 'approve'])->name('sinhvien.approve');
     Route::get('sinhvien/show/{id}', [SinhVienController::class, 'show'])->name('sinhvien.show.modal');
+//thongbao
+Route::post('tieude/ajax/create', [TieuDeController::class, 'ajaxCreate'])->name('tieude.ajaxCreate');
+Route::delete('tieude/ajax/delete', [TieuDeController::class, 'ajaxDelete'])->name('tieude.ajaxDelete');
 
+// ------------------ MỨC ĐỘ ------------------
+// Thêm mới mức độ
+Route::post('/mucdo/ajax/create', [MucDoController::class, 'ajaxCreate'])->name('mucdo.ajaxCreate');
+Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->name('mucdo.ajaxDelete');
+    
+});
     // ----------------- SỰ CỐ -----------------
     // ====================== 
     Route::resource('suco', SuCoController::class);
@@ -105,7 +98,7 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     // ======================
 
     Route::prefix('hoadon')->group(function(){
-            Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
+    Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
     Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
     Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
     Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
@@ -128,15 +121,6 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
         Route::get('export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
         Route::post('{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
     });
-
-    // ======================
-
-    // ======================
-    // THÔNG BÁO
-    // ======================
-    Route::resource('thongbao', ThongBaoController::class);
-
-    // ======================
     // TÀI SẢN
     // ======================
     Route::prefix('taisan')->group(function () {
@@ -155,7 +139,6 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     // ======================
     Route::resource('kho', KhoTaiSanController::class);
     Route::get('kho/show/{id}', [KhoTaiSanController::class, 'showModal'])->name('kho.show.modal');
-
     // ======================
     // KHU (Khu vực KTX)
     // ======================
@@ -172,23 +155,7 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
         Route::put('update/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('delete/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
-
-    // ------------------ TIÊU ĐỀ ------------------
-// Thêm mới tiêu đề
-Route::post('tieude/ajax/create', [TieuDeController::class, 'ajaxCreate'])->name('tieude.ajaxCreate');
-Route::delete('tieude/ajax/delete', [TieuDeController::class, 'ajaxDelete'])->name('tieude.ajaxDelete');
-
-
-
-// ------------------ MỨC ĐỘ ------------------
-// Thêm mới mức độ
-
-
-Route::post('/mucdo/ajax/create', [MucDoController::class, 'ajaxCreate'])->name('mucdo.ajaxCreate');
-Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->name('mucdo.ajaxDelete');
-
     // ---------------- THÔNG BÁO ----------------
-    Route::resource('thongbao', ThongBaoController::class);
 });
 
 // ======================
@@ -203,11 +170,6 @@ Route::prefix('manager')->middleware(['auth', 'manager'])->group(function () {
     Route::get('', [QuanLyController::class, 'index'])->name('manager.index');
 });
 
-// ======================
-
-// ---------------- GÁN PHÒNG ----------------
-Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
-Route::post('assign/{svId}', [AssignmentController::class, 'assign'])->name('assign.do');
 
 // ---------------- HÓA ĐƠN ----------------
 Route::get('hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
@@ -246,28 +208,17 @@ Route::prefix('lichbaotri')->group(function () {
 
 
     // ---------------- SỰ CỐ ----------------
-    Route::resource('suco', SuCoController::class);
-
-
-
-
-    
-
+Route::resource('suco', SuCoController::class);
 // ---------------- THÔNG BÁO ----------------
 Route::resource('thongbao', ThongBaoController::class);
-
-
 // ---------------- SỰ CỐ ----------------
 Route::resource('suco', SuCoController::class);
-
 // ====== VI PHẠM (violations) ======
 Route::resource('vipham', ViolationController::class);
 Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
-
 // đánh dấu đã xử lý
 Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
     ->name('vipham.resolve');
-
 // ====== LOẠI VI PHẠM (violation_types) ======
 Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
@@ -287,8 +238,6 @@ Route::prefix('taisan')->group(function () {
     Route::get('related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
     Route::get('taisan/related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
 });
-
-
 // 📦 Quản lý kho tài sản
 Route::prefix('kho')->group(function () {
     Route::get('/', [KhoTaiSanController::class, 'index'])->name('kho.index');                // danh sách loại tài sản
@@ -300,12 +249,12 @@ Route::prefix('kho')->group(function () {
 
     Route::delete('/delete/{id}', [KhoTaiSanController::class, 'destroy'])->name('kho.destroy');    // xóa
 });
-
-
 // =================== LOẠI TÀI SẢN ===================
 Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);
+Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+
 
 // =================== IMPORT ADMIN EXTRA ===================
 
 require __DIR__ . '/admin.php';
-Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+
