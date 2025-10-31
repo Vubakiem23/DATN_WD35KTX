@@ -31,13 +31,16 @@
         </tr>
 
         <tr>
-            <th scope="row">Người thân</th>
-            <td>
-                {{ $sinhvien->guardian_name ? $sinhvien->guardian_name . ' (' . $sinhvien->guardian_relationship . ')' : '-' }}
-                @if (!empty($sinhvien->guardian_phone))
-                    , {{ $sinhvien->guardian_phone }}
-                @endif
-            </td>
+            <th>Họ tên người thân</th>
+            <td>{{ $sinhvien->guardian_name ?? '—' }}</td>
+        </tr>
+        <tr>
+            <th>Số điện thoại người thân</th>
+            <td>{{ $sinhvien->guardian_phone ?? '—' }}</td>
+        </tr>
+        <tr>
+            <th>Quan hệ</th>
+            <td>{{ $sinhvien->guardian_relationship ?? '—' }}</td>
         </tr>
 
         <tr>
@@ -61,6 +64,19 @@
         <tr>
             <th scope="row">Ngành</th>
             <td>{{ $sinhvien->nganh ?? '-' }}</td>
+        </tr>
+        {{-- <tr>
+            <th scope="row">Phòng</th>
+            <td>{{ $sinhvien->phong ?? '-' }}</td>
+            <td>{{ $sinhvien->Khu ?? '-' }}</td>
+        </tr> --}}
+        <tr>
+            <th>Phòng</th>
+            <td>{{ $sinhvien->phong->ten_phong ?? '—' }}</td>
+        </tr>
+        <tr>
+            <th>Khu</th>
+            <td>{{ $sinhvien->phong->khu->ten_khu ?? '—' }}</td>
         </tr>
         <tr>
             <th scope="row">Khóa học</th>

@@ -71,7 +71,7 @@ class SinhVienController extends Controller
     // Form thêm mới
     public function create()
     {
-        $phongs = Phong::all();
+        $phongs = \App\Models\Phong::with('khu:id,ten_khu')->get();
         return view('sinhvien.create', compact('phongs'));
     }
 
@@ -125,9 +125,8 @@ class SinhVienController extends Controller
     // Form chỉnh sửa
     public function edit($id)
     {
-        $sinhvien = SinhVien::findOrFail($id);
-        $phongs = Phong::all();
-
+        $sinhvien = \App\Models\SinhVien::findOrFail($id);
+        $phongs   = \App\Models\Phong::with('khu:id,ten_khu')->get();
         return view('sinhvien.edit', compact('sinhvien', 'phongs'));
     }
 

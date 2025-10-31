@@ -180,57 +180,6 @@
             margin-bottom: .25rem;
         }
     </style>
-    <!-- css sinh vien mới-->
-    {{-- <style>
-        .sv-list .sv-item {
-            transition: background-color .15s ease, box-shadow .15s ease;
-        }
-
-        .sv-list .sv-item:hover {
-            background-color: #f8fafc;
-        }
-
-        .sv-list .sv-actions {
-            display: none;
-            gap: .5rem;
-        }
-
-        /* Hiện hàng hành động phụ khi hover dòng, hoặc khi có focus trong dòng (hỗ trợ bàn phím/mobile) */
-        .sv-item:hover .sv-actions,
-        .sv-item:focus-within .sv-actions {
-            display: flex;
-        }
-
-        /* Chuẩn hóa tất cả nút trong hàng action */
-        .sv-actions .btn {
-            display: inline-flex;
-            /* đồng bộ <a> và <button> */
-            align-items: center;
-            justify-content: center;
-            height: 36px;
-            /* cùng chiều cao */
-            padding: 0 14px;
-            /* cùng padding ngang */
-            line-height: 1;
-            /* tránh kéo dãn */
-            border-radius: 10px;
-            /* cùng bo góc */
-            font-weight: 500;
-        }
-
-        /* Khoảng cách đều giữa các nút */
-        .sv-actions .btn+.btn,
-        .sv-actions form+.btn,
-        .sv-actions .btn+form {
-            margin-left: 8px;
-        }
-
-        /* (Tuỳ chọn) set cùng bề rộng cho thật “đều” */
-        .sv-actions .btn.equal-width {
-            min-width: 140px;
-            /* đổi 120–160 tuỳ thích */
-        }
-    </style> --}}
 
     <style>
         /* Bảng danh sách SV có hàng actions ẩn/hiện */
@@ -279,7 +228,7 @@
         }
     </style>
 
-<!-- css vi phạm-->
+    <!-- css vi phạm-->
     <style>
         .table-violations thead th {
             position: sticky;
@@ -326,13 +275,134 @@
     </style>
 
 
+    <style>
+        /* Header dính + căn giữa dọc */
+        .table-sv thead th {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 1;
+        }
 
+        .table-sv th,
+        .table-sv td {
+            vertical-align: middle;
+        }
 
+        .fit {
+            width: 1%;
+            white-space: nowrap;
+        }
 
+        /* Badge mềm đồng bộ */
+        .badge-soft-warning {
+            background: #fff7e6;
+            color: #ad6800;
+            border-radius: 999px;
+            padding: .35rem .6rem;
+            font-weight: 600;
+        }
 
+        .badge-soft-success {
+            background: #e8fff3;
+            color: #107154;
+            border-radius: 999px;
+            padding: .35rem .6rem;
+            font-weight: 600;
+        }
 
+        .badge-soft-secondary {
+            background: #f2f4f7;
+            color: #3f4753;
+            border-radius: 999px;
+            padding: .35rem .6rem;
+            font-weight: 600;
+        }
 
+        /* Ảnh avatar */
+        .avatar-56 {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
 
+        /* Nhóm nút outline có icon */
+        .btn-group .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        /* ===== Căn giữa toàn bộ bảng sinh viên ===== */
+        .table-sv th,
+        .table-sv td {
+            text-align: center;
+            /* căn giữa ngang */
+            vertical-align: middle;
+            /* căn giữa dọc */
+        }
+
+        /* Giữ riêng cột thao tác có nhóm nút */
+        .table-sv td .btn-group {
+            justify-content: center;
+        }
+
+        /* Nếu bạn muốn tiêu đề (thead) in đậm và dễ nhìn hơn */
+        .table-sv thead th {
+            font-weight: 600;
+        }
+
+        /* Căn giữa cả icon và text trong nút thao tác */
+        .table-sv .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+    </style>
+
+    <style>
+        /* css edit và create */
+        .form-section .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+            margin: 0 0 .75rem 0;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .form-section .section-title .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #3b82f6;
+            display: inline-block
+        }
+
+        .form-section .form-group {
+            margin-bottom: .85rem;
+        }
+
+        label .req {
+            color: #dc2626;
+            margin-left: 2px;
+        }
+
+        .preview-avatar {
+            width: 84px;
+            height: 84px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .card.shadow-sm .card-body {
+            padding: 1rem 1.25rem;
+        }
+    </style>
 
 
     @stack('styles')
