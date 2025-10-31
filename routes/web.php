@@ -47,24 +47,7 @@ Route::post('/register', [AuthController::class, 'handle_register'])->name('auth
 // ======================
 // ADMIN (Chỉ admin mới login được)
 // ======================
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('', [AdminController::class, 'index'])->name('admin.index');
 
-    // ======================
-    // SỰ CỐ
-    // ======================
-    // ⚙️ Giữ nguyên tên route “suco” nhưng trong controller/view gọi view('su_co.xxx')
-    Route::resource('suco', SuCoController::class);
-
-    // 🔹 Route xác nhận thanh toán sự cố
-    Route::post('suco/{id}/thanhtoan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
-
-    // PHÂN PHÒNG SINH VIÊN
-
-    // ======================
-    // SINH VIÊN
-    // ======================
-});
 // =================== 🔐 AUTH ===================
 // Route::get('', [AuthController::class, 'login'])->name('auth.login');
 Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
@@ -83,7 +66,7 @@ Route::group(['prefix' => 'manager', 'middleware' => ['manager']], function () {
 });
 
 // =================== 🛠️ ADMIN ===================
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
 
     // Trang chủ admin
     Route::get('', [AdminController::class, 'index'])->name('admin.index');
@@ -109,6 +92,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::patch('sinhvien/{id}/approve', [SinhVienController::class, 'approve'])->name('sinhvien.approve');
     Route::get('sinhvien/show/{id}', [SinhVienController::class, 'show'])->name('sinhvien.show.modal');
 
+    // ----------------- SỰ CỐ -----------------
+    // ====================== 
+    Route::resource('suco', SuCoController::class);
+    // 🔹 Route xác nhận thanh toán sự cố
+    // Route::post('suco/{id}/thanhtoan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
+    // Route nút hoàn thành
+     Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.thanhtoan');
 
     // ======================
     // HÓA ĐƠN
@@ -219,8 +209,12 @@ Route::prefix('lichbaotri')->group(function () {
 
 
 
+
+    
+
 // ---------------- THÔNG BÁO ----------------
 Route::resource('thongbao', ThongBaoController::class);
+
 
 // ---------------- SỰ CỐ ----------------
 Route::resource('suco', SuCoController::class);
