@@ -22,32 +22,59 @@
     .slot-actions{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:flex-end}
     .slot-actions .btn{padding:.35rem .6rem;font-size:13px}
     .table td .text-trunc{display:inline-block;max-width:100%;white-space:normal;overflow:visible;text-overflow:clip;}
-    #assignAssetsModal .modal-dialog{max-width:980px}
-    #assignAssetsModal .modal-body{padding:1.5rem}
-    #assignAssetsModal .assign-assets-toolbar{gap:.5rem;flex-wrap:wrap}
-    #assignAssetsModal .assign-assets-toolbar .input-group{min-width:260px}
-    #assignAssetsModal .assign-assets-toolbar .btn{border-radius:8px}
-    #assignAssetsModal table thead th{font-size:13px;text-transform:uppercase;letter-spacing:.02em}
-    #assignAssetsModal table tbody td{vertical-align:middle}
-    #assignAssetsModal .asset-thumb{width:64px;height:64px;border-radius:12px;border:1px solid #e9ecef;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f8f9fa;margin:0 auto}
-    #assignAssetsModal .asset-thumb img{width:100%;height:100%;object-fit:cover}
-    #assignAssetsModal .asset-info .title{font-weight:600;font-size:15px}
-    #assignAssetsModal .asset-info .code-badge{font-size:11px;margin-left:.5rem}
-    #assignAssetsModal .asset-info .suggest-badge{font-size:11px;margin-left:.5rem}
-    #assignAssetsModal .asset-meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem}
-    #assignAssetsModal .asset-meta span{font-size:12px;color:#6c757d}
-    #assignAssetsModal .asset-meta .highlight{color:#0d6efd;font-weight:600}
-    #assignAssetsModal .asset-meta .danger{color:#dc3545;font-weight:600}
-    #assignAssetsModal .asset-actions .input-group{max-width:180px;margin:0 auto}
-    #assignAssetsModal .asset-actions .btn{min-width:36px}
-    #assignAssetsModal .empty-placeholder{padding:2rem 0}
-    #assignAssetsModal .asset-info .holder-name{font-weight:600;color:#0d6efd}
-    #assignAssetsModal .asset-assignees{list-style:none;margin:0;padding:0;margin-top:.6rem}
-    #assignAssetsModal .asset-assignees li{display:flex;align-items:center;gap:.5rem;margin-bottom:.25rem;font-size:12px;color:#6c757d}
-    #assignAssetsModal .asset-assignees .slot-badge{font-size:11px;background:#e9ecef;color:#495057;border-radius:999px;padding:.15rem .55rem}
-    #assignAssetsModal .asset-assignees .qty{text-wrap:nowrap}
-    #assignAssetsModal .asset-lock-note{font-size:12px;color:#dc3545;font-weight:600;margin-top:.5rem;display:flex;align-items:center;gap:.35rem}
-    #assignAssetsModal .asset-lock-note .fa{font-size:12px}
+    #assignAssetsModal .modal-dialog{max-width:960px}
+    #assignAssetsModal .modal-body{padding:1.75rem}
+    #assignAssetsModal .asset-modal{display:flex;flex-direction:column;gap:1.5rem}
+    #assignAssetsModal .asset-modal__column{display:flex;flex-direction:column;gap:1rem;background:#fff;border-radius:18px;border:1px solid #e5e7eb;padding:1.35rem 1.5rem;box-shadow:0 16px 36px rgba(15,23,42,.08)}
+    #assignAssetsModal .asset-modal__heading{font-weight:600;font-size:1rem;margin-bottom:0;color:#1e1b4b}
+    #assignAssetsModal .asset-modal__search .form-control{border-radius:12px;padding:.55rem .95rem;border:1px solid rgba(99,102,241,.2)}
+    #assignAssetsModal .asset-modal__search .form-control:focus{border-color:#4f46e5;box-shadow:0 0 0 .2rem rgba(79,70,229,.15)}
+    #assignAssetsModal .asset-option-list{display:flex;flex-direction:column;gap:1rem;max-height:360px;overflow-y:auto;padding-right:.4rem}
+    #assignAssetsModal .asset-option-list::-webkit-scrollbar{width:6px}
+    #assignAssetsModal .asset-option-list::-webkit-scrollbar-thumb{background:#cbd5f5;border-radius:999px}
+    #assignAssetsModal .asset-option{border:1px solid #e5e7eb;border-radius:16px;padding:1rem 1.1rem;background:#fff;transition:box-shadow .2s ease,border-color .2s ease;cursor:pointer}
+    #assignAssetsModal .asset-option:hover{box-shadow:0 14px 28px rgba(15,23,42,.1);border-color:#c7d2fe}
+    #assignAssetsModal .asset-option.is-selected{border-color:#6366f1;box-shadow:0 18px 32px rgba(99,102,241,.22)}
+    #assignAssetsModal .asset-option.is-disabled{opacity:.55;pointer-events:none}
+    #assignAssetsModal .asset-option__body{display:flex;align-items:center;gap:1rem}
+    #assignAssetsModal .asset-option__thumb{width:64px;height:64px;border-radius:16px;overflow:hidden;background:#eef2ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(148,163,184,.2)}
+    #assignAssetsModal .asset-option__thumb img{width:100%;height:100%;object-fit:cover}
+    #assignAssetsModal .asset-option__details{flex:1;display:flex;flex-direction:column;gap:.35rem}
+    #assignAssetsModal .asset-option__title{font-weight:600;color:#1e1b4b}
+    #assignAssetsModal .asset-option__meta,
+    #assignAssetsModal .asset-option__condition{font-size:.85rem;color:#64748b}
+    #assignAssetsModal .asset-option__actions{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem}
+    #assignAssetsModal .asset-option__actions .btn{border-radius:10px;font-weight:600;padding:.35rem .85rem}
+    #assignAssetsModal .selected-assets{display:flex;flex-direction:column;gap:.75rem}
+    #assignAssetsModal .selected-asset{border:1px solid #dbeafe;border-radius:16px;padding:1rem 1.1rem;background:#f8fafc;display:flex;flex-direction:column;gap:.75rem;box-shadow:0 14px 28px rgba(15,23,42,.06)}
+    #assignAssetsModal .selected-asset__top{display:flex;gap:1rem;align-items:center}
+    #assignAssetsModal .selected-asset__thumb{width:56px;height:56px;border-radius:14px;overflow:hidden;flex-shrink:0;background:#fff;box-shadow:inset 0 0 0 1px rgba(148,163,184,.18)}
+    #assignAssetsModal .selected-asset__thumb img{width:100%;height:100%;object-fit:cover}
+    #assignAssetsModal .selected-asset__info{flex:1;display:flex;flex-direction:column;gap:.35rem}
+    #assignAssetsModal .selected-asset__title{font-weight:600;color:#1f2937}
+    #assignAssetsModal .selected-asset__meta,
+    #assignAssetsModal .selected-asset__condition{font-size:.85rem;color:#64748b}
+    #assignAssetsModal .selected-asset__actions{margin-left:auto}
+    #assignAssetsModal .selected-asset__actions .btn{border-radius:10px}
+    #assignAssetsModal .asset-empty-message{padding:1.5rem 0;text-align:center;color:#94a3b8;font-size:.95rem}
+    #assignAssetsModal .slot-current-assets{border:1px solid rgba(79,70,229,.18);border-radius:18px;padding:1rem 1.25rem;background:rgba(79,70,229,.05);display:flex;flex-direction:column;gap:.75rem}
+    #assignAssetsModal .slot-current-assets__title{font-weight:600;color:#3730a3}
+    #assignAssetsModal .slot-current-assets__list{display:flex;flex-direction:column;gap:.65rem}
+    #assignAssetsModal .slot-current-asset{display:flex;gap:.75rem;align-items:center;background:#fff;border-radius:14px;padding:.55rem .8rem;border:1px solid #c7d2fe;box-shadow:0 8px 18px rgba(79,70,229,.15)}
+    #assignAssetsModal .slot-current-asset__thumb{width:44px;height:44px;border-radius:12px;overflow:hidden;background:#eef2ff;flex-shrink:0}
+    #assignAssetsModal .slot-current-asset__thumb img{width:100%;height:100%;object-fit:cover}
+    #assignAssetsModal .slot-current-asset__info{display:flex;flex-direction:column;gap:.2rem;font-size:.85rem}
+    #assignAssetsModal .slot-current-asset__name{font-weight:600;color:#1e1b4b}
+    #assignAssetsModal .slot-current-asset__meta{color:#64748b}
+    #assignAssetsModal .slot-current-asset__badge{font-size:.7rem;border-radius:999px;padding:.15rem .5rem;background:#ede9fe;color:#5b21b6;margin-left:.35rem}
+    @media (max-width: 991.98px){#assignAssetsModal .asset-option__body{flex-direction:column;align-items:flex-start}#assignAssetsModal .asset-option__actions{width:100%;align-items:flex-end}}
+    @media (max-width: 575.98px){#assignAssetsModal .modal-body{padding:1.25rem}#assignAssetsModal .asset-option__body{align-items:flex-start}#assignAssetsModal .selected-asset__top{flex-direction:column;align-items:flex-start}}
+    #assignStudentModal .modal-dialog{max-width:520px}
+    #assignStudentModal .form-group{display:flex;flex-direction:column;gap:.5rem}
+    #assignStudentModal .form-group label{font-weight:600;color:#4338ca;margin-bottom:0;letter-spacing:.01em}
+    #assignStudentModal .assign-student-select{padding:.65rem 1rem;border-radius:14px;border:1px solid rgba(99,102,241,.28);box-shadow:0 10px 28px rgba(79,70,229,.12);font-weight:600;color:#1e1b4b;transition:border-color .2s ease,box-shadow .2s ease;font-size:14px;line-height:1.5;min-height:calc(2.5rem + 2px)}
+    #assignStudentModal .assign-student-select:focus{border-color:#4f46e5;box-shadow:0 0 0 .25rem rgba(79,70,229,.18);outline:none}
+    #assignStudentModal .assign-student-select option{white-space:normal;line-height:1.5;padding:.35rem .5rem;font-weight:500}
     @media (max-width: 992px){
       .slots-table th:nth-child(1){width:20%}
       .slots-table th:nth-child(2){width:25%}
@@ -70,11 +97,11 @@
         <span class="badge bg-info text-dark">Loại: {{ \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</span>
         <span class="badge bg-secondary">Sức chứa: {{ $phong->totalSlots() }}</span>
       </div>
-      @if(!is_null($phong->gia_phong))
+        @if(!is_null($phong->gia_phong))
         <div class="mb-3">
           <span class="badge bg-dark">Giá: {{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</span>
         </div>
-      @endif
+        @endif
       @php $total=$phong->totalSlots(); $used=$phong->usedSlots(); $pct=$total?round($used*100/$total):0; @endphp
       <div class="small text-muted mb-2">Tỉ lệ lấp đầy: {{ $used }} / {{ $total }} ({{ $pct }}%)</div>
       <div class="progress mb-3" style="height:10px;max-width:420px;">
@@ -213,10 +240,10 @@
         <div class="modal-body">
           <div class="form-group mb-2">
             <label>Sinh viên</label>
-            <select class="form-control" id="modal_sinh_vien_id" name="sinh_vien_id" required>
+            <select class="form-select assign-student-select" id="modal_sinh_vien_id" name="sinh_vien_id" required>
               <option value="">--Chọn sinh viên--</option>
               @foreach($sinhViens as $sv)
-                <option value="{{ $sv->id }}">{{ $sv->ho_ten }} ({{ $sv->ma_sinh_vien }})</option>
+                <option value="{{ $sv->id }}">{{ $sv->ho_ten }} ({{ $sv->ma_sinh_vien }}){{ $sv->gioi_tinh ? ' - '.$sv->gioi_tinh : '' }}</option>
               @endforeach
             </select>
           </div>
@@ -232,41 +259,48 @@
 </div>
 {{-- Modal bàn giao CSVC cho slot (đặt ngoài các modal khác) --}}
 <div class="modal fade" id="assignAssetsModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <form id="assignAssetsForm">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <form id="assignAssetsForm" class="modal-content">
       @csrf
       <input type="hidden" id="assign_assets_slot_id" name="slot_id">
-      <div class="modal-content">
-        <div class="modal-header"><h5>Bàn giao CSVC cho slot <span id="assign_assets_slot_label"></span></h5></div>
-        <div class="modal-body">
-          <div class="d-flex align-items-center assign-assets-toolbar mb-3">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text"><i class="fa fa-search"></i></span>
-              <input type="text" id="assetsSearch" class="form-control" placeholder="Tìm theo tên tài sản">
+      <div class="modal-header">
+        <h5 class="modal-title">Bổ sung tài sản cho slot <span id="assign_assets_slot_label" class="text-primary"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <div class="slot-current-assets mb-4 d-none" data-role="current-assets-wrapper">
+          <div class="slot-current-assets__title">CSVC đã bàn giao cho slot</div>
+          <div class="slot-current-assets__list" data-role="current-assets-list"></div>
+        </div>
+        <div class="asset-modal asset-modal--compact">
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <div class="asset-modal__column">
+                <h6 class="asset-modal__heading">Danh sách tài sản trong kho</h6>
+                <div class="asset-modal__search mb-3">
+                  <input type="search" class="form-control form-control-sm" placeholder="Tìm kiếm tài sản..." data-role="asset-search" autocomplete="off" disabled>
+                </div>
+                <div class="asset-option-list" data-role="asset-picker">
+                  <div class="asset-empty-message">Đang tải dữ liệu kho...</div>
+                </div>
+                <p class="text-muted small mt-3 d-none" data-role="asset-search-empty">Không tìm thấy tài sản phù hợp.</p>
+              </div>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnFillSuggested">Bộ đề xuất</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnFillAllOne">Gán mỗi loại 1</button>
-            <button type="button" class="btn btn-sm btn-outline-danger" id="btnClearAll" disabled>Bỏ hết</button>
-            <span class="ms-auto small text-muted" id="assetsSummary">Đang chọn: 0 món</span>
-          </div>
-          <div id="assetsList" class="table-responsive">
-            <table class="table table-sm align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th class="text-center" style="width:90px">Ảnh</th>
-                  <th>Thông tin</th>
-                  <th class="text-center" style="width:240px">Tình trạng & số lượng</th>
-                  <th class="text-center" style="width:210px">Gán cho slot</th>
-                </tr>
-              </thead>
-              <tbody id="assetsRows"></tbody>
-            </table>
+            <div class="col-lg-5">
+              <div class="asset-modal__column">
+                <h6 class="asset-modal__heading">Tài sản sẽ bàn giao</h6>
+                <div class="selected-assets" data-role="selected-assets">
+                  <p class="text-muted small mb-0" data-role="empty-state">Chưa chọn tài sản nào.</p>
+                </div>
+                <p class="text-muted small mt-3 mb-0">Mỗi tài sản được bàn giao 1 món từ kho tổng.</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-          <button type="submit" class="btn btn-success">Lưu bàn giao</button>
-        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+        <button type="submit" class="btn btn-primary" data-role="asset-submit" disabled>Bổ sung cho slot</button>
       </div>
     </form>
   </div>
@@ -313,207 +347,484 @@
       .catch(async (err)=>{ try{ const j=await err.json(); alert(j.message||'Lỗi'); } catch{ alert('Lỗi'); } });
   });
   // (Đã bỏ nút mở CSVC từ modal gán sinh viên)
-  // Bàn giao CSVC
-  function openAssignAssets(slotId, maSlot){
-    document.getElementById('assign_assets_slot_id').value = slotId;
-    document.getElementById('assign_assets_slot_label').textContent = maSlot;
-    const tbody = document.getElementById('assetsRows');
-    const listWrapper = document.getElementById('assetsList');
-    const searchInput = document.getElementById('assetsSearch');
-    const summaryEl = document.getElementById('assetsSummary');
-    const btnSuggested = document.getElementById('btnFillSuggested');
-    const btnFillOne = document.getElementById('btnFillAllOne');
-    const btnClear = document.getElementById('btnClearAll');
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Đang tải...</td></tr>';
-    summaryEl.textContent = 'Đang chọn: 0 món';
-    btnClear.disabled = true;
-    searchInput.value = '';
-    $('#assignAssetsModal').modal('show');
+  // Bàn giao CSVC từ kho tổng
+  const assignAssetsModalEl = document.getElementById('assignAssetsModal');
+  const assignAssetsForm = document.getElementById('assignAssetsForm');
+  const assetPickerEl = assignAssetsModalEl ? assignAssetsModalEl.querySelector('[data-role="asset-picker"]') : null;
+  const selectedAssetsEl = assignAssetsModalEl ? assignAssetsModalEl.querySelector('[data-role="selected-assets"]') : null;
+  const searchInputEl = assignAssetsModalEl ? assignAssetsModalEl.querySelector('[data-role="asset-search"]') : null;
+  const searchEmptyEl = assignAssetsModalEl ? assignAssetsModalEl.querySelector('[data-role="asset-search-empty"]') : null;
+  const submitBtnEl = assignAssetsModalEl ? assignAssetsModalEl.querySelector('[data-role="asset-submit"]') : null;
+  const currentAssetsWrapper = assignAssetsModalEl ? assignAssetsModalEl.querySelector('[data-role="current-assets-wrapper"]') : null;
+  const currentAssetsList = assignAssetsModalEl ? assignAssetsModalEl.querySelector('[data-role="current-assets-list"]') : null;
+  const assetPlaceholder = '{{ asset('uploads/default.png') }}';
 
-    const escapeHtml = (value) => {
-      return (value ?? '').toString()
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    };
+  let assignAssetSelection = new Map();
+  let emptyStateEl = null;
 
-    fetch('/admin/slots/'+slotId+'/assets', { headers: { 'Accept': 'application/json' }})
-      .then(r=>r.json())
-      .then(data => {
-        window.__assetsCache = (data.assets||[]).map(item => {
-          const rawOthers = Array.isArray(item.assigned_to_other_slots) ? item.assigned_to_other_slots : (Array.isArray(item.dang_duoc_giu) ? item.dang_duoc_giu : []);
-          const normalizedOthers = rawOthers.map(other => ({
-            slot_id: other.slot_id,
-            ma_slot: other.ma_slot,
-            so_luong: parseInt(other.so_luong||0,10)||0,
-            sinh_vien: other.sinh_vien ? {
-              id: other.sinh_vien.id,
-              ho_ten: other.sinh_vien.ho_ten,
-              ma_sinh_vien: other.sinh_vien.ma_sinh_vien
-            } : null
-          }));
-          return {
-            ...item,
-            id: item.id,
-            ten_tai_san: item.ten_tai_san,
-            ma: item.ma,
-            tinh_trang: item.tinh_trang,
-            so_luong_phong: parseInt(item.so_luong_phong||0,10)||0,
-            da_gan_cho_slot_nay: parseInt(item.da_gan_cho_slot_nay||0,10)||0,
-            con_lai_co_the_gan: parseInt(item.con_lai_co_the_gan||0,10)||0,
-            extra_capacity: parseInt(item.extra_capacity||0,10)||0,
-            khong_the_gan_them: Boolean(item.khong_the_gan_them),
-            assigned_to_other_slots: normalizedOthers
-          };
-        });
+  const escapeHtml = (value) => {
+    return (value ?? '').toString()
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  };
 
-        btnFillOne.disabled = (window.__assetsCache||[]).every(a => (parseInt(a.con_lai_co_the_gan,10)||0) <= 0);
-        btnSuggested.disabled = !(window.__assetsCache||[]).some(a => a.suggested);
+  const createEmptyStateElement = () => {
+    const p = document.createElement('p');
+    p.className = 'text-muted small mb-0';
+    p.dataset.role = 'empty-state';
+    p.textContent = 'Chưa chọn tài sản nào.';
+    return p;
+  };
 
-        const updateSummary = () => {
-          const total = (window.__assetsCache||[]).reduce((sum, a) => sum + (parseInt(a.da_gan_cho_slot_nay||0,10)||0), 0);
-          summaryEl.innerHTML = 'Đang chọn: <strong>'+ total +'</strong> món';
-          btnClear.disabled = total === 0;
-        };
+  const updateSubmitState = () => {
+    if (submitBtnEl) {
+      submitBtnEl.disabled = assignAssetSelection.size === 0;
+    }
+  };
 
-        const render = () => {
-          const term = (searchInput.value||'').toLowerCase().trim();
-          const assets = (window.__assetsCache||[]).filter(a => !term || (a.ten_tai_san||'').toLowerCase().includes(term));
-          const rows = assets.map(a => {
-            const current = parseInt(a.da_gan_cho_slot_nay||0,10)||0;
-            const max = parseInt(a.con_lai_co_the_gan||0,10)||0;
-            const imgHtml = a.hinh_anh
-              ? '<img src="'+escapeHtml(a.hinh_anh)+'" alt="'+escapeHtml(a.ten_tai_san||'')+'">'
-              : '<i class="fa fa-cube text-muted"></i>';
-            const remainClass = max === 0 ? 'danger' : 'highlight';
-            const disableDec = current <= 0 ? ' disabled' : '';
-            const disableInc = (max <= 0 || current >= max) ? ' disabled' : '';
-            const assignedOthers = Array.isArray(a.assigned_to_other_slots) ? a.assigned_to_other_slots : [];
-            const assignmentsList = assignedOthers.length ? '<ul class="asset-assignees">'+assignedOthers.map(info => {
-              const slotLabel = 'Slot '+escapeHtml(info.ma_slot || ('#'+info.slot_id));
-              let holderText = 'Slot chưa có sinh viên';
-              if (info.sinh_vien) {
-                holderText = info.sinh_vien.ho_ten || '';
-                if (info.sinh_vien.ma_sinh_vien) {
-                  holderText += ' ('+info.sinh_vien.ma_sinh_vien+')';
-                }
-              }
-              const holder = escapeHtml(holderText);
-              return '<li><span class="slot-badge">'+slotLabel+'</span><span class="holder-name">'+holder+'</span><span class="qty">• '+info.so_luong+' món</span></li>';
-            }).join('')+'</ul>' : '';
-            const lockNotice = a.khong_the_gan_them && assignedOthers.length
-              ? '<div class="asset-lock-note"><i class="fa fa-lock"></i><span>Đã cấp hết cho slot khác. Thu hồi trước khi gán thêm.</span></div>'
-              : '';
-            return '<tr>'+
-              '<td class="text-center"><div class="asset-thumb">'+imgHtml+'</div></td>'+
-              '<td>'+
-                '<div class="asset-info">'+
-                  '<div class="d-flex align-items-center flex-wrap gap-2">'+
-                    '<span class="title">'+escapeHtml(a.ten_tai_san||'')+'</span>'+
-                    '<span class="badge bg-light text-dark border code-badge">'+escapeHtml(a.ma || '-')+'</span>'+
-                    (a.suggested ? '<span class="badge bg-info text-dark suggest-badge">Đề xuất</span>' : '')+
-                  '</div>'+
-                  (a.tinh_trang ? '<div class="small text-muted mt-1">Tình trạng: '+escapeHtml(a.tinh_trang)+'</div>' : '')+
-                  assignmentsList+
-                '</div>'+
-              '</td>'+
-              '<td class="text-center">'+
-                '<div class="asset-meta justify-content-center">'+
-                  '<span>Tổng (phòng): <span class="highlight">'+a.so_luong_phong+'</span></span>'+
-                  '<span>Đã gán (slot): <span class="highlight">'+current+'</span></span>'+
-                  '<span class="'+remainClass+'">Còn có thể gán: '+max+'</span>'+
-                '</div>'+lockNotice+
-              '</td>'+
-              '<td class="asset-actions">'+
-                '<div class="input-group input-group-sm">'+
-                  '<button class="btn btn-outline-secondary btn-dec" data-id="'+a.id+'" type="button"'+disableDec+'>-</button>'+
-                  '<input type="number" class="form-control text-center asset-assign" data-id="'+a.id+'" min="0" max="'+max+'" value="'+current+'">'+
-                  '<button class="btn btn-outline-secondary btn-inc" data-id="'+a.id+'" type="button"'+disableInc+'>+</button>'+
-                '</div>'+
-              '</td>'+
-            '</tr>';
-          }).join('');
-          tbody.innerHTML = rows || '<tr><td colspan="4" class="text-center text-muted empty-placeholder">Phòng chưa có tài sản</td></tr>';
-          updateSummary();
-        };
+  const updateEmptyState = () => {
+    if (!emptyStateEl) {
+      return;
+    }
+    emptyStateEl.classList.toggle('d-none', assignAssetSelection.size > 0);
+  };
 
-        window.__renderAssetsTable = render;
-        window.__updateAssetsSummary = updateSummary;
+  const resetSelection = () => {
+    assignAssetSelection = new Map();
+    if (!selectedAssetsEl) {
+      return;
+    }
+    selectedAssetsEl.innerHTML = '';
+    emptyStateEl = createEmptyStateElement();
+    selectedAssetsEl.appendChild(emptyStateEl);
+    updateEmptyState();
+    updateSubmitState();
+  };
 
-        searchInput.oninput = () => render();
-        btnFillOne.onclick = () => {
-          (window.__assetsCache||[]).forEach(a => {
-            if ((parseInt(a.con_lai_co_the_gan||0,10)||0) > 0) {
-              a.da_gan_cho_slot_nay = Math.min(1, parseInt(a.con_lai_co_the_gan||0,10)||0);
-            }
-          });
-          render();
-        };
-        btnClear.onclick = () => {
-          (window.__assetsCache||[]).forEach(a => { a.da_gan_cho_slot_nay = 0; });
-          render();
-        };
-        btnSuggested.onclick = () => {
-          (window.__assetsCache||[]).forEach(a => {
-            if (a.suggested && (parseInt(a.con_lai_co_the_gan||0,10)||0) > 0 && !a.da_gan_cho_slot_nay) {
-              a.da_gan_cho_slot_nay = 1;
-            }
-          });
-          render();
-        };
+  const setOptionState = (optionEl, isSelected) => {
+    if (!optionEl) {
+      return;
+    }
+    const btn = optionEl.querySelector('[data-role="asset-toggle"]');
+    if (isSelected) {
+      optionEl.classList.add('is-selected');
+      if (btn) {
+        btn.textContent = 'Đã chọn';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-primary');
+      }
+    } else {
+      optionEl.classList.remove('is-selected');
+      if (btn) {
+        btn.textContent = 'Chọn';
+        btn.classList.add('btn-outline-primary');
+        btn.classList.remove('btn-primary');
+      }
+    }
+  };
 
-        if (!listWrapper.dataset.bound) {
-          listWrapper.addEventListener('click', function(ev){
-            const btn = ev.target.closest('.btn-inc,.btn-dec'); if(!btn) return;
-            const id = btn.getAttribute('data-id');
-            const idx = (window.__assetsCache||[]).findIndex(a => String(a.id) === String(id));
-            if (idx < 0) return;
-            let current = parseInt(window.__assetsCache[idx].da_gan_cho_slot_nay||0,10)||0;
-            const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
-            if (btn.classList.contains('btn-inc')) {
-              current = Math.min(max, current + 1);
-            } else {
-              current = Math.max(0, current - 1);
-            }
-            window.__assetsCache[idx].da_gan_cho_slot_nay = current;
-            if (typeof window.__renderAssetsTable === 'function') { window.__renderAssetsTable(); }
-          });
-          listWrapper.addEventListener('input', function(ev){
-            const inp = ev.target.closest('.asset-assign'); if(!inp) return;
-            const id = inp.getAttribute('data-id');
-            const idx = (window.__assetsCache||[]).findIndex(a => String(a.id) === String(id));
-            if (idx < 0) return;
-            let val = parseInt(inp.value||'0',10)||0;
-            const max = parseInt(window.__assetsCache[idx].con_lai_co_the_gan||0,10)||0;
-            if (val < 0) val = 0;
-            if (val > max) val = max;
-            window.__assetsCache[idx].da_gan_cho_slot_nay = val;
-            inp.value = val;
-            if (typeof window.__updateAssetsSummary === 'function') { window.__updateAssetsSummary(); }
-          });
-          listWrapper.dataset.bound = 'true';
-        }
+  const removeSelectedItem = (id) => {
+    const entry = assignAssetSelection.get(id);
+    if (!entry) {
+      return;
+    }
+    if (entry.wrapper && entry.wrapper.parentNode) {
+      entry.wrapper.parentNode.removeChild(entry.wrapper);
+    }
+    assignAssetSelection.delete(id);
+    updateEmptyState();
+    updateSubmitState();
+  };
 
-        render();
-      })
-      .catch(()=>{ tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu</td></tr>'; });
+  const createSelectedItem = (optionEl) => {
+    if (!selectedAssetsEl) {
+      return;
+    }
+    const id = optionEl.dataset.id;
+    const name = optionEl.dataset.name || 'Không xác định';
+    const code = optionEl.dataset.code || 'N/A';
+    const stock = optionEl.dataset.stock || '0';
+    const condition = optionEl.dataset.condition || 'Không rõ';
+    const image = optionEl.dataset.image || assetPlaceholder;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'selected-asset';
+    wrapper.dataset.id = id;
+
+    const top = document.createElement('div');
+    top.className = 'selected-asset__top';
+
+    const thumb = document.createElement('div');
+    thumb.className = 'selected-asset__thumb';
+    const img = document.createElement('img');
+    img.src = image;
+    img.alt = name;
+    thumb.appendChild(img);
+
+    const info = document.createElement('div');
+    info.className = 'selected-asset__info';
+
+    const title = document.createElement('div');
+    title.className = 'selected-asset__title';
+    title.textContent = name;
+
+    const meta = document.createElement('div');
+    meta.className = 'selected-asset__meta';
+    meta.textContent = `Mã: ${code} · Tồn kho: ${stock}`;
+
+    const conditionEl = document.createElement('div');
+    conditionEl.className = 'selected-asset__condition';
+    conditionEl.textContent = `Tình trạng: ${condition}`;
+
+    info.appendChild(title);
+    info.appendChild(meta);
+    info.appendChild(conditionEl);
+
+    const actions = document.createElement('div');
+    actions.className = 'selected-asset__actions';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-outline-secondary btn-sm';
+    removeBtn.textContent = 'Bỏ chọn';
+    removeBtn.addEventListener('click', () => {
+      removeSelectedItem(id);
+      setOptionState(optionEl, false);
+    });
+
+    actions.appendChild(removeBtn);
+
+    top.appendChild(thumb);
+    top.appendChild(info);
+    top.appendChild(actions);
+
+    wrapper.appendChild(top);
+
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.name = `assets[${id}]`;
+    hiddenInput.value = '1';
+    wrapper.appendChild(hiddenInput);
+
+    selectedAssetsEl.appendChild(wrapper);
+    assignAssetSelection.set(id, { wrapper, option: optionEl });
+    updateEmptyState();
+    updateSubmitState();
+  };
+
+  const toggleSelection = (optionEl) => {
+    const id = optionEl.dataset.id;
+    if (!id) {
+      return;
+    }
+    const alreadySelected = assignAssetSelection.has(id);
+    if (alreadySelected) {
+      removeSelectedItem(id);
+      setOptionState(optionEl, false);
+      return;
+    }
+    const stock = parseInt(optionEl.dataset.stock || '0', 10);
+    if (stock <= 0) {
+      return;
+    }
+    createSelectedItem(optionEl);
+    setOptionState(optionEl, true);
+  };
+
+  const bindOptionEvents = (optionEl) => {
+    const btn = optionEl.querySelector('[data-role="asset-toggle"]');
+    if (btn && !btn.disabled) {
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleSelection(optionEl);
+      });
+    }
+    optionEl.addEventListener('click', (event) => {
+      if (event.target.closest('[data-role="asset-toggle"]')) {
+        return;
+      }
+      toggleSelection(optionEl);
+    });
+  };
+
+  const applySearchFilter = () => {
+    if (!assetPickerEl || !searchInputEl) {
+      return;
+    }
+    const keyword = searchInputEl.value.trim().toLowerCase();
+    let visible = 0;
+    assetPickerEl.querySelectorAll('[data-role="asset-item"]').forEach((optionEl) => {
+      const name = (optionEl.dataset.name || '').toLowerCase();
+      const code = (optionEl.dataset.code || '').toLowerCase();
+      const condition = (optionEl.dataset.condition || '').toLowerCase();
+      const matches = !keyword || name.includes(keyword) || code.includes(keyword) || condition.includes(keyword);
+      optionEl.classList.toggle('d-none', !matches);
+      if (matches) {
+        visible += 1;
+      }
+    });
+    if (searchEmptyEl) {
+      searchEmptyEl.classList.toggle('d-none', visible !== 0);
+    }
+  };
+
+  if (searchInputEl) {
+    searchInputEl.addEventListener('input', applySearchFilter);
   }
 
-  document.getElementById('assignAssetsForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const slotId = document.getElementById('assign_assets_slot_id').value;
-    const payload = { _token: '{{ csrf_token() }}', assets: {} };
-    (window.__assetsCache||[]).forEach(a => { payload.assets[a.id] = parseInt(a.da_gan_cho_slot_nay||0,10)||0; });
-    fetch('/admin/slots/'+slotId+'/assign-assets', {
-      method:'POST', headers:{ 'Accept':'application/json','Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(async r=>{ if(!r.ok){ const j=await r.json(); throw new Error(j.message||'Lỗi'); } return r.json(); })
-      .then(()=>{ location.reload(); })
-      .catch(err=>{ alert(err.message||'Lỗi'); });
-  });
+  const buildOptionElement = (asset) => {
+    const optionEl = document.createElement('div');
+    optionEl.className = 'asset-option';
+    optionEl.dataset.role = 'asset-item';
+    optionEl.dataset.id = asset.id;
+    optionEl.dataset.name = asset.ten_tai_san || '';
+    optionEl.dataset.code = asset.ma_tai_san || '';
+    optionEl.dataset.stock = asset.so_luong ?? 0;
+    optionEl.dataset.condition = asset.tinh_trang || '';
+    optionEl.dataset.image = asset.hinh_anh || assetPlaceholder;
+
+    const safeName = escapeHtml(asset.ten_tai_san || 'Không xác định');
+    const safeCode = escapeHtml(asset.ma_tai_san || 'N/A');
+    const safeCondition = escapeHtml(asset.tinh_trang || 'Không rõ');
+    const stock = parseInt(optionEl.dataset.stock || '0', 10);
+
+    optionEl.innerHTML = `
+      <div class="asset-option__body">
+        <div class="asset-option__thumb">
+          <img src="${asset.hinh_anh || assetPlaceholder}" alt="${safeName}">
+        </div>
+        <div class="asset-option__details">
+          <div class="asset-option__title">${safeName}</div>
+          <div class="asset-option__meta">Mã: ${safeCode} · Còn: ${Number.isFinite(stock) ? stock : 0}</div>
+          <div class="asset-option__condition">Tình trạng: ${safeCondition}</div>
+        </div>
+        <div class="asset-option__actions">
+          <button type="button" class="btn btn-outline-primary btn-sm" data-role="asset-toggle">Chọn</button>
+        </div>
+      </div>
+    `;
+
+    if (stock <= 0) {
+      optionEl.classList.add('is-disabled');
+      const btn = optionEl.querySelector('[data-role="asset-toggle"]');
+      if (btn) {
+        btn.textContent = 'Hết hàng';
+        btn.disabled = true;
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-secondary');
+      }
+    }
+
+    return optionEl;
+  };
+
+  const renderAssetList = (assets) => {
+    if (!assetPickerEl) {
+      return;
+    }
+    assetPickerEl.innerHTML = '';
+    resetSelection();
+
+    if (!Array.isArray(assets) || assets.length === 0) {
+      assetPickerEl.innerHTML = '<div class="asset-empty-message">Kho hiện chưa có tài sản khả dụng.</div>';
+      if (searchInputEl) {
+        searchInputEl.value = '';
+        searchInputEl.disabled = true;
+      }
+      if (searchEmptyEl) {
+        searchEmptyEl.classList.add('d-none');
+      }
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    assets.forEach((asset) => {
+      const optionEl = buildOptionElement(asset);
+      fragment.appendChild(optionEl);
+    });
+
+    assetPickerEl.appendChild(fragment);
+    assetPickerEl.querySelectorAll('[data-role="asset-item"]').forEach(bindOptionEvents);
+
+    if (searchInputEl) {
+      searchInputEl.disabled = false;
+      searchInputEl.value = '';
+    }
+    if (searchEmptyEl) {
+      searchEmptyEl.classList.add('d-none');
+    }
+    applySearchFilter();
+  };
+
+  const renderCurrentAssets = (items) => {
+    if (!currentAssetsWrapper || !currentAssetsList) {
+      return;
+    }
+    currentAssetsList.innerHTML = '';
+    if (!Array.isArray(items) || items.length === 0) {
+      currentAssetsWrapper.classList.add('d-none');
+      return;
+    }
+
+    currentAssetsWrapper.classList.remove('d-none');
+    const fragment = document.createDocumentFragment();
+
+    items.forEach((item) => {
+      const card = document.createElement('div');
+      card.className = 'slot-current-asset';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'slot-current-asset__thumb';
+      const img = document.createElement('img');
+      img.src = item.hinh_anh || assetPlaceholder;
+      img.alt = item.ten_tai_san || 'Tài sản';
+      thumb.appendChild(img);
+
+      const info = document.createElement('div');
+      info.className = 'slot-current-asset__info';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'slot-current-asset__name';
+      nameEl.textContent = item.ten_tai_san || 'Không rõ';
+      if (!item.is_from_warehouse) {
+        const badge = document.createElement('span');
+        badge.className = 'slot-current-asset__badge';
+        badge.textContent = 'Thêm thủ công';
+        nameEl.appendChild(badge);
+      }
+
+      const metaEl = document.createElement('div');
+      metaEl.className = 'slot-current-asset__meta';
+      const metaParts = [];
+      if (item.ma_tai_san) {
+        metaParts.push('Mã: ' + item.ma_tai_san);
+      }
+      const quantity = parseInt(item.so_luong || 0, 10);
+      metaParts.push('Số lượng: ' + (Number.isFinite(quantity) ? quantity : 0));
+      if (item.tinh_trang) {
+        metaParts.push('Tình trạng: ' + item.tinh_trang);
+      }
+      metaEl.textContent = metaParts.join(' · ');
+
+      info.appendChild(nameEl);
+      info.appendChild(metaEl);
+
+      card.appendChild(thumb);
+      card.appendChild(info);
+
+      fragment.appendChild(card);
+    });
+
+    currentAssetsList.appendChild(fragment);
+  };
+
+  function openAssignAssets(slotId, maSlot){
+    if (!assignAssetsModalEl) {
+      return;
+    }
+    document.getElementById('assign_assets_slot_id').value = slotId;
+    document.getElementById('assign_assets_slot_label').textContent = maSlot || '';
+
+    if (assetPickerEl) {
+      assetPickerEl.innerHTML = '<div class="asset-empty-message">Đang tải dữ liệu kho...</div>';
+    }
+    if (searchInputEl) {
+      searchInputEl.value = '';
+      searchInputEl.disabled = true;
+    }
+    if (searchEmptyEl) {
+      searchEmptyEl.classList.add('d-none');
+    }
+    if (submitBtnEl) {
+      submitBtnEl.disabled = true;
+    }
+    resetSelection();
+    if (currentAssetsWrapper) {
+      currentAssetsWrapper.classList.add('d-none');
+    }
+    if (currentAssetsList) {
+      currentAssetsList.innerHTML = '';
+    }
+
+    $('#assignAssetsModal').modal('show');
+
+    fetch('/admin/slots/'+slotId+'/warehouse-assets', { headers: { 'Accept': 'application/json' } })
+      .then(async (response) => {
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          const message = payload && payload.message ? payload.message : 'Không thể tải dữ liệu kho.';
+          throw new Error(message);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        renderAssetList(data.warehouse_assets || []);
+        renderCurrentAssets(data.assigned_assets || []);
+      })
+      .catch((error) => {
+        if (assetPickerEl) {
+          assetPickerEl.innerHTML = '<div class="asset-empty-message text-danger">'+escapeHtml(error.message || 'Không thể tải dữ liệu kho.')+'</div>';
+        }
+      });
+  }
+
+  if (assignAssetsForm) {
+    assignAssetsForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const slotId = document.getElementById('assign_assets_slot_id').value;
+      if (!slotId) {
+        alert('Không xác định được slot để bổ sung tài sản.');
+        return;
+      }
+      if (assignAssetSelection.size === 0) {
+        alert('Vui lòng chọn ít nhất 1 tài sản từ kho.');
+        return;
+      }
+
+      if (submitBtnEl) {
+        submitBtnEl.disabled = true;
+      }
+
+      const payload = {
+        slot_id: slotId,
+        assets: {},
+      };
+
+      assignAssetSelection.forEach((entry, id) => {
+        payload.assets[id] = 1;
+      });
+
+      fetch('{{ route('slots.importFromWarehouse') }}', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+        body: JSON.stringify(payload),
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || 'Không thể bổ sung tài sản cho slot.');
+          }
+          return response.json().catch(() => ({}));
+        })
+        .then(() => {
+          location.reload();
+        })
+        .catch((error) => {
+          alert(error.message || 'Không thể bổ sung tài sản cho slot.');
+          if (submitBtnEl) {
+            submitBtnEl.disabled = false;
+          }
+        });
+    });
+  }
   // (Đã bỏ tính năng sửa slot)
   // Bỏ gán sinh viên
   function unassignStudent(slotId){

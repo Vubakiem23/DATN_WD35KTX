@@ -63,8 +63,10 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     Route::get('/phong/{id}/slots', [SlotController::class, 'slotsByPhong']);
     Route::post('/slots/{id}/update', [SlotController::class, 'update'])->name('slots.update');
     Route::get('/slots/{id}/assets', [SlotController::class, 'assets'])->name('slots.assets');
+    Route::get('/slots/{id}/warehouse-assets', [SlotController::class, 'warehouseAssets'])->name('slots.warehouseAssets');
     Route::post('/slots/{id}/assign-assets', [SlotController::class, 'assignAssets'])->name('slots.assignAssets');
     Route::post('/slots/{id}/clear-assets', [SlotController::class, 'clearAssets'])->name('slots.clearAssets');
+    Route::post('/slots/import-from-warehouse', [SlotController::class, 'importFromWarehouse'])->name('slots.importFromWarehouse');
 // ---------------- GÁN PHÒNG ----------------
     // ======================
     Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
@@ -84,6 +86,7 @@ Route::delete('tieude/ajax/delete', [TieuDeController::class, 'ajaxDelete'])->na
 Route::post('/mucdo/ajax/create', [MucDoController::class, 'ajaxCreate'])->name('mucdo.ajaxCreate');
 Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->name('mucdo.ajaxDelete');
     
+    Route::get('phong/{phong}/taisanphong', [TaiSanController::class, 'byPhong'])->name('taisan.byPhong');
 });
     // ----------------- SỰ CỐ -----------------
     // ====================== 
@@ -171,13 +174,13 @@ Route::prefix('manager')->middleware(['auth', 'manager'])->group(function () {
 });
 
 
-// ---------------- HÓA ĐƠN ----------------
-Route::get('hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
-Route::post('hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
-Route::delete('hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
-Route::get('hoadon/{id}/export-pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
-Route::get('hoadon/export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
-Route::post('hoadon/{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+    // ---------------- HÓA ĐƠN ----------------
+    Route::get('hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
+    Route::post('hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
+    Route::delete('hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
+    Route::get('hoadon/{id}/export-pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
+    Route::get('hoadon/export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
+    Route::post('hoadon/{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
 
 Route::prefix('lichbaotri')->group(function () {
@@ -208,23 +211,23 @@ Route::prefix('lichbaotri')->group(function () {
 
 
     // ---------------- SỰ CỐ ----------------
-Route::resource('suco', SuCoController::class);
+    Route::resource('suco', SuCoController::class);
 // ---------------- THÔNG BÁO ----------------
 Route::resource('thongbao', ThongBaoController::class);
 // ---------------- SỰ CỐ ----------------
 Route::resource('suco', SuCoController::class);
-// ====== VI PHẠM (violations) ======
-Route::resource('vipham', ViolationController::class);
-Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
-// đánh dấu đã xử lý
-Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
-    ->name('vipham.resolve');
-// ====== LOẠI VI PHẠM (violation_types) ======
-Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
+    // ====== VI PHẠM (violations) ======
+    Route::resource('vipham', ViolationController::class);
+    Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
+    // đánh dấu đã xử lý
+    Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
+        ->name('vipham.resolve');
+    // ====== LOẠI VI PHẠM (violation_types) ======
+    Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
-// ---------------- QUẢN LÝ TÀI SẢN ----------------
+    // ---------------- QUẢN LÝ TÀI SẢN ----------------
 // ---------------- TÀI SẢN ----------------
-Route::prefix('taisan')->group(function () {
+    Route::prefix('taisan')->group(function () {
     Route::get('', [TaiSanController::class, 'index'])->name('taisan.index');
     Route::get('create', [TaiSanController::class, 'create'])->name('taisan.create');
     Route::post('store', [TaiSanController::class, 'store'])->name('taisan.store');
@@ -238,17 +241,17 @@ Route::prefix('taisan')->group(function () {
     Route::get('related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
     Route::get('taisan/related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
 });
-// 📦 Quản lý kho tài sản
-Route::prefix('kho')->group(function () {
-    Route::get('/', [KhoTaiSanController::class, 'index'])->name('kho.index');                // danh sách loại tài sản
-    Route::get('/related/{loai_id}', [KhoTaiSanController::class, 'related'])->name('kho.related'); // tài sản cùng loại
-    Route::get('/create/{loai_id}', [KhoTaiSanController::class, 'create'])->name('kho.create');    // form thêm
-    Route::post('/store/{loai_id}', [KhoTaiSanController::class, 'store'])->name('kho.store');      // lưu
-    Route::get('/edit/{id}', [KhoTaiSanController::class, 'edit'])->name('kho.edit');       // form sửa
-    Route::put('/update/{id}', [KhoTaiSanController::class, 'update'])->name('kho.update');  // lưu sửa
+    // 📦 Quản lý kho tài sản
+    Route::prefix('kho')->group(function () {
+        Route::get('/', [KhoTaiSanController::class, 'index'])->name('kho.index');                // danh sách loại tài sản
+        Route::get('/related/{loai_id}', [KhoTaiSanController::class, 'related'])->name('kho.related'); // tài sản cùng loại
+        Route::get('/create/{loai_id}', [KhoTaiSanController::class, 'create'])->name('kho.create');    // form thêm
+        Route::post('/store/{loai_id}', [KhoTaiSanController::class, 'store'])->name('kho.store');      // lưu
+        Route::get('/edit/{id}', [KhoTaiSanController::class, 'edit'])->name('kho.edit');       // form sửa
+        Route::put('/update/{id}', [KhoTaiSanController::class, 'update'])->name('kho.update');  // lưu sửa
 
-    Route::delete('/delete/{id}', [KhoTaiSanController::class, 'destroy'])->name('kho.destroy');    // xóa
-});
+        Route::delete('/delete/{id}', [KhoTaiSanController::class, 'destroy'])->name('kho.destroy');    // xóa
+    });
 // =================== LOẠI TÀI SẢN ===================
 Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);
 Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');

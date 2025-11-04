@@ -6,7 +6,10 @@ use App\Models\TaiSan;
 use App\Models\KhoTaiSan;
 use App\Models\Phong;
 use App\Models\LoaiTaiSan;
+use App\Models\Slot;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TaiSanController extends Controller
 {
@@ -69,29 +72,122 @@ public function create(Request $request)
 
     public function store(Request $request)
     {
-        $request->validate([
-            'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
+        $assetsInput = $request->input('assets');
+
+        $baseRules = [
             'phong_id' => 'required|exists:phong,id',
-            'so_luong' => 'required|integer|min:1',
             'tinh_trang' => 'nullable|string|max:255',
+            'tinh_trang_hien_tai' => 'nullable|string|max:255',
+            'redirect_to' => 'nullable|url',
+        ];
+
+        if (is_array($assetsInput)) {
+            $request->validate($baseRules + [
+                'assets' => 'required|array',
+                'assets.*' => 'integer|min:1',
+            ]);
+
+            $assetQuantities = [];
+            foreach ($assetsInput as $khoId => $qty) {
+                if (!ctype_digit((string) $khoId)) {
+                    continue;
+                }
+                $intQty = (int) $qty;
+                if ($intQty > 0) {
+                    $assetQuantities[(int) $khoId] = $intQty;
+                }
+            }
+
+            if (empty($assetQuantities)) {
+                return back()->withInput()->with('error', 'Vui lòng chọn ít nhất một tài sản với số lượng hợp lệ.');
+            }
+
+            DB::beginTransaction();
+            try {
+                $stocks = KhoTaiSan::whereIn('id', array_keys($assetQuantities))
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                if ($stocks->count() !== count($assetQuantities)) {
+                    throw new \RuntimeException('Một số tài sản đã không còn khả dụng trong kho.');
+                }
+
+                foreach ($assetQuantities as $khoId => $qty) {
+                    $kho = $stocks->get($khoId);
+                    if ((int) $kho->so_luong < $qty) {
+                        throw new \RuntimeException('Kho "' . ($kho->ten_tai_san ?? 'Không xác định') . '" không đủ số lượng (' . $kho->so_luong . ' < ' . $qty . ').');
+                    }
+                }
+
+                $requestedCondition = $request->input('tinh_trang');
+                $requestedCurrent = $request->input('tinh_trang_hien_tai');
+
+                foreach ($assetQuantities as $khoId => $qty) {
+                    $kho = $stocks->get($khoId);
+
+                    $fallbackCondition = $requestedCondition ?: ($kho->tinh_trang ?? null);
+                    $fallbackCurrent = $requestedCurrent ?: $fallbackCondition;
+
+                    TaiSan::create([
+                        'kho_tai_san_id' => $kho->id,
+                        'ten_tai_san' => $kho->ten_tai_san,
+                        'phong_id' => $request->input('phong_id'),
+                        'so_luong' => $qty,
+                        'tinh_trang' => $fallbackCondition,
+                        'tinh_trang_hien_tai' => $fallbackCurrent,
+                        'hinh_anh' => $kho->hinh_anh,
+                    ]);
+
+                    $kho->so_luong = max(0, (int) $kho->so_luong - $qty);
+                    $kho->save();
+                }
+
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return back()->withInput()->with('error', $e->getMessage() ?: 'Không thể bổ sung tài sản cho phòng.');
+            }
+
+            $successMessage = 'Đã bổ sung ' . count($assetQuantities) . ' tài sản vào phòng và trừ kho!';
+            $redirect = $request->input('redirect_to');
+            if ($redirect && Str::startsWith($redirect, url('/'))) {
+                return redirect($redirect)->with('success', $successMessage);
+            }
+
+            return redirect()->route('taisan.index')->with('success', $successMessage);
+        }
+
+        $validated = $request->validate($baseRules + [
+            'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
+            'so_luong' => 'required|integer|min:1',
         ]);
 
-        $kho = KhoTaiSan::findOrFail($request->kho_tai_san_id);
+        $kho = KhoTaiSan::findOrFail($validated['kho_tai_san_id']);
 
-        if ($kho->so_luong < $request->so_luong) {
-            return back()->with('error', 'Số lượng trong kho không đủ!');
+        if ($kho->so_luong < $validated['so_luong']) {
+            return back()->withInput()->with('error', 'Số lượng trong kho không đủ!');
         }
+
+        $defaultCondition = $validated['tinh_trang'] ?? ($kho->tinh_trang ?? null);
+        $defaultCurrent = $validated['tinh_trang_hien_tai'] ?? $defaultCondition;
 
         TaiSan::create([
             'kho_tai_san_id' => $kho->id,
             'ten_tai_san' => $kho->ten_tai_san,
-            'phong_id' => $request->phong_id,
-            'so_luong' => $request->so_luong,
-            'tinh_trang' => $request->tinh_trang,
-            'hinh_anh' => $kho->hinh_anh, // giữ ảnh từ kho
+            'phong_id' => $validated['phong_id'],
+            'so_luong' => $validated['so_luong'],
+            'tinh_trang' => $defaultCondition,
+            'tinh_trang_hien_tai' => $defaultCurrent,
+            'hinh_anh' => $kho->hinh_anh,
         ]);
 
-        $kho->decrement('so_luong', $request->so_luong);
+        $kho->decrement('so_luong', $validated['so_luong']);
+
+        $redirect = $validated['redirect_to'] ?? null;
+        if ($redirect && Str::startsWith($redirect, url('/'))) {
+            return redirect($redirect)->with('success', 'Thêm tài sản thành công và trừ kho!');
+        }
 
         return redirect()->route('taisan.index')->with('success', 'Thêm tài sản thành công và trừ kho!');
     }
@@ -146,7 +242,7 @@ public function create(Request $request)
     }
 
     /** 🗑️ Xóa tài sản */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $taiSan = TaiSan::findOrFail($id);
         $kho = KhoTaiSan::find($taiSan->kho_tai_san_id);
@@ -156,6 +252,11 @@ public function create(Request $request)
         }
 
         $taiSan->delete();
+
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && Str::startsWith($redirectTo, url('/'))) {
+            return redirect($redirectTo)->with('success', 'Đã xóa tài sản khỏi phòng và hoàn kho thành công!');
+        }
 
         return redirect()->route('taisan.index')->with('success', 'Đã xóa tài sản và hoàn kho thành công!');
     }
@@ -184,6 +285,87 @@ public function create(Request $request)
         });
 
     return response()->json($khoTaiSans); // phải trả JSON
+}
+
+
+    /**
+     * Hiển thị tài sản theo từng phòng với 2 khu vực: tài sản chung và CSVC bàn giao cho slots
+     */
+    public function byPhong($phongId)
+    {
+        $phong = Phong::with(['khu'])->findOrFail($phongId);
+
+        $roomAssets = $phong->taiSan()
+            ->with('khoTaiSan')
+            ->orderBy('ten_tai_san')
+            ->get();
+
+        $roomAssetFilterAccumulator = [];
+
+        $roomAssets = $roomAssets->map(function ($asset) use (&$roomAssetFilterAccumulator) {
+            $label = $asset->khoTaiSan->ten_tai_san ?? $asset->ten_tai_san ?? 'Không xác định';
+            $normalized = Str::lower(trim($label));
+            $filterKey = 'asset-' . md5($normalized);
+
+            $asset->setAttribute('filter_label', $label);
+            $asset->setAttribute('filter_key', $filterKey);
+
+            if (!isset($roomAssetFilterAccumulator[$filterKey])) {
+                $roomAssetFilterAccumulator[$filterKey] = [
+                    'label' => $label,
+                    'key' => $filterKey,
+                    'item_count' => 0,
+                    'total_quantity' => 0,
+                ];
+            }
+
+            $roomAssetFilterAccumulator[$filterKey]['item_count']++;
+            $roomAssetFilterAccumulator[$filterKey]['total_quantity'] += (int) ($asset->so_luong ?? 0);
+
+            return $asset;
+        });
+
+        $totalRoomAssetQuantity = $roomAssets->sum(function ($asset) {
+            return (int) ($asset->so_luong ?? 0);
+        });
+
+        $roomAssetFilters = collect($roomAssetFilterAccumulator)
+            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        $slots = Slot::with([
+                'sinhVien',
+                'taiSans' => function ($query) use ($phongId) {
+                    $query->with('khoTaiSan')
+                        ->where('tai_san.phong_id', $phongId)
+                        ->orderBy('ten_tai_san');
+                }
+            ])
+            ->where('phong_id', $phongId)
+            ->orderBy('ma_slot')
+            ->get();
+
+        $assignedWarehouseAssetIds = $roomAssets
+            ->pluck('kho_tai_san_id')
+            ->filter()
+            ->unique();
+
+        $warehouseAssets = KhoTaiSan::query()
+            ->where('so_luong', '>', 0)
+            ->when($assignedWarehouseAssetIds->isNotEmpty(), function ($query) use ($assignedWarehouseAssetIds) {
+                $query->whereNotIn('id', $assignedWarehouseAssetIds);
+            })
+            ->orderBy('ten_tai_san')
+            ->get();
+
+        return view('phong.taisan', [
+            'phong' => $phong,
+            'roomAssets' => $roomAssets,
+            'slots' => $slots,
+            'warehouseAssets' => $warehouseAssets,
+            'roomAssetFilters' => $roomAssetFilters,
+            'totalRoomAssetQuantity' => $totalRoomAssetQuantity,
+        ]);
 }
 
 

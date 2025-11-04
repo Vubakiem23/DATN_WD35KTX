@@ -58,7 +58,7 @@ class PhongRequest extends FormRequest
                 'required',
                 'integer',
                 'min:1',
-                'max:20' // Giới hạn sức chứa tối đa 20 người
+                'max:8' // Giới hạn sức chứa tối đa 8 người
             ],
             'gia_phong' => [
                 'required',
