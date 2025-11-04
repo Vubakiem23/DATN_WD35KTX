@@ -272,7 +272,7 @@
                   <div class="slot-card__header">
                     <div>
                       <div class="slot-code">{{ $slot->ma_slot }}</div>
-                      @if($slot->sinhVien)
+                        @if($slot->sinhVien)
                         <div class="slot-meta slot-meta--student">
                           <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                             <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
@@ -285,11 +285,11 @@
                             @endif
                           </div>
                         </div>
-                      @else
+                        @else
                         <div class="slot-meta slot-meta--empty text-muted">
                           <span class="badge badge-soft-gray">Chưa có sinh viên</span>
                         </div>
-                      @endif
+                        @endif
                     </div>
                     <span class="badge badge-soft-teal">{{ $slotTotal }} món</span>
                   </div>
@@ -326,7 +326,7 @@
                               <div class="slot-asset__details">
                                 <div class="slot-asset-name">{{ $assetName }}</div>
                                 <div class="slot-asset-code text-muted small">Mã: {{ $assetCode }}</div>
-                                <div class="slot-asset-meta text-muted small">
+                              <div class="slot-asset-meta text-muted small">
                                   Chuẩn: {{ $asset->tinh_trang ?? 'Không rõ' }} · Hiện tại: {{ $asset->tinh_trang_hien_tai ?? 'Chưa cập nhật' }}
                                 </div>
                               </div>
