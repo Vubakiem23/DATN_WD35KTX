@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use App\Models\Slot;
 use App\Models\Phong;
 use App\Models\SinhVien;
+use App\Models\TaiSan;
+use App\Models\KhoTaiSan;
 use App\Exceptions\SlotException;
 use App\Exceptions\PhongException;
 use Illuminate\Validation\Rule;
@@ -511,6 +513,71 @@ class SlotController extends Controller
         }
     }
 
+    public function warehouseAssets($slotId)
+    {
+        try {
+            $slot = Slot::with(['phong', 'taiSans.khoTaiSan'])->findOrFail($slotId);
+
+            $placeholder = asset('uploads/default.png');
+
+            $warehouseAssets = KhoTaiSan::query()
+                ->where('so_luong', '>', 0)
+                ->orderBy('ten_tai_san')
+                ->get()
+                ->map(function ($asset) use ($placeholder) {
+                    return [
+                        'id' => $asset->id,
+                        'ten_tai_san' => $asset->ten_tai_san,
+                        'ma_tai_san' => $asset->ma_tai_san,
+                        'so_luong' => (int) $asset->so_luong,
+                        'tinh_trang' => $asset->tinh_trang,
+                        'hinh_anh' => $asset->hinh_anh
+                            ? asset('storage/' . ltrim($asset->hinh_anh, '/'))
+                            : $placeholder,
+                    ];
+                });
+
+            $assignedAssets = $slot->taiSans->map(function ($item) use ($placeholder) {
+                $kho = $item->khoTaiSan;
+                $warehouseImage = $kho && $kho->hinh_anh
+                    ? asset('storage/' . ltrim($kho->hinh_anh, '/'))
+                    : null;
+                $image = $item->hinh_anh
+                    ? asset('storage/' . ltrim($item->hinh_anh, '/'))
+                    : ($warehouseImage ?: $placeholder);
+
+                return [
+                    'tai_san_id' => $item->id,
+                    'kho_tai_san_id' => $item->kho_tai_san_id,
+                    'ten_tai_san' => $kho->ten_tai_san ?? $item->ten_tai_san,
+                    'ma_tai_san' => $kho->ma_tai_san ?? $item->ma_tai_san,
+                    'so_luong' => (int) optional($item->pivot)->so_luong,
+                    'tinh_trang' => $item->tinh_trang ?? ($kho->tinh_trang ?? null),
+                    'hinh_anh' => $image,
+                    'is_from_warehouse' => $item->kho_tai_san_id !== null,
+                ];
+            })->values();
+
+            return response()->json([
+                'slot' => [
+                    'id' => $slot->id,
+                    'ma_slot' => $slot->ma_slot,
+                    'phong' => [
+                        'id' => optional($slot->phong)->id,
+                        'ten_phong' => optional($slot->phong)->ten_phong,
+                    ],
+                ],
+                'warehouse_assets' => $warehouseAssets,
+                'assigned_assets' => $assignedAssets,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Slot không tồn tại'], 404);
+        } catch (Exception $e) {
+            Log::error('Lỗi lấy tài sản kho cho slot: '.$e->getMessage(), ['slot' => $slotId]);
+            return response()->json(['message' => 'Không thể lấy tài sản kho'], 500);
+        }
+    }
+
     /**
      * Bàn giao tài sản (set số lượng) cho slot từ tài sản cấp phòng
      */
@@ -565,6 +632,229 @@ class SlotController extends Controller
             DB::rollBack();
             Log::error('Lỗi bàn giao tài sản cho slot: '.$e->getMessage(), ['slot' => $slotId]);
             return response()->json(['message' => 'Không thể bàn giao tài sản'], 500);
+        }
+    }
+
+    /**
+     * Bổ sung tài sản cho slot trực tiếp từ kho
+     */
+    public function importFromWarehouse(Request $request)
+    {
+        $expectsJson = $request->expectsJson();
+
+        $respondError = function (string $message, int $status = 422, bool $withInput = false) use ($expectsJson) {
+            if ($expectsJson) {
+                return response()->json(['message' => $message], $status);
+            }
+
+            $redirect = redirect()->back()->with('error', $message);
+            if ($withInput) {
+                $redirect = $redirect->withInput();
+            }
+
+            return $redirect;
+        };
+
+        $respondSuccess = function (int $phongId, string $message) use ($expectsJson) {
+            if ($expectsJson) {
+                return response()->json(['message' => $message]);
+            }
+
+            return redirect()->route('taisan.byPhong', $phongId)->with('success', $message);
+        };
+
+        $assetsInput = $request->input('assets', []);
+        $assets = is_array($assetsInput)
+            ? array_filter($assetsInput, function ($qty) {
+                return is_numeric($qty) && (int) $qty > 0;
+            })
+            : [];
+
+        if (!empty($assets)) {
+            $request->validate([
+                'slot_id' => ['required', 'integer', 'exists:slots,id'],
+                'assets' => ['required', 'array'],
+                'assets.*' => ['numeric', 'min:1'],
+                'tinh_trang' => ['nullable', 'string', 'max:255'],
+                'tinh_trang_hien_tai' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            DB::beginTransaction();
+            try {
+                $slot = Slot::with('phong')->lockForUpdate()->findOrFail($request->input('slot_id'));
+                $phong = $slot->phong;
+
+                if (!$phong) {
+                    DB::rollBack();
+                    return $respondError('Slot không thuộc phòng hợp lệ.', 422);
+                }
+
+                $khoIds = array_keys($assets);
+                $stocks = KhoTaiSan::whereIn('id', $khoIds)
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                if ($stocks->count() !== count($assets)) {
+                    DB::rollBack();
+                    return $respondError('Một số tài sản kho không còn khả dụng.', 422, true);
+                }
+
+                foreach ($assets as $khoId => $qtyRaw) {
+                    $qty = (int) $qtyRaw;
+                    if ($qty <= 0) {
+                        continue;
+                    }
+
+                    $kho = $stocks->get($khoId);
+                    if (!$kho || (int) $kho->so_luong < $qty) {
+                        DB::rollBack();
+                        $tenTaiSan = $kho->ten_tai_san ?? 'Không xác định';
+                        $message = 'Kho "' . $tenTaiSan . '" không đủ số lượng (' . ($kho->so_luong ?? 0) . ' < ' . $qty . ').';
+                        return $respondError($message, 422, true);
+                    }
+                }
+
+                foreach ($assets as $khoId => $qtyRaw) {
+                    $qty = (int) $qtyRaw;
+                    if ($qty <= 0) {
+                        continue;
+                    }
+
+                    $kho = $stocks->get($khoId);
+
+                    $taiSan = TaiSan::firstOrCreate(
+                        [
+                            'phong_id' => $phong->id,
+                            'kho_tai_san_id' => $kho->id,
+                        ],
+                        [
+                            'ten_tai_san' => $kho->ten_tai_san,
+                            'so_luong' => 0,
+                            'tinh_trang' => $kho->tinh_trang,
+                            'tinh_trang_hien_tai' => $kho->tinh_trang,
+                            'hinh_anh' => $kho->hinh_anh,
+                        ]
+                    );
+
+                    if ($request->filled('tinh_trang')) {
+                        $taiSan->tinh_trang = $request->input('tinh_trang');
+                    } elseif (!$taiSan->tinh_trang) {
+                        $taiSan->tinh_trang = $kho->tinh_trang;
+                    }
+
+                    if ($request->filled('tinh_trang_hien_tai')) {
+                        $taiSan->tinh_trang_hien_tai = $request->input('tinh_trang_hien_tai');
+                    } elseif (!$taiSan->tinh_trang_hien_tai) {
+                        $taiSan->tinh_trang_hien_tai = $taiSan->tinh_trang;
+                    }
+
+                    $taiSan->so_luong = (int) $taiSan->so_luong + $qty;
+                    $taiSan->save();
+
+                    $kho->so_luong = max(0, (int) $kho->so_luong - $qty);
+                    $kho->save();
+
+                    $currentQty = $slot->taiSans()
+                        ->where('tai_san_id', $taiSan->id)
+                        ->value('slot_tai_san.so_luong') ?? 0;
+
+                    $slot->taiSans()->syncWithoutDetaching([
+                        $taiSan->id => ['so_luong' => $currentQty + $qty],
+                    ]);
+                }
+
+                DB::commit();
+
+                return $respondSuccess($phong->id, 'Đã bổ sung tài sản cho slot từ kho thành công.');
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                DB::rollBack();
+                return $respondError('Không tìm thấy dữ liệu phù hợp.', 404);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                Log::error('Lỗi bổ sung tài sản slot từ kho: ' . $e->getMessage(), [
+                    'slot_id' => $request->input('slot_id'),
+                ]);
+
+                return $respondError('Không thể bổ sung tài sản cho slot.', 500);
+            }
+        }
+
+        $data = $request->validate([
+            'slot_id' => ['required', 'integer', 'exists:slots,id'],
+            'kho_tai_san_id' => ['required', 'integer', 'exists:kho_tai_san,id'],
+            'so_luong' => ['required', 'integer', 'min:1'],
+            'tinh_trang' => ['nullable', 'string', 'max:255'],
+            'tinh_trang_hien_tai' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $slot = Slot::with('phong')->findOrFail($data['slot_id']);
+            $phong = $slot->phong;
+
+            if (!$phong) {
+                DB::rollBack();
+                return $respondError('Slot không thuộc phòng hợp lệ.', 422);
+            }
+
+            $kho = KhoTaiSan::lockForUpdate()->findOrFail($data['kho_tai_san_id']);
+
+            if ($kho->so_luong < $data['so_luong']) {
+                DB::rollBack();
+                return $respondError('Số lượng trong kho không đủ!', 422, true);
+            }
+
+            $defaultCondition = $data['tinh_trang'] ?? ($kho->tinh_trang ?? null);
+            $defaultCurrent = $data['tinh_trang_hien_tai'] ?? $defaultCondition;
+
+            $taiSan = TaiSan::firstOrCreate(
+                [
+                    'phong_id' => $phong->id,
+                    'kho_tai_san_id' => $kho->id,
+                ],
+                [
+                    'ten_tai_san' => $kho->ten_tai_san,
+                    'so_luong' => 0,
+                    'tinh_trang' => $defaultCondition,
+                    'tinh_trang_hien_tai' => $defaultCurrent,
+                    'hinh_anh' => $kho->hinh_anh,
+                ]
+            );
+
+            if ($defaultCondition !== null) {
+                $taiSan->tinh_trang = $defaultCondition;
+            }
+            if ($defaultCurrent !== null) {
+                $taiSan->tinh_trang_hien_tai = $defaultCurrent;
+            }
+
+            $taiSan->so_luong = (int) $taiSan->so_luong + (int) $data['so_luong'];
+            $taiSan->save();
+
+            $kho->decrement('so_luong', $data['so_luong']);
+
+            $currentQty = $slot->taiSans()
+                ->where('tai_san_id', $taiSan->id)
+                ->value('slot_tai_san.so_luong') ?? 0;
+
+            $slot->taiSans()->syncWithoutDetaching([
+                $taiSan->id => ['so_luong' => $currentQty + $data['so_luong']],
+            ]);
+
+            DB::commit();
+
+            return $respondSuccess($phong->id, 'Đã bổ sung tài sản cho slot từ kho thành công.');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return $respondError('Không tìm thấy dữ liệu phù hợp.', 404);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Lỗi bổ sung tài sản slot từ kho: ' . $e->getMessage(), [
+                'slot_id' => $data['slot_id'] ?? null,
+            ]);
+
+            return $respondError('Không thể bổ sung tài sản cho slot.', 500);
         }
     }
 

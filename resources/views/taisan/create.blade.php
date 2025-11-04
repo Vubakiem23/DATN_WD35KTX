@@ -4,7 +4,17 @@
 
 @section('content')
 <div class="container mt-4">
-    <h4 class="mb-3">🛠️ Thêm tài sản thiết bị phòng</h4>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h3 class="page-title mb-1">🛠️ Thêm tài sản phòng</h3>
+            <p class="text-muted small mb-0">Chọn tài sản từ kho và gán nhanh cho phòng ký túc.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('taisan.index') }}" class="btn btn-light border">
+                <i class="fa fa-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
 
     @if ($errors->any())
         <div class="alert alert-danger">

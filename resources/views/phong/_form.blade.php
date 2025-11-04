@@ -243,7 +243,7 @@
       <option value="Đơn" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Đơn' ? 'selected' : '' }}>Đơn</option>
       <option value="Đôi" {{ old('loai_phong', $phong->loai_phong ?? '') == 'Đôi' ? 'selected' : '' }}>Đôi</option>
       {{-- Từ 3 trở lên đặt theo số giường: Phòng N --}}
-      @for($i=3;$i<=12;$i++)
+      @for($i=3;$i<=8;$i++)
         <option value="Phòng {{ $i }}" {{ old('loai_phong', $phong->loai_phong ?? '') == ('Phòng '.$i) ? 'selected' : '' }}>Phòng {{ $i }}</option>
       @endfor
     </select>
@@ -266,7 +266,7 @@
 <div class="row">
   <div class="col-md-4 mb-3">
     <label class="form-label">Sức chứa <span class="text-danger">*</span></label>
-    <input type="number" name="suc_chua" value="{{ old('suc_chua', $phong->suc_chua ?? 1) }}" class="form-control @error('suc_chua') is-invalid @enderror" min="1" max="20" required>
+    <input type="number" name="suc_chua" value="{{ old('suc_chua', $phong->suc_chua ?? 1) }}" class="form-control @error('suc_chua') is-invalid @enderror" min="1" max="8" required>
     @error('suc_chua')
       <div class="invalid-feedback">{{ $message }}</div>
     @enderror
@@ -348,18 +348,37 @@ document.addEventListener('DOMContentLoaded', function(){
   const genderDisplay = document.querySelector('input[name="gioi_tinh_display"]');
   if(!capacityInput || !typeSelect) return;
 
-  const computeLabel = (n) => {
-    const cap = parseInt(n, 10);
-    if (isNaN(cap) || cap <= 0) return '';
+  const MAX_CAPACITY = 8;
+  const MIN_CAPACITY = parseInt(capacityInput.getAttribute('min'), 10) || 1;
+
+  const sanitizeCapacity = () => {
+    const raw = capacityInput.value;
+    if (raw === '') return null;
+    let cap = parseInt(raw, 10);
+    if (isNaN(cap)) return null;
+    if (cap > MAX_CAPACITY) {
+      cap = MAX_CAPACITY;
+      capacityInput.value = cap;
+    } else if (cap < MIN_CAPACITY) {
+      cap = MIN_CAPACITY;
+      capacityInput.value = cap;
+    }
+    return cap;
+  };
+
+  const computeLabel = (cap) => {
+    if (!cap || cap <= 0) return '';
     if (cap === 1) return 'Đơn';
     if (cap === 2) return 'Đôi';
     return 'Phòng ' + cap;
   };
 
   const applyTypeFromCapacity = () => {
-    const label = computeLabel(capacityInput.value);
+    const cap = sanitizeCapacity();
+    if (cap === null) return;
+    const label = computeLabel(cap);
     if (!label) return;
-    // If option not exists (e.g. capacity > 12), add it temporarily
+    // If option not exists (e.g. legacy capacity > 8), add it temporarily
     let opt = Array.from(typeSelect.options).find(o => o.value === label);
     if (!opt) {
       opt = new Option(label, label);
