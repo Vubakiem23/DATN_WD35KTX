@@ -28,7 +28,11 @@
 
 
         {{-- Tabs by Khu (building) --}}
-        <h4>Khu</h4>
+        
+                <div>
+                    <h3 class="khu-page__title mb-1">Khu Ký Túc Xá</h3>
+                    <!-- <p class="text-muted mb-0">Theo dõi và tổ chức các khu theo giới tính và số lượng phòng.</p> -->
+                    </div>
         @php
             $khuList = $phongs->groupBy(function($p){ return optional($p->khu)->ten_khu ?? 'Không xác định'; });
             $firstKhu = $khuList->keys()->first() ?? '';
@@ -45,10 +49,13 @@
                 </li>
             @endforeach
         </ul>
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>Danh sách các phòng</h4>
+        <div class="d-flex justify-content-between align-items-center mb-3"> 
+                <div>
+                    <h3 class="room-page__title mb-1">Danh sách các phòng</h3>
+                    <p class="text-muted mb-0">Theo dõi và tổ chức các Phòng theo từng Khu</p>
+                </div>
             <div class="d-flex gap-2">
-            <a href="{{ route('phong.create') }}" class="btn btn-success">Tạo phòng</a>
+            <a href="{{ route('phong.create') }}" class="btn btn-dergin btn-dergin--info"><i class="fa fa-plus"></i><span>Tạo Phòng</span> </a>
             </div>
         </div>
         <div class="mb-3">
@@ -75,6 +82,8 @@
         </div>
         @push('styles')
         <style>
+                    .khu-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
+                    .room-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
           .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
           .room-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
           .room-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}

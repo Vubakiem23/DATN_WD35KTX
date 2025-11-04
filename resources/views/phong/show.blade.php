@@ -3,11 +3,42 @@
 @section('title','Chi tiết phòng')
 
 @section('content')
-<div class="container">
-  <h3>Chi tiết phòng: {{ $phong->ten_phong }}</h3>
+<div class="container-fluid khu-detail-page">
+  <div class="align-items-center mb-3">
+    <div>
+      <h3 class="khu-page__title mb-1">Chi Tiết Phòng: {{ $phong->ten_phong }}</h3>
+      <p class="text-muted mb-0">Theo dõi và tổ chức Chi Tiết Phòng</p>
+    </div>
+    <div>
+      <a href="{{ route('phong.index') }}" class="btn btn-dergin btn-dergin--muted" title="Quay lại"><i class="fa fa-arrow-left"></i><span>Về danh sách</span></a>
+    </div>
+  </div>
   @push('styles')
   <style>
     /* Trang trí riêng cho trang chi tiết phòng */
+    .khu-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
+    .khu-detail-page{padding-bottom:2rem}
+
+    /* Buttons + shared styles (match Khu detail) */
+    .btn-dergin{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:999px;font-weight:600;font-size:.78rem;border:none;color:#fff;background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%);box-shadow:0 8px 20px rgba(79,70,229,.25);text-decoration:none}
+    .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 12px 24px rgba(79,70,229,.35);color:#fff}
+    .btn-dergin i{font-size:.85rem}
+    .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
+    .btn-dergin--info{background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%)}
+    .btn-dergin--danger{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%)}
+
+    /* Toolbar + table wrapper (match Khu detail) */
+    .khu-toolbar{background:#ffffff;border-radius:14px;padding:1rem 1.25rem;box-shadow:0 10px 24px rgba(15,23,42,0.06)}
+    .khu-rooms-wrapper{background:#fff;border-radius:16px;box-shadow:0 12px 28px rgba(15,23,42,0.08);padding:1.25rem}
+    .khu-rooms-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
+    .khu-rooms-table thead th{border:none;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;padding-bottom:.75rem}
+    .khu-rooms-table tbody tr{background:#f8fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+    .khu-rooms-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(15,23,42,0.12)}
+    .khu-rooms-table tbody td{border:none;vertical-align:middle;padding:1rem 1rem}
+    .khu-rooms-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
+    .khu-rooms-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
+    .slot-actions{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:flex-end}
+
     .room-cover{aspect-ratio: 4 / 3; width:100%; object-fit:cover; border-radius:.25rem;}
     .slot-thumb{width:110px;height:72px;object-fit:cover;border-radius:.35rem;}
     .table td, .table th{vertical-align: middle;}
@@ -117,34 +148,15 @@
     </div>
     <div class="col-12 col-lg-8">
       {{-- Danh sách slot --}}
-      <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Danh sách vị trí (slot)</h5>
-          <a href="#" class="btn btn-sm btn-primary" onclick="openCreateSlots()">Tạo slots</a>
+      <div class="khu-toolbar mb-3">
+        <div class="d-flex justify-content-end">
+          <a href="#" class="btn btn-dergin btn-dergin--info" onclick="openCreateSlots()"><i class="fa fa-plus"></i><span>Tạo slots</span></a>
         </div>
-        <div>
-          @push('styles')
-          <style>
-            /* Fix bảng bị bó cột khiến tiêu đề dọc từng ký tự */
-            .slots-table{table-layout:auto;width:100%}
-            .slots-table thead th{font-weight:600;white-space:nowrap}
-            .slots-table th:nth-child(1){width:88px}
-            .slots-table th:nth-child(2){width:220px}
-            .slots-table th:nth-child(3){min-width:340px}
-            .slots-table th:nth-child(4){width:260px}
-            .slots-table th:nth-child(5){width:230px}
-            .slots-table td,.slots-table th{vertical-align:middle}
-            .slot-actions .btn{margin:.15rem .25rem}
-            .slot-actions .btn-action{width:46px;height:38px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px}
-            .slot-row.occupied{border-left:3px solid #20c997}
-            .slot-row.empty{border-left:3px solid #dee2e6}
-            /* Cột CSVC cho phép xuống dòng nội dung nhưng giữ tiêu đề 1 dòng */
-            .slots-table td:nth-child(3){white-space:normal}
-          </style>
-          @endpush
-          <table class="table table-striped table-hover align-middle mb-0 slots-table">
+      </div>
+      <div class="khu-rooms-wrapper">
+          <table class="table align-middle khu-rooms-table">
             <thead>
-              <tr class="table-light">
+              <tr>
                 <th>Mã slot</th>
                 <th>Sinh viên</th>
                 <th>CSVC (bàn giao)</th>
@@ -155,9 +167,9 @@
             <tbody>
               @foreach($phong->slots as $slot)
               <tr class="slot-row {{ $slot->sinh_vien_id ? 'occupied' : 'empty' }}">
-                <td>{{ $slot->ma_slot }}</td>
-                <td>{{ $slot->sinhVien->ho_ten ?? '-' }}</td>
-                <td>
+                <td data-label="Mã slot">{{ $slot->ma_slot }}</td>
+                <td data-label="Sinh viên">{{ $slot->sinhVien->ho_ten ?? '-' }}</td>
+                <td data-label="CSVC (bàn giao)">
                   @if(($slot->taiSans ?? collect())->count() > 0)
                     <style>
                       .chip{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #e9ecef;border-radius:999px;padding:.15rem .6rem;margin:.12rem;background:#fff;max-width:100%}
@@ -187,14 +199,14 @@
                     <span class="text-muted">-</span>
                   @endif
                 </td>
-                <td><span class="text-trunc" title="{{ $slot->ghi_chu }}">{{ $slot->ghi_chu }}</span></td>
-                <td>
+                <td data-label="Ghi chú"><span class="text-trunc" title="{{ $slot->ghi_chu }}">{{ $slot->ghi_chu }}</span></td>
+                <td data-label="Thao tác">
                   <div class="slot-actions" role="group">
-                    <button class="btn btn-outline-info btn-action" title="Bàn giao CSVC" onclick="openAssignAssets({{ $slot->id }}, '{{ $slot->ma_slot }}')"><i class="fa fa-eye"></i></button>
+                    <button type="button" class="btn-dergin" title="Bàn giao CSVC" onclick="openAssignAssets({{ $slot->id }}, '{{ $slot->ma_slot }}')"><i class="fa fa-eye"></i><span>CSVC</span></button>
                     @if (!$slot->sinh_vien_id)
-                      <button class="btn btn-outline-success btn-action" title="Gán sinh viên" onclick="openAssignStudent({{ $slot->id }}, '{{ $slot->ma_slot }}')"><i class="fa fa-user-plus"></i></button>
+                      <button type="button" class="btn-dergin btn-dergin--info" title="Gán sinh viên" onclick="openAssignStudent({{ $slot->id }}, '{{ $slot->ma_slot }}')"><i class="fa fa-user-plus"></i><span>Gán SV</span></button>
                     @else
-                      <button class="btn btn-outline-danger btn-action" title="Bỏ gán sinh viên" onclick="unassignStudent({{ $slot->id }})"><i class="fa fa-trash"></i></button>
+                      <button type="button" class="btn-dergin btn-dergin--danger" title="Bỏ gán sinh viên" onclick="unassignStudent({{ $slot->id }})"><i class="fa fa-trash"></i><span>Bỏ gán</span></button>
                     @endif
                   </div>
                 </td>
@@ -202,7 +214,6 @@
               @endforeach
             </tbody>
           </table>
-        </div>
       </div>
     </div>
   </div>
@@ -267,7 +278,7 @@
         <h5 class="modal-title">Bổ sung tài sản cho slot <span id="assign_assets_slot_label" class="text-primary"></span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
       </div>
-      <div class="modal-body">
+        <div class="modal-body">
         <div class="slot-current-assets mb-4 d-none" data-role="current-assets-wrapper">
           <div class="slot-current-assets__title">CSVC đã bàn giao cho slot</div>
           <div class="slot-current-assets__list" data-role="current-assets-list"></div>
@@ -291,20 +302,20 @@
                 <h6 class="asset-modal__heading">Tài sản sẽ bàn giao</h6>
                 <div class="selected-assets" data-role="selected-assets">
                   <p class="text-muted small mb-0" data-role="empty-state">Chưa chọn tài sản nào.</p>
-                </div>
+          </div>
                 <p class="text-muted small mt-3 mb-0">Mỗi tài sản được bàn giao 1 món từ kho tổng.</p>
-              </div>
-            </div>
+          </div>
+          </div>
+          </div>
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
+        <div class="modal-footer">
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
         <button type="submit" class="btn btn-primary" data-role="asset-submit" disabled>Bổ sung cho slot</button>
       </div>
     </form>
   </div>
-</div>
+  </div>
 {{-- (Đã bỏ modal sửa slot) --}}
 @push('scripts')
 <script>
