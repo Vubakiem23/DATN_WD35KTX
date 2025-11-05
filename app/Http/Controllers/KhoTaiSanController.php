@@ -45,28 +45,23 @@ class KhoTaiSanController extends Controller
 
     /** 🔁 Hiển thị các tài sản cùng loại */
     public function related(Request $request, $loai_id)
-    {
-        $loai = LoaiTaiSan::findOrFail($loai_id);
+{
+    $loai = LoaiTaiSan::findOrFail($loai_id);
 
-        $query = KhoTaiSan::where('loai_id', $loai_id);
+    $query = KhoTaiSan::with('phong')->where('loai_id', $loai_id);
 
-        // Lọc theo tình trạng nếu có
-        if ($request->filled('tinh_trang')) {
-            $query->where('tinh_trang', $request->tinh_trang);
-        }
-
-        // Lọc theo mã tài sản nếu có
-        if ($request->filled('ma_tai_san')) {
-            $query->where('ma_tai_san', 'like', '%' . $request->ma_tai_san . '%');
-        }
-
-        $taiSan = $query->orderBy('id', 'desc')->paginate(5)->withQueryString();
-
-        return view('kho.related', compact('loai', 'taiSan'));
+    if ($request->filled('tinh_trang')) {
+        $query->where('tinh_trang', $request->tinh_trang);
     }
 
+    if ($request->filled('ma_tai_san')) {
+        $query->where('ma_tai_san', 'like', '%' . $request->ma_tai_san . '%');
+    }
 
-    /** ➕ Hiển thị form thêm tài sản mới cho loại này */
+    $taiSan = $query->orderBy('id', 'desc')->paginate(5)->withQueryString();
+
+    return view('kho.related', compact('loai', 'taiSan'));
+}
     public function create($loai_id)
     {
         $loai = LoaiTaiSan::findOrFail($loai_id);
@@ -157,20 +152,28 @@ class KhoTaiSanController extends Controller
 
     /** 🗑️ Xóa tài sản khỏi kho */
     public function destroy($id)
-    {
-        $taiSan = KhoTaiSan::findOrFail($id);
+{
+    $taiSan = KhoTaiSan::findOrFail($id);
 
-        // Xóa hình ảnh nếu có
-        if ($taiSan->hinh_anh && Storage::disk('public')->exists($taiSan->hinh_anh)) {
-            Storage::disk('public')->delete($taiSan->hinh_anh);
-        }
+    $loai_id = $taiSan->loai_id;
 
-        $loai_id = $taiSan->loai_id;
-        $taiSan->delete();
+    // 🔹 Kiểm tra xem ảnh này còn được dùng ở nơi khác không
+    $anhDangDung = KhoTaiSan::where('hinh_anh', $taiSan->hinh_anh)
+        ->where('id', '!=', $taiSan->id)
+        ->exists();
 
-        return redirect()->route('kho.related', $loai_id)
-            ->with('success', 'Đã xóa tài sản khỏi kho!');
+    if (!$anhDangDung && $taiSan->hinh_anh && Storage::disk('public')->exists($taiSan->hinh_anh)) {
+        // Chỉ xóa file nếu không ai khác đang dùng nó
+        Storage::disk('public')->delete($taiSan->hinh_anh);
     }
+
+    // Xóa bản ghi
+    $taiSan->delete();
+
+    return redirect()->route('kho.related', $loai_id)
+        ->with('success', 'Đã xóa tài sản khỏi kho!');
+}
+
 
     /** 🔧 Hàm sinh mã tài sản tự động */
     private function generateMaTaiSan()

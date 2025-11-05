@@ -23,6 +23,9 @@
     <!-- bootstrap-progressbar -->
     <link href="{{ asset('assets/admin/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css') }}"
         rel="stylesheet">
+    <!-- Thư viện Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- JQVMap -->
     <link href="{{ asset('assets/admin/vendors/jqvmap/dist/jqvmap.min.css') }}" rel="stylesheet" />
@@ -412,11 +415,11 @@
 <body class="nav-md">
     <div class="container body">
         <div class="main_container">
-    @if(empty($noSidebar))
-        @include('admin.partials.side-bar')
-    @endif
+            @if(empty($noSidebar))
+            @include('admin.partials.side-bar')
+            @endif
 
-    @include('admin.partials.top-navigation')
+            @include('admin.partials.top-navigation')
 
 
             <!-- top navigation -->

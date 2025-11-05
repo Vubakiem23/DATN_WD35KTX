@@ -440,4 +440,9 @@ class Phong extends Model
             $q->whereNull('sinh_vien_id');
         });
     }
+    public function khoTaiSans()
+{
+    return $this->hasMany(\App\Models\KhoTaiSan::class, 'phong_id');
+}
+
 }
