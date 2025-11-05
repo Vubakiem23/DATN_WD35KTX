@@ -75,7 +75,7 @@ class PhongController extends Controller
         try {
             $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)->orderBy('ten_tai_san')->get();
             $khus = Schema::hasTable('khu') ? Khu::orderBy('ten_khu')->get() : collect();
-            return view('phong.create', compact('khoTaiSans','khus'));
+            return view('phong.create', compact('khoTaiSans', 'khus'));
         } catch (Exception $e) {
             Log::error('Lỗi khi load form tạo phòng: ' . $e->getMessage());
             return redirect()->route('phong.index')->with('error', 'Không thể tải form tạo phòng!');
@@ -99,7 +99,9 @@ class PhongController extends Controller
 
             // Validate assets from warehouse (optional)
             $assets = $request->input('assets', []);
-            $assets = is_array($assets) ? array_filter($assets, function($qty){ return is_numeric($qty) && (int)$qty > 0; }) : [];
+            $assets = is_array($assets) ? array_filter($assets, function ($qty) {
+                return is_numeric($qty) && (int)$qty > 0;
+            }) : [];
             if (!empty($assets)) {
                 foreach ($assets as $khoId => $qty) {
                     $kho = KhoTaiSan::lockForUpdate()->find($khoId);
@@ -122,7 +124,7 @@ class PhongController extends Controller
             if ($request->hasFile('hinh_anh')) {
                 try {
                     $file = $request->file('hinh_anh');
-                    
+
                     // Validate file
                     if (!$file->isValid()) {
                         throw PhongException::uploadFailed('File không hợp lệ');
@@ -178,7 +180,9 @@ class PhongController extends Controller
 
                 foreach ($assets as $khoId => $qtyRaw) {
                     $qty = (int)$qtyRaw;
-                    if ($qty <= 0) { continue; }
+                    if ($qty <= 0) {
+                        continue;
+                    }
 
                     $kho = KhoTaiSan::lockForUpdate()->findOrFail($khoId);
 
@@ -215,7 +219,6 @@ class PhongController extends Controller
 
             Log::info('Tạo phòng thành công', ['phong_id' => $phong->id, 'ten_phong' => $phong->ten_phong]);
             return redirect()->route('phong.index')->with('status', 'Thêm phòng thành công! Tài sản đã được cấp cho phòng.');
-
         } catch (PhongException $e) {
             DB::rollBack();
             return back()->withInput()->with('error', $e->getMessage());
@@ -235,7 +238,7 @@ class PhongController extends Controller
             $khus = Schema::hasTable('khu') ? Khu::orderBy('ten_khu')->get() : collect();
             // Hiển thị bảng chọn tài sản giống như tạo mới
             $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)->orderBy('ten_tai_san')->get();
-            return view('phong.edit', compact('phong','khus','khoTaiSans'));
+            return view('phong.edit', compact('phong', 'khus', 'khoTaiSans'));
         } catch (Exception $e) {
             Log::error('Lỗi khi load form sửa phòng: ' . $e->getMessage());
             return redirect()->route('phong.index')->with('error', 'Không thể tải form chỉnh sửa phòng!');
@@ -275,7 +278,7 @@ class PhongController extends Controller
             if ($request->hasFile('hinh_anh')) {
                 try {
                     $file = $request->file('hinh_anh');
-                    
+
                     if (!$file->isValid()) {
                         throw PhongException::uploadFailed('File không hợp lệ');
                     }
@@ -356,7 +359,9 @@ class PhongController extends Controller
 
             // Nếu người dùng chọn cấp thêm tài sản từ kho khi sửa phòng
             $assets = $request->input('assets', []);
-            $assets = is_array($assets) ? array_filter($assets, function($qty){ return is_numeric($qty) && (int)$qty > 0; }) : [];
+            $assets = is_array($assets) ? array_filter($assets, function ($qty) {
+                return is_numeric($qty) && (int)$qty > 0;
+            }) : [];
             if (!empty($assets)) {
                 // Chỉ tự động bàn giao cho các slot đã có sinh viên ở
                 $slots = $phong->slots()
@@ -367,7 +372,9 @@ class PhongController extends Controller
 
                 foreach ($assets as $khoId => $qtyRaw) {
                     $qty = (int)$qtyRaw;
-                    if ($qty <= 0) { continue; }
+                    if ($qty <= 0) {
+                        continue;
+                    }
 
                     $kho = KhoTaiSan::lockForUpdate()->findOrFail($khoId);
                     if ($kho->so_luong < $qty) {
@@ -407,7 +414,6 @@ class PhongController extends Controller
 
             Log::info('Cập nhật phòng thành công', ['phong_id' => $phong->id]);
             return redirect()->route('phong.index')->with('status', 'Cập nhật phòng thành công!');
-
         } catch (PhongException $e) {
             DB::rollBack();
             return back()->withInput()->with('error', $e->getMessage());
@@ -424,8 +430,14 @@ class PhongController extends Controller
     public function show($id)
     {
         try {
-            $phong = Phong::with(['slots.sinhVien', 'slots.taiSans.khoTaiSan'])->findOrFail($id);
-            
+            $phong = Phong::with([
+                'slots.sinhVien',
+                'slots.taiSans.khoTaiSan',
+                'slots.taiSans.lichBaoTri' => function ($q) {
+                    $q->latest('ngay_bao_tri');
+                }
+            ])->findOrFail($id);
+
             // Chỉ lấy sinh viên đã duyệt và CHƯA được gán vào slot nào
             $assignedIds = Slot::whereNotNull('sinh_vien_id')->pluck('sinh_vien_id');
             $sinhViens = SinhVien::where('trang_thai_ho_so', 'Đã duyệt')
@@ -482,7 +494,6 @@ class PhongController extends Controller
 
             Log::info('Xóa phòng thành công', ['ten_phong' => $tenPhong]);
             return redirect()->route('phong.index')->with('status', 'Xóa phòng thành công!');
-
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             // Cố gắng suy luận lỗi FK để hiện thông điệp rõ ràng
@@ -520,11 +531,11 @@ class PhongController extends Controller
 
             // Kiểm tra logic nghiệp vụ
             $soSinhVienHienTai = $phong->usedSlots();
-            
+
             // Không cho đổi thành "Trống" nếu còn sinh viên
             if ($validated['trang_thai'] === 'Trống' && $soSinhVienHienTai > 0) {
                 return response()->json([
-                    'ok' => false, 
+                    'ok' => false,
                     'message' => "Không thể đổi sang trạng thái 'Trống' vì còn {$soSinhVienHienTai} sinh viên đang ở"
                 ], 422);
             }
@@ -538,11 +549,10 @@ class PhongController extends Controller
             ]);
 
             return response()->json([
-                'ok' => true, 
+                'ok' => true,
                 'trang_thai' => $phong->trang_thai,
                 'message' => 'Đổi trạng thái phòng thành công'
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'ok' => false,

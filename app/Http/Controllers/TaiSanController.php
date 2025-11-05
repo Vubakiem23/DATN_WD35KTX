@@ -70,129 +70,52 @@ public function create(Request $request)
     return view('taisan.create', compact('phongs', 'loaiTaiSans', 'taiSans', 'selectedLoai', 'selectedTaiSan'));
 }
 
-    public function store(Request $request)
-    {
-        $assetsInput = $request->input('assets');
+  public function store(Request $request)
+{
+    $request->validate([
+        'phong_id' => 'required|exists:phong,id',
+        'tai_san_ids' => 'required|array|min:1',
+        'tinh_trang' => 'required|string|max:255',
+    ]);
 
-        $baseRules = [
-            'phong_id' => 'required|exists:phong,id',
-            'tinh_trang' => 'nullable|string|max:255',
-            'tinh_trang_hien_tai' => 'nullable|string|max:255',
-            'redirect_to' => 'nullable|url',
-        ];
+    DB::beginTransaction();
+    try {
+        foreach ($request->tai_san_ids as $id) {
+            $kho = KhoTaiSan::lockForUpdate()->findOrFail($id);
 
-        if (is_array($assetsInput)) {
-            $request->validate($baseRules + [
-                'assets' => 'required|array',
-                'assets.*' => 'integer|min:1',
+            // Kiểm tra kho còn hàng
+            if ($kho->so_luong <= 0) {
+                throw new \Exception("Tài sản '{$kho->ten_tai_san}' đã hết trong kho.");
+            }
+
+            // Gán tài sản vào phòng (tạo bản ghi trong bảng tai_san)
+            TaiSan::create([
+                'kho_tai_san_id' => $kho->id,
+                'ten_tai_san' => $kho->ten_tai_san,
+                'phong_id' => $request->phong_id,
+                'so_luong' => 1,
+                'tinh_trang' => $request->tinh_trang,
+                'tinh_trang_hien_tai' => $request->tinh_trang,
+                'hinh_anh' => $kho->hinh_anh,
             ]);
 
-            $assetQuantities = [];
-            foreach ($assetsInput as $khoId => $qty) {
-                if (!ctype_digit((string) $khoId)) {
-                    continue;
-                }
-                $intQty = (int) $qty;
-                if ($intQty > 0) {
-                    $assetQuantities[(int) $khoId] = $intQty;
-                }
-            }
+            // 🔹 Cập nhật phòng hiện tại trong kho (hiển thị trong kho đồ)
+            $kho->update([
+                'phong_id' => $request->phong_id,
+            ]);
 
-            if (empty($assetQuantities)) {
-                return back()->withInput()->with('error', 'Vui lòng chọn ít nhất một tài sản với số lượng hợp lệ.');
-            }
-
-            DB::beginTransaction();
-            try {
-                $stocks = KhoTaiSan::whereIn('id', array_keys($assetQuantities))
-                    ->lockForUpdate()
-                    ->get()
-                    ->keyBy('id');
-
-                if ($stocks->count() !== count($assetQuantities)) {
-                    throw new \RuntimeException('Một số tài sản đã không còn khả dụng trong kho.');
-                }
-
-                foreach ($assetQuantities as $khoId => $qty) {
-                    $kho = $stocks->get($khoId);
-                    if ((int) $kho->so_luong < $qty) {
-                        throw new \RuntimeException('Kho "' . ($kho->ten_tai_san ?? 'Không xác định') . '" không đủ số lượng (' . $kho->so_luong . ' < ' . $qty . ').');
-                    }
-                }
-
-                $requestedCondition = $request->input('tinh_trang');
-                $requestedCurrent = $request->input('tinh_trang_hien_tai');
-
-                foreach ($assetQuantities as $khoId => $qty) {
-                    $kho = $stocks->get($khoId);
-
-                    $fallbackCondition = $requestedCondition ?: ($kho->tinh_trang ?? null);
-                    $fallbackCurrent = $requestedCurrent ?: $fallbackCondition;
-
-                    TaiSan::create([
-                        'kho_tai_san_id' => $kho->id,
-                        'ten_tai_san' => $kho->ten_tai_san,
-                        'phong_id' => $request->input('phong_id'),
-                        'so_luong' => $qty,
-                        'tinh_trang' => $fallbackCondition,
-                        'tinh_trang_hien_tai' => $fallbackCurrent,
-                        'hinh_anh' => $kho->hinh_anh,
-                    ]);
-
-                    $kho->so_luong = max(0, (int) $kho->so_luong - $qty);
-                    $kho->save();
-                }
-
-                DB::commit();
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                return back()->withInput()->with('error', $e->getMessage() ?: 'Không thể bổ sung tài sản cho phòng.');
-            }
-
-            $successMessage = 'Đã bổ sung ' . count($assetQuantities) . ' tài sản vào phòng và trừ kho!';
-            $redirect = $request->input('redirect_to');
-            if ($redirect && Str::startsWith($redirect, url('/'))) {
-                return redirect($redirect)->with('success', $successMessage);
-            }
-
-            return redirect()->route('taisan.index')->with('success', $successMessage);
+            // 🔹 Trừ kho
+            $kho->decrement('so_luong', 1);
         }
 
-        $validated = $request->validate($baseRules + [
-            'kho_tai_san_id' => 'required|exists:kho_tai_san,id',
-            'so_luong' => 'required|integer|min:1',
-        ]);
-
-        $kho = KhoTaiSan::findOrFail($validated['kho_tai_san_id']);
-
-        if ($kho->so_luong < $validated['so_luong']) {
-            return back()->withInput()->with('error', 'Số lượng trong kho không đủ!');
-        }
-
-        $defaultCondition = $validated['tinh_trang'] ?? ($kho->tinh_trang ?? null);
-        $defaultCurrent = $validated['tinh_trang_hien_tai'] ?? $defaultCondition;
-
-        TaiSan::create([
-            'kho_tai_san_id' => $kho->id,
-            'ten_tai_san' => $kho->ten_tai_san,
-            'phong_id' => $validated['phong_id'],
-            'so_luong' => $validated['so_luong'],
-            'tinh_trang' => $defaultCondition,
-            'tinh_trang_hien_tai' => $defaultCurrent,
-            'hinh_anh' => $kho->hinh_anh,
-        ]);
-
-        $kho->decrement('so_luong', $validated['so_luong']);
-
-        $redirect = $validated['redirect_to'] ?? null;
-        if ($redirect && Str::startsWith($redirect, url('/'))) {
-            return redirect($redirect)->with('success', 'Thêm tài sản thành công và trừ kho!');
-        }
-
-        return redirect()->route('taisan.index')->with('success', 'Thêm tài sản thành công và trừ kho!');
+        DB::commit();
+        return redirect()->route('taisan.index')->with('success', 'Đã thêm tài sản vào phòng và cập nhật kho thành công!');
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
     }
+}
 
-    /** ✏️ Form chỉnh sửa tài sản phòng */
     public function edit($id)
     {
         $taiSan = TaiSan::findOrFail($id);
@@ -272,20 +195,25 @@ public function create(Request $request)
         $html = view('taisan._modal', compact('taiSan'))->render();
         return response()->json(['data' => $html]);
     }
-   public function related($loai_id)
+   public function related(Request $request, $loai_id)
 {
+    // Lấy danh sách tài sản thuộc loại, còn hàng, chưa gán phòng
     $khoTaiSans = KhoTaiSan::where('loai_id', $loai_id)
-        ->select('id', 'ten_tai_san', 'so_luong', 'hinh_anh', 'tinh_trang')
+        ->where('so_luong', '>', 0)
+        ->select('id', 'ma_tai_san', 'ten_tai_san', 'hinh_anh', 'tinh_trang', 'so_luong')
         ->get()
         ->map(function ($item) {
-            $item->hinh_anh = $item->hinh_anh 
-                ? asset('storage/' . ltrim($item->hinh_anh, '/')) 
+            $item->hinh_anh = $item->hinh_anh
+                ? asset('storage/' . ltrim($item->hinh_anh, '/'))
                 : asset('uploads/default.png');
             return $item;
         });
 
-    return response()->json($khoTaiSans); // phải trả JSON
+    return response()->json($khoTaiSans);
 }
+
+
+ 
 
 
     /**

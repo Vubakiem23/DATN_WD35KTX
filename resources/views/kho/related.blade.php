@@ -58,6 +58,7 @@
                         <th>Mã tài sản</th>
                         <th>Tên tài sản</th>
                         <th>Tình trạng</th>
+                        <th>Vị trí</th>
                         <th>Số lượng</th>
                         <th>Đơn vị</th>
                         <th>Ghi chú</th>
@@ -83,6 +84,9 @@
                         <td>{{ $item->ma_tai_san }}</td>
                         <td>{{ $item->ten_tai_san }}</td>
                         <td>{{ $item->tinh_trang ?? '-' }}</td>
+                        <td>{{ $item->phong->ten_phong ?? 'Chưa gán phòng' }}</td>
+
+
                         <td>{{ $item->so_luong }}</td>
                         <td>{{ $item->don_vi_tinh ?? '-' }}</td>
                         <td>{{ $item->ghi_chu ?? '-' }}</td>

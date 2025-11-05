@@ -133,10 +133,10 @@
 
             <td>
               <span class="badge 
-                @if($item->tinh_trang_hien_tai == 'mới') bg-success
+                @if($item->tinh_trang_hien_tai == 'Bình thường') bg-success text-white
                 @elseif($item->tinh_trang_hien_tai == 'cũ') bg-secondary
-                @elseif($item->tinh_trang_hien_tai == 'bảo trì') bg-warning text-dark
-                @elseif($item->tinh_trang_hien_tai == 'hỏng') bg-danger
+                @elseif($item->tinh_trang_hien_tai == 'Đang bảo trì') bg-warning text-dark
+                @elseif($item->tinh_trang_hien_tai == 'Hỏng') bg-danger
                 @else bg-light @endif">
                 {{ ucfirst($item->tinh_trang_hien_tai ?? 'Chưa cập nhật') }}
               </span>

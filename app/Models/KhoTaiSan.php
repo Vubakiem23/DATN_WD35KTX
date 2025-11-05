@@ -20,19 +20,37 @@ class KhoTaiSan extends Model
         'so_luong',
         'hinh_anh',
         'ghi_chu',
+        'phong_id',
     ];
 
-    // Nếu muốn liên kết với tài sản từng phòng:
+    // 🔹 Liên kết tới tài sản gán vào phòng
     public function taiSans()
     {
         return $this->hasMany(TaiSan::class, 'kho_tai_san_id');
     }
+
+    // 🔹 Liên kết với bảng lịch bảo trì
     public function lichBaoTri()
     {
         return $this->hasMany(LichBaoTri::class, 'kho_tai_san_id');
     }
+
+    // 🔹 Loại tài sản
     public function loai()
     {
         return $this->belongsTo(LoaiTaiSan::class, 'loai_id');
     }
+
+    // 🏠 Liên kết đến bảng trung gian phong_tai_san
+    public function phongTaiSan()
+    {
+        return $this->hasOne(\App\Models\PhongTaiSan::class, 'kho_tai_san_id');
+    }
+
+    // 🏢 Quan hệ lấy trực tiếp phòng chứa tài sản
+    public function phong()
+{
+    return $this->belongsTo(\App\Models\Phong::class, 'phong_id');
+}
+
 }

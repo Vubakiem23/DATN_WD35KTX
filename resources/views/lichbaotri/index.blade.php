@@ -285,7 +285,7 @@
       const contentDiv = document.getElementById('chiTietContent');
       contentDiv.innerHTML = '<div class="text-center text-muted py-3">Đang tải dữ liệu...</div>';
 
-      fetch(`/lichbaotri/show/${id}`)
+      fetch(`/admin/lichbaotri/show/${id}`)
         .then(response => response.text())
         .then(html => contentDiv.innerHTML = html)
         .catch(() => contentDiv.innerHTML = '<div class="text-danger text-center">Lỗi tải dữ liệu</div>');

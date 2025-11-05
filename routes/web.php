@@ -50,7 +50,7 @@ Route::group(['prefix' => 'manager', 'middleware' => ['manager']], function () {
 });
 
 // =================== 🛠️ ADMIN ===================
-Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // Trang chủ admin
     Route::get('', [AdminController::class, 'index'])->name('admin.index');
@@ -67,7 +67,7 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     Route::post('/slots/{id}/assign-assets', [SlotController::class, 'assignAssets'])->name('slots.assignAssets');
     Route::post('/slots/{id}/clear-assets', [SlotController::class, 'clearAssets'])->name('slots.clearAssets');
     Route::post('/slots/import-from-warehouse', [SlotController::class, 'importFromWarehouse'])->name('slots.importFromWarehouse');
-// ---------------- GÁN PHÒNG ----------------
+    // ---------------- GÁN PHÒNG ----------------
     // ======================
     Route::get('assign/{svId}', [AssignmentController::class, 'showAssignForm'])->name('assign.form');
     Route::post('assign/{svId}', [AssignmentController::class, 'assign'])->name('assign.do');
@@ -77,30 +77,94 @@ Route::prefix('admin')->middleware(['auth','admin'])->group(function () {
     Route::resource('sinhvien', SinhVienController::class)->except(['show']);
     Route::patch('sinhvien/{id}/approve', [SinhVienController::class, 'approve'])->name('sinhvien.approve');
     Route::get('sinhvien/show/{id}', [SinhVienController::class, 'show'])->name('sinhvien.show.modal');
-//thongbao
-Route::post('tieude/ajax/create', [TieuDeController::class, 'ajaxCreate'])->name('tieude.ajaxCreate');
-Route::delete('tieude/ajax/delete', [TieuDeController::class, 'ajaxDelete'])->name('tieude.ajaxDelete');
+    //thongbao
+    Route::post('tieude/ajax/create', [TieuDeController::class, 'ajaxCreate'])->name('tieude.ajaxCreate');
+    Route::delete('tieude/ajax/delete', [TieuDeController::class, 'ajaxDelete'])->name('tieude.ajaxDelete');
 
-// ------------------ MỨC ĐỘ ------------------
-// Thêm mới mức độ
-Route::post('/mucdo/ajax/create', [MucDoController::class, 'ajaxCreate'])->name('mucdo.ajaxCreate');
-Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->name('mucdo.ajaxDelete');
-    
+    // ------------------ MỨC ĐỘ ------------------
+    // Thêm mới mức độ
+    Route::post('/mucdo/ajax/create', [MucDoController::class, 'ajaxCreate'])->name('mucdo.ajaxCreate');
+    Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->name('mucdo.ajaxDelete');
+
+   
+    Route::prefix('lichbaotri')->group(function () {
+        // CRUD cơ bản
+        Route::get('/', [LichBaoTriController::class, 'index'])->name('lichbaotri.index');
+        Route::get('/create', [LichBaoTriController::class, 'create'])->name('lichbaotri.create');
+        Route::post('/', [LichBaoTriController::class, 'store'])->name('lichbaotri.store');
+        Route::get('/{id}/edit', [LichBaoTriController::class, 'edit'])->name('lichbaotri.edit');
+        Route::put('/{id}', [LichBaoTriController::class, 'update'])->name('lichbaotri.update');
+        Route::delete('/{id}', [LichBaoTriController::class, 'destroy'])->name('lichbaotri.destroy');
+
+        // 👁️ Xem chi tiết (modal)
+        Route::get('/show/{id}', [LichBaoTriController::class, 'show'])->name('lichbaotri.show');
+
+        // 🔍 Lấy tài sản theo phòng
+        Route::get('/tai-san', [LichBaoTriController::class, 'getTaiSanByPhong'])->name('lichbaotri.taiSanByPhong');
+
+        // ✅ Hoàn thành bảo trì
+        Route::get('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhForm'])->name('lichbaotri.hoanthanh.form');
+        Route::post('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhSubmit'])->name('lichbaotri.hoanthanh.submit');
+        Route::patch('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
+
+        Route::get('/get-loai-tai-san', [LichBaoTriController::class, 'getLoaiTaiSan']);
+        Route::get('/get-tai-san-kho/{loaiId}', [LichBaoTriController::class, 'getTaiSanKho']);
+        Route::get('/get-tai-san-phong/{phongId}', [LichBaoTriController::class, 'getTaiSanPhong']);
+    });
+     
+    Route::prefix('taisan')->group(function () {
+        Route::get('', [TaiSanController::class, 'index'])->name('taisan.index');
+        Route::get('create', [TaiSanController::class, 'create'])->name('taisan.create');
+        Route::post('store', [TaiSanController::class, 'store'])->name('taisan.store');
+        Route::get('edit/{id}', [TaiSanController::class, 'edit'])->name('taisan.edit');
+        Route::put('update/{id}', [TaiSanController::class, 'update'])->name('taisan.update');
+        Route::delete('delete/{id}', [TaiSanController::class, 'destroy'])->name('taisan.destroy');
+        Route::put('{id}/baohong', [TaiSanController::class, 'baoHong'])->name('taisan.baohong');
+        Route::get('chitiet/{id}', [TaiSanController::class, 'showModal'])->name('taisan.showModal');
+
+        // ✅ Route dùng cho dropdown lọc tài sản theo loại
+        Route::get('related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
+        Route::get('taisan/related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
+
+       Route::get('ajax/get-tai-san-by-loai', [TaiSanController::class, 'ajaxGetTaiSan'])
+    ->name('taisan.ajax.getTaiSanByLoai');
+
+    });
+    // 📦 Quản lý kho tài sản
+    Route::prefix('kho')->group(function () {
+        Route::get('/', [KhoTaiSanController::class, 'index'])->name('kho.index');                // danh sách loại tài sản
+        Route::get('/related/{loai_id}', [KhoTaiSanController::class, 'related'])->name('kho.related'); // tài sản cùng loại
+        Route::get('/create/{loai_id}', [KhoTaiSanController::class, 'create'])->name('kho.create');    // form thêm
+        Route::post('/store/{loai_id}', [KhoTaiSanController::class, 'store'])->name('kho.store');      // lưu
+        Route::get('/edit/{id}', [KhoTaiSanController::class, 'edit'])->name('kho.edit');       // form sửa
+        Route::put('/update/{id}', [KhoTaiSanController::class, 'update'])->name('kho.update');  // lưu sửa
+
+        Route::delete('/delete/{id}', [KhoTaiSanController::class, 'destroy'])->name('kho.destroy');    // xóa
+    });
+    // =================== LOẠI TÀI SẢN ===================
+    Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);
+
+
+   
+    Route::get('kho/show/{id}', [KhoTaiSanController::class, 'showModal'])->name('kho.show.modal');
+    // ======================
+    // KHU (Khu vực KTX)
     Route::get('phong/{phong}/taisanphong', [TaiSanController::class, 'byPhong'])->name('taisan.byPhong');
 });
-    // ----------------- SỰ CỐ -----------------
-    // ====================== 
-    Route::resource('suco', SuCoController::class);
-    // 🔹 Route xác nhận thanh toán sự cố
-    // Route::post('suco/{id}/thanhtoan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
-    // Route nút hoàn thành
-     Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.thanhtoan');
 
-    // ======================
-    // HÓA ĐƠN
-    // ======================
+// ----------------- SỰ CỐ -----------------
+// ====================== 
+Route::resource('suco', SuCoController::class);
+// 🔹 Route xác nhận thanh toán sự cố
+// Route::post('suco/{id}/thanhtoan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
+// Route nút hoàn thành
+Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.thanhtoan');
 
-    Route::prefix('hoadon')->group(function(){
+// ======================
+// HÓA ĐƠN
+// ======================
+
+Route::prefix('hoadon')->group(function () {
     Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
     Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
     Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
@@ -126,26 +190,9 @@ Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->nam
     });
     // TÀI SẢN
     // ======================
-    Route::prefix('taisan')->group(function () {
-        Route::get('', [TaiSanController::class, 'index'])->name('taisan.index');
-        Route::get('create', [TaiSanController::class, 'create'])->name('taisan.create');
-        Route::post('store', [TaiSanController::class, 'store'])->name('taisan.store');
-        Route::get('edit/{id}', [TaiSanController::class, 'edit'])->name('taisan.edit');
-        Route::put('update/{id}', [TaiSanController::class, 'update'])->name('taisan.update');
-        Route::delete('delete/{id}', [TaiSanController::class, 'destroy'])->name('taisan.destroy');
-        Route::put('{id}/baohong', [TaiSanController::class, 'baoHong'])->name('taisan.baohong');
-        Route::get('chitiet/{id}', [TaiSanController::class, 'showModal'])->name('taisan.showModal');
-    });
 
     // ======================
-    // KHO TÀI SẢN
-    // ======================
-    Route::resource('kho', KhoTaiSanController::class);
-    Route::get('kho/show/{id}', [KhoTaiSanController::class, 'showModal'])->name('kho.show.modal');
-    // ======================
-    // KHU (Khu vực KTX)
-    // ======================
-    Route::resource('khu', KhuController::class)->except(['edit','update','destroy']);
+    Route::resource('khu', KhuController::class)->except(['edit', 'update', 'destroy']);
 
     // ======================
     // NGƯỜI DÙNG
@@ -159,19 +206,19 @@ Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->nam
         Route::delete('delete/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
     // ---------------- THÔNG BÁO ----------------
-});
 
-// ======================
-// SINH VIÊN (Chỉ student mới vào)
-Route::prefix('student')->middleware(['auth', 'student'])->group(function () {
-    Route::get('', [SinhVienController::class, 'index'])->name('student.index');
-});
 
-// ======================
-// QUẢN LÝ (Chỉ manager mới vào)
-Route::prefix('manager')->middleware(['auth', 'manager'])->group(function () {
-    Route::get('', [QuanLyController::class, 'index'])->name('manager.index');
-});
+    // ======================
+    // SINH VIÊN (Chỉ student mới vào)
+    Route::prefix('student')->middleware(['auth', 'student'])->group(function () {
+        Route::get('', [SinhVienController::class, 'index'])->name('student.index');
+    });
+
+    // ======================
+    // QUẢN LÝ (Chỉ manager mới vào)
+    Route::prefix('manager')->middleware(['auth', 'manager'])->group(function () {
+        Route::get('', [QuanLyController::class, 'index'])->name('manager.index');
+    });
 
 
     // ---------------- HÓA ĐƠN ----------------
@@ -183,39 +230,15 @@ Route::prefix('manager')->middleware(['auth', 'manager'])->group(function () {
     Route::post('hoadon/{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
 
-Route::prefix('lichbaotri')->group(function () {
-    // CRUD cơ bản
-    Route::get('/', [LichBaoTriController::class, 'index'])->name('lichbaotri.index');
-    Route::get('/create', [LichBaoTriController::class, 'create'])->name('lichbaotri.create');
-    Route::post('/', [LichBaoTriController::class, 'store'])->name('lichbaotri.store');
-    Route::get('/{id}/edit', [LichBaoTriController::class, 'edit'])->name('lichbaotri.edit');
-    Route::put('/{id}', [LichBaoTriController::class, 'update'])->name('lichbaotri.update');
-    Route::delete('/{id}', [LichBaoTriController::class, 'destroy'])->name('lichbaotri.destroy');
-
-    // 👁️ Xem chi tiết (modal)
-    Route::get('/show/{id}', [LichBaoTriController::class, 'show'])->name('lichbaotri.show');
-
-    // 🔍 Lấy tài sản theo phòng
-    Route::get('/tai-san', [LichBaoTriController::class, 'getTaiSanByPhong'])->name('lichbaotri.taiSanByPhong');
-
-    // ✅ Hoàn thành bảo trì
-    Route::get('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhForm'])->name('lichbaotri.hoanthanh.form');
-    Route::post('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhSubmit'])->name('lichbaotri.hoanthanh.submit');
-    Route::patch('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
-
-    Route::get('/get-loai-tai-san', [LichBaoTriController::class, 'getLoaiTaiSan']);
-    Route::get('/get-tai-san-kho/{loaiId}', [LichBaoTriController::class, 'getTaiSanKho']);
-    Route::get('/get-tai-san-phong/{phongId}', [LichBaoTriController::class, 'getTaiSanPhong']);
-});
 
 
 
     // ---------------- SỰ CỐ ----------------
     Route::resource('suco', SuCoController::class);
-// ---------------- THÔNG BÁO ----------------
-Route::resource('thongbao', ThongBaoController::class);
-// ---------------- SỰ CỐ ----------------
-Route::resource('suco', SuCoController::class);
+    // ---------------- THÔNG BÁO ----------------
+    Route::resource('thongbao', ThongBaoController::class);
+    // ---------------- SỰ CỐ ----------------
+    Route::resource('suco', SuCoController::class);
     // ====== VI PHẠM (violations) ======
     Route::resource('vipham', ViolationController::class);
     Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
@@ -226,38 +249,12 @@ Route::resource('suco', SuCoController::class);
     Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
     // ---------------- QUẢN LÝ TÀI SẢN ----------------
-// ---------------- TÀI SẢN ----------------
-    Route::prefix('taisan')->group(function () {
-    Route::get('', [TaiSanController::class, 'index'])->name('taisan.index');
-    Route::get('create', [TaiSanController::class, 'create'])->name('taisan.create');
-    Route::post('store', [TaiSanController::class, 'store'])->name('taisan.store');
-    Route::get('edit/{id}', [TaiSanController::class, 'edit'])->name('taisan.edit');
-    Route::put('update/{id}', [TaiSanController::class, 'update'])->name('taisan.update');
-    Route::delete('delete/{id}', [TaiSanController::class, 'destroy'])->name('taisan.destroy');
-    Route::put('{id}/baohong', [TaiSanController::class, 'baoHong'])->name('taisan.baohong');
-    Route::get('chitiet/{id}', [TaiSanController::class, 'showModal'])->name('taisan.showModal');
+    // ---------------- TÀI SẢN ----------------
 
-    // ✅ Route dùng cho dropdown lọc tài sản theo loại
-    Route::get('related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
-    Route::get('taisan/related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
+    Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+
+
+    // =================== IMPORT ADMIN EXTRA ===================
+
+    require __DIR__ . '/admin.php';
 });
-    // 📦 Quản lý kho tài sản
-    Route::prefix('kho')->group(function () {
-        Route::get('/', [KhoTaiSanController::class, 'index'])->name('kho.index');                // danh sách loại tài sản
-        Route::get('/related/{loai_id}', [KhoTaiSanController::class, 'related'])->name('kho.related'); // tài sản cùng loại
-        Route::get('/create/{loai_id}', [KhoTaiSanController::class, 'create'])->name('kho.create');    // form thêm
-        Route::post('/store/{loai_id}', [KhoTaiSanController::class, 'store'])->name('kho.store');      // lưu
-        Route::get('/edit/{id}', [KhoTaiSanController::class, 'edit'])->name('kho.edit');       // form sửa
-        Route::put('/update/{id}', [KhoTaiSanController::class, 'update'])->name('kho.update');  // lưu sửa
-
-        Route::delete('/delete/{id}', [KhoTaiSanController::class, 'destroy'])->name('kho.destroy');    // xóa
-    });
-// =================== LOẠI TÀI SẢN ===================
-Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);
-Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
-
-
-// =================== IMPORT ADMIN EXTRA ===================
-
-require __DIR__ . '/admin.php';
-

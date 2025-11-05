@@ -192,7 +192,9 @@
                       <td class="fw-semibold">{{ $asset->filter_label }}</td>
                       <td><span class="badge badge-soft-teal">{{ $asset->so_luong ?? 0 }}</span></td>
                       <td>{{ $asset->tinh_trang ?? 'Không rõ' }}</td>
-                      <td>{{ $asset->tinh_trang_hien_tai ?? 'Chưa cập nhật' }}</td>
+<td>
+  {{ $asset->lichBaoTri->first()->trang_thai ?? $asset->tinh_trang ?? 'Chưa cập nhật' }}
+</td>
                       <td>{{ $asset->ghi_chu ?? '—' }}</td>
                       <td>
                         <div class="asset-actions">
