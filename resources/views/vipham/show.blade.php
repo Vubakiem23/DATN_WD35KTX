@@ -75,7 +75,9 @@
                             <th>Sinh viên</th>
                             <td>
                                 <div class="font-weight-600">{{ optional($violation->student)->ho_ten ?? '—' }}</div>
-                                <div class="text-muted small">{{ optional($violation->student)->ma_sinh_vien ?? '' }}</div>
+                                <div class="text-muted small">
+                                    {{ optional($violation->student)->ma_sinh_vien ?? '' }}
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -91,7 +93,23 @@
                             <th>Loại vi phạm</th>
                             <td>{{ optional($violation->type)->name ?? '—' }}</td>
                         </tr>
-                        {{-- Migration hiện tại chưa có cột location/mucdo/image/created_by --}}
+
+                        {{-- ⬇⬇⬇ HÀNG MỚI: HÌNH ẢNH --}}
+                        <tr>
+                            <th>Hình ảnh</th>
+                            <td>
+                                @if (!empty($violation->image))
+                                    <a href="{{ asset('storage/' . $violation->image) }}" target="_blank">
+                                        <img src="{{ asset('storage/' . $violation->image) }}" alt="Ảnh vi phạm"
+                                            class="img-fluid rounded shadow-sm" style="max-width: 420px; height:auto;">
+                                    </a>
+                                @else
+                                    <span class="text-muted">Không có ảnh</span>
+                                @endif
+                            </td>
+                        </tr>
+                        {{-- ⬆⬆⬆ HẾT PHẦN HÌNH ẢNH --}}
+
                         <tr>
                             <th>Ghi chú</th>
                             <td>{{ $violation->note ?? '—' }}</td>
@@ -101,8 +119,12 @@
                             <td>{{ $violation->receipt_no ?? '—' }}</td>
                         </tr>
                         <tr>
-                            <th>Ngày tạo / Cập nhật</th>
-                            <td>{{ $created }} / {{ $updated }}</td>
+                            <th>Ngày tạo</th>
+                            <td>{{ $created }}</td>
+                        </tr>
+                        <tr>
+                            <th> Cập nhật</th>
+                            <td> {{ $updated }}</td>
                         </tr>
                     </tbody>
                 </table>
