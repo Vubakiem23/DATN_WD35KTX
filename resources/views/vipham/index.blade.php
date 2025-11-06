@@ -13,15 +13,9 @@
                             placeholder="Ví dụ: BL-2025-001">
                     </div>
                     <div class="form-group col-md-3">
-                        <label class="small text-muted mb-1">Sinh viên</label>
-                        <select name="student_id" class="form-control">
-                            <option value="">-- Tất cả --</option>
-                            @foreach ($students as $st)
-                                <option value="{{ $st->id }}" @selected($studentId == $st->id)>{{ $st->ho_ten }}
-                                    ({{ $st->ma_sinh_vien }})
-                                </option>
-                            @endforeach
-                        </select>
+                        <label class="small text-muted mb-1">Tên/Mã sinh viên</label>
+                        <input type="text" name="student_keyword" value="{{ $studentKeyword ?? '' }}"
+                            class="form-control" placeholder="VD: Nguyễn Văn A hoặc PD05...">
                     </div>
                     <div class="form-group col-md-2">
                         <label class="small text-muted mb-1">Loại</label>
@@ -73,6 +67,7 @@
                             <tr>
                                 <th class="fit">Thời điểm</th>
                                 <th>Sinh viên</th>
+                                <th>Mã sinh viên</th>
                                 <th>Hình ảnh(Nếu có)</th>
                                 <th>Loại</th>
                                 <th class="fit">Trạng thái</th>
@@ -95,6 +90,8 @@
                                     <td class="fit">{{ $v->occurred_at?->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="font-weight-600">{{ $v->student->ho_ten ?? 'N/A' }}</div>
+                                    </td>
+                                    <td>
                                         <div class="text-muted small">{{ $v->student->ma_sinh_vien ?? '' }}</div>
                                     </td>
                                     <td>

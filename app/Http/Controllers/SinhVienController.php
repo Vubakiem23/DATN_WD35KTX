@@ -54,18 +54,14 @@ class SinhVienController extends Controller
     /* Show modal */
     public function show($id)
     {
-        $sinhvien = SinhVien::with('phong')->find($id);
-        if (!$sinhvien) {
-            return redirect()->route('sinhvien.index');
-        }
-        $sinhvien = \App\Models\SinhVien::with(['violations.type'])->findOrFail($id);
+        $sinhvien = \App\Models\SinhVien::with([
+            'phong.khu',
+            'violations.type'
+        ])->findOrFail($id);
+
         return response()->json([
             'data' => view('sinhvien.show_modal', compact('sinhvien'))->render()
         ]);
-
-        // $html = view('sinhvien.show_modal', compact('sinhvien'))->render();
-
-        // return response()->json(['data' => $html]);
     }
 
     // Form thêm mới

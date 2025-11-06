@@ -1,185 +1,159 @@
-@if (isset($sinhvien->anh_sinh_vien))
-    <div class="w-100 d-flex align-items-center justify-content-center">
-        <img src="{{ asset('storage/' . $sinhvien->anh_sinh_vien) }}" alt="{{ $sinhvien->ho_ten }}" width="200px"
-            height="200px">
+<div class="container py-3">
+
+    {{-- Ảnh sinh viên --}}
+    @if (isset($sinhvien->anh_sinh_vien))
+        <div class="d-flex justify-content-center mb-3">
+            <img src="{{ asset('storage/' . $sinhvien->anh_sinh_vien) }}" alt="{{ $sinhvien->ho_ten }}"
+                class="rounded-circle shadow" width="180" height="180" style="object-fit: cover;">
+        </div>
+    @endif
+
+    {{-- I. Thông tin cá nhân --}}
+    <div class="card mb-3 border-primary">
+        <div class="card-header bg-primary text-white fw-bold">
+            <i class="bi bi-person-fill me-2"></i> Thông tin cá nhân
+        </div>
+        <div class="card-body p-3">
+            <div class="row mb-2">
+                <div class="col-md-4"><strong>Mã sinh viên:</strong> {{ $sinhvien->ma_sinh_vien }}</div>
+                <div class="col-md-4"><strong>Họ và tên:</strong> {{ $sinhvien->ho_ten }}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-4"><strong>Ngày sinh:</strong>
+                    {{ $sinhvien->ngay_sinh ? \Carbon\Carbon::parse($sinhvien->ngay_sinh)->format('d/m/Y') : '-' }}
+                </div>
+                <div class="col-md-4"><strong>Giới tính:</strong> {{ $sinhvien->gioi_tinh ?? '-' }}</div>
+                <div class="col-md-4"><strong>Trạng thái hồ sơ:</strong>
+                    @php
+                        $status = $sinhvien->trang_thai_ho_so ?? 'Khác';
+                        $badge = match ($status) {
+                            'Đã duyệt' => 'bg-success',
+                            'Chờ duyệt' => 'bg-warning',
+                            default => 'bg-secondary',
+                        };
+                    @endphp
+                    <span class="badge {{ $badge }}">{{ $status }}</span>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-4"><strong>Số CCCD:</strong> {{ $sinhvien->citizen_id_number ?? '-' }}</div>
+                <div class="col-md-4"><strong>Ngày cấp:</strong>
+                    {{ $sinhvien->citizen_issue_date ? \Carbon\Carbon::parse($sinhvien->citizen_issue_date)->format('d/m/Y') : '-' }}
+                </div>
+                <div class="col-md-4"><strong>Nơi cấp:</strong> {{ $sinhvien->citizen_issue_place ?? '-' }}</div>
+            </div>
+        </div>
     </div>
-@endif
 
-<table class="table table-bordered">
-    <colgroup>
-        <col width="30%">
-        <col width="70%">
-    </colgroup>
-    <tbody>
-        <tr>
-            <th scope="row">Mã sinh viên</th>
-            <td>{{ $sinhvien->ma_sinh_vien }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Họ và tên</th>
-            <td>{{ $sinhvien->ho_ten }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Ngày sinh</th>
-            <td>
-                {{ !empty($sinhvien->ngay_sinh) ? \Carbon\Carbon::parse($sinhvien->ngay_sinh)->format('d/m/Y') : '-' }}
-            </td>
-        </tr>
-        <tr>
-            <th scope="row">Giới tính</th>
-            <td>{{ $sinhvien->gioi_tinh ?? '-' }}</td>
-        </tr>
+    {{-- II. Người thân --}}
+    <div class="card mb-3 border-info">
+        <div class="card-header bg-info text-white fw-bold">
+            <i class="bi bi-people-fill me-2"></i> Thông tin người thân
+        </div>
+        <div class="card-body p-3">
+            <div class="row mb-2">
+                <div class="col-md-4"><strong>Họ tên:</strong> {{ $sinhvien->guardian_name ?? '—' }}</div>
+                <div class="col-md-4"><strong>Số điện thoại:</strong> {{ $sinhvien->guardian_phone ?? '—' }}</div>
+                <div class="col-md-4"><strong>Quan hệ:</strong> {{ $sinhvien->guardian_relationship ?? '—' }}</div>
+            </div>
+        </div>
+    </div>
 
-        <tr>
-            <th>Họ tên người thân</th>
-            <td>{{ $sinhvien->guardian_name ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th>Số điện thoại người thân</th>
-            <td>{{ $sinhvien->guardian_phone ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th>Quan hệ</th>
-            <td>{{ $sinhvien->guardian_relationship ?? '—' }}</td>
-        </tr>
+    {{-- III. Thông tin học tập & ký túc xá --}}
+    <div class="card mb-3 border-success">
+        <div class="card-header bg-success text-white fw-bold">
+            <i class="bi bi-building me-2"></i> Thông tin học tập & ký túc xá
+        </div>
+        <div class="card-body p-3">
+            <div class="row mb-2">
+                <div class="col-md-4"><strong>Lớp:</strong> {{ $sinhvien->lop ?? '-' }}</div>
+                <div class="col-md-4"><strong>Ngành:</strong> {{ $sinhvien->nganh ?? '-' }}</div>
+                <div class="col-md-4"><strong>Khóa học:</strong> {{ $sinhvien->khoa_hoc ?? '-' }}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-4"><strong>Phòng:</strong> {{ $sinhvien->phong->ten_phong ?? '—' }}</div>
+                <div class="col-md-4"><strong>Khu:</strong> {{ $sinhvien->phong->khu->ten_khu ?? '—' }}</div>
+                <div class="col-md-4"><strong>Email:</strong> {{ $sinhvien->email }}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-4"><strong>Số điện thoại:</strong> {{ $sinhvien->so_dien_thoai ?? '-' }}</div>
+                <div class="col-md-4"><strong>Quê quán:</strong> {{ $sinhvien->que_quan }}</div>
+                <div class="col-md-4"><strong>Nơi ở hiện tại:</strong> {{ $sinhvien->noi_o_hien_tai }}</div>
+            </div>
+        </div>
+    </div>
 
-        <tr>
-            <th scope="row">Số CCCD</th>
-            <td>{{ $sinhvien->citizen_id_number ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Ngày cấp CCCD</th>
-            <td>{{ $sinhvien->citizen_issue_date ? \Carbon\Carbon::parse($sinhvien->citizen_issue_date)->format('d/m/Y') : '-' }}
-            </td>
-        </tr>
-        <tr>
-            <th scope="row">Nơi cấp CCCD</th>
-            <td>{{ $sinhvien->citizen_issue_place ?? '-' }}</td>
-        </tr>
-
-        <tr>
-            <th scope="row">Lớp</th>
-            <td>{{ $sinhvien->lop ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Ngành</th>
-            <td>{{ $sinhvien->nganh ?? '-' }}</td>
-        </tr>
-        {{-- <tr>
-            <th scope="row">Phòng</th>
-            <td>{{ $sinhvien->phong ?? '-' }}</td>
-            <td>{{ $sinhvien->Khu ?? '-' }}</td>
-        </tr> --}}
-        <tr>
-            <th>Phòng</th>
-            <td>{{ $sinhvien->phong->ten_phong ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th>Khu</th>
-            <td>{{ $sinhvien->phong->khu->ten_khu ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Khóa học</th>
-            <td>{{ $sinhvien->khoa_hoc ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Quê quán</th>
-            <td> {{ $sinhvien->que_quan }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Nơi ở hiện tại</th>
-            <td>{{ $sinhvien->noi_o_hien_tai }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Số điện thoại</th>
-            <td>{{ $sinhvien->so_dien_thoai ?? '-' }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Email</th>
-            <td>{{ $sinhvien->email }}</td>
-        </tr>
-        <tr>
-            <th scope="row">Trạng thái hồ sơ</th>
-            <td> @php
-                $status = $sinhvien->trang_thai_ho_so ?? 'Khác';
-                $badge = match ($status) {
-                    'Đã duyệt' => 'bg-success',
-                    'Chờ duyệt' => 'bg-warning',
-                    default => 'bg-secondary',
-                };
-            @endphp
-                <span class="badge {{ $badge }}">{{ $status }}</span>
-            </td>
-        </tr>
-    </tbody>
-</table>
-{{-- ========== Lịch sử vi phạm ========== --}}
-<div class="card mt-3">
-    <div class="card-body p-3">
-        <div class="d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">⚠️ Vi phạm đã ghi</h5>
-
-            <div class="d-flex gap-2">
-                {{-- Ghi vi phạm mới (prefill sinh viên hiện tại) --}}
-                <a href="{{ route('vipham.create', ['student_id' => $sinhvien->id]) }}" class="btn btn-sm btn-primary">
+    {{-- IV. Lịch sử vi phạm --}}
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-exclamation-triangle-fill me-2"></i> Lịch sử vi phạm</span>
+            <div>
+                <a href="{{ route('vipham.create', ['student_id' => $sinhvien->id]) }}"
+                    class="btn btn-sm btn-light text-danger me-2">
                     + Ghi vi phạm
                 </a>
-
-                {{-- Xem tất cả vi phạm của SV này (trang danh sách) --}}
                 <a href="{{ route('vipham.index', ['student_id' => $sinhvien->id]) }}"
-                    class="btn btn-sm btn-outline-secondary">
+                    class="btn btn-sm btn-outline-light">
                     Xem tất cả
                 </a>
             </div>
         </div>
+        <div class="card-body p-3">
+            @php
+                $violations = $sinhvien->violations->sortByDesc('occurred_at');
+            @endphp
 
-        @php
-            $violations = $sinhvien->violations->sortByDesc('occurred_at');
-        @endphp
-
-        @if ($violations->isEmpty())
-            <div class="text-muted mt-2">Chưa có vi phạm nào.</div>
-        @else
-            <div class="table-responsive mt-3">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th style="white-space:nowrap">Thời điểm</th>
-                            <th>Loại</th>
-                            <th style="white-space:nowrap">Trạng thái</th>
-                            <th class="text-right" style="white-space:nowrap">Tiền phạt</th>
-                            <th style="white-space:nowrap">Biên lai</th>
-                            <th>Ghi chú</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($violations as $v)
-                            @php
-                                $statusText = $v->status === 'resolved' ? 'Đã xử lý' : 'Chưa xử lý';
-                                $statusClass = $v->status === 'resolved' ? 'badge bg-success' : 'badge bg-warning';
-                            @endphp
+            @if ($violations->isEmpty())
+                <div class="text-muted text-center">Chưa có vi phạm nào.</div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
                             <tr>
-                                <td style="white-space:nowrap">
-                                    {{ $v->occurred_at ? \Carbon\Carbon::parse($v->occurred_at)->format('d/m/Y H:i') : '-' }}
-                                </td>
-                                <td>{{ $v->type->name ?? '-' }}</td>
-                                <td><span class="{{ $statusClass }}">{{ $statusText }}</span></td>
-                                <td class="text-right">
-                                    {{ $v->penalty_amount ? number_format($v->penalty_amount, 0, ',', '.') : '-' }}
-                                </td>
-                                <td>{{ $v->receipt_no ?? '-' }}</td>
-                                <td>
-                                    @if (!empty($v->note))
-                                        {{ \Illuminate\Support\Str::limit($v->note, 60) }}
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
+                                <th>Thời điểm</th>
+                                <th>Loại</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Tiền phạt</th>
+                                <th>Biên lai</th>
+                                <th>Ghi chú</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
+                        </thead>
+                        <tbody>
+                            @foreach ($violations as $v)
+                                @php
+                                    $statusText = $v->status === 'resolved' ? 'Đã xử lý' : 'Chưa xử lý';
+                                    $statusClass = $v->status === 'resolved' ? 'bg-success' : 'bg-warning';
+                                @endphp
+                                <tr>
+                                    <td>{{ $v->occurred_at ? \Carbon\Carbon::parse($v->occurred_at)->format('d/m/Y H:i') : '-' }}
+                                    </td>
+                                    <td>{{ $v->type->name ?? '-' }}</td>
+                                    <td><span class="badge {{ $statusClass }}">{{ $statusText }}</span></td>
+                                    <td class="text-end">
+                                        {{ $v->penalty_amount ? number_format($v->penalty_amount, 0, ',', '.') : '-' }}
+                                    </td>
+                                    <td>{{ $v->receipt_no ?? '-' }}</td>
+                                    <td>{{ $v->note ? \Illuminate\Support\Str::limit($v->note, 60) : '-' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
+<style>
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-header {
+        font-size: 1rem;
+        letter-spacing: 0.2px;
+    }
+
+    img.rounded-circle {
+        border: 3px solid #dee2e6;
+    }
+</style>
