@@ -11,42 +11,59 @@ class ViolationController extends Controller
 {
     public function index(Request $request)
     {
-        $q         = $request->input('q');
-        $studentId = $request->input('student_id');
-        $typeId    = $request->input('type_id');
-        $status    = $request->input('status'); // open/resolved
-        $dateFrom  = $request->input('date_from');
-        $dateTo    = $request->input('date_to');
+        $q               = $request->input('q');
+        $studentKeyword  = $request->input('student_keyword'); // <-- từ khóa tên/mã SV
+        $typeId          = $request->input('type_id');
+        $status          = $request->input('status');
+        $dateFrom        = $request->input('date_from');
+        $dateTo          = $request->input('date_to');
 
-        $violations = Violation::with(['student', 'type'])
-            ->when($q, fn($s) => $s->where(function ($w) use ($q) {
-                $w->where('note', 'like', "%$q%")
-                    ->orWhere('receipt_no', 'like', "%$q%");
-            }))
-            ->when($studentId, fn($s) => $s->where('sinh_vien_id', $studentId))
-            ->when($typeId, fn($s) => $s->where('violation_type_id', $typeId))
-            ->when($status, fn($s) => $s->where('status', $status))
-            ->when($dateFrom, fn($s) => $s->whereDate('occurred_at', '>=', $dateFrom))
-            ->when($dateTo, fn($s) => $s->whereDate('occurred_at', '<=', $dateTo))
+        $violations = \App\Models\Violation::with(['student', 'type'])
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('note', 'like', "%$q%")
+                        ->orWhere('receipt_no', 'like', "%$q%");
+                });
+            })
+            // 🔍 Lọc theo tên hoặc mã sinh viên gõ vào
+            ->when($studentKeyword, function ($query) use ($studentKeyword) {
+                $query->whereHas('student', function ($sub) use ($studentKeyword) {
+                    $sub->where('ho_ten', 'like', "%$studentKeyword%")
+                        ->orWhere('ma_sinh_vien', 'like', "%$studentKeyword%");
+                });
+            })
+            ->when($typeId, function ($query) use ($typeId) {
+                $query->where('violation_type_id', $typeId);
+            })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->when($dateFrom, function ($query) use ($dateFrom) {
+                $query->whereDate('occurred_at', '>=', $dateFrom);
+            })
+            ->when($dateTo, function ($query) use ($dateTo) {
+                $query->whereDate('occurred_at', '<=', $dateTo);
+            })
             ->orderByDesc('occurred_at')
-            ->paginate(15)
-            ->withQueryString();
+            ->paginate(10)
+            ->appends($request->query());
 
-        $students = SinhVien::orderBy('ho_ten')->select('id', 'ho_ten', 'ma_sinh_vien')->get();
-        $types    = ViolationType::orderBy('name')->get();
+        $types = \App\Models\ViolationType::select('id', 'name')->get();
 
-        return view('.vipham.index', compact(
+        return view('vipham.index', compact(
             'violations',
-            'students',
             'types',
             'q',
-            'studentId',
+            'studentKeyword',
             'typeId',
             'status',
             'dateFrom',
             'dateTo'
         ));
     }
+
+
+
 
     public function create(Request $request)
     {
@@ -118,9 +135,8 @@ class ViolationController extends Controller
         return back()->with('success', 'Đã đánh dấu đã xử lý');
     }
     public function show($id)
-{
-    $violation = Violation::findOrFail($id);
-    return view('vipham.show', compact('violation'));
-}
-
+    {
+        $violation = Violation::findOrFail($id);
+        return view('vipham.show', compact('violation'));
+    }
 }

@@ -219,10 +219,6 @@
                             @error('phong_id')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
-                            {{-- Hiển thị khu tương ứng --}}
-                            {{-- <div class="mt-2">
-                                <span id="khuBadge" class="badge badge-soft-secondary">Khu: —</span>
-                            </div> --}}
                         </div>
 
                     </div>
