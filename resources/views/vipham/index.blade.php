@@ -2,7 +2,43 @@
 
 @section('content')
     <div class="container mt-4">
-        <h3>📒 Vi phạm sinh viên</h3>
+
+            <div>
+                <h3 class="room-page__title mb-1">Vi phạm sinh viên</h3>
+                <p class="text-muted mb-0">Ghi nhận, lọc và xử lý các vi phạm</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('vipham.create') }}" class="btn btn-dergin btn-dergin--info"><i class="fa fa-plus"></i><span>Ghi vi phạm</span></a>
+            </div>
+
+        @push('styles')
+        <style>
+            .room-page__title{font-size:1.75rem;font-weight:700;color:#1f2937}
+            .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
+            .room-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
+            .room-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
+            .room-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+            .room-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
+            .room-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
+            .room-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
+            .room-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
+            .room-actions{display:flex;flex-wrap:nowrap;justify-content:center;gap:.4rem;white-space:nowrap}
+            .room-actions .btn-dergin{min-width:92px}
+            .room-actions .btn-dergin span{line-height:1;white-space:nowrap}
+            .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
+            .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+            .btn-dergin i{font-size:.8rem}
+            .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
+            .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+            .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+            @media (max-width:992px){
+                .room-table thead{display:none}
+                .room-table tbody{display:block}
+                .room-table tbody tr{display:flex;flex-direction:column;padding:1rem}
+                .room-table tbody td{display:flex;justify-content:space-between;padding:.35rem 0}
+            }
+        </style>
+        @endpush
 
         <form method="GET" class="card shadow-sm border-0 mb-3">
             <div class="card-body">
@@ -48,21 +84,16 @@
                     <button class="btn btn-primary mr-2"><i class="fa fa-filter mr-1"></i> Lọc</button>
                     <a href="{{ route('vipham.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
                 </div>
-                <div>
-                    <a href="{{ route('vipham.create') }}" class="btn btn-primary">
-                        <i class="fa fa-plus mr-1"></i> Ghi vi phạm
-                    </a>
-                </div>
+                <div></div>
             </div>
 
 
         </form>
 
 
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 table-violations">
+        <div class="room-table-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 room-table">
                         <thead>
                             <tr>
                                 <th class="fit">Thời điểm</th>
@@ -71,10 +102,10 @@
                                 <th>Hình ảnh(Nếu có)</th>
                                 <th>Loại</th>
                                 <th class="fit">Trạng thái</th>
-                                <th class="text-right fit">Tiền phạt</th>
+                                <th class="text-end fit">Tiền phạt</th>
                                 <th class="fit">Biên lai</th>
                                 <th>Ghi chú</th>
-                                <th class="text-right fit">Thao tác</th>
+                                <th class="text-end fit">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -106,9 +137,7 @@
                                     <td class="fit">
                                         <span class="badge {{ $statusBadge }}">{{ $statusText }}</span>
                                     </td>
-                                    <td class="text-right fit">
-                                        {{ $v->penalty_amount ? number_format($v->penalty_amount, 0, ',', '.') : '-' }}
-                                    </td>
+                                    <td class="text-end fit">{{ $v->penalty_amount ? number_format($v->penalty_amount, 0, ',', '.') : '-' }}</td>
                                     <td class="fit">{{ $v->receipt_no ?? '-' }}</td>
                                     <td>
                                         @if ($v->note)
@@ -118,35 +147,19 @@
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
-                                    <td class="text-right fit">
-                                        <div class="btn-group">
-                                            <a href="{{ route('vipham.show', $v->id) }}"
-                                                class="btn btn-sm btn-outline-info" title="Xem chi tiết">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-
-                                            <a href="{{ route('vipham.edit', $v->id) }}"
-                                                class="btn btn-sm btn-outline-primary" title="Sửa">
-                                                <i class="fa fa-pencil"></i>
-                                            </a>
-
+                                    <td class="text-end fit">
+                                        <div class="room-actions">
+                                            <a href="{{ route('vipham.show', $v->id) }}" class="btn btn-dergin btn-dergin--muted" title="Xem chi tiết"><i class="fa fa-eye"></i><span>Chi tiết</span></a>
+                                            <a href="{{ route('vipham.edit', $v->id) }}" class="btn btn-dergin" title="Sửa"><i class="fa fa-pencil"></i><span>Sửa</span></a>
                                             @if ($v->status == 'open')
-                                                <form action="{{ route('vipham.resolve', $v->id) }}" method="POST"
-                                                    class="d-inline">
-                                                    @csrf @method('PATCH')
-                                                    <button class="btn btn-sm btn-outline-success"
-                                                        title="Đánh dấu đã xử lý">
-                                                        <i class="fa fa-check"></i>
-                                                    </button>
-                                                </form>
+                                            <form action="{{ route('vipham.resolve', $v->id) }}" method="POST" class="d-inline">
+                                                @csrf @method('PATCH')
+                                                <button class="btn btn-dergin btn-dergin--info" title="Đánh dấu đã xử lý"><i class="fa fa-check"></i><span>Xử lý</span></button>
+                                            </form>
                                             @endif
-
-                                            <form action="{{ route('vipham.destroy', $v->id) }}" method="POST"
-                                                class="d-inline" onsubmit="return confirm('Xóa vi phạm này?')">
+                                            <form action="{{ route('vipham.destroy', $v->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa vi phạm này?')">
                                                 @csrf @method('DELETE')
-                                                <button class="btn btn-sm btn-outline-danger" title="Xóa">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
+                                                <button class="btn btn-dergin btn-dergin--danger" title="Xóa"><i class="fa fa-trash"></i><span>Xóa</span></button>
                                             </form>
                                         </div>
                                     </td>

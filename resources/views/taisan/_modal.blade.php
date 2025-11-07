@@ -22,23 +22,25 @@
                 <p>
                     <strong>Ban đầu:</strong> 
                     <span class="badge 
-                        @if($taiSan->tinh_trang == 'mới') bg-success
-                        @elseif($taiSan->tinh_trang == 'cũ') bg-secondary
-                        @elseif($taiSan->tinh_trang == 'bảo trì') bg-warning text-dark
-                        @elseif($taiSan->tinh_trang == 'hỏng') bg-danger
+                        @if($taiSan->tinh_trang == 'Mới') bg-success
+                        @elseif($taiSan->tinh_trang == 'Bình thường') bg-success text-white
+                        @elseif($taiSan->tinh_trang == 'Cũ') bg-secondary
+                        @elseif($taiSan->tinh_trang == 'Đang bảo trì') bg-warning text-dark
+                        @elseif($taiSan->tinh_trang == 'Hỏng') bg-danger
                         @else bg-light @endif">
-                        {{ ucfirst($taiSan->tinh_trang ?? '-') }}
+                        {{ $taiSan->tinh_trang ?? '-' }}
                     </span>
                 </p>
                 <p>
                     <strong>Hiện tại:</strong> 
                     <span class="badge 
-                        @if($taiSan->tinh_trang_hien_tai == 'mới') bg-success
-                        @elseif($taiSan->tinh_trang_hien_tai == 'cũ') bg-secondary
-                        @elseif($taiSan->tinh_trang_hien_tai == 'bảo trì') bg-warning text-dark
-                        @elseif($taiSan->tinh_trang_hien_tai == 'hỏng') bg-danger
+                        @if($taiSan->tinh_trang_hien_tai == 'Mới') bg-success
+                        @elseif($taiSan->tinh_trang_hien_tai == 'Bình thường') bg-success text-white
+                        @elseif($taiSan->tinh_trang_hien_tai == 'Cũ') bg-secondary
+                        @elseif($taiSan->tinh_trang_hien_tai == 'Đang bảo trì') bg-warning text-dark
+                        @elseif($taiSan->tinh_trang_hien_tai == 'Hỏng') bg-danger
                         @else bg-light @endif">
-                        {{ ucfirst($taiSan->tinh_trang_hien_tai ?? '-') }}
+                        {{ $taiSan->tinh_trang_hien_tai ?? '-' }}
                     </span>
                 </p>
             </div>

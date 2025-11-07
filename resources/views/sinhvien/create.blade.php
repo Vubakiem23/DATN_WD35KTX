@@ -202,24 +202,7 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-                        <div class="col-md-3">
-                            <label>Phòng <span class="req">*</span></label>
-                            <select name="phong_id" id="selectPhong" class="form-select" required>
-                                <option value="">-- Chọn phòng --</option>
-                                @foreach ($phongs as $phong)
-                                    @php
-                                        $tenPhong = $phong->ten_phong ?? 'Phòng ' . $phong->id;
-                                        $tenKhu = optional($phong->khu)->ten_khu ?? 'Chưa gán khu';
-                                    @endphp
-                                    <option value="{{ $phong->id }}" data-khu="{{ $tenKhu }}">
-                                        {{ $tenPhong }} ({{ $tenKhu }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('phong_id')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
+                        
 
                     </div>
                 </div>

@@ -84,7 +84,18 @@
                         <td>{{ $item->ma_tai_san }}</td>
                         <td>{{ $item->ten_tai_san }}</td>
                         <td>{{ $item->tinh_trang ?? '-' }}</td>
-                        <td>{{ $item->phong->ten_phong ?? 'Chưa gán phòng' }}</td>
+                        <td>
+                            @php
+                                // Lấy danh sách phòng từ các bản ghi tài sản con đã gán phòng
+                                $roomNames = optional($item->taiSans)
+                                    ->whereNotNull('phong_id')
+                                    ->pluck('phong.ten_phong')
+                                    ->filter()
+                                    ->unique()
+                                    ->values();
+                            @endphp
+                            {{ ($roomNames && $roomNames->count() > 0) ? $roomNames->join(', ') : 'Chưa gán phòng' }}
+                        </td>
 
 
                         <td>{{ $item->so_luong }}</td>

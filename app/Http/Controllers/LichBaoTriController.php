@@ -122,7 +122,8 @@ class LichBaoTriController extends Controller
         if ($taiSan) {
             $taiSan->update(['tinh_trang_hien_tai' => 'Đang bảo trì']);
         } elseif ($khoTaiSan) {
-            $khoTaiSan->update(['tinh_trang_hien_tai' => 'Đang bảo trì']);
+            // Bảng kho_tai_san dùng cột "tinh_trang"
+            $khoTaiSan->update(['tinh_trang' => 'Đang bảo trì']);
         }
 
         return redirect()->route('lichbaotri.index')->with('success', 'Thêm lịch bảo trì thành công!');
@@ -162,7 +163,8 @@ class LichBaoTriController extends Controller
             TaiSan::where('id', $lichBaoTri->tai_san_id)->update(['tinh_trang_hien_tai' => 'Bình thường']);
         }
         if ($lichBaoTri->kho_tai_san_id) {
-            KhoTaiSan::where('id', $lichBaoTri->kho_tai_san_id)->update(['tinh_trang_hien_tai' => 'Bình thường']);
+            // Bảng kho_tai_san dùng cột "tinh_trang"
+            KhoTaiSan::where('id', $lichBaoTri->kho_tai_san_id)->update(['tinh_trang' => 'Bình thường']);
         }
 
         return redirect()->route('lichbaotri.index')->with('success', 'Cập nhật hoàn thành thành công!');

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container mt-4">
-        <div class="d-flex align-items-center justify-content-between mb-3">
+
             <div>
                 <h3 class="mb-0">➕ Ghi vi phạm</h3>
                 <small class="text-muted">Tạo biên bản vi phạm cho sinh viên</small>
@@ -10,7 +10,7 @@
             <a href="{{ route('vipham.index') }}" class="btn btn-secondary">
                 <i class="fa fa-arrow-left mr-1"></i> Quay lại
             </a>
-        </div>
+    
 
         <form method="POST" action="{{ route('vipham.store') }}" enctype="multipart/form-data"
             class="card shadow-sm border-0">
