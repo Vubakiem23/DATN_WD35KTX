@@ -192,9 +192,32 @@
                       <td class="fw-semibold">{{ $asset->filter_label }}</td>
                       <td><span class="badge badge-soft-teal">{{ $asset->so_luong ?? 0 }}</span></td>
                       <td>{{ $asset->tinh_trang ?? 'Không rõ' }}</td>
-<td>
-  {{ $asset->lichBaoTri->first()->trang_thai ?? $asset->tinh_trang ?? 'Chưa cập nhật' }}
-</td>
+                      <td>
+                        @php
+                          $statusRaw = $asset->tinh_trang_hien_tai ?? $asset->tinh_trang ?? null;
+                          $normalized = $statusRaw ? mb_strtolower(trim($statusRaw), 'UTF-8') : '';
+                          $displayStatus = 'Chưa cập nhật';
+                          $badgeClass = 'bg-light';
+
+                          if (in_array($normalized, ['mới', 'moi', 'new'])) {
+                              $displayStatus = 'Mới';
+                              $badgeClass = 'bg-success';
+                          } elseif (in_array($normalized, ['bình thường', 'binh thuong', 'bt', 'hoàn thành', 'hoan thanh'])) {
+                              $displayStatus = 'Bình thường';
+                              $badgeClass = 'bg-success text-white';
+                          } elseif (in_array($normalized, ['cũ', 'cu'])) {
+                              $displayStatus = 'Cũ';
+                              $badgeClass = 'bg-secondary';
+                          } elseif (in_array($normalized, ['đang bảo trì', 'dang bao tri', 'bảo trì', 'bao tri', 'maintenance'])) {
+                              $displayStatus = 'Đang bảo trì';
+                              $badgeClass = 'bg-warning text-dark';
+                          } elseif (in_array($normalized, ['hỏng', 'hong', 'đã hỏng', 'da hong', 'broken'])) {
+                              $displayStatus = 'Hỏng';
+                              $badgeClass = 'bg-danger';
+                          }
+                        @endphp
+                        <span class="badge {{ $badgeClass }}">{{ $displayStatus }}</span>
+                      </td>
                       <td>{{ $asset->ghi_chu ?? '—' }}</td>
                       <td>
                         <div class="asset-actions">
@@ -328,8 +351,24 @@
                               <div class="slot-asset__details">
                                 <div class="slot-asset-name">{{ $assetName }}</div>
                                 <div class="slot-asset-code text-muted small">Mã: {{ $assetCode }}</div>
-                              <div class="slot-asset-meta text-muted small">
-                                  Chuẩn: {{ $asset->tinh_trang ?? 'Không rõ' }} · Hiện tại: {{ $asset->tinh_trang_hien_tai ?? 'Chưa cập nhật' }}
+                                <div class="slot-asset-meta text-muted small">
+                                  @php
+                                    $statusRaw = $asset->tinh_trang_hien_tai ?? $asset->tinh_trang ?? null;
+                                    $normalized = $statusRaw ? mb_strtolower(trim($statusRaw), 'UTF-8') : '';
+                                    $currentText = 'Chưa cập nhật';
+                                    if (in_array($normalized, ['mới', 'moi', 'new'])) {
+                                        $currentText = 'Mới';
+                                    } elseif (in_array($normalized, ['bình thường', 'binh thuong', 'bt', 'hoàn thành', 'hoan thanh'])) {
+                                        $currentText = 'Bình thường';
+                                    } elseif (in_array($normalized, ['cũ', 'cu'])) {
+                                        $currentText = 'Cũ';
+                                    } elseif (in_array($normalized, ['đang bảo trì', 'dang bao tri', 'bảo trì', 'bao tri', 'maintenance'])) {
+                                        $currentText = 'Đang bảo trì';
+                                    } elseif (in_array($normalized, ['hỏng', 'hong', 'đã hỏng', 'da hong', 'broken'])) {
+                                        $currentText = 'Hỏng';
+                                    }
+                                  @endphp
+                                  Chuẩn: {{ $asset->tinh_trang ?? 'Không rõ' }} · Hiện tại: {{ $currentText }}
                                 </div>
                               </div>
                             </div>

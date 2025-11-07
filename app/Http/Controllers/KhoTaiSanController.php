@@ -48,7 +48,7 @@ class KhoTaiSanController extends Controller
 {
     $loai = LoaiTaiSan::findOrFail($loai_id);
 
-    $query = KhoTaiSan::with('phong')->where('loai_id', $loai_id);
+    $query = KhoTaiSan::with(['phong', 'taiSans.phong'])->where('loai_id', $loai_id);
 
     if ($request->filled('tinh_trang')) {
         $query->where('tinh_trang', $request->tinh_trang);

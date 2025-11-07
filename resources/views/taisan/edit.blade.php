@@ -50,9 +50,10 @@
             <select name="tinh_trang_hien_tai" class="form-select form-control">
                 <option value="">-- Chọn tình trạng --</option>
                 <option value="Mới" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Mới' ? 'selected' : '' }}>Mới</option>
+                <option value="Bình thường" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Bình thường' ? 'selected' : '' }}>Bình thường</option>
                 <option value="Cũ" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Cũ' ? 'selected' : '' }}>Cũ</option>
-                <option value="Bảo trì" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Bảo trì' ? 'selected' : '' }}>Bảo trì</option>
-                <option value="Đã hỏng" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Đã hỏng' ? 'selected' : '' }}>Đã hỏng</option>
+                <option value="Đang bảo trì" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Đang bảo trì' ? 'selected' : '' }}>Đang bảo trì</option>
+                <option value="Hỏng" {{ old('tinh_trang_hien_tai', $taiSan->tinh_trang_hien_tai) == 'Hỏng' ? 'selected' : '' }}>Hỏng</option>
             </select>
         </div>
 

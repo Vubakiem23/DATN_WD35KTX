@@ -67,8 +67,7 @@ class SinhVienController extends Controller
     // Form thêm mới
     public function create()
     {
-        $phongs = \App\Models\Phong::with('khu:id,ten_khu')->get();
-        return view('sinhvien.create', compact('phongs'));
+        return view('sinhvien.create');
     }
 
     // Lưu sinh viên mới
@@ -86,7 +85,7 @@ class SinhVienController extends Controller
             'khoa_hoc' => 'required|string',
             'so_dien_thoai' => 'required|string',
             'email' => 'required|email',
-            'phong_id' => 'required|exists:phong,id',
+            // 'phong_id' bỏ khỏi form tạo mới; sẽ gán qua chức năng khác
             'trang_thai_ho_so' => 'nullable|string',
 
             // mới
@@ -107,13 +106,15 @@ class SinhVienController extends Controller
 
         $sv = \App\Models\SinhVien::create($data);
 
-        // Ghi lịch sử phòng lần đầu
-        \App\Models\RoomAssignment::create([
-            'sinh_vien_id' => $sv->id,
-            'phong_id' => $sv->phong_id,
-            'start_date' => now()->toDateString(),
-            'end_date' => null,
-        ]);
+        // Ghi lịch sử phòng nếu có phòng được gán (hiện form tạo không gán phòng)
+        if (!empty($sv->phong_id)) {
+            \App\Models\RoomAssignment::create([
+                'sinh_vien_id' => $sv->id,
+                'phong_id' => $sv->phong_id,
+                'start_date' => now()->toDateString(),
+                'end_date' => null,
+            ]);
+        }
 
         return redirect()->route('sinhvien.index')->with('success', 'Đã thêm sinh viên');
     }
