@@ -68,16 +68,16 @@ class LichBaoTriController extends Controller
 
     /** ➕ Form tạo mới */
     public function create(Request $request)
-{
-    $phongs = \App\Models\Phong::orderBy('ten_phong')->get();
+    {
+        $phongs = \App\Models\Phong::orderBy('ten_phong')->get();
 
-    $taiSan = null;
-    if ($request->has('taisan_id')) {
-        $taiSan = TaiSan::with(['phong', 'khoTaiSan'])->find($request->taisan_id);
+        $taiSan = null;
+        if ($request->has('taisan_id')) {
+            $taiSan = TaiSan::with(['phong', 'khoTaiSan'])->find($request->taisan_id);
+        }
+
+        return view('lichbaotri.create', compact('phongs', 'taiSan'));
     }
-
-    return view('lichbaotri.create', compact('phongs', 'taiSan'));
-}
 
     /** 💾 Lưu lịch bảo trì mới */
     public function store(Request $request)
@@ -188,7 +188,11 @@ class LichBaoTriController extends Controller
     /** 👁️ Xem chi tiết (modal) */
     public function show($id)
     {
-        $lich = LichBaoTri::with(['taiSan.phong', 'khoTaiSan'])->findOrFail($id);
+        $lich = LichBaoTri::with([
+            'taiSan.phong',
+            'taiSan.slots.sinhVien',
+            'khoTaiSan'
+        ])->findOrFail($id);
         return view('lichbaotri._modal', compact('lich'));
     }
 
@@ -245,7 +249,7 @@ class LichBaoTriController extends Controller
     {
         $data = KhoTaiSan::where('loai_id', $loaiId)
             ->whereDoesntHave('lichBaoTri', function ($q) {
-                $q->whereNull('ngay_hoan_thanh');
+                $q->whereIn('trang_thai', ['Chờ bảo trì', 'Đang bảo trì']);
             })
             ->get()
             ->map(function ($ts) {
@@ -263,25 +267,33 @@ class LichBaoTriController extends Controller
     }
 
     /** 🔹 Lấy tài sản trong PHÒNG theo phòng_id */
+    /** 🔹 Lấy tài sản trong PHÒNG theo phòng_id */
     public function getTaiSanPhong($phongId)
     {
         $taiSans = TaiSan::with(['khoTaiSan', 'slots.sinhVien'])
             ->where('phong_id', $phongId)
+            ->whereDoesntHave('lichBaoTri', function ($q) {
+                $q->whereIn('trang_thai', ['Chờ bảo trì', 'Đang bảo trì']);
+            })
             ->get()
             ->map(function ($ts) {
-                $nguoiSuDung = $ts->slots->first()?->sinhVien?->ho_ten ?? 'Chưa có';
 
-                $hinhAnh = $ts->khoTaiSan && $ts->khoTaiSan->hinh_anh
-                    ? asset('storage/' . $ts->khoTaiSan->hinh_anh)
-                    : asset('images/no-image.png');
+                $slot = $ts->slots->first();
+                $sinhVien = $slot?->sinhVien;
 
                 return [
                     'id' => $ts->id,
                     'ma_tai_san' => $ts->khoTaiSan->ma_tai_san ?? 'Không có mã',
                     'ten_tai_san' => $ts->ten_tai_san,
                     'so_luong' => $ts->so_luong,
-                    'nguoi_su_dung' => $nguoiSuDung,
-                    'hinh_anh' => $hinhAnh,
+                    'hinh_anh' => $ts->khoTaiSan && $ts->khoTaiSan->hinh_anh
+                        ? asset('storage/' . $ts->khoTaiSan->hinh_anh)
+                        : asset('images/no-image.png'),
+
+                    // ✅ Add thêm dữ liệu gửi ra UI
+                    'nguoi_su_dung' => $sinhVien?->ho_ten ?? 'Tài sản chung',
+                    'ma_sinh_vien' => $sinhVien?->ma_sinh_vien ?? null,
+                    'ma_slot' => $slot?->ma_slot ?? null,
                 ];
             });
 
