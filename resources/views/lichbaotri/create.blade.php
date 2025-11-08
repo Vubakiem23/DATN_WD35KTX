@@ -34,6 +34,15 @@
             <p class="mb-1"><strong>Mã tài sản:</strong> {{ $taiSan->khoTaiSan->ma_tai_san ?? '—' }}</p>
             <p class="mb-1"><strong>Phòng:</strong> {{ $taiSan->phong->ten_phong ?? '—' }}</p>
             <p class="mb-1"><strong>Tình trạng hiện tại:</strong> {{ $taiSan->tinh_trang_hien_tai ?? '—' }}</p>
+            @php
+              $slot = optional($taiSan->slots)->first();
+              $sv = $slot?->sinhVien;
+            @endphp
+            <p class="mb-1"><strong>Mã slot:</strong> {{ $slot->ma_slot ?? '—' }}</p>
+            <p class="mb-1"><strong>Sinh viên đang sử dụng:</strong> {{ $sv->ho_ten ?? 'Tài sản chung' }}</p>
+            @if(!empty($sv?->ma_sinh_vien))
+              <p class="mb-0"><strong>Mã sinh viên:</strong> {{ $sv->ma_sinh_vien }}</p>
+            @endif
           </div>
         </div>
       </div>

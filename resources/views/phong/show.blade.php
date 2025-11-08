@@ -98,6 +98,8 @@
     #assignAssetsModal .slot-current-asset__name{font-weight:600;color:#1e1b4b}
     #assignAssetsModal .slot-current-asset__meta{color:#64748b}
     #assignAssetsModal .slot-current-asset__badge{font-size:.7rem;border-radius:999px;padding:.15rem .5rem;background:#ede9fe;color:#5b21b6;margin-left:.35rem}
+    #assignAssetsModal .slot-current-asset__actions{margin-left:auto;display:flex;align-items:center}
+    #assignAssetsModal .slot-current-asset__actions .btn{border-radius:10px;display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem}
     @media (max-width: 991.98px){#assignAssetsModal .asset-option__body{flex-direction:column;align-items:flex-start}#assignAssetsModal .asset-option__actions{width:100%;align-items:flex-end}}
     @media (max-width: 575.98px){#assignAssetsModal .modal-body{padding:1.25rem}#assignAssetsModal .asset-option__body{align-items:flex-start}#assignAssetsModal .selected-asset__top{flex-direction:column;align-items:flex-start}}
     #assignStudentModal .modal-dialog{max-width:520px}
@@ -724,8 +726,41 @@
       info.appendChild(nameEl);
       info.appendChild(metaEl);
 
+      const actions = document.createElement('div');
+      actions.className = 'slot-current-asset__actions';
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'btn btn-sm btn-outline-danger';
+      removeBtn.title = 'Xóa tài sản khỏi slot';
+      removeBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 7.5h12" />
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 7.5V5.25A1.5 1.5 0 0 1 11.25 3.75h1.5a1.5 1.5 0 0 1 1.5 1.5V7.5" />
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 7.5V19.5A1.5 1.5 0 0 0 9 21h6a1.5 1.5 0 0 0 1.5-1.5V7.5" />
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 11.25v6" />
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 11.25v6" />
+        </svg>
+        <span>Xóa</span>
+      `;
+      removeBtn.addEventListener('click', () => {
+        if (!currentSlotId || !item.tai_san_id) return;
+        if (!confirm('Bạn có chắc muốn xóa tài sản này khỏi slot?')) return;
+        const formData = new FormData();
+        formData.append('tai_san_id', item.tai_san_id);
+        fetch('/admin/slots/' + currentSlotId + '/return-asset', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' },
+          body: formData,
+        })
+          .then((res) => { if (!res.ok) throw new Error('Request failed'); return res.json().catch(()=>({})); })
+          .then(() => location.reload())
+          .catch(() => alert('Không thể xóa tài sản khỏi slot.'));
+      });
+      actions.appendChild(removeBtn);
+
       card.appendChild(thumb);
       card.appendChild(info);
+      card.appendChild(actions);
 
       fragment.appendChild(card);
     });
@@ -737,6 +772,7 @@
     if (!assignAssetsModalEl) {
       return;
     }
+    currentSlotId = slotId;
     document.getElementById('assign_assets_slot_id').value = slotId;
     document.getElementById('assign_assets_slot_label').textContent = maSlot || '';
 

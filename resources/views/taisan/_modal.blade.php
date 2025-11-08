@@ -55,7 +55,8 @@
 
         @if($taiSan->slots && $taiSan->slots->isNotEmpty())
             @php
-                $sv = $taiSan->slots->first()->sinhVien ?? null;
+                $slot = $taiSan->slots->first();
+                $sv = $slot->sinhVien ?? null;
             @endphp
             @if($sv)
                 <div class="d-flex flex-column align-items-center">
@@ -65,6 +66,7 @@
                          width="90" height="90"
                          style="object-fit: cover;">
                     <div>
+                        <p class="mb-1"><strong>🔖 Mã slot:</strong> {{ $slot->ma_slot ?? '—' }}</p>
                         <p class="mb-1"><strong>👤 Họ tên:</strong> {{ $sv->ho_ten }}</p>
                         <p class="mb-1"><strong>🎓 Mã SV:</strong> {{ $sv->ma_sinh_vien ?? '—' }}</p>
                         <p class="mb-0"><strong>📧 Email:</strong> {{ $sv->email ?? '—' }}</p>

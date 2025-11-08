@@ -154,7 +154,11 @@
               </a>
 
               <button type="button" class="btn btn-dergin btn-dergin--info btn-xemchitiet"
-                      data-id="{{ $item->id }}" title="Xem chi tiết">
+                      data-id="{{ $item->id }}"
+                      data-url="{{ route('taisan.showModal', $item->id) }}"
+                      data-bs-toggle="modal" data-bs-target="#modalTaiSan"
+                      data-toggle="modal" data-target="#modalTaiSan"
+                      title="Xem chi tiết">
                 <i class="fa fa-eye"></i><span>Chi tiết</span>
               </button>
 
@@ -263,13 +267,25 @@
 </style>
 @endpush
 
+@push('scripts')
 <script>
-  $(document).ready(function() {
-    $('.btn-xemchitiet').click(function() {
+  $(function() {
+    // Dùng ủy quyền sự kiện để đảm bảo luôn bắt được click
+    $(document).on('click', '.btn-xemchitiet', function() {
       let id = $(this).data('id');
+      let url = $(this).data('url');
       let modal = $('#modalTaiSan');
 
-      modal.modal('show');
+      // Tương thích Bootstrap 4/5 khi hiển thị modal
+      try {
+        if (window.bootstrap && window.bootstrap.Modal) {
+          window.bootstrap.Modal.getOrCreateInstance(document.getElementById('modalTaiSan')).show();
+        } else {
+          modal.modal('show');
+        }
+      } catch (e) {
+        modal.modal('show');
+      }
       modal.find('.modal-body').html(`
         <div class="text-center py-4">
           <div class="spinner-border text-info" role="status"></div>
@@ -277,17 +293,43 @@
         </div>
       `);
 
+      if (!url) {
+        modal.find('.modal-body').html('<p class="text-danger text-center">Không xác định được URL chi tiết tài sản.</p>');
+        return;
+      }
+
       $.ajax({
-        url: '{{ route("taisan.showModal", "") }}/' + id,
+        url: url,
         type: 'GET',
-        success: function(response) {
-          modal.find('.modal-body').html(response.data);
+        // Nhận HTML thẳng từ server để gắn vào modal
+        dataType: 'html',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
         },
-        error: function() {
-          modal.find('.modal-body').html('<p class="text-danger text-center">Không thể tải dữ liệu tài sản.</p>');
+        timeout: 15000,
+        success: function(response) {
+          // Server trả HTML → gắn trực tiếp
+          modal.find('.modal-body').html(response || '<p class="text-muted text-center">Không có dữ liệu hiển thị.</p>');
+        },
+        error: function(xhr) {
+          console.error('Tải chi tiết tài sản thất bại:', {
+            status: xhr.status,
+            statusText: xhr.statusText,
+            responseText: xhr.responseText
+          });
+          modal.find('.modal-body').html(
+            `<div class="text-center text-danger">
+               <p class="mb-1">Không thể tải dữ liệu tài sản.</p>
+               <small>Mã lỗi: ${xhr.status} ${xhr.statusText}</small>
+             </div>`
+          );
+        },
+        complete: function() {
+          // Không để spinner kẹt nếu có sự cố hiếm gặp
         }
       });
     });
   });
 </script>
+@endpush
 @endsection
