@@ -1,5 +1,4 @@
 @extends('admin.layouts.admin')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 @section('content')
     <div class="container mt-4">
 
@@ -18,7 +17,7 @@
                 <input type="text" name="search" value="{{ $keyword ?? '' }}" class="form-control"
                     placeholder="Tìm kiếm tên sinh viên">
                 <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
-                <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#filterModal">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
                     <i class="fa fa-filter mr-1"></i> Bộ lọc
                 </button>
                 @if (!empty($keyword))
@@ -29,6 +28,7 @@
         </form>
         @push('styles')
         <style>
+            html{scroll-behavior:auto !important}
             .room-page__title{font-size:1.75rem;font-weight:700;color:#1f2937}
             .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
             .room-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
@@ -145,9 +145,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="filterModalLabel">Bộ lọc sinh viên</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                     </div>
 
                     <form method="GET" id="filterForm">
@@ -250,52 +248,82 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Thông tin sinh viên</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="modalBody">
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        $(document).ready(function() {
+@push('scripts')
+<script>
+    // Mở modal chi tiết sinh viên (chạy sau khi jQuery/Bootstrap đã được nạp ở layout)
+    (function () {
+        $(function() {
             $('.openModalBtn').on('click', function() {
-                let id = $(this).data('id');
+                var id = $(this).data('id');
                 get_sinh_vien(id);
-                $('#exampleModal').modal('show');
+                try {
+                    var modalEl = document.getElementById('exampleModal');
+                    var modal = window.bootstrap ? new bootstrap.Modal(modalEl) : null;
+                    if (modal) { modal.show(); } else { $('#exampleModal').modal('show'); }
+                } catch(e) {
+                    $('#exampleModal').modal('show'); // Fallback cho BS4 nếu có
+                }
             });
         });
 
-
-        async function get_sinh_vien(id) {
-            let url = `{{ route('sinhvien.show.modal', ['id' => ':id']) }}`;
-            url = url.replace(':id', id);
-
+        window.get_sinh_vien = function(id) {
+            var url = `{{ route('sinhvien.show.modal', ['id' => ':id']) }}`.replace(':id', id);
             $.ajax({
                 url: url,
                 type: 'GET',
-                async: false,
-                success: function(res, textStatus) {
-                    console.log(res);
-                    const response = res.data ?? '';
+                success: function(res) {
+                    var response = res.data ?? '';
                     renderSinhvien(response);
                 },
-                error: function(request, status, error) {
-                    let data = JSON.parse(request.responseText);
-                    alert(data.message);
+                error: function(request) {
+                    try {
+                        var data = JSON.parse(request.responseText);
+                        alert(data.message || 'Có lỗi xảy ra');
+                    } catch(e) {
+                        alert('Có lỗi xảy ra');
+                    }
                 }
             });
-        }
+        };
 
-        function renderSinhvien(html) {
+        window.renderSinhvien = function(html) {
             $('#modalBody').html(html);
+        };
+    })();
+</script>
+<script>
+    // Ngăn trình duyệt tự khôi phục vị trí cuộn và đưa trang về đầu khi vào trang
+    (function () {
+        if ('scrollRestoration' in history) {
+            try { history.scrollRestoration = 'manual'; } catch (e) {}
         }
-    </script>
+        window.addEventListener('load', function () {
+            if (!location.hash) {
+                window.scrollTo(0, 0);
+            }
+        });
+        var cancelProgrammaticScroll = function(){
+            try {
+                if (window.jQuery) { jQuery('html, body').stop(true, false); }
+            } catch(e) {}
+            window.removeEventListener('wheel', cancelProgrammaticScroll, { passive: true });
+            window.removeEventListener('touchmove', cancelProgrammaticScroll, { passive: true });
+        };
+        window.addEventListener('wheel', cancelProgrammaticScroll, { passive: true });
+        window.addEventListener('touchmove', cancelProgrammaticScroll, { passive: true });
+    })();
+</script>
+@endpush
 @endsection
