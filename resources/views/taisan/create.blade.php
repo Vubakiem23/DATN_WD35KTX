@@ -59,7 +59,8 @@
     }
 
     .asset-info {
-        flex-grow: 1;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .asset-info strong {
@@ -80,10 +81,19 @@
     .form-check-label {
         cursor: pointer;
     }
+    .asset-actions{
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        flex: 0 0 auto;
+    }
+    .asset-actions .btn{
+        white-space: nowrap;
+    }
 </style>
 
 <div class="container mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
         <div>
             <h3 class="page-title mb-1">🧰 Thêm tài sản vào phòng</h3>
             <p class="text-muted small mb-0">Chọn loại tài sản → chọn từng tài sản → điền thông tin → lưu.</p>
@@ -91,7 +101,7 @@
         <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
             <i class="fa fa-arrow-left me-1"></i> Quay lại
         </a>
-    </div>
+
 
     @if ($errors->any())
     <div class="alert alert-danger rounded-3 shadow-sm">
@@ -191,17 +201,65 @@ document.addEventListener('DOMContentLoaded', function() {
             const wrapper = document.createElement('div');
             wrapper.className = 'asset-item mb-3';
             wrapper.innerHTML = `
-                <input class="form-check-input me-2" type="checkbox" name="tai_san_ids[]" value="${item.id}" id="ts_${item.id}">
                 <img src="${imageUrl}" alt="${item.ten_tai_san}" class="asset-img">
                 <div class="asset-info">
-                    <label class="form-check-label" for="ts_${item.id}">
+                    <div class="form-check-label">
                         <strong>${item.ma_tai_san ?? '---'}</strong> - ${item.ten_tai_san}
                         <br>
                         <small>Tình trạng: ${item.tinh_trang ?? 'Không rõ'}</small>
-                    </label>
+                    </div>
+                </div>
+                <div class="asset-actions">
+                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" data-role="pick-btn" data-id="${item.id}">
+                        Chọn
+                    </button>
                 </div>
             `;
             listTaiSan.appendChild(wrapper);
+
+            const pickBtn = wrapper.querySelector('[data-role="pick-btn"]');
+            const getHiddenInput = () => wrapper.querySelector('input[type="hidden"][data-role="selected-id"]');
+
+            const syncButtonState = (selected) => {
+                if (selected) {
+                    pickBtn.textContent = 'Đã chọn';
+                    pickBtn.classList.remove('btn-outline-primary');
+                    pickBtn.classList.add('btn-primary');
+                } else {
+                    pickBtn.textContent = 'Chọn';
+                    pickBtn.classList.add('btn-outline-primary');
+                    pickBtn.classList.remove('btn-primary');
+                }
+            };
+
+            const setSelected = (selected) => {
+                wrapper.dataset.selected = selected ? '1' : '';
+                const exists = getHiddenInput();
+                if (selected && !exists) {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'tai_san_ids[]';
+                    hidden.value = String(item.id);
+                    hidden.setAttribute('data-role', 'selected-id');
+                    wrapper.appendChild(hidden);
+                } else if (!selected && exists) {
+                    exists.remove();
+                }
+                syncButtonState(selected);
+            };
+
+            pickBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const isSelected = wrapper.dataset.selected === '1';
+                setSelected(!isSelected);
+            });
+            wrapper.addEventListener('click', (e) => {
+                if (e.target.closest('[data-role="pick-btn"]')) return;
+                const isSelected = wrapper.dataset.selected === '1';
+                setSelected(!isSelected);
+            });
+            setSelected(false);
         });
     });
 });

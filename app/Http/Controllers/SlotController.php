@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use App\Models\Slot;
 use App\Models\Phong;
 use App\Models\SinhVien;
-use App\Models\RoomAssignment;
 use App\Models\TaiSan;
 use App\Models\KhoTaiSan;
 use App\Exceptions\SlotException;
@@ -122,27 +121,6 @@ class SlotController extends Controller
                 'hinh_anh'     => $imagePath,
             ]);
 
-            // Đồng bộ phong_id cho sinh viên và lịch sử nếu có gán ngay
-            if (!empty($data['sinh_vien_id'])) {
-                $sv = $sinhVien; // đã find ở trên
-                $oldPhongId = $sv->phong_id;
-                if ((int) $oldPhongId !== (int) $phongModel->id) {
-                    // đóng lịch sử cũ nếu có
-                    RoomAssignment::where('sinh_vien_id', $sv->id)
-                        ->whereNull('end_date')
-                        ->update(['end_date' => now()->toDateString()]);
-                    // mở lịch sử mới
-                    RoomAssignment::create([
-                        'sinh_vien_id' => $sv->id,
-                        'phong_id' => $phongModel->id,
-                        'start_date' => now()->toDateString(),
-                        'end_date' => null,
-                    ]);
-                }
-                $sv->phong_id = $phongModel->id;
-                $sv->save();
-            }
-
             // Cập nhật loại phòng theo tổng slots và trạng thái
             if (method_exists($phongModel, 'updateLoaiPhongFromSlots')) {
                 $phongModel->updateLoaiPhongFromSlots();
@@ -248,11 +226,6 @@ class SlotController extends Controller
                 }
             }
 
-            // Ghi nhận tình trạng trước khi thay đổi để đồng bộ phong_id và lịch sử
-            $prevStudent = $slot->sinhVien; // có thể null
-            $prevStudentId = optional($prevStudent)->id;
-            $currentRoom = $slot->phong; // phòng của slot
-
             // Cập nhật thông tin slot
             $slot->sinh_vien_id = $data['sinh_vien_id'] ?? null;
             
@@ -286,41 +259,16 @@ class SlotController extends Controller
 
             $slot->save();
 
-            // Nếu có sinh viên trước đó và bị thay thế/bỏ gán → clear phong_id + đóng lịch sử
-            if ($prevStudent && ($slot->sinh_vien_id === null || $prevStudentId !== (int) $slot->sinh_vien_id)) {
-                // đóng lịch sử phòng đang mở
-                RoomAssignment::where('sinh_vien_id', $prevStudent->id)
-                    ->whereNull('end_date')
-                    ->update(['end_date' => now()->toDateString()]);
-                $prevStudent->phong_id = null;
-                $prevStudent->save();
-            }
-
-            // Nếu gán sinh viên mới → cập nhật phong_id + mở lịch sử phòng mới
+            // Tự động bàn giao bộ CSVC mặc định khi gán sinh viên vào slot
             if (!empty($slot->sinh_vien_id)) {
-                $newStudent = isset($sinhVien) && $sinhVien->id === (int) $slot->sinh_vien_id
-                    ? $sinhVien
-                    : SinhVien::findOrFail($slot->sinh_vien_id);
-
-                $oldPhongId = $newStudent->phong_id;
-                if ((int) $oldPhongId !== (int) $currentRoom->id) {
-                    RoomAssignment::where('sinh_vien_id', $newStudent->id)
-                        ->whereNull('end_date')
-                        ->update(['end_date' => now()->toDateString()]);
-                    RoomAssignment::create([
-                        'sinh_vien_id' => $newStudent->id,
-                        'phong_id' => $currentRoom->id,
-                        'start_date' => now()->toDateString(),
-                        'end_date' => null,
+                try {
+                    $this->assignDefaultKitToSlot($slot);
+                } catch (\Throwable $e) {
+                    Log::warning('Không thể tự động bàn giao kit cho slot', [
+                        'slot_id' => $slot->id,
+                        'error' => $e->getMessage()
                     ]);
                 }
-                $newStudent->phong_id = $currentRoom->id;
-                $newStudent->save();
-            }
-
-            // cập nhật trạng thái phòng sau thay đổi occupancy
-            if ($currentRoom) {
-                $currentRoom->updateStatusBasedOnCapacity();
             }
 
             DB::commit();
