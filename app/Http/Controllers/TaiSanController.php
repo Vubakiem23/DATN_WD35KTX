@@ -15,146 +15,100 @@ class TaiSanController extends Controller
 {
     /** 📋 Danh sách tài sản trong phòng */
     public function index(Request $request)
-{
-    // Lấy danh sách phòng để filter nếu cần
-    $phongs = Phong::orderBy('ten_phong')->get();
+    {
+        // Lấy danh sách phòng để filter nếu cần
+        $phongs = Phong::orderBy('ten_phong')->get();
 
-    // Lấy danh sách tài sản
-    $listTaiSan = TaiSan::with(['khoTaiSan', 'phong', 'slots.sinhVien'])
-        ->when($request->search, function ($query, $search) {
-            $query->whereHas('khoTaiSan', function ($q) use ($search) {
-                $q->where('ma_tai_san', 'like', "%$search%")
-                  ->orWhere('ten_tai_san', 'like', "%$search%");
-            });
-        })
-        ->when($request->phong_id, function ($query, $phong_id) {
-            $query->where('phong_id', $phong_id);
-        })
-        ->orderBy('created_at', 'desc') // ✅ mới thêm lên đầu
-        ->paginate(6)
-        ->withQueryString(); // giữ query string khi phân trang
+        // Lấy danh sách tài sản
+        $listTaiSan = TaiSan::with(['khoTaiSan', 'phong', 'slots.sinhVien'])
+            ->when($request->search, function ($query, $search) {
+                $query->whereHas('khoTaiSan', function ($q) use ($search) {
+                    $q->where('ma_tai_san', 'like', "%$search%")
+                        ->orWhere('ten_tai_san', 'like', "%$search%");
+                });
+            })
+            ->when($request->phong_id, function ($query, $phong_id) {
+                $query->where('phong_id', $phong_id);
+            })
+            ->orderBy('created_at', 'desc') // ✅ mới thêm lên đầu
+            ->paginate(6)
+            ->withQueryString(); // giữ query string khi phân trang
 
-    return view('taisan.index', compact('listTaiSan', 'phongs'));
-}
-
-
-public function create(Request $request)
-{
-    $phongs = Phong::orderBy('ten_phong')->get();
-    $loaiTaiSans = LoaiTaiSan::orderBy('ten_loai')->get();
-
-    $taiSans = collect();
-    $selectedLoai = null;
-    $selectedTaiSan = null;
-
-    // Nếu chọn loại tài sản
-    if ($request->query('loai_id')) {
-        $selectedLoai = LoaiTaiSan::find($request->query('loai_id'));
-        if ($selectedLoai) {
-            $taiSans = KhoTaiSan::where('loai_id', $selectedLoai->id)->get();
-        }
+        return view('taisan.index', compact('listTaiSan', 'phongs'));
     }
 
-    // Nếu chọn tài sản
-    if ($request->query('kho_tai_san_id')) {
-        $selectedTaiSan = KhoTaiSan::find($request->query('kho_tai_san_id'));
 
-        // Chuyển path thành URL đầy đủ để hiển thị
-        if ($selectedTaiSan) {
-            $selectedTaiSan->hinh_anh = $selectedTaiSan->hinh_anh
-                ? asset('storage/' . ltrim($selectedTaiSan->hinh_anh, '/'))
-                : asset('uploads/default.png'); // ảnh mặc định nếu không có
-        }
-    }
+    public function create(Request $request)
+    {
+        $phongs = Phong::orderBy('ten_phong')->get();
+        $loaiTaiSans = LoaiTaiSan::orderBy('ten_loai')->get();
 
-    return view('taisan.create', compact('phongs', 'loaiTaiSans', 'taiSans', 'selectedLoai', 'selectedTaiSan'));
-}
+        $taiSans = collect();
+        $selectedLoai = null;
+        $selectedTaiSan = null;
 
-  public function store(Request $request)
-{
-    // Form trong màn hình phòng gửi 'assets' theo dạng assets[kho_id] = qty
-    $validated = $request->validate([
-        'phong_id' => ['required','integer','exists:phong,id'],
-        'assets'   => ['required','array'],            // ít nhất 1 dòng
-        'assets.*' => ['numeric','min:1'],            // số lượng mỗi tài sản
-        // 'tinh_trang' không bắt buộc. Mặc định lấy theo kho nếu không truyền
-        'tinh_trang' => ['nullable','string','max:255'],
-    ]);
-
-    $assets = collect($validated['assets'] ?? [])
-        ->mapWithKeys(function ($qty, $khoId) {
-            $quantity = (int) $qty;
-            return [$khoId => max(1, $quantity)]; // đảm bảo >= 1
-        })->all();
-
-    DB::beginTransaction();
-    try {
-        // Lấy trước tất cả kho và khóa để tránh race-condition
-        $khoItems = KhoTaiSan::whereIn('id', array_keys($assets))
-            ->lockForUpdate()
-            ->get()
-            ->keyBy('id');
-
-        if (count($assets) !== $khoItems->count()) {
-            throw new \Exception('Một số tài sản kho không còn khả dụng.');
-        }
-
-        foreach ($assets as $khoId => $qty) {
-            $kho = $khoItems->get($khoId);
-            if ((int) $kho->so_luong < $qty) {
-                throw new \Exception('Kho "' . ($kho->ten_tai_san ?? 'Không xác định') . '" không đủ số lượng (' . (int)$kho->so_luong . ' < ' . $qty . ').');
+        // Nếu chọn loại tài sản
+        if ($request->query('loai_id')) {
+            $selectedLoai = LoaiTaiSan::find($request->query('loai_id'));
+            if ($selectedLoai) {
+                $taiSans = KhoTaiSan::where('loai_id', $selectedLoai->id)->get();
             }
+        }
 
-            // Upsert tài sản trong phòng theo cặp (phong_id, kho_tai_san_id)
-            $taiSan = TaiSan::firstOrCreate(
-                [
+        // Nếu chọn tài sản
+        if ($request->query('kho_tai_san_id')) {
+            $selectedTaiSan = KhoTaiSan::find($request->query('kho_tai_san_id'));
+
+            // Chuyển path thành URL đầy đủ để hiển thị
+            if ($selectedTaiSan) {
+                $selectedTaiSan->hinh_anh = $selectedTaiSan->hinh_anh
+                    ? asset('storage/' . ltrim($selectedTaiSan->hinh_anh, '/'))
+                    : asset('uploads/default.png'); // ảnh mặc định nếu không có
+            }
+        }
+
+        return view('taisan.create', compact('phongs', 'loaiTaiSans', 'taiSans', 'selectedLoai', 'selectedTaiSan'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'phong_id' => ['required', 'integer', 'exists:phong,id'],
+            'tai_san_ids' => ['required', 'array', 'min:1'],
+            'tai_san_ids.*' => ['integer', 'exists:kho_tai_san,id'],
+            'tinh_trang' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            foreach ($validated['tai_san_ids'] as $khoId) {
+                $kho = KhoTaiSan::lockForUpdate()->findOrFail($khoId);
+
+                if ($kho->so_luong < 1) {
+                    throw new \Exception('Kho "' . $kho->ten_tai_san . '" không còn hàng.');
+                }
+
+                TaiSan::create([
                     'phong_id' => $validated['phong_id'],
                     'kho_tai_san_id' => $kho->id,
-                ],
-                [
                     'ten_tai_san' => $kho->ten_tai_san,
-                    'so_luong' => 0,
-                    'tinh_trang' => $validated['tinh_trang'] ?? ($kho->tinh_trang ?? null),
-                    'tinh_trang_hien_tai' => $validated['tinh_trang'] ?? ($kho->tinh_trang ?? null),
+                    'so_luong' => 1, // mỗi cái = 1
+                    'tinh_trang' => $validated['tinh_trang'] ?? $kho->tinh_trang,
+                    'tinh_trang_hien_tai' => $validated['tinh_trang'] ?? $kho->tinh_trang,
                     'hinh_anh' => $kho->hinh_anh,
-                ]
-            );
+                ]);
 
-            // Cập nhật tình trạng nếu form có truyền
-            if (!empty($validated['tinh_trang'])) {
-                $taiSan->tinh_trang = $validated['tinh_trang'];
-                $taiSan->tinh_trang_hien_tai = $validated['tinh_trang'];
-            } elseif (!$taiSan->tinh_trang) {
-                $taiSan->tinh_trang = $kho->tinh_trang;
-                $taiSan->tinh_trang_hien_tai = $kho->tinh_trang;
+                $kho->decrement('so_luong', 1);
             }
 
-            // Tăng số lượng tài sản trong phòng
-            $taiSan->so_luong = (int) $taiSan->so_luong + (int) $qty;
-            $taiSan->save();
-
-            // Cập nhật phòng hiện tại trong kho (tham chiếu)
-            $kho->update(['phong_id' => $validated['phong_id']]);
-
-            // Trừ kho
-            $kho->decrement('so_luong', (int) $qty);
+            DB::commit();
+            return redirect()->route('taisan.index')
+                ->with('success', 'Đã thêm tài sản vào phòng thành công!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
-
-        DB::commit();
-
-        // Điều hướng về trang chi tiết tài sản phòng nếu có 'redirect_to'
-        $redirectTo = $request->input('redirect_to');
-        if ($redirectTo && Str::startsWith($redirectTo, url('/'))) {
-            return redirect($redirectTo)->with('success', 'Đã bổ sung tài sản vào phòng và cập nhật kho thành công!');
-        }
-
-        return redirect()->route('taisan.byPhong', $validated['phong_id'])
-            ->with('success', 'Đã bổ sung tài sản vào phòng và cập nhật kho thành công!');
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        return back()->withInput()->withErrors(['error' => $e->getMessage()]);
     }
-}
 
     public function edit($id)
     {
@@ -235,25 +189,25 @@ public function create(Request $request)
         $html = view('taisan._modal', compact('taiSan'))->render();
         return response()->json(['data' => $html]);
     }
-   public function related(Request $request, $loai_id)
-{
-    // Lấy danh sách tài sản thuộc loại, còn hàng, chưa gán phòng
-    $khoTaiSans = KhoTaiSan::where('loai_id', $loai_id)
-        ->where('so_luong', '>', 0)
-        ->select('id', 'ma_tai_san', 'ten_tai_san', 'hinh_anh', 'tinh_trang', 'so_luong')
-        ->get()
-        ->map(function ($item) {
-            $item->hinh_anh = $item->hinh_anh
-                ? asset('storage/' . ltrim($item->hinh_anh, '/'))
-                : asset('uploads/default.png');
-            return $item;
-        });
+    public function related(Request $request, $loai_id)
+    {
+        // Lấy danh sách tài sản thuộc loại, còn hàng, chưa gán phòng
+        $khoTaiSans = KhoTaiSan::where('loai_id', $loai_id)
+            ->where('so_luong', '>', 0)
+            ->select('id', 'ma_tai_san', 'ten_tai_san', 'hinh_anh', 'tinh_trang', 'so_luong')
+            ->get()
+            ->map(function ($item) {
+                $item->hinh_anh = $item->hinh_anh
+                    ? asset('storage/' . ltrim($item->hinh_anh, '/'))
+                    : asset('uploads/default.png');
+                return $item;
+            });
 
-    return response()->json($khoTaiSans);
-}
+        return response()->json($khoTaiSans);
+    }
 
 
- 
+
 
 
     /**
@@ -302,13 +256,13 @@ public function create(Request $request)
             ->values();
 
         $slots = Slot::with([
-                'sinhVien',
-                'taiSans' => function ($query) use ($phongId) {
-                    $query->with('khoTaiSan')
-                        ->where('tai_san.phong_id', $phongId)
-                        ->orderBy('ten_tai_san');
-                }
-            ])
+            'sinhVien',
+            'taiSans' => function ($query) use ($phongId) {
+                $query->with('khoTaiSan')
+                    ->where('tai_san.phong_id', $phongId)
+                    ->orderBy('ten_tai_san');
+            }
+        ])
             ->where('phong_id', $phongId)
             ->orderBy('ma_slot')
             ->get();
@@ -334,7 +288,5 @@ public function create(Request $request)
             'roomAssetFilters' => $roomAssetFilters,
             'totalRoomAssetQuantity' => $totalRoomAssetQuantity,
         ]);
-}
-
-
+    }
 }

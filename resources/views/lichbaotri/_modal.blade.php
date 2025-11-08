@@ -28,6 +28,30 @@
       </td>
     </tr>
     <tr>
+      <th>Sinh viên sử dụng</th>
+      <td>
+        @php
+        $slot = $lich->taiSan?->slots?->first();
+        $sinhVien = $slot?->sinhVien;
+        @endphp
+
+        @if($sinhVien)
+        {{ $sinhVien->ho_ten }}
+        <small class="text-muted">
+          ({{ $sinhVien->ma_sinh_vien }})
+        </small>
+        @else
+        Tài sản chung
+        @endif
+      </td>
+    </tr>
+
+    <tr>
+      <th>Mã Slot</th>
+      <td>{{ $slot?->ma_slot ?? '-' }}</td>
+    </tr>
+
+    <tr>
       <th>Ngày bảo trì</th>
       <td>{{ \Carbon\Carbon::parse($lich->ngay_bao_tri)->format('d/m/Y') }}</td>
     </tr>
