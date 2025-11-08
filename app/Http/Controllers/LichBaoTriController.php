@@ -243,10 +243,10 @@ class LichBaoTriController extends Controller
     /** 🔹 Lấy tài sản trong KHO theo loại */
     public function getTaiSanKho($loaiId)
     {
-        $data = KhoTaiSan::where('loai_id', $loaiId)
-            ->whereDoesntHave('lichBaoTri', function ($q) {
-                $q->whereNull('ngay_hoan_thanh');
-            })
+       $data = KhoTaiSan::where('loai_id', $loaiId)
+    ->whereDoesntHave('lichBaoTri', function ($q) {
+        $q->whereIn('trang_thai', ['Chờ bảo trì', 'Đang bảo trì']);
+    })
             ->get()
             ->map(function ($ts) {
                 return [
@@ -264,27 +264,31 @@ class LichBaoTriController extends Controller
 
     /** 🔹 Lấy tài sản trong PHÒNG theo phòng_id */
     public function getTaiSanPhong($phongId)
-    {
-        $taiSans = TaiSan::with(['khoTaiSan', 'slots.sinhVien'])
-            ->where('phong_id', $phongId)
-            ->get()
-            ->map(function ($ts) {
-                $nguoiSuDung = $ts->slots->first()?->sinhVien?->ho_ten ?? 'Chưa có';
+{
+    $taiSans = TaiSan::with(['khoTaiSan', 'slots.sinhVien'])
+        ->where('phong_id', $phongId)
+        ->whereDoesntHave('lichBaoTri', function ($q) {
+            $q->whereIn('trang_thai', ['Chờ bảo trì', 'Đang bảo trì']);
+        })
+        ->get()
+        ->map(function ($ts) {
+            $nguoiSuDung = $ts->slots->first()?->sinhVien?->ho_ten ?? 'Chưa có';
 
-                $hinhAnh = $ts->khoTaiSan && $ts->khoTaiSan->hinh_anh
-                    ? asset('storage/' . $ts->khoTaiSan->hinh_anh)
-                    : asset('images/no-image.png');
+            $hinhAnh = $ts->khoTaiSan && $ts->khoTaiSan->hinh_anh
+                ? asset('storage/' . $ts->khoTaiSan->hinh_anh)
+                : asset('images/no-image.png');
 
-                return [
-                    'id' => $ts->id,
-                    'ma_tai_san' => $ts->khoTaiSan->ma_tai_san ?? 'Không có mã',
-                    'ten_tai_san' => $ts->ten_tai_san,
-                    'so_luong' => $ts->so_luong,
-                    'nguoi_su_dung' => $nguoiSuDung,
-                    'hinh_anh' => $hinhAnh,
-                ];
-            });
+            return [
+                'id' => $ts->id,
+                'ma_tai_san' => $ts->khoTaiSan->ma_tai_san ?? 'Không có mã',
+                'ten_tai_san' => $ts->ten_tai_san,
+                'so_luong' => $ts->so_luong,
+                'nguoi_su_dung' => $nguoiSuDung,
+                'hinh_anh' => $hinhAnh,
+            ];
+        });
 
-        return response()->json($taiSans);
-    }
+    return response()->json($taiSans);
+}
+
 }
