@@ -225,15 +225,20 @@ public function create(Request $request)
     }
 
     /** 🖼️ Modal xem chi tiết */
-    public function showModal($id)
+    public function showModal(Request $request, $id)
     {
         $taiSan = TaiSan::with(['phong', 'khoTaiSan'])->find($id);
         if (!$taiSan) {
-            return response()->json(['data' => '<p class="text-danger">Không tìm thấy tài sản.</p>']);
+            // Trả HTML thuần để JS hiển thị trực tiếp
+            return response('<p class="text-danger text-center m-0">Không tìm thấy tài sản.</p>', 404)
+                ->header('Content-Type', 'text/html; charset=UTF-8');
         }
 
         $html = view('taisan._modal', compact('taiSan'))->render();
-        return response()->json(['data' => $html]);
+
+        // Ưu tiên trả về HTML để đơn giản hóa hiển thị trong modal
+        return response($html, 200)
+            ->header('Content-Type', 'text/html; charset=UTF-8');
     }
    public function related(Request $request, $loai_id)
 {
@@ -263,20 +268,29 @@ public function create(Request $request)
     {
         $phong = Phong::with(['khu'])->findOrFail($phongId);
 
-        $roomAssets = $phong->taiSan()
-            ->with('khoTaiSan')
+        // Lấy tài sản cấp cho phòng kèm slots đã nhận để tính "còn lại (chưa bàn giao)"
+        $roomAssetsRaw = $phong->taiSan()
+            ->with(['khoTaiSan', 'slots' => function ($q) {
+                $q->select('slots.id'); // tối thiểu cột
+            }])
             ->orderBy('ten_tai_san')
             ->get();
 
         $roomAssetFilterAccumulator = [];
 
-        $roomAssets = $roomAssets->map(function ($asset) use (&$roomAssetFilterAccumulator) {
+        // Tính số lượng đã bàn giao cho các slot và số còn lại (unassigned) ở cấp phòng.
+        $roomAssets = $roomAssetsRaw->map(function ($asset) use (&$roomAssetFilterAccumulator) {
+            $assignedQty = (int) $asset->slots()->sum('slot_tai_san.so_luong');
+            $remainingQty = max(0, (int) ($asset->so_luong ?? 0) - $assignedQty);
+
             $label = $asset->khoTaiSan->ten_tai_san ?? $asset->ten_tai_san ?? 'Không xác định';
             $normalized = Str::lower(trim($label));
             $filterKey = 'asset-' . md5($normalized);
 
             $asset->setAttribute('filter_label', $label);
             $asset->setAttribute('filter_key', $filterKey);
+            $asset->setAttribute('assigned_qty', $assignedQty);
+            $asset->setAttribute('remaining_qty', $remainingQty);
 
             if (!isset($roomAssetFilterAccumulator[$filterKey])) {
                 $roomAssetFilterAccumulator[$filterKey] = [
@@ -287,14 +301,23 @@ public function create(Request $request)
                 ];
             }
 
-            $roomAssetFilterAccumulator[$filterKey]['item_count']++;
-            $roomAssetFilterAccumulator[$filterKey]['total_quantity'] += (int) ($asset->so_luong ?? 0);
+            // Chỉ thống kê số lượng còn lại ở phần "tài sản chung"
+            if ($remainingQty > 0) {
+                $roomAssetFilterAccumulator[$filterKey]['item_count']++;
+                $roomAssetFilterAccumulator[$filterKey]['total_quantity'] += $remainingQty;
+            }
 
             return $asset;
-        });
+        })
+        // Ẩn khỏi danh sách "tài sản chung" nếu đã bàn giao hết cho các slot
+        ->filter(function ($asset) {
+            return (int) $asset->getAttribute('remaining_qty') > 0;
+        })
+        ->values();
 
+        // Tổng số lượng còn lại ở cấp phòng (chưa bàn giao cho slot)
         $totalRoomAssetQuantity = $roomAssets->sum(function ($asset) {
-            return (int) ($asset->so_luong ?? 0);
+            return (int) ($asset->getAttribute('remaining_qty') ?? 0);
         });
 
         $roomAssetFilters = collect($roomAssetFilterAccumulator)

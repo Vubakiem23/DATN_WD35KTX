@@ -65,6 +65,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/slots/{id}/assets', [SlotController::class, 'assets'])->name('slots.assets');
     Route::get('/slots/{id}/warehouse-assets', [SlotController::class, 'warehouseAssets'])->name('slots.warehouseAssets');
     Route::post('/slots/{id}/assign-assets', [SlotController::class, 'assignAssets'])->name('slots.assignAssets');
+    Route::post('/slots/{id}/return-asset', [SlotController::class, 'returnAssetToWarehouse'])->name('slots.returnAssetToWarehouse');
     Route::post('/slots/{id}/clear-assets', [SlotController::class, 'clearAssets'])->name('slots.clearAssets');
     Route::post('/slots/import-from-warehouse', [SlotController::class, 'importFromWarehouse'])->name('slots.importFromWarehouse');
     // ---------------- GÁN PHÒNG ----------------

@@ -73,7 +73,7 @@ class LichBaoTriController extends Controller
 
         $taiSan = null;
         if ($request->has('taisan_id')) {
-            $taiSan = TaiSan::with(['phong', 'khoTaiSan'])->find($request->taisan_id);
+            $taiSan = TaiSan::with(['phong', 'khoTaiSan', 'slots.sinhVien'])->find($request->taisan_id);
         }
 
         return view('lichbaotri.create', compact('phongs', 'taiSan'));
