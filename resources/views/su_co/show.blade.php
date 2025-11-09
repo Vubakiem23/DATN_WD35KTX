@@ -119,6 +119,33 @@
             </tr>
         </table>
 
+        {{-- 💰 Thông tin hóa đơn sự cố --}}
+        <div class="x_panel mt-4">
+            <div class="x_title">
+                <h2>🧾 Thông tin hóa đơn sự cố</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                @if(isset($hoaDon) && $hoaDon)
+                    <p><strong>Số tiền:</strong> {{ number_format($hoaDon->amount, 0, ',', '.') }} VNĐ</p>
+                    <p><strong>Trạng thái:</strong> 
+                        @if($hoaDon->status === 'Đã thanh toán')
+                            <span class="badge bg-success">Đã thanh toán</span>
+                        @else
+                            <span class="badge bg-warning text-dark">Chưa thanh toán</span>
+                        @endif
+                    </p>
+                    <p><strong>Ngày tạo:</strong> {{ \Carbon\Carbon::parse($hoaDon->ngay_tao)->format('d/m/Y') }}</p>
+                    <p><strong>Ngày thanh toán:</strong> {{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : 'Chưa có' }}</p>
+                @else
+                    <p>⚠️ Chưa có hóa đơn cho sự cố này.</p>
+                    <a href="{{ route('suco.formTaoHoaDon', $suco->id) }}" class="btn btn-primary">
+                        ➕ Tạo hóa đơn
+                    </a>
+                @endif
+            </div>
+        </div>
+
         <div class="mt-3">
             <a href="{{ route('suco.index') }}" class="btn btn-secondary">
                 <i class="fa fa-arrow-left"></i> Quay lại

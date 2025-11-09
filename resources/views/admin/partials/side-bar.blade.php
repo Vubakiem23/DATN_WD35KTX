@@ -109,7 +109,7 @@
                     <ul class="nav child_menu">
                         <li><a href="{{ route('hoadon.index') }}"><i class="fa fa-file-text-o"></i> Quản lý thu phí & hóa đơn</a></li>
 
-
+                        <li> <a href="{{ route('hoadonsuco.index') }}">Quản lý hóa đơn sự cố</a></li>
 
 
                     </ul>

@@ -23,13 +23,13 @@
         <form action="{{ route('suco.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            {{-- 🧍 Chọn sinh viên --}}
+            {{-- 🧍 Chọn sinh viên (đã lọc sẵn sinh viên có phòng trong controller) --}}
             <div class="mb-3">
                 <label for="sinh_vien_id" class="form-label">Sinh viên</label>
                 <select name="sinh_vien_id" id="sinh_vien_id" class="form-control" required>
                     <option value="">-- Chọn sinh viên --</option>
                     @foreach($sinhviens as $sv)
-                        <option value="{{ $sv->id }}" data-phong="{{ $sv->phong->ten_phong ?? '' }}">
+                        <option value="{{ $sv->id }}" data-phong="{{ $sv->phong->ten_phong ?? '' }}" data-phong-id="{{ $sv->phong_id }}">
                             {{ $sv->ho_ten }} ({{ $sv->ma_sinh_vien }})
                         </option>
                     @endforeach
@@ -77,15 +77,10 @@
 document.getElementById('sinh_vien_id').addEventListener('change', function() {
     let selectedOption = this.options[this.selectedIndex];
     let phongTen = selectedOption.getAttribute('data-phong') || 'Không có';
-    document.getElementById('phong_ten').value = phongTen;
+    let phongId = selectedOption.getAttribute('data-phong-id') || '';
 
-    // Nếu có id phòng thì gán vào input hidden
-    let svId = this.value;
-    @json($sinhviens).forEach(sv => {
-        if (sv.id == svId) {
-            document.getElementById('phong_id').value = sv.phong_id ?? '';
-        }
-    });
+    document.getElementById('phong_ten').value = phongTen;
+    document.getElementById('phong_id').value = phongId;
 });
 </script>
 
