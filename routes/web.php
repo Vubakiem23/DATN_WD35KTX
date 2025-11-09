@@ -175,49 +175,13 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 });
 Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
-// ---------------- Sự cố ----------------
-        // Resource chính cho sự cố
-        Route::resource('suco', SuCoController::class);
-
-        // Xác nhận thanh toán sự cố
-        Route::post('suco/{id}/thanh-toan', [SuCoController::class, 'thanhToan'])
-            ->name('suco.thanhtoan');
-
-        // Modal Hoàn thành sự cố
-        Route::post('suco/{id}/hoan-thanh', [SuCoController::class, 'hoanThanh'])
-            ->name('suco.hoanThanh');
-
-        // ----------------- HÓA ĐƠN SỰ CỐ -----------------
-
-        // Danh sách hóa đơn sự cố
-        Route::get('hoadon-suco', [\App\Http\Controllers\HoaDonSuCoController::class, 'index'])
-            ->name('hoadonsuco.index');
-
-        // Xác nhận thanh toán hóa đơn sự cố
-        Route::post('hoadon-suco/{id}/thanhtoan', [\App\Http\Controllers\HoaDonSuCoController::class, 'thanhtoan'])
-            ->name('suco.hoadon.thanhtoan');
-
-        // ----------------- FORM THANH TOÁN SỰ CỐ -----------------
-
-        // Form thanh toán hàng loạt cho các sự cố chưa có hóa đơn (admin nhập giá tiền)
-        Route::get('admin/suco-thanh-toan', [SuCoController::class, 'formThanhToan'])
-            ->name('suco.thanhtoan');
-
-        // Xử lý lưu giá tiền và tạo hóa đơn (admin submit form)
-        Route::post('admin/suco-thanh-toan', [SuCoController::class, 'luuThanhToan'])
-            ->name('suco.luuThanhtoan');
-
-        // ----------------- TẠO HÓA ĐƠN RIÊNG CHO 1 SỰ CỐ -----------------
-
-        // Form tạo hóa đơn 1 sự cố
-        Route::get('admin/suco/{id}/tao-hoa-don', [\App\Http\Controllers\SuCoController::class, 'formTaoHoaDon'])
-            ->name('suco.formTaoHoaDon');
-
-        // Lưu hóa đơn sau khi nhập giá tiền
-        Route::post('admin/suco/{id}/tao-hoa-don', [\App\Http\Controllers\SuCoController::class, 'luuHoaDon'])
-            ->name('suco.luuHoaDon');
-        
-
+// ----------------- SỰ CỐ -----------------
+// ====================== 
+Route::resource('suco', SuCoController::class);
+// 🔹 Route xác nhận thanh toán sự cố
+// Route::post('suco/{id}/thanhtoan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
+// Route nút hoàn thành
+Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.thanhtoan');
 
 
     // // TÀI SẢN
