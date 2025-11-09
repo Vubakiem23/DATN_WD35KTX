@@ -47,4 +47,10 @@ class SuCo extends Model
     {
         return $this->anh ? asset($this->anh) : asset('images/no-image.png');
     }
+
+        public function hoaDonSuCo()
+    {
+        return $this->hasOne(\App\Models\HoaDonSuCo::class, 'su_co_id', 'id');
+    }
+
 }
