@@ -153,7 +153,27 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('phong/{phong}/taisanphong', [TaiSanController::class, 'byPhong'])->name('taisan.byPhong');
     // Quản lý Khu
     Route::resource('khu', KhuController::class)->except(['edit', 'update', 'destroy']);
+    // ---------------- HÓA ĐƠN ----------------
+    Route::prefix('hoadon')->group(function () {
+    Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
+    Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
+    Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
+    Route::get('/hoadon/export', [HoaDonController::class, 'export'])->name('hoadon.export');
+    Route::get('/hoadon/lichsu', [HoaDonController::class, 'lichSu'])->name('hoadon.lichsu');
+    Route::get('/hoadon/{id}', [HoaDonController::class, 'show'])->name('hoadon.show');
+    Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
+    Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
+    Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
+    Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
+     Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 });
+    Route::post('/hoadon/gui-email-hang-loat', [HoaDonController::class, 'guiEmailHangLoat'])->name('hoadon.guiemailhangloat');
+    Route::get('/testmailpit', [HoaDonController::class, 'testMail']);
+    Route::get('/sendemailphong/{phong_id}', [HoaDonController::class, 'guiEmailTheoPhong']);
+    Route::get('/hoadon/timkiem', [HoaDonController::class, 'timKiem'])->name('hoadon.timkiem');
+
+});
+Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
 // ---------------- Sự cố ----------------
         // Resource chính cho sự cố
@@ -199,35 +219,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         
 
 
-// ======================
-// HÓA ĐƠN
-// ======================
 
-Route::prefix('hoadon')->group(function () {
-    Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
-    Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
-    Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
-    Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
-    Route::get('/hoadon/export', [HoaDonController::class, 'export'])->name('hoadon.export');
-    Route::get('/hoadon/lichsu', [HoaDonController::class, 'lichSu'])->name('hoadon.lichsu');
-    Route::get('/hoadon/{id}', [HoaDonController::class, 'show'])->name('hoadon.show');
-    Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
-    Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
-    Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
-    Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
-
-
-
-
-    Route::prefix('hoadon')->group(function () {
-        Route::get('', [HoaDonController::class, 'index'])->name('hoadon.index');
-        Route::post('import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
-        Route::delete('{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
-        Route::get('{id}/export-pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
-        Route::get('export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
-        Route::post('{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
-    });
-    // TÀI SẢN
+    // // TÀI SẢN
     // ======================
 
     // ======================
@@ -257,18 +250,6 @@ Route::prefix('hoadon')->group(function () {
     });
 
 
-    // ---------------- HÓA ĐƠN ----------------
-    Route::get('hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
-    Route::post('hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
-    Route::delete('hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
-    Route::get('hoadon/{id}/export-pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
-    Route::get('hoadon/export-excel/{id}', [HoaDonController::class, 'exportExcelPhong'])->name('hoadon.export_excel_phong');
-    Route::post('hoadon/{id}/thanh-toan', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
-
-
-
-
-
     // ---------------- SỰ CỐ ----------------
     Route::resource('suco', SuCoController::class);
     // ---------------- THÔNG BÁO ----------------
@@ -287,10 +268,10 @@ Route::prefix('hoadon')->group(function () {
     // ---------------- QUẢN LÝ TÀI SẢN ----------------
     // ---------------- TÀI SẢN ----------------
 
-    Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+
 
 
     // =================== IMPORT ADMIN EXTRA ===================
 
     require __DIR__ . '/admin.php';
-});
+
