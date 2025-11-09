@@ -36,6 +36,12 @@
     </div>
 </div>
     </form>    
+    <form method="POST" action="{{ route('hoadon.guiemailhangloat') }}">
+    @csrf
+    <button type="submit" class="btn btn-success mb-3" onclick="return confirm('Gửi email cho tất cả sinh viên chưa thanh toán?')">
+        📧 Gửi hóa đơn 
+    </button>
+</form>
     <table class="table table-bordered table-sm text-center align-middle table-hover">
         <thead class="">
             <tr class="text-center">
@@ -75,9 +81,7 @@
                   @if($hoaDon->trang_thai !== 'Đã thanh toán')
                     <a href="{{ route('hoadon.edit', $hoaDon->id) }}"  class="btn btn-outline-primary btn-action"" title="Sửa">✏️</a>
                   @endif
-                  @if($hoaDon->trang_thai === 'Đã thanh toán')
-                    <a href="{{ route('hoadon.export_pdf', $hoaDon->id) }}" target="_blank"  class="btn btn-outline-primary btn-action"" title=" In PDF"">🖨️</a>
-                  @endif
+                 
                 </div>
               </form>
             </td>
@@ -85,6 +89,8 @@
     @endforeach
 </tbody>
     </table>
+    
+
 </div>
   
 

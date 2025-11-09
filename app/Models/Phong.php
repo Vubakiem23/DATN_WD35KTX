@@ -444,5 +444,9 @@ class Phong extends Model
 {
     return $this->hasMany(\App\Models\KhoTaiSan::class, 'phong_id');
 }
+public function sinhViens()
+{
+    return $this->hasMany(\App\Models\SinhVien::class, 'phong_id');
+}
 
 }
