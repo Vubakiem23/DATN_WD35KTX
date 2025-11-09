@@ -106,14 +106,14 @@
                                     <button class="btn btn-outline-danger btn-action" type="submit" title="Xóa"><i class="fa fa-trash"></i></button>
                                 </form>
                                 @if($sc->trang_thai != 'Hoàn thành')
-                                    <button type="button" class="btn btn-success btn-sm"
+                                    <button type="button" class="btn btn-success btn-sm mt-1" 
                                             data-bs-toggle="modal" data-bs-target="#hoanThanhModal"
                                             data-id="{{ $sc->id }}"
-                                            data-ngay="{{ $sc->ngay_hoan_thanh }}"
-                                            data-trang-thai="{{ $sc->trang_thai }}">
+                                            data-payment="{{ $sc->payment_amount }}"
+                                            data-is-paid="{{ $sc->is_paid }}"
+                                            data-ngay="{{ $sc->ngay_hoan_thanh }}">
                                         Hoàn thành
                                     </button>
-
                                 @endif
                             </td>
                         </tr>
@@ -132,7 +132,7 @@
     </div>
 </div>
 
-{{-- Modal Hoàn thành sự cố --}}
+{{-- Modal Hoàn thành --}}
 <div class="modal fade" id="hoanThanhModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -143,31 +143,24 @@
             <form id="hoanThanhForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="id" id="suco_id">
-
                 <div class="modal-body">
-                    {{-- Ngày hoàn thành --}}
                     <div class="mb-3">
                         <label for="ngay_hoan_thanh" class="form-label">Ngày hoàn thành</label>
                         <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh" class="form-control" required>
                     </div>
-
-                    {{-- Trạng thái --}}
                     <div class="mb-3">
-                        <label for="trang_thai_modal" class="form-label">Trạng thái</label>
-                        <select name="trang_thai" id="trang_thai_modal" class="form-control" required>
-                            <option value="Tiếp nhận">Tiếp nhận</option>
-                            <option value="Đang xử lý">Đang xử lý</option>
-                            <option value="Hoàn thành">Hoàn thành</option>
-                        </select>
+                        <label for="payment_amount_modal" class="form-label">Giá tiền (₫)</label>
+                        <input type="number" name="payment_amount" id="payment_amount_modal" class="form-control" min="0" required>
                     </div>
-
-                    {{-- Ảnh minh chứng --}}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_paid" class="form-check-input" id="is_paid_modal">
+                        <label class="form-check-label" for="is_paid_modal">Đã thanh toán</label>
+                    </div>
                     <div class="mb-3">
                         <label for="anh_modal" class="form-label">Ảnh minh chứng</label>
                         <input type="file" name="anh" id="anh_modal" class="form-control" accept="image/*">
                     </div>
                 </div>
-
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     <button type="submit" class="btn btn-success">Cập nhật</button>
@@ -177,31 +170,27 @@
     </div>
 </div>
 
-
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('hoanThanhModal');
-
     modal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         const id = button.getAttribute('data-id');
-        const ngay = button.getAttribute('data-ngay') || '';
-        const trangThai = button.getAttribute('data-trang-thai') || 'Tiếp nhận';
+        const payment = button.getAttribute('data-payment') || 0;
+        const isPaid = button.getAttribute('data-is-paid') == 1;
+        const ngay = button.getAttribute('data-ngay');
 
         document.getElementById('suco_id').value = id;
-        document.getElementById('ngay_hoan_thanh').value = ngay;
-        document.getElementById('trang_thai_modal').value = trangThai;
+        document.getElementById('payment_amount_modal').value = payment;
+        document.getElementById('is_paid_modal').checked = isPaid;
+        document.getElementById('ngay_hoan_thanh').value = ngay || '';
 
-        // Gán action form
-        document.getElementById('hoanThanhForm').action = "{{ route('suco.hoanThanh', ':id') }}".replace(':id', id);
+        document.getElementById('hoanThanhForm').action = "{{ route('suco.thanhtoan', ':id') }}".replace(':id', id);
     });
 });
 </script>
-
-
 
 <style>
 .table th, .table td { vertical-align: middle !important; font-size: 13px; }
