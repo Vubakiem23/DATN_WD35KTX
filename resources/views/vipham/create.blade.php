@@ -3,17 +3,16 @@
 @section('content')
     <div class="container mt-4">
 
-            <div>
-                <h3 class="mb-0">➕ Ghi vi phạm</h3>
-                <small class="text-muted">Tạo biên bản vi phạm cho sinh viên</small>
-            </div>
-            <a href="{{ route('vipham.index') }}" class="btn btn-secondary">
-                <i class="fa fa-arrow-left mr-1"></i> Quay lại
-            </a>
-    
+        <div>
+            <h3 class="mb-0">➕ Ghi vi phạm</h3>
+            <small class="text-muted">Tạo biên bản vi phạm cho sinh viên</small>
+        </div>
+        <a href="{{ route('vipham.index') }}" class="btn btn-secondary">
+            <i class="fa fa-arrow-left mr-1"></i> Quay lại
+        </a>
 
-        <form method="POST" action="{{ route('vipham.store') }}" enctype="multipart/form-data"
-            class="card shadow-sm border-0">
+
+        <form method="POST" action="{{ route('vipham.store') }}" enctype="multipart/form-data" class="card shadow-sm border-0">
             @csrf
             <div class="card-body">
                 {{-- Hàng 1: Sinh viên - Loại --}}
@@ -90,7 +89,7 @@
                     <div class="form-group col-md-4">
                         <label class="small text-muted mb-1">Số biên lai</label>
                         <input type="text" name="receipt_no" value="{{ old('receipt_no') }}" class="form-control"
-                            placeholder="VD: BL-2025-001">
+                            placeholder="Tự sinh khi lưu" readonly>
                         @error('receipt_no')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror

@@ -87,7 +87,7 @@
                     <div class="form-group col-md-4">
                         <label class="small text-muted mb-1">Số biên lai</label>
                         <input type="text" name="receipt_no" value="{{ old('receipt_no', $violation->receipt_no) }}"
-                            class="form-control">
+                            class="form-control" readonly>
                         @error('receipt_no')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
