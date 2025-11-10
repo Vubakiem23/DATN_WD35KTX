@@ -1,255 +1,327 @@
 @extends('admin.layouts.admin')
-
 @section('content')
-<div class="x_panel">
-    <div class="x_title d-flex justify-content-between align-items-center flex-wrap">
-        <h2><i class="fa fa-exclamation-circle text-primary"></i> Danh sách sự cố</h2>
-        <a href="{{ route('suco.create') }}" class="btn btn-sm btn-primary mt-2 mt-sm-0">
-            <i class="fa fa-plus"></i> Thêm sự cố
-        </a>
-    </div>
+    <div class="container mt-4">
 
-    <div class="x_content">
-        {{-- 🔍 Tìm kiếm và lọc --}}
-        <form method="GET" action="{{ route('suco.index') }}" class="mb-3">
-            <div class="row g-2 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label small">Tìm kiếm</label>
-                    <input type="text" name="search" value="{{ request('search') ?? '' }}"
-                           class="form-control form-control-sm"
-                           placeholder="MSSV hoặc Họ tên">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Trạng thái</label>
-                    <select name="trang_thai" class="form-control form-control-sm">
-                        <option value="">Tất cả</option>
-                        <option value="Tiếp nhận" {{ request('trang_thai') == 'Tiếp nhận' ? 'selected' : '' }}>Tiếp nhận</option>
-                        <option value="Đang xử lý" {{ request('trang_thai') == 'Đang xử lý' ? 'selected' : '' }}>Đang xử lý</option>
-                        <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Từ ngày</label>
-                    <input type="date" name="date_from" value="{{ request('date_from') ?? '' }}"
-                           class="form-control form-control-sm">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label small">Đến ngày</label>
-                    <input type="date" name="date_to" value="{{ request('date_to') ?? '' }}"
-                           class="form-control form-control-sm">
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-sm btn-primary">
-                        <i class="fa fa-search"></i> Tìm kiếm
-                    </button>
-                    @if(request('search') || request('trang_thai') || request('date_from') || request('date_to'))
-                        <a href="{{ route('suco.index') }}" class="btn btn-sm btn-light">
-                            <i class="fa fa-times"></i> Xóa lọc
-                        </a>
-                    @endif
-                </div>
+        <div>
+            <h3 class="room-page__title mb-1">Danh sách sự cố</h3>
+            <p class="text-muted mb-0">Theo dõi, xử lý và cập nhật trạng thái các sự cố ký túc xá</p>
+        </div>
+
+        <div class="d-flex gap-2 mt-2 mb-3">
+            <a href="{{ route('suco.create') }}" class="btn btn-dergin btn-dergin--info">
+                <i class="fa fa-plus"></i><span>Thêm sự cố</span>
+            </a>
+        </div>
+
+        {{-- Ô tìm kiếm + lọc --}}
+        <form method="GET" action="{{ route('suco.index') }}" class="mb-3 search-bar">
+            <div class="input-group">
+                <input type="text" name="search" value="{{ request('search') ?? '' }}" class="form-control"
+                    placeholder="Tìm kiếm MSSV, họ tên hoặc mô tả sự cố">
+                <select name="trang_thai" class="form-select" style="max-width:160px;">
+                    <option value="">Tất cả</option>
+                    <option value="Tiếp nhận" @selected(request('trang_thai') == 'Tiếp nhận')>Tiếp nhận</option>
+                    <option value="Đang xử lý" @selected(request('trang_thai') == 'Đang xử lý')>Đang xử lý</option>
+                    <option value="Hoàn thành" @selected(request('trang_thai') == 'Hoàn thành')>Hoàn thành</option>
+                </select>
+                <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+                @if (request()->has('search') || request()->has('trang_thai'))
+                    <a href="{{ route('suco.index') }}" class="btn btn-outline-secondary">Xóa</a>
+                @endif
             </div>
         </form>
 
-        {{-- 🟢 Thông báo --}}
-        @if(session('success'))
+        {{-- Thông báo --}}
+        @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show">
                 <i class="fa fa-check-circle"></i> {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
 
-        {{-- 📋 Bảng danh sách --}}
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover align-middle text-center small mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th>ID</th>
-                        <th class="text-start">Sinh viên</th>
-                        <th>Phòng / Khu</th>
-                        <th>Ngày gửi</th>
-                        <th>Hoàn thành</th>
-                        <th>Ảnh</th>
-                        <th class="text-start">Mô tả</th>
-                        <th>Trạng thái</th>
-                        <th>Giá tiền</th>
-                        <th>Thanh toán</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($su_cos as $sc)
-                        <tr class="{{ $sc->trang_thai == 'Hoàn thành' ? 'table-success' : '' }}">
-                            <td>{{ $sc->id }}</td>
-                            <td class="text-start" style="max-width:150px;">
-                                <span class="text-truncate d-block" style="font-size:13px;">
-                                    {{ $sc->sinhVien->ho_ten ?? '---' }}
-                                </span>
-                                <small class="text-muted d-block" style="font-size:11px;">MSSV: {{ $sc->sinhVien->ma_sinh_vien ?? '---' }}</small>
-                            </td>
-                            <td>
-                                @php
-                                    // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
-                                    $student = $sc->sinhVien ?? null;
-                                    $phong = null;
-                                    if ($student) {
-                                        // Kiểm tra slot và phong của slot
-                                        if (isset($student->slot) && $student->slot && isset($student->slot->phong) && $student->slot->phong) {
-                                            $phong = $student->slot->phong;
-                                        } elseif (isset($student->phong) && $student->phong) {
-                                            $phong = $student->phong;
-                                        } elseif (isset($sc->phong) && $sc->phong) {
-                                            $phong = $sc->phong;
-                                        }
-                                    } elseif (isset($sc->phong) && $sc->phong) {
+        {{-- Bảng danh sách --}}
+        <div class="room-table-wrapper">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 room-table">
+                    <thead>
+                        <tr>
+                            <th class="fit text-center">ID</th>
+                            <th>Sinh viên</th>
+                            <th class="fit">Phòng / Khu</th>
+                            <th class="fit">Ngày gửi</th>
+                            <th class="fit">Hoàn thành</th>
+                            <th class="fit">Ảnh</th>
+                            <th class="fit">Mô tả</th>
+                            <th class="fit">Trạng thái</th>
+                            <th class="fit">Giá tiền</th>
+                            <th class="fit">Thanh toán</th>
+                            <th class="text-end fit text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($su_cos as $sc)
+                            @php
+                                $badge = match ($sc->trang_thai) {
+                                    'Tiếp nhận' => 'badge-soft-secondary',
+                                    'Đang xử lý' => 'badge-soft-warning',
+                                    'Hoàn thành' => 'badge-soft-success',
+                                    default => 'badge-soft-secondary',
+                                };
+                                $student = $sc->sinhVien ?? null;
+                                $phong = null;
+                                if ($student) {
+                                    if ($student->slot && $student->slot->phong) {
+                                        $phong = $student->slot->phong;
+                                    } elseif ($student->phong) {
+                                        $phong = $student->phong;
+                                    } elseif ($sc->phong) {
                                         $phong = $sc->phong;
                                     }
-                                    $tenPhongDisplay = $phong && isset($phong->ten_phong) ? $phong->ten_phong : null;
-                                    $khu = ($phong && isset($phong->khu) && $phong->khu) ? $phong->khu : null;
-                                    $tenKhuDisplay = $khu && isset($khu->ten_khu) ? $khu->ten_khu : null;
-                                @endphp
-                                @if ($tenPhongDisplay)
+                                } elseif ($sc->phong) {
+                                    $phong = $sc->phong;
+                                }
+                                $tenPhongDisplay = $phong->ten_phong ?? '-';
+                                $tenKhuDisplay = $phong->khu->ten_khu ?? '-';
+                                $anhUrl =
+                                    $sc->anh && file_exists(public_path($sc->anh))
+                                        ? asset($sc->anh)
+                                        : asset('images/default-avatar.png');
+                            @endphp
+                            <tr>
+                                <td class="text-center">{{ $sc->id }}</td>
+                                <td>
+                                    <div class="fw-semibold">{{ $student->ho_ten ?? '---' }}</div>
+                                    <small class="text-muted">MSSV: {{ $student->ma_sinh_vien ?? '---' }}</small>
+                                </td>
+                                <td class="fit">
                                     <div>{{ $tenPhongDisplay }}</div>
-                                    @if ($tenKhuDisplay)
-                                        <small class="badge badge-soft-secondary" style="font-size:10px;">Khu {{ $tenKhuDisplay }}</small>
+                                    <small class="text-muted">Khu {{ $tenKhuDisplay }}</small>
+                                </td>
+                                <td>{{ $sc->ngay_gui ? \Carbon\Carbon::parse($sc->ngay_gui)->format('d/m/Y') : '-' }}</td>
+                                <td>{{ $sc->ngay_hoan_thanh ? \Carbon\Carbon::parse($sc->ngay_hoan_thanh)->format('d/m/Y') : '-' }}
+                                </td>
+                                <td><img src="{{ $anhUrl }}" alt="Ảnh sự cố" class="avatar-56"></td>
+                                <td style="max-width:200px;">{{ $sc->mo_ta }}</td>
+                                <td><span class="badge {{ $badge }}">{{ $sc->trang_thai }}</span></td>
+                                <td>{{ $sc->payment_amount > 0 ? number_format($sc->payment_amount, 0, ',', '.') . ' ₫' : '0 ₫' }}
+                                </td>
+                                <td>
+                                    @if ($sc->payment_amount == 0)
+                                        <span class="badge badge-soft-secondary">Không TT</span>
+                                    @elseif($sc->is_paid)
+                                        <span class="badge badge-soft-success">Đã TT</span>
+                                    @else
+                                        <span class="badge badge-soft-warning">Chưa TT</span>
                                     @endif
-                                @else
-                                    <span class="text-muted">---</span>
-                                @endif
-                            </td>
-                            <td>{{ $sc->ngay_gui ? \Carbon\Carbon::parse($sc->ngay_gui)->format('d/m/Y') : '-' }}</td>
-                            <td>{{ $sc->ngay_hoan_thanh ? \Carbon\Carbon::parse($sc->ngay_hoan_thanh)->format('d/m/Y') : '-' }}</td>
-                            <td>
-                                @if($sc->anh && file_exists(public_path($sc->anh)))
-                                    <img src="{{ asset($sc->anh) }}" class="img-thumbnail shadow-sm" style="width:35px;height:35px;object-fit:cover;">
-                                @else
-                                    <span class="text-muted">---</span>
-                                @endif
-                            </td>
-                            <td class="text-start">
-                                <div class="desc-truncate" title="{{ $sc->mo_ta }}">
-                                    {{ $sc->mo_ta }}
-                                </div>
-                            </td>
-                            <td>
-                                @php
-                                    $badge = match($sc->trang_thai) {
-                                        'Tiếp nhận' => 'bg-secondary',
-                                        'Đang xử lý' => 'bg-info',
-                                        'Hoàn thành' => 'bg-success',
-                                        default => 'bg-light text-dark'
-                                    };
-                                @endphp
-                                <span class="badge {{ $badge }}">{{ $sc->trang_thai }}</span>
-                            </td>
-                            <td>{{ $sc->payment_amount > 0 ? number_format($sc->payment_amount,0,',','.').' ₫' : '0 ₫' }}</td>
-                            <td>
-                                @if($sc->payment_amount == 0)
-                                    <span class="badge bg-secondary">Không TT</span>
-                                @elseif($sc->is_paid)
-                                    <span class="badge bg-success">Đã TT</span>
-                                @else
-                                    <span class="badge bg-warning text-dark">Chưa TT</span>
-                                @endif
-                            </td>
-                            <td class="text-end suco-actions">
-                                <a href="{{ route('suco.show', $sc->id) }}" class="btn btn-outline-info btn-action" title="Xem">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="{{ route('suco.edit', $sc->id) }}" class="btn btn-outline-primary btn-action" title="Sửa">
-                                    <i class="fa fa-pencil"></i>
-                                </a>
-                                <form action="{{ route('suco.destroy', $sc->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xác nhận xóa?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-outline-danger btn-action" type="submit" title="Xóa"><i class="fa fa-trash"></i></button>
-                                </form>
-                                @if($sc->trang_thai != 'Hoàn thành')
-                                    <button type="button" class="btn btn-success btn-sm mt-1" 
-                                            data-bs-toggle="modal" data-bs-target="#hoanThanhModal"
-                                            data-id="{{ $sc->id }}"
-                                            data-payment="{{ $sc->payment_amount }}"
-                                            data-is-paid="{{ $sc->is_paid }}"
-                                            data-ngay="{{ $sc->ngay_hoan_thanh }}">
-                                        Hoàn thành
-                                    </button>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="11" class="text-center text-muted py-3">Chưa có sự cố nào.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <div class="d-flex justify-content-center mt-3">
-            {{ $su_cos->onEachSide(1)->links('pagination::bootstrap-4') }}
-        </div>
-    </div>
-</div>
-
-{{-- Modal Hoàn thành --}}
-<div class="modal fade" id="hoanThanhModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">✅ Hoàn thành sự cố</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </td>
+                                <td class="text-end fit">
+                                    <div class="room-actions">
+                                        <a href="{{ route('suco.show', $sc->id) }}"
+                                            class="btn btn-dergin btn-dergin--muted" title="Xem"><i
+                                                class="fa fa-eye"></i><span>Xem</span></a>
+                                        <a href="{{ route('suco.edit', $sc->id) }}" class="btn btn-dergin"
+                                            title="Sửa"><i class="fa fa-pencil"></i><span>Sửa</span></a>
+                                        <form action="{{ route('suco.destroy', $sc->id) }}" method="POST" class="d-inline"
+                                            onsubmit="return confirm('Xác nhận xóa?');">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-dergin btn-dergin--danger" type="submit"
+                                                title="Xóa"><i class="fa fa-trash"></i><span>Xóa</span></button>
+                                        </form>
+                                        @if ($sc->trang_thai != 'Hoàn thành')
+                                            <button type="button" class="btn btn-dergin btn-dergin--info"
+                                                data-bs-toggle="modal" data-bs-target="#hoanThanhModal"
+                                                data-id="{{ $sc->id }}" data-ngay="{{ $sc->ngay_hoan_thanh }}">
+                                                <i class="fa fa-check"></i><span>Hoàn thành</span>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="11" class="text-center text-muted py-4">
+                                    <img src="https://dummyimage.com/120x80/eff3f9/9aa8b8&text=No+data" class="mb-2"
+                                        alt="">
+                                    <div>Chưa có sự cố nào</div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-            <form id="hoanThanhForm" method="POST" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="id" id="suco_id">
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="fa fa-info-circle"></i> <strong>Lưu ý:</strong> Hoàn thành sự cố chỉ cập nhật trạng thái và ảnh. 
-                        Để tạo hóa đơn, vui lòng vào trang chi tiết sự cố.
-                    </div>
-                    <div class="mb-3">
-                        <label for="ngay_hoan_thanh" class="form-label">Ngày hoàn thành <span class="text-danger">*</span></label>
-                        <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="anh_modal" class="form-label">Ảnh minh chứng (sau khi sửa)</label>
-                        <input type="file" name="anh" id="anh_modal" class="form-control" accept="image/*">
-                        <small class="form-text text-muted">Tải lên ảnh sau khi đã sửa xong sự cố</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-success">Cập nhật</button>
-                </div>
-            </form>
+        </div>
+
+        {{-- Phân trang --}}
+        <div class="d-flex justify-content-center mt-3">
+            {{ $su_cos->onEachSide(1)->links() }}
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {{-- Modal Hoàn thành --}}
+    <div class="modal fade" id="hoanThanhModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">✅ Hoàn thành sự cố</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="hoanThanhForm" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="id" id="suco_id">
+                    <div class="modal-body">
+                        <div class="alert alert-info small">
+                            <i class="fa fa-info-circle"></i> Hoàn thành sự cố chỉ cập nhật trạng thái và ảnh.
+                            Để tạo hóa đơn, vui lòng vào trang chi tiết sự cố.
+                        </div>
+                        <div class="mb-3">
+                            <label for="ngay_hoan_thanh" class="form-label">Ngày hoàn thành</label>
+                            <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh" class="form-control"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="anh_modal" class="form-label">Ảnh minh chứng</label>
+                            <input type="file" name="anh" id="anh_modal" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-success">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('hoanThanhModal');
-    modal.addEventListener('show.bs.modal', function(event) {
-        const button = event.relatedTarget;
-        const id = button.getAttribute('data-id');
-        const ngay = button.getAttribute('data-ngay');
+    @push('styles')
+        <style>
+            html {
+                scroll-behavior: auto !important
+            }
 
-        document.getElementById('suco_id').value = id;
-        document.getElementById('ngay_hoan_thanh').value = ngay || '';
+            .room-page__title {
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: #1f2937
+            }
 
-        document.getElementById('hoanThanhForm').action = "{{ route('suco.hoanthanh', ':id') }}".replace(':id', id);
-    });
-});
-</script>
+            .room-table-wrapper {
+                background: #fff;
+                border-radius: 14px;
+                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+                padding: 1.25rem
+            }
 
-<style>
-.table th, .table td { vertical-align: middle !important; font-size: 13px; }
-.badge { padding: 4px 8px; border-radius: 10px; font-size: 11px; }
-.btn-action { width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; font-size:12px; }
-.suco-actions button.btn-sm { font-size:13px; }
-.desc-truncate { max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:normal; word-break:break-word; line-height:1.3; color:#333; }
-.text-truncate { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
-</style>
+            .room-table {
+                margin-bottom: 0;
+                border-collapse: separate;
+                border-spacing: 0 12px
+            }
+
+            .room-table thead th {
+                font-size: .78rem;
+                text-transform: uppercase;
+                letter-spacing: .05em;
+                color: #6c757d;
+                border: none;
+                padding-bottom: .75rem
+            }
+
+            .room-table tbody tr {
+                background: #f9fafc;
+                border-radius: 16px;
+                transition: transform .2s ease, box-shadow .2s ease
+            }
+
+            .room-table tbody tr:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08)
+            }
+
+            .room-table tbody td {
+                border: none;
+                vertical-align: middle;
+                padding: 1rem .95rem
+            }
+
+            .room-table tbody tr td:first-child {
+                border-top-left-radius: 16px;
+                border-bottom-left-radius: 16px
+            }
+
+            .room-table tbody tr td:last-child {
+                border-top-right-radius: 16px;
+                border-bottom-right-radius: 16px
+            }
+
+            .room-actions {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: center;
+                gap: .4rem;
+                white-space: nowrap
+            }
+
+            .room-actions .btn-dergin {
+                min-width: 92px
+            }
+
+            .btn-dergin {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: .35rem;
+                padding: .4rem .9rem;
+                border-radius: 999px;
+                font-weight: 600;
+                font-size: .72rem;
+                border: none;
+                color: #fff;
+                background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+                box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+                transition: transform .2s ease, box-shadow .2s ease
+            }
+
+            .btn-dergin:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+                color: #fff
+            }
+
+            .btn-dergin--muted {
+                background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
+            }
+
+            .btn-dergin--info {
+                background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
+            }
+
+            .btn-dergin--danger {
+                background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
+            }
+
+            .avatar-56 {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                object-fit: cover
+            }
+        </style>
+    @endpush
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('hoanThanhModal');
+                modal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const id = button.getAttribute('data-id');
+                    const ngay = button.getAttribute('data-ngay');
+                    document.getElementById('suco_id').value = id;
+                    document.getElementById('ngay_hoan_thanh').value = ngay || '';
+                    document.getElementById('hoanThanhForm').action = "{{ route('suco.hoanthanh', ':id') }}"
+                        .replace(':id', id);
+                });
+            });
+        </script>
+    @endpush
 @endsection

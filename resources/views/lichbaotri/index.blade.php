@@ -140,10 +140,7 @@
     </div>
   </div>
 
-  {{-- 🎯 Bộ lọc tháng/năm --}}
-  <div class="filter-card mb-3">
-    @include('components.month-year-filter', ['action' => route('lichbaotri.index')])
-  </div>
+ 
 
   {{-- 🎯 Bộ lọc khác --}}
   <div class="filter-card mb-4">
