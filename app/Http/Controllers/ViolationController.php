@@ -81,10 +81,12 @@ class ViolationController extends Controller
             'occurred_at'       => 'required|date',
             'status'            => 'required|in:open,resolved',
             'penalty_amount'    => 'nullable|numeric',
-            'receipt_no'        => 'nullable|string|max:100',
+            // 'receipt_no'        => 'nullable|string|max:100',
             'note'              => 'nullable|string',
             'image'             => 'nullable|image|max:2048', // thêm validate ảnh
         ]);
+
+        unset($data['receipt_no']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('violations', 'public');
@@ -109,10 +111,13 @@ class ViolationController extends Controller
             'occurred_at'       => 'required|date',
             'status'            => 'required|in:open,resolved',
             'penalty_amount'    => 'nullable|numeric',
-            'receipt_no'        => 'nullable|string|max:100',
+            // 'receipt_no'        => 'nullable|string|max:100',
+
             'note'              => 'nullable|string',
             'image'             => 'nullable|image|max:2048',
         ]);
+
+        unset($data['receipt_no']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('violations', 'public');
