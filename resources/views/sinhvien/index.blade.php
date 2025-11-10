@@ -99,7 +99,13 @@
                                     <td class="fit">
                                         <img src="{{ $imgUrl }}" alt="Ảnh {{ $sv->ho_ten }}" class="avatar-56">
                                     </td>
-                                    <td class="fit">{{ $sv->phong->ten_phong ?? '-' }}</td>
+                                    <td class="fit">
+                                        @php
+                                            // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
+                                            $phongHienTai = ($sv->slot && $sv->slot->phong) ? $sv->slot->phong : ($sv->phong ?? null);
+                                        @endphp
+                                        {{ $phongHienTai ? $phongHienTai->ten_phong : '-' }}
+                                    </td>
                                     <td class="fit"><span class="badge {{ $badgeClass }}">{{ $status }}</span>
                                     </td>
                                     <td class="text-end fit">
@@ -108,9 +114,9 @@
                                             <a href="{{ route('sinhvien.edit', $sv->id) }}" class="btn btn-dergin" title="Sửa"><i class="fa fa-pencil"></i><span>Sửa</span></a>
                                             @if (($sv->trang_thai_ho_so ?? '') !== 'Đã duyệt')
                                             <form action="{{ route('sinhvien.approve', $sv->id) }}" method="POST" class="d-inline">
-                                                @csrf @method('PATCH')
+                                                    @csrf @method('PATCH')
                                                 <button class="btn btn-dergin btn-dergin--info" title="Duyệt hồ sơ"><i class="fa fa-check"></i><span>Duyệt</span></button>
-                                            </form>
+                                                </form>
                                             @endif
                                             <form action="{{ route('sinhvien.destroy', $sv->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xác nhận xóa sinh viên này?')">
                                                 @csrf @method('DELETE')
@@ -261,7 +267,7 @@
     </div>
 
 @push('scripts')
-<script>
+    <script>
     // Mở modal chi tiết sinh viên (chạy sau khi jQuery/Bootstrap đã được nạp ở layout)
     (function () {
         $(function() {
@@ -324,6 +330,6 @@
         window.addEventListener('wheel', cancelProgrammaticScroll, { passive: true });
         window.addEventListener('touchmove', cancelProgrammaticScroll, { passive: true });
     })();
-</script>
+    </script>
 @endpush
 @endsection

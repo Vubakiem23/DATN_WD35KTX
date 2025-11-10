@@ -21,10 +21,6 @@
             $occured = optional($violation->occurred_at)->format('d/m/Y H:i') ?? '—';
             $created = optional($violation->created_at)->format('d/m/Y H:i') ?? '—';
             $updated = optional($violation->updated_at)->format('d/m/Y H:i') ?? '—';
-
-            // ===== Room & Khu (null-safe) =====
-            $tenPhong = optional(optional($violation->student)->phong)->ten_phong;
-            $tenKhu = optional(optional(optional($violation->student)->phong)->khu)->ten_khu;
         @endphp
 
         {{-- Header tổng quan --}}
@@ -83,9 +79,30 @@
                         <tr>
                             <th>Phòng / Khu</th>
                             <td>
-                                {{ $tenPhong ?? '—' }}
-                                @if (!empty($tenKhu))
-                                    <span class="badge badge-soft-secondary ml-1">Khu {{ $tenKhu }}</span>
+                                @php
+                                    // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
+                                    $student = $violation->student;
+                                    $phong = null;
+                                    if ($student) {
+                                        if ($student->slot && $student->slot->phong) {
+                                            $phong = $student->slot->phong;
+                                        } elseif ($student->phong) {
+                                            $phong = $student->phong;
+                                        }
+                                    }
+                                    $tenPhongDisplay = $phong ? $phong->ten_phong : null;
+                                    $khu = $phong ? $phong->khu : null;
+                                    $tenKhuDisplay = $khu ? $khu->ten_khu : null;
+                                @endphp
+                                @if ($tenPhongDisplay)
+                                    {{ $tenPhongDisplay }}
+                                    @if ($tenKhuDisplay)
+                                        <span class="badge badge-soft-secondary ml-1">Khu {{ $tenKhuDisplay }}</span>
+                                    @endif
+                                @else
+                                    <span class="text-muted">
+                                        <i class="mdi mdi-information-outline"></i> Chưa được phân phòng
+                                    </span>
                                 @endif
                             </td>
                         </tr>

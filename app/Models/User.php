@@ -43,4 +43,12 @@ class User extends Authenticatable
     {
         return $this->roles->first()?->ma_quyen ?? null;
     }
+
+    /**
+     * Quan hệ với SinhVien
+     */
+    public function sinhVien()
+    {
+        return $this->hasOne(\App\Models\SinhVien::class, 'user_id', 'id');
+    }
 }

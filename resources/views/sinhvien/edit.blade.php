@@ -186,12 +186,12 @@
                 </div>
             </div>
 
-            {{-- Học vụ & phòng --}}
+            {{-- Học vụ --}}
             <div class="form-section">
                 <div class="card-body">
-                    <div class="section-title"><span class="dot"></span>Học vụ & phòng</div>
+                    <div class="section-title"><span class="dot"></span>Học vụ</div>
                     <div class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">Lớp <span class="text-danger">*</span></label>
                             <input type="text" name="lop" class="form-control" required
                                 value="{{ old('lop', $sinhvien->lop) }}">
@@ -199,7 +199,7 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">Ngành <span class="text-danger">*</span></label>
                             <input type="text" name="nganh" class="form-control" required
                                 value="{{ old('nganh', $sinhvien->nganh) }}">
@@ -207,7 +207,7 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">Khóa học <span class="text-danger">*</span></label>
                             <input type="text" name="khoa_hoc" class="form-control" required
                                 value="{{ old('khoa_hoc', $sinhvien->khoa_hoc) }}">
@@ -215,37 +215,6 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-
-                        <div class="col-mb-3">
-                            <label class="form-label">Phòng <span class="req">*</span></label>
-                            @php
-                                $phongSelected = old('phong_id', $sinhvien->phong_id);
-                            @endphp
-                            <select name="phong_id" id="selectPhong"
-                                class="form-select @error('phong_id') is-invalid @enderror" required>
-                                @foreach ($phongs as $phong)
-                                    @php
-                                        $tenPhong = $phong->ten_phong ?? 'Phòng ' . $phong->id;
-                                        $tenKhu = optional($phong->khu)->ten_khu ?? 'Chưa gán khu';
-                                    @endphp
-                                    <option value="{{ $phong->id }}" data-khu="{{ $tenKhu }}"
-                                        {{ (string) $phongSelected === (string) $phong->id ? 'selected' : '' }}>
-                                        {{ $tenPhong }} ({{ $tenKhu }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('phong_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-
-                            {{-- Badge hiển thị khu hiện tại ngay khi mở form --}}
-                            {{-- <div class="mt-2">
-                                <span id="khuBadge" class="badge badge-soft-secondary">
-                                    Khu: {{ optional($phongs->firstWhere('id', $phongSelected))->khu->ten_khu ?? '—' }}
-                                </span>
-                            </div> --}}
-                        </div>
-
                     </div>
                 </div>
             </div>

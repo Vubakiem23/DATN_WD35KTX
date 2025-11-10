@@ -71,8 +71,12 @@
                 <div class="col-md-4"><strong>Khóa học:</strong> {{ $sinhvien->khoa_hoc ?? '-' }}</div>
             </div>
             <div class="row mb-2">
-                <div class="col-md-4"><strong>Phòng:</strong> {{ $sinhvien->phong->ten_phong ?? '—' }}</div>
-                <div class="col-md-4"><strong>Khu:</strong> {{ $sinhvien->phong->khu->ten_khu ?? '—' }}</div>
+                @php
+                    // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
+                    $phongHienTai = $sinhvien->slot && $sinhvien->slot->phong ? $sinhvien->slot->phong : ($sinhvien->phong ?? null);
+                @endphp
+                <div class="col-md-4"><strong>Phòng:</strong> {{ $phongHienTai->ten_phong ?? '—' }}</div>
+                <div class="col-md-4"><strong>Khu:</strong> {{ $phongHienTai->khu->ten_khu ?? '—' }}</div>
                 <div class="col-md-4"><strong>Email:</strong> {{ $sinhvien->email }}</div>
             </div>
             <div class="row mb-2">

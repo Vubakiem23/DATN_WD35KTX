@@ -14,6 +14,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\LichBaoTriController;
 use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\SuCoController;
+use App\Http\Controllers\HoaDonSuCoController;
 use App\Http\Controllers\SlotController;
 use App\Http\Controllers\KhuController;
 
@@ -23,6 +24,9 @@ use App\Http\Controllers\ViolationController;
 use App\Http\Controllers\ViolationTypeController;
 use App\Http\Controllers\MucDoController;
 use App\Http\Controllers\TieuDeController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\PublicController;
 use App\Models\Violation;
 /*
 |--------------------------------------------------------------------------
@@ -32,15 +36,49 @@ use App\Models\Violation;
 
 
 
+// =================== 🌐 PUBLIC (Công khai) ===================
+Route::get('', [PublicController::class, 'home'])->name('public.home');
+// Đăng ký ký túc xá (Public)
+Route::get('/dang-ky-ky-tuc-xa', [PublicController::class, 'applyForm'])->name('public.apply');
+Route::post('/dang-ky-ky-tuc-xa', [PublicController::class, 'applyStore'])->name('public.apply.store');
+
 // ADMIN (Chỉ admin mới login được)
-Route::get('', [AuthController::class, 'login'])->name('auth.login');
+Route::get('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/login', [AuthController::class, 'handle_login'])->name('auth.handle.login');
 Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 // REGISTER cho tài khoản thường
 // ======================
 Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/register', [AuthController::class, 'handle_register'])->name('auth.handle.register');
-// =================== 🧑‍🎓 STUDENT ===================
+// =================== 🧑‍🎓 CLIENT (SINH VIÊN) ===================
+Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
+    Route::get('', [ClientController::class, 'dashboard'])->name('client.dashboard');
+    Route::get('/phong', [ClientController::class, 'phong'])->name('client.phong');
+    Route::get('/profile', [ClientController::class, 'profile'])->name('client.profile');
+    
+    // Sự cố (sẽ làm sau)
+    Route::prefix('suco')->group(function () {
+        Route::get('/', function() {
+            return view('client.suco.index');
+        })->name('client.suco.index');
+    });
+    
+    // Hóa đơn (sẽ làm sau)
+    Route::prefix('hoadon')->group(function () {
+        Route::get('/', function() {
+            return view('client.hoadon.index');
+        })->name('client.hoadon.index');
+    });
+    
+    // Thông báo (sẽ làm sau)
+    Route::prefix('thongbao')->group(function () {
+        Route::get('/', function() {
+            return view('client.thongbao.index');
+        })->name('client.thongbao.index');
+    });
+});
+
+// =================== 🧑‍🎓 STUDENT (OLD - giữ để tương thích) ===================
 Route::group(['prefix' => 'student', 'middleware' => ['student']], function () {
     Route::get('', [SinhVienController::class, 'index'])->name('student.index');
 });
@@ -172,16 +210,38 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/sendemailphong/{phong_id}', [HoaDonController::class, 'guiEmailTheoPhong']);
     Route::get('/hoadon/timkiem', [HoaDonController::class, 'timKiem'])->name('hoadon.timkiem');
 
+    // ====== VI PHẠM (violations) ======
+    Route::resource('vipham', ViolationController::class);
+    Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
+    // đánh dấu đã xử lý
+    Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
+        ->name('vipham.resolve');
+    // ====== LOẠI VI PHẠM (violation_types) ======
+    Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
+
+    // ---------------- SỰ CỐ ----------------
+    Route::resource('suco', SuCoController::class);
+    // Route nút hoàn thành
+    Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.hoanthanh');
+    // Route xác nhận thanh toán
+    Route::post('suco/{id}/thanh-toan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
+    // Route tạo hóa đơn
+    Route::post('suco/{id}/tao-hoa-don', [SuCoController::class, 'taoHoaDon'])->name('suco.taohoadon');
+
+    // ---------------- HÓA ĐƠN SỰ CỐ ----------------
+    Route::prefix('hoadonsuco')->group(function () {
+        Route::get('/', [HoaDonSuCoController::class, 'index'])->name('hoadonsuco.index');
+        Route::post('/{id}/xac-nhan-thanh-toan', [HoaDonSuCoController::class, 'xacNhanThanhToan'])->name('hoadonsuco.xacnhan');
+        Route::post('/{id}/huy-thanh-toan', [HoaDonSuCoController::class, 'huyThanhToan'])->name('hoadonsuco.huy');
+        Route::post('/{id}/thanh-toan', [HoaDonSuCoController::class, 'thanhToan'])->name('hoadonsuco.thanhtoan');
+    });
+
+    // ---------------- BÁO CÁO - THỐNG KÊ ----------------
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
+
 });
 Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
-
-// ----------------- SỰ CỐ -----------------
-// ====================== 
-Route::resource('suco', SuCoController::class);
-// 🔹 Route xác nhận thanh toán sự cố
-// Route::post('suco/{id}/thanhtoan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
-// Route nút hoàn thành
-Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.thanhtoan');
 
 
     // // TÀI SẢN
@@ -214,20 +274,8 @@ Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->nam
     });
 
 
-    // ---------------- SỰ CỐ ----------------
-    Route::resource('suco', SuCoController::class);
     // ---------------- THÔNG BÁO ----------------
     Route::resource('thongbao', ThongBaoController::class);
-    // ---------------- SỰ CỐ ----------------
-    Route::resource('suco', SuCoController::class);
-    // ====== VI PHẠM (violations) ======
-    Route::resource('vipham', ViolationController::class);
-    Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
-    // đánh dấu đã xử lý
-    Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
-        ->name('vipham.resolve');
-    // ====== LOẠI VI PHẠM (violation_types) ======
-    Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
     // ---------------- QUẢN LÝ TÀI SẢN ----------------
     // ---------------- TÀI SẢN ----------------

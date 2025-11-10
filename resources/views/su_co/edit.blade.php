@@ -29,9 +29,29 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Phòng</label>
+                    <label class="form-label">Phòng / Khu</label>
+                    @php
+                        // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
+                        $student = $suco->sinhVien ?? null;
+                        $phong = null;
+                        if ($student) {
+                            // Kiểm tra slot và phong của slot
+                            if (isset($student->slot) && $student->slot && isset($student->slot->phong) && $student->slot->phong) {
+                                $phong = $student->slot->phong;
+                            } elseif (isset($student->phong) && $student->phong) {
+                                $phong = $student->phong;
+                            } elseif (isset($suco->phong) && $suco->phong) {
+                                $phong = $suco->phong;
+                            }
+                        } elseif (isset($suco->phong) && $suco->phong) {
+                            $phong = $suco->phong;
+                        }
+                        $tenPhongDisplay = $phong && isset($phong->ten_phong) ? $phong->ten_phong : 'Chưa có phòng';
+                        $khu = ($phong && isset($phong->khu) && $phong->khu) ? $phong->khu : null;
+                        $tenKhuDisplay = $khu && isset($khu->ten_khu) ? $khu->ten_khu : null;
+                    @endphp
                     <input type="text" class="form-control" 
-                        value="{{ $suco->phong->ten_phong ?? '-' }}" disabled>
+                        value="{{ $tenPhongDisplay }}@if($tenKhuDisplay) - Khu {{ $tenKhuDisplay }}@endif" disabled>
                 </div>
 
                 <div class="mb-3">

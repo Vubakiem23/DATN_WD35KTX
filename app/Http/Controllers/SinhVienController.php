@@ -23,9 +23,11 @@ class SinhVienController extends Controller
         $classLike  = $request->input('class_id');       // map vào 'lop'
         $majorLike  = $request->input('major_id');       // map vào 'nganh'
         $intakeYear = $request->input('intake_year');    // map vào 'khoa_hoc'
+        $month      = $request->input('month');          // Lọc theo tháng
+        $year       = $request->input('year');           // Lọc theo năm
 
-        $sinhviens = SinhVien::query()
-            ->with('phong')
+        // Query base để tính thống kê (áp dụng tất cả filter trừ pagination)
+        $baseQuery = SinhVien::query()
             ->search($q)
             ->gender($gender)
             ->hoSoStatus($status)
@@ -33,7 +35,25 @@ class SinhVienController extends Controller
             ->inKhu($khu)
             ->classLike($classLike)
             ->majorLike($majorLike)
-            ->intakeYear($intakeYear)
+            ->intakeYear($intakeYear);
+
+        // Lọc theo tháng/năm nếu có
+        if ($month) {
+            $baseQuery->whereMonth('created_at', $month);
+        }
+        if ($year) {
+            $baseQuery->whereYear('created_at', $year);
+        }
+
+        // Tính thống kê
+        $tongHoSo = (clone $baseQuery)->count();
+        $daDuyet = (clone $baseQuery)->where('trang_thai_ho_so', 'Đã duyệt')->count();
+        $choDuyet = (clone $baseQuery)->where('trang_thai_ho_so', 'Chờ duyệt')->count();
+        $chuaDuyet = $tongHoSo - $daDuyet; // Tổng - đã duyệt (bao gồm cả chờ duyệt và null)
+
+        // Query để lấy danh sách (có pagination)
+        $sinhviens = (clone $baseQuery)
+            ->with(['phong', 'slot.phong'])
             ->orderBy('id', 'desc')
             ->paginate(13)
             ->appends($request->query());
@@ -47,6 +67,10 @@ class SinhVienController extends Controller
             'keyword'   => $q,
             'phongs'    => $phongs,
             'dsKhu'     => $dsKhu,
+            'tongHoSo'  => $tongHoSo,
+            'daDuyet'   => $daDuyet,
+            'choDuyet'  => $choDuyet,
+            'chuaDuyet' => $chuaDuyet,
         ]);
     }
 
@@ -56,6 +80,7 @@ class SinhVienController extends Controller
     {
         $sinhvien = \App\Models\SinhVien::with([
             'phong.khu',
+            'slot.phong.khu',
             'violations.type'
         ])->findOrFail($id);
 
@@ -123,8 +148,7 @@ class SinhVienController extends Controller
     public function edit($id)
     {
         $sinhvien = \App\Models\SinhVien::findOrFail($id);
-        $phongs   = \App\Models\Phong::with('khu:id,ten_khu')->get();
-        return view('sinhvien.edit', compact('sinhvien', 'phongs'));
+        return view('sinhvien.edit', compact('sinhvien'));
     }
 
     // Cập nhật thông tin
@@ -144,7 +168,6 @@ class SinhVienController extends Controller
             'khoa_hoc' => 'required|string',
             'so_dien_thoai' => 'required|string',
             'email' => 'required|email',
-            'phong_id' => 'required|exists:phong,id',
             'trang_thai_ho_so' => 'nullable|string',
 
             // mới
@@ -163,22 +186,7 @@ class SinhVienController extends Controller
             $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public');
         }
 
-        $oldPhong = $sv->phong_id;
         $sv->update($data);
-
-        // Nếu đổi phòng, đóng lịch sử cũ và mở lịch sử mới
-        if ((int)$oldPhong !== (int)$sv->phong_id) {
-            \App\Models\RoomAssignment::where('sinh_vien_id', $sv->id)
-                ->whereNull('end_date')
-                ->update(['end_date' => now()->toDateString()]);
-
-            \App\Models\RoomAssignment::create([
-                'sinh_vien_id' => $sv->id,
-                'phong_id' => $sv->phong_id,
-                'start_date' => now()->toDateString(),
-                'end_date' => null,
-            ]);
-        }
 
         return redirect()->route('sinhvien.index')->with('success', 'Đã cập nhật sinh viên');
     }

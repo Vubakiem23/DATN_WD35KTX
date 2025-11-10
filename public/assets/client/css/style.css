@@ -1,0 +1,75 @@
+/* Client Layout Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.client-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.client-navbar {
+    position: sticky;
+    top: 70px;
+    z-index: 999;
+}
+
+.main-content {
+    min-height: calc(100vh - 300px);
+    padding-top: 20px;
+}
+
+.client-footer {
+    margin-top: auto;
+}
+
+/* Navigation Active State */
+.nav-link.active {
+    font-weight: 600;
+    color: #0d6efd !important;
+    border-bottom: 2px solid #0d6efd;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+
+/* Table Styles */
+.table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .client-header .col-md-3,
+    .client-header .col-md-6 {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    .client-navbar {
+        top: auto;
+    }
+}
