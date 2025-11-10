@@ -11,7 +11,7 @@
     <tbody>
         <tr>
             <td>Khu</td>
-            <td>{{ $hoaDon->phong->ten_phong }}</td>
+            <td>{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td>
         </tr>
         <tr>
             <td>Phòng</td>
@@ -19,7 +19,7 @@
         </tr>
         <tr>
             <td>Loại Phòng</td>
-            <td>{{ $hoaDon->phong->ten_phong }}</td>
+            <td>{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td>
         </tr>
         <tr>
             <td>Điện đã dùng</td>

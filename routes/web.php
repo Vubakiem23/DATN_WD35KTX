@@ -209,6 +209,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/testmailpit', [HoaDonController::class, 'testMail']);
     Route::get('/sendemailphong/{phong_id}', [HoaDonController::class, 'guiEmailTheoPhong']);
     Route::get('/hoadon/timkiem', [HoaDonController::class, 'timKiem'])->name('hoadon.timkiem');
+     Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
     // ====== VI PHẠM (violations) ======
     Route::resource('vipham', ViolationController::class);
