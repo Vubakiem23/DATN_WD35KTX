@@ -10,15 +10,45 @@
     </div>
 
     <div class="x_content">
-        {{-- 🔍 Tìm kiếm --}}
-        <form method="GET" action="{{ route('suco.index') }}" class="mb-3 d-flex align-items-center flex-wrap gap-2">
-            <input type="text" name="search" value="{{ request('search') ?? '' }}"
-                   class="form-control form-control-sm w-auto"
-                   placeholder="Tìm theo MSSV hoặc Họ tên">
-            <button type="submit" class="btn btn-sm btn-primary">Tìm</button>
-            @if(request('search'))
-                <a href="{{ route('suco.index') }}" class="btn btn-sm btn-light">Xóa lọc</a>
-            @endif
+        {{-- 🔍 Tìm kiếm và lọc --}}
+        <form method="GET" action="{{ route('suco.index') }}" class="mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small">Tìm kiếm</label>
+                    <input type="text" name="search" value="{{ request('search') ?? '' }}"
+                           class="form-control form-control-sm"
+                           placeholder="MSSV hoặc Họ tên">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Trạng thái</label>
+                    <select name="trang_thai" class="form-control form-control-sm">
+                        <option value="">Tất cả</option>
+                        <option value="Tiếp nhận" {{ request('trang_thai') == 'Tiếp nhận' ? 'selected' : '' }}>Tiếp nhận</option>
+                        <option value="Đang xử lý" {{ request('trang_thai') == 'Đang xử lý' ? 'selected' : '' }}>Đang xử lý</option>
+                        <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Từ ngày</label>
+                    <input type="date" name="date_from" value="{{ request('date_from') ?? '' }}"
+                           class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Đến ngày</label>
+                    <input type="date" name="date_to" value="{{ request('date_to') ?? '' }}"
+                           class="form-control form-control-sm">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fa fa-search"></i> Tìm kiếm
+                    </button>
+                    @if(request('search') || request('trang_thai') || request('date_from') || request('date_to'))
+                        <a href="{{ route('suco.index') }}" class="btn btn-sm btn-light">
+                            <i class="fa fa-times"></i> Xóa lọc
+                        </a>
+                    @endif
+                </div>
+            </div>
         </form>
 
         {{-- 🟢 Thông báo --}}
@@ -36,7 +66,7 @@
                     <tr>
                         <th>ID</th>
                         <th class="text-start">Sinh viên</th>
-                        <th>Phòng</th>
+                        <th>Phòng / Khu</th>
                         <th>Ngày gửi</th>
                         <th>Hoàn thành</th>
                         <th>Ảnh</th>
@@ -57,7 +87,36 @@
                                 </span>
                                 <small class="text-muted d-block" style="font-size:11px;">MSSV: {{ $sc->sinhVien->ma_sinh_vien ?? '---' }}</small>
                             </td>
-                            <td>{{ $sc->phong->ten_phong ?? '---' }}</td>
+                            <td>
+                                @php
+                                    // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
+                                    $student = $sc->sinhVien ?? null;
+                                    $phong = null;
+                                    if ($student) {
+                                        // Kiểm tra slot và phong của slot
+                                        if (isset($student->slot) && $student->slot && isset($student->slot->phong) && $student->slot->phong) {
+                                            $phong = $student->slot->phong;
+                                        } elseif (isset($student->phong) && $student->phong) {
+                                            $phong = $student->phong;
+                                        } elseif (isset($sc->phong) && $sc->phong) {
+                                            $phong = $sc->phong;
+                                        }
+                                    } elseif (isset($sc->phong) && $sc->phong) {
+                                        $phong = $sc->phong;
+                                    }
+                                    $tenPhongDisplay = $phong && isset($phong->ten_phong) ? $phong->ten_phong : null;
+                                    $khu = ($phong && isset($phong->khu) && $phong->khu) ? $phong->khu : null;
+                                    $tenKhuDisplay = $khu && isset($khu->ten_khu) ? $khu->ten_khu : null;
+                                @endphp
+                                @if ($tenPhongDisplay)
+                                    <div>{{ $tenPhongDisplay }}</div>
+                                    @if ($tenKhuDisplay)
+                                        <small class="badge badge-soft-secondary" style="font-size:10px;">Khu {{ $tenKhuDisplay }}</small>
+                                    @endif
+                                @else
+                                    <span class="text-muted">---</span>
+                                @endif
+                            </td>
                             <td>{{ $sc->ngay_gui ? \Carbon\Carbon::parse($sc->ngay_gui)->format('d/m/Y') : '-' }}</td>
                             <td>{{ $sc->ngay_hoan_thanh ? \Carbon\Carbon::parse($sc->ngay_hoan_thanh)->format('d/m/Y') : '-' }}</td>
                             <td>
@@ -144,21 +203,18 @@
                 @csrf
                 <input type="hidden" name="id" id="suco_id">
                 <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle"></i> <strong>Lưu ý:</strong> Hoàn thành sự cố chỉ cập nhật trạng thái và ảnh. 
+                        Để tạo hóa đơn, vui lòng vào trang chi tiết sự cố.
+                    </div>
                     <div class="mb-3">
-                        <label for="ngay_hoan_thanh" class="form-label">Ngày hoàn thành</label>
+                        <label for="ngay_hoan_thanh" class="form-label">Ngày hoàn thành <span class="text-danger">*</span></label>
                         <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="payment_amount_modal" class="form-label">Giá tiền (₫)</label>
-                        <input type="number" name="payment_amount" id="payment_amount_modal" class="form-control" min="0" required>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" name="is_paid" class="form-check-input" id="is_paid_modal">
-                        <label class="form-check-label" for="is_paid_modal">Đã thanh toán</label>
-                    </div>
-                    <div class="mb-3">
-                        <label for="anh_modal" class="form-label">Ảnh minh chứng</label>
+                        <label for="anh_modal" class="form-label">Ảnh minh chứng (sau khi sửa)</label>
                         <input type="file" name="anh" id="anh_modal" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">Tải lên ảnh sau khi đã sửa xong sự cố</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -178,16 +234,12 @@ document.addEventListener('DOMContentLoaded', function() {
     modal.addEventListener('show.bs.modal', function(event) {
         const button = event.relatedTarget;
         const id = button.getAttribute('data-id');
-        const payment = button.getAttribute('data-payment') || 0;
-        const isPaid = button.getAttribute('data-is-paid') == 1;
         const ngay = button.getAttribute('data-ngay');
 
         document.getElementById('suco_id').value = id;
-        document.getElementById('payment_amount_modal').value = payment;
-        document.getElementById('is_paid_modal').checked = isPaid;
         document.getElementById('ngay_hoan_thanh').value = ngay || '';
 
-        document.getElementById('hoanThanhForm').action = "{{ route('suco.thanhtoan', ':id') }}".replace(':id', id);
+        document.getElementById('hoanThanhForm').action = "{{ route('suco.hoanthanh', ':id') }}".replace(':id', id);
     });
 });
 </script>

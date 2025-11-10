@@ -22,12 +22,14 @@ class SuCo extends Model
         'anh',              // ảnh minh chứng
         'nguoi_tao',        // sinh_vien hoặc nhan_vien
         'ngay_hoan_thanh',  // 🆕 ngày hoàn thành sự cố
+        'ngay_thanh_toan',  // 🆕 ngày thanh toán hóa đơn
     ];
 
     protected $casts = [
         'payment_amount' => 'decimal:2',
         'is_paid' => 'boolean',
         'ngay_hoan_thanh' => 'datetime', // 🆕 cast ngày hoàn thành
+        'ngay_thanh_toan' => 'datetime', // 🆕 cast ngày thanh toán
     ];
 
     // 🧩 Quan hệ: Một sự cố thuộc về một sinh viên

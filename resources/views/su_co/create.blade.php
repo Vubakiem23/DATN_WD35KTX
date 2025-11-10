@@ -29,7 +29,20 @@
                 <select name="sinh_vien_id" id="sinh_vien_id" class="form-control" required>
                     <option value="">-- Chọn sinh viên --</option>
                     @foreach($sinhviens as $sv)
-                        <option value="{{ $sv->id }}" data-phong="{{ $sv->phong->ten_phong ?? '' }}">
+                        @php
+                            // Ưu tiên lấy phòng từ slot
+                            $phong = null;
+                            if (isset($sv->slot) && $sv->slot && isset($sv->slot->phong) && $sv->slot->phong) {
+                                $phong = $sv->slot->phong;
+                            } elseif (isset($sv->phong) && $sv->phong) {
+                                $phong = $sv->phong;
+                            }
+                            $tenPhong = $phong && isset($phong->ten_phong) ? $phong->ten_phong : 'Chưa có phòng';
+                            $phongId = $phong && isset($phong->id) ? $phong->id : '';
+                        @endphp
+                        <option value="{{ $sv->id }}" 
+                                data-phong="{{ $tenPhong }}"
+                                data-phong-id="{{ $phongId }}">
                             {{ $sv->ho_ten }} ({{ $sv->ma_sinh_vien }})
                         </option>
                     @endforeach
@@ -76,16 +89,11 @@
 <script>
 document.getElementById('sinh_vien_id').addEventListener('change', function() {
     let selectedOption = this.options[this.selectedIndex];
-    let phongTen = selectedOption.getAttribute('data-phong') || 'Không có';
+    let phongTen = selectedOption.getAttribute('data-phong') || 'Chưa có phòng';
+    let phongId = selectedOption.getAttribute('data-phong-id') || '';
+    
     document.getElementById('phong_ten').value = phongTen;
-
-    // Nếu có id phòng thì gán vào input hidden
-    let svId = this.value;
-    @json($sinhviens).forEach(sv => {
-        if (sv.id == svId) {
-            document.getElementById('phong_id').value = sv.phong_id ?? '';
-        }
-    });
+    document.getElementById('phong_id').value = phongId;
 });
 </script>
 

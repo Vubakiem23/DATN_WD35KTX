@@ -34,16 +34,19 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
+            $user->loadMissing(['roles', 'sinhVien']);
+            $request->session()->regenerate();
 
-            // Chỉ cho phép login nếu là admin
+            // Phân quyền: Admin → admin dashboard, Student → client dashboard
             if ($user->roles->contains('ten_quyen', 'admin')) {
-                $request->session()->regenerate();
                 return redirect()->route('admin.index');
+            } elseif ($user->roles->contains('ten_quyen', 'student')) {
+                return redirect()->route('public.home');
             } else {
-                // Không phải admin → logout ngay và thông báo lỗi
+                // Không có quyền hợp lệ → logout
                 Auth::logout();
                 return back()->withErrors([
-                    'access' => 'Tài khoản thường không thể đăng nhập vào hệ thống. Chỉ admin mới được phép.'
+                    'access' => 'Tài khoản của bạn chưa được phân quyền. Vui lòng liên hệ quản trị viên.'
                 ]);
             }
         }

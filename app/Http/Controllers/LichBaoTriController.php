@@ -36,6 +36,16 @@ class LichBaoTriController extends Controller
         // 🧩 Bộ lọc
         $query = LichBaoTri::with(['taiSan.phong', 'khoTaiSan']);
 
+        // Lọc theo tháng/năm
+        if ($request->filled('month') && $request->filled('year')) {
+            $query->whereYear('ngay_bao_tri', $request->year)
+                  ->whereMonth('ngay_bao_tri', $request->month);
+        } elseif ($request->filled('year')) {
+            $query->whereYear('ngay_bao_tri', $request->year);
+        } elseif ($request->filled('month')) {
+            $query->whereMonth('ngay_bao_tri', $request->month);
+        }
+
         if ($request->filled('trang_thai')) {
             $query->where('trang_thai', $request->trang_thai);
         }
@@ -52,6 +62,36 @@ class LichBaoTriController extends Controller
             }
         }
 
+        // 📊 Thống kê số tài sản cần bảo trì
+        $thongKe = [
+            'cho_bao_tri' => LichBaoTri::where('trang_thai', 'Chờ bảo trì')->count(),
+            'dang_bao_tri' => LichBaoTri::where('trang_thai', 'Đang bảo trì')->count(),
+            'hoan_thanh' => LichBaoTri::where('trang_thai', 'Hoàn thành')->count(),
+            'tong_tai_san' => LichBaoTri::count(),
+        ];
+
+        // Áp dụng bộ lọc tháng/năm cho thống kê nếu có
+        if ($request->filled('month') && $request->filled('year')) {
+            $thongKeQuery = LichBaoTri::whereYear('ngay_bao_tri', $request->year)
+                                      ->whereMonth('ngay_bao_tri', $request->month);
+            $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
+            $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
+            $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
+            $thongKe['tong_tai_san'] = $thongKeQuery->count();
+        } elseif ($request->filled('year')) {
+            $thongKeQuery = LichBaoTri::whereYear('ngay_bao_tri', $request->year);
+            $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
+            $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
+            $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
+            $thongKe['tong_tai_san'] = $thongKeQuery->count();
+        } elseif ($request->filled('month')) {
+            $thongKeQuery = LichBaoTri::whereMonth('ngay_bao_tri', $request->month);
+            $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
+            $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
+            $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
+            $thongKe['tong_tai_san'] = $thongKeQuery->count();
+        }
+
         $lich = $query->orderByRaw("
                 CASE 
                     WHEN trang_thai = 'Chờ bảo trì' THEN 1
@@ -61,9 +101,10 @@ class LichBaoTriController extends Controller
                 END ASC
             ")
             ->orderBy('ngay_bao_tri', 'asc')
-            ->paginate(6);
+            ->paginate(6)
+            ->appends($request->query());
 
-        return view('lichbaotri.index', compact('lich'));
+        return view('lichbaotri.index', compact('lich', 'thongKe'));
     }
 
     /** ➕ Form tạo mới */

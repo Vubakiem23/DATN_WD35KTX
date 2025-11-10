@@ -2,8 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Role;
-use App\Models\RoleUser;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,13 +17,21 @@ class Student
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            $user = Auth::user();
-            $role_user = RoleUser::where('user_id', $user->id)->first();
-            $roleNames = Role::where('id', $role_user->role_id)->pluck('ten_quyen');
-            if ($roleNames->contains('student')) {
-                return $next($request);
+            $user = Auth::user()->loadMissing(['roles', 'sinhVien']);
+
+            // Kiểm tra theo mã quyền chuẩn
+            if (!$user->roles->contains('ma_quyen', 'student')) {
+                return redirect(route('error'));
             }
-            return redirect(route('error'));
+
+            $sinhVien = $user->sinhVien;
+            if (!$sinhVien || $sinhVien->trang_thai_ho_so !== 'Đã duyệt') {
+                return redirect()
+                    ->route('public.home')
+                    ->with('warning', 'Hồ sơ sinh viên của bạn chưa được duyệt. Vui lòng hoàn thành và chờ phê duyệt để sử dụng các chức năng dành cho sinh viên.');
+            }
+
+            return $next($request);
         }
         return redirect(route('auth.login'));
     }

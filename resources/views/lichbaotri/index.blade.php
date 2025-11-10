@@ -76,9 +76,86 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
-  {{-- 🎯 Bộ lọc --}}
+  {{-- 📊 Thống kê số tài sản bảo trì --}}
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-warning border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Chờ bảo trì</h6>
+              <h3 class="mb-0 text-warning">{{ $thongKe['cho_bao_tri'] ?? 0 }}</h3>
+            </div>
+            <div class="text-warning" style="font-size: 2rem;">
+              <i class="fa fa-clock"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-danger border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Đang bảo trì</h6>
+              <h3 class="mb-0 text-danger">{{ $thongKe['dang_bao_tri'] ?? 0 }}</h3>
+            </div>
+            <div class="text-danger" style="font-size: 2rem;">
+              <i class="fa fa-tools"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-success border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Hoàn thành</h6>
+              <h3 class="mb-0 text-success">{{ $thongKe['hoan_thanh'] ?? 0 }}</h3>
+            </div>
+            <div class="text-success" style="font-size: 2rem;">
+              <i class="fa fa-check-circle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-primary border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Tổng tài sản</h6>
+              <h3 class="mb-0 text-primary">{{ $thongKe['tong_tai_san'] ?? 0 }}</h3>
+            </div>
+            <div class="text-primary" style="font-size: 2rem;">
+              <i class="fa fa-boxes"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- 🎯 Bộ lọc tháng/năm --}}
+  <div class="filter-card mb-3">
+    @include('components.month-year-filter', ['action' => route('lichbaotri.index')])
+  </div>
+
+  {{-- 🎯 Bộ lọc khác --}}
   <div class="filter-card mb-4">
     <form method="GET" action="{{ route('lichbaotri.index') }}" class="row g-3 align-items-end">
+      {{-- Giữ lại tháng/năm từ bộ lọc trên --}}
+      @if(request('month'))
+        <input type="hidden" name="month" value="{{ request('month') }}">
+      @endif
+      @if(request('year'))
+        <input type="hidden" name="year" value="{{ request('year') }}">
+      @endif
+
       <div class="col-md-3">
         <label class="form-label"><i class="fa fa-circle-check text-primary"></i> Trạng thái</label>
         <select name="trang_thai" class="form-select form-control">

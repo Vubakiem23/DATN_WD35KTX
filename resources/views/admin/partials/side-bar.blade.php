@@ -127,7 +127,12 @@
                                 <i class="fa fa-wrench"></i> Quản lý yêu cầu sửa chữa, bảo trì
                             </a>
                         </li>
-
+                        <li>
+                            <a href="{{ route('hoadonsuco.index') }}"
+                                class="{{ request()->routeIs('hoadonsuco.*') ? 'active' : '' }}">
+                                <i class="fa fa-file-text-o"></i> Hóa đơn sự cố
+                            </a>
+                        </li>
                     </ul>
 
 
@@ -157,7 +162,12 @@
                     <li>
                         <a><i class="fa fa-windows"></i> Báo cáo, thống kê <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="#"><i class="fa fa-bar-chart"></i> Báo cáo hoạt động</a></li>
+                            <li>
+                                <a href="{{ route('admin.index') }}"
+                                    class="{{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
+                                    <i class="fa fa-bar-chart"></i> Báo cáo thống kê
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>

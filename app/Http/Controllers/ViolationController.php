@@ -136,7 +136,7 @@ class ViolationController extends Controller
     }
     public function show($id)
     {
-        $violation = Violation::findOrFail($id);
+        $violation = Violation::with(['student.phong.khu', 'student.slot.phong.khu', 'type'])->findOrFail($id);
         return view('vipham.show', compact('violation'));
     }
 }
