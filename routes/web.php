@@ -23,6 +23,9 @@ use App\Http\Controllers\ViolationController;
 use App\Http\Controllers\ViolationTypeController;
 use App\Http\Controllers\MucDoController;
 use App\Http\Controllers\TieuDeController;
+use App\Http\Controllers\ThongBaoSuCoController;
+use App\Http\Controllers\ThongBaoKhuPhongController;
+use App\Http\Controllers\ThongBaoSinhVienController;
 use App\Models\Violation;
 /*
 |--------------------------------------------------------------------------
@@ -86,7 +89,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/mucdo/ajax/create', [MucDoController::class, 'ajaxCreate'])->name('mucdo.ajaxCreate');
     Route::delete('/mucdo/ajax/delete', [MucDoController::class, 'ajaxDelete'])->name('mucdo.ajaxDelete');
 
-   
+
     Route::prefix('lichbaotri')->group(function () {
         // CRUD cơ bản
         Route::get('/', [LichBaoTriController::class, 'index'])->name('lichbaotri.index');
@@ -111,7 +114,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/get-tai-san-kho/{loaiId}', [LichBaoTriController::class, 'getTaiSanKho']);
         Route::get('/get-tai-san-phong/{phongId}', [LichBaoTriController::class, 'getTaiSanPhong']);
     });
-     
+
     Route::prefix('taisan')->group(function () {
         Route::get('', [TaiSanController::class, 'index'])->name('taisan.index');
         Route::get('create', [TaiSanController::class, 'create'])->name('taisan.create');
@@ -126,9 +129,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
         Route::get('taisan/related/{loai_id}', [TaiSanController::class, 'related'])->name('taisan.related');
 
-       Route::get('ajax/get-tai-san-by-loai', [TaiSanController::class, 'ajaxGetTaiSan'])
-    ->name('taisan.ajax.getTaiSanByLoai');
-
+        Route::get('ajax/get-tai-san-by-loai', [TaiSanController::class, 'ajaxGetTaiSan'])
+            ->name('taisan.ajax.getTaiSanByLoai');
     });
     // 📦 Quản lý kho tài sản
     Route::prefix('kho')->group(function () {
@@ -145,7 +147,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);
 
 
-   
+
     Route::get('kho/show/{id}', [KhoTaiSanController::class, 'showModal'])->name('kho.show.modal');
     // ======================
     // KHU (Khu vực KTX)
@@ -237,6 +239,12 @@ Route::prefix('hoadon')->group(function () {
     Route::resource('suco', SuCoController::class);
     // ---------------- THÔNG BÁO ----------------
     Route::resource('thongbao', ThongBaoController::class);
+    Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
+    Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
+    Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])
+    ->name('thongbao_sinh_vien.index'); // đặt tên route chuẩn
+
+
     // ---------------- SỰ CỐ ----------------
     Route::resource('suco', SuCoController::class);
     // ====== VI PHẠM (violations) ======

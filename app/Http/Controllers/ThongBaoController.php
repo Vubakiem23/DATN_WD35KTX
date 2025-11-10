@@ -22,45 +22,45 @@ class ThongBaoController extends Controller
      * Hiển thị danh sách thông báo
      */
     public function index(Request $request)
-{
-    $query = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs.khu'])->orderBy('id', 'desc');
+    {
+        $query = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs.khu'])->orderBy('id', 'desc');
 
-    // Tìm kiếm text chung
-    if ($search = $request->input('search')) {
-        $query->where(function ($q) use ($search) {
-            $q->whereHas('tieuDe', fn($relationQuery) => $relationQuery->where('ten_tieu_de', 'like', "%$search%"))
-              ->orWhere('noi_dung', 'like', "%$search%")
-              ->orWhere('doi_tuong', 'like', "%$search%")
-              ->orWhereHas('mucDo', fn($relationQuery) => $relationQuery->where('ten_muc_do', 'like', "%$search%"))
-              ->orWhereHas('khus', fn($relationQuery) => $relationQuery->where('ten_khu', 'like', "%$search%"))
-              ->orWhereHas('phongs', fn($relationQuery) => $relationQuery->where('ten_phong', 'like', "%$search%"));
-        });
-    }
+        // Tìm kiếm text chung
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('tieuDe', fn($relationQuery) => $relationQuery->where('ten_tieu_de', 'like', "%$search%"))
+                    ->orWhere('noi_dung', 'like', "%$search%")
+                    ->orWhere('doi_tuong', 'like', "%$search%")
+                    ->orWhereHas('mucDo', fn($relationQuery) => $relationQuery->where('ten_muc_do', 'like', "%$search%"))
+                    ->orWhereHas('khus', fn($relationQuery) => $relationQuery->where('ten_khu', 'like', "%$search%"))
+                    ->orWhereHas('phongs', fn($relationQuery) => $relationQuery->where('ten_phong', 'like', "%$search%"));
+            });
+        }
 
-    // Bộ lọc modal
-    if ($request->filled('doi_tuong')) {
-        $query->where('doi_tuong', $request->doi_tuong);
-    }
-    if ($request->filled('muc_do')) {
-        $query->where('muc_do_id', $request->muc_do);
-    }
-    if ($request->filled('phong_id')) {
-        $query->whereHas('phongs', fn($q) => $q->where('id', $request->phong_id));
-    }
-    if ($request->filled('khu')) {
-        $query->whereHas('khus', fn($q) => $q->where('ten_khu', $request->khu));
-    }
-    if ($request->filled('from_date')) {
-        $query->whereDate('ngay_dang', '>=', $request->from_date);
-    }
-    if ($request->filled('to_date')) {
-        $query->whereDate('ngay_dang', '<=', $request->to_date);
-    }
+        // Bộ lọc modal
+        if ($request->filled('doi_tuong')) {
+            $query->where('doi_tuong', $request->doi_tuong);
+        }
+        if ($request->filled('muc_do')) {
+            $query->where('muc_do_id', $request->muc_do);
+        }
+        if ($request->filled('phong_id')) {
+            $query->whereHas('phongs', fn($q) => $q->where('id', $request->phong_id));
+        }
+        if ($request->filled('khu')) {
+            $query->whereHas('khus', fn($q) => $q->where('ten_khu', $request->khu));
+        }
+        if ($request->filled('from_date')) {
+            $query->whereDate('ngay_dang', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('ngay_dang', '<=', $request->to_date);
+        }
 
-    $thongbaos = $query->paginate(10)->appends($request->query());
+        $thongbaos = $query->paginate(10)->appends($request->query());
 
-    return view('thongbao.index', compact('thongbaos'));
-}
+        return view('thongbao.index', compact('thongbaos'));
+    }
 
 
 
@@ -105,6 +105,9 @@ class ThongBaoController extends Controller
         if ($request->hasFile('file')) {
             $data['file'] = $request->file('file')->store('thongbao/file', 'public');
         }
+        
+        //  Gắn người viết (user đang đăng nhập)
+        $data['user_id'] = auth()->id();
 
         // Lưu thông báo
         $thongBao = ThongBao::create([
@@ -115,6 +118,7 @@ class ThongBaoController extends Controller
             'doi_tuong' => $data['doi_tuong'],
             'anh' => $data['anh'] ?? null,
             'file' => $data['file'] ?? null,
+            'user_id' => auth()->id(),
         ]);
 
         // Lưu quan hệ N-N
@@ -178,7 +182,9 @@ class ThongBaoController extends Controller
             'khu_id.*' => 'exists:khu,id',
             'phong_id' => 'nullable|array',
             'phong_id.*' => 'exists:phong,id',
+            
         ]);
+        $data['user_id'] = auth()->id();
 
         // Xử lý ảnh
         if ($request->hasFile('anh')) {
@@ -204,6 +210,7 @@ class ThongBaoController extends Controller
             'doi_tuong' => $data['doi_tuong'],
             'anh' => $data['anh'] ?? $thongbao->anh,
             'file' => $data['file'] ?? $thongbao->file,
+            'user_id' => auth()->id(),
         ]);
 
         // Cập nhật N-N

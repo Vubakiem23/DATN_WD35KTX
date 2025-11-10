@@ -148,8 +148,14 @@
                             <li>
                                 <a href="{{ route('thongbao.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
-                                    Thông báo sự cố
+                                    Thông báo tin tức
                                 </a>
+                                <a href="{{ route('thongbao_su_co.index') }}"
+                                    class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
+                                    Thông báo tình trạng sự cố
+                                </a>
+                                <a href="{{ route('thongbao_khu_phong') }}">Xem thông báo khu, phòng</a>
+                                <a href="{{ route('thongbao_sinh_vien.index') }}">Xem thông báo sinh viên</a>
                             </li>
                         </ul>
                     </li>

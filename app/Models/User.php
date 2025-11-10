@@ -31,6 +31,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Role::class, 'role_users', 'user_id', 'role_id');
     }
+    public function thongBaos()
+    {
+        return $this->hasMany(ThongBao::class, 'user_id');
+    }
+
 
     // Lấy tên quyền đầu tiên (hiển thị trực tiếp trong view)
     public function getRoleNameAttribute()
