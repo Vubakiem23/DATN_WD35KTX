@@ -1,16 +1,20 @@
 @extends('admin.layouts.admin')
-<!-- Bootstrap 5 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- Bootstrap 5 JS Bundle (bao gồm Popper) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
 @section('content')
 <div class="container py-4">
 
     <h2 class="mb-4">Danh sách hóa đơn</h2>
+
+    <style>
+        .room-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+        .room-actions .btn-dergin{min-width:92px}
+        .room-actions .btn-dergin span{line-height:1;white-space:nowrap}
+        .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease;text-decoration:none}
+        .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+        .btn-dergin i{font-size:.8rem}
+        .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
+        .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+        .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+    </style>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -21,25 +25,30 @@
         <form action="{{ route('hoadon.import') }}" method="POST" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
             @csrf
             <input type="file" name="file" class="form-control form-control" required style="width: auto;">
-            <button type="submit" class="btn btn-outline-primary btn-action"" title="Nhập excel" style="margin-left: 20px;">📥</button>
+            <button type="submit" class="btn btn-dergin btn-dergin--info" title="Nhập Excel" style="margin-left: 20px;">
+                <i class="fa fa-download"></i><span>Nhập Excel</span>
+            </button>
         </form>
 
         {{-- Xuất Excel --}}
         <form method="GET" action="{{ route('hoadon.export') }}" class="d-flex align-items-center">
             <input type="hidden" name="trang_thai" value="{{ request('trang_thai') }}">
-            <button type="submit" class="btn btn-outline-primary btn-action"" title="Xuất excel">📤</button>
+            <button type="submit" class="btn btn-dergin" title="Xuất Excel">
+                <i class="fa fa-upload"></i><span>Xuất Excel</span>
+            </button>
         </form>
-        <a href="{{ route('hoadon.lichsu') }}" class="btn btn-outline-primary mb-3" title="Lịch sử hóa đơn">📜</a>
-        <button type="button" class="btn btn-outline-primary mb-3" title="Bộ lọc" data-bs-toggle="modal" data-bs-target="#filterModal">
-  🔍 
-</button>
+        <a href="{{ route('hoadon.lichsu') }}" class="btn btn-dergin btn-dergin--muted" title="Lịch sử">
+            <i class="fa fa-history"></i><span>Lịch sử</span>
+        </a>
+        <button type="button" class="btn btn-dergin btn-dergin--info" title="Bộ lọc" data-bs-toggle="modal" data-bs-target="#filterModal">
+            <i class="fa fa-filter"></i><span>Lọc</span>
+        </button>
     </div>
-</div>
-    </form>    
+    
     <form method="POST" action="{{ route('hoadon.guiemailhangloat') }}">
     @csrf
-    <button type="submit" class="btn btn-success mb-3" onclick="return confirm('Gửi email cho tất cả sinh viên chưa thanh toán?')">
-        📧 Gửi hóa đơn 
+    <button type="submit" class="btn btn-dergin btn-dergin--info mb-3" onclick="return confirm('Gửi email cho tất cả sinh viên chưa thanh toán?')">
+        <i class="fa fa-envelope"></i><span>Gửi hóa đơn</span>
     </button>
 </form>
     <table class="table table-bordered table-sm text-center align-middle table-hover">
@@ -65,24 +74,32 @@
             </td>
 
 
-           <td>
-              <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')" class="d-inline">
+            <td class="text-center">
+               <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')" class="d-inline">
                 @csrf
                 @method('DELETE')
 
-                <div class="d-flex gap-1 justify-content-center flex-nowrap">
-                  <button class="btn btn-outline-danger btn-action" type="submit" title="Xóa"><i class="fa fa-trash"></i></button>
-                  @if($hoaDon->trang_thai !== 'Đã thanh toán')
-                    <button type="button"class="btn btn-outline-primary btn-action"data-bs-toggle="modal"data-bs-target="#paymentModal"data-bs-toggle="tooltip"data-bs-placement="bottom"title="Thanh toán"data-id="{{ $hoaDon->id }}">💰</button>
-                  @endif
-                  @if($hoaDon->trang_thai !== 'Đã thanh toán')
-                  <a href="{{ route('hoadon.show', $hoaDon->id) }}" class="btn btn-outline-primary btn-action"" title="Chi tiết">👁️</a>
+                 <div class="room-actions justify-content-center">
+                   <a href="{{ route('hoadon.show', $hoaDon->id) }}" class="btn btn-dergin btn-dergin--muted" title="Chi tiết">
+                     <i class="fa fa-eye"></i><span>Chi tiết</span>
+                   </a>
+                   @if($hoaDon->trang_thai !== 'Đã thanh toán')
+                     <a href="{{ route('hoadon.edit', $hoaDon->id) }}" class="btn btn-dergin" title="Sửa">
+                       <i class="fa fa-pencil"></i><span>Sửa</span>
+                     </a>
+                     <button type="button"
+                             class="btn btn-dergin btn-dergin--info"
+                             data-bs-toggle="modal"
+                             data-bs-target="#paymentModal"
+                             title="Thanh toán"
+                             data-id="{{ $hoaDon->id }}">
+                       <i class="fa fa-credit-card"></i><span>Thanh toán</span>
+                     </button>
                    @endif
-                  @if($hoaDon->trang_thai !== 'Đã thanh toán')
-                    <a href="{{ route('hoadon.edit', $hoaDon->id) }}"  class="btn btn-outline-primary btn-action"" title="Sửa">✏️</a>
-                  @endif
-                 
-                </div>
+                   <button class="btn btn-dergin btn-dergin--danger" type="submit" title="Xóa">
+                     <i class="fa fa-trash"></i><span>Xóa</span>
+                   </button>
+                 </div>
               </form>
             </td>
         </tr>
