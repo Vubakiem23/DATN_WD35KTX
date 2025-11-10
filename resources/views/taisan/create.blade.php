@@ -1,209 +1,221 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Thêm tài sản vào phòng')
+@section('title', 'Lên lịch bảo trì')
 
 @section('content')
-<style>
-    .card {
-        border-radius: 16px;
-        border: none;
-        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    .page-title {
-        font-weight: 700;
-        color: #1e293b;
-    }
-
-    .form-select,
-    .form-control {
-        border-radius: 10px;
-        transition: all 0.2s;
-    }
-
-    .form-select:focus,
-    .form-control:focus {
-        box-shadow: 0 0 6px rgba(25, 135, 84, 0.4);
-        border-color: #198754;
-    }
-
-    #list_taisan {
-        max-height: 420px;
-        overflow-y: auto;
-    }
-
-    .asset-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 10px 14px;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        background: #fff;
-        transition: all 0.2s ease;
-    }
-
-    .asset-item:hover {
-        background-color: #f8fafc;
-        transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .asset-img {
-        width: 70px;
-        height: 70px;
-        border-radius: 10px;
-        object-fit: cover;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-
-    .asset-info {
-        flex-grow: 1;
-    }
-
-    .asset-info strong {
-        color: #0f172a;
-    }
-
-    .asset-info small {
-        color: #64748b;
-    }
-
-    .form-check-input {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-        accent-color: #198754;
-    }
-
-    .form-check-label {
-        cursor: pointer;
-    }
-</style>
-
 <div class="container mt-4">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h3 class="page-title mb-1">🧰 Thêm tài sản vào phòng</h3>
-            <p class="text-muted small mb-0">Chọn loại tài sản → chọn từng tài sản → điền thông tin → lưu.</p>
-        </div>
-        <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
-            <i class="fa fa-arrow-left me-1"></i> Quay lại
-        </a>
-    </div>
+  <h4 class="mb-3">🛠️ Lên lịch bảo trì</h4>
 
-    @if ($errors->any())
-    <div class="alert alert-danger rounded-3 shadow-sm">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+  {{-- Hiển thị lỗi --}}
+  @if($errors->any())
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
     </div>
+  @endif
+
+  <form action="{{ route('lichbaotri.store') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+
+    {{-- Nếu được mở từ trang "Lên lịch bảo trì" của tài sản --}}
+    @if(isset($taiSan))
+      <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex flex-column flex-md-row align-items-center gap-3">
+          <div>
+            <img src="{{ asset('storage/' . ($taiSan->khoTaiSan->hinh_anh ?? '')) }}" 
+                 alt="Ảnh tài sản" 
+                 style="width:150px;height:150px;object-fit:cover;border-radius:10px;">
+          </div>
+          <div>
+            <h5 class="mb-1">{{ $taiSan->khoTaiSan->ten_tai_san ?? 'Không rõ tên' }}</h5>
+            <p class="mb-1"><strong>Mã tài sản:</strong> {{ $taiSan->khoTaiSan->ma_tai_san ?? '—' }}</p>
+            <p class="mb-1"><strong>Phòng:</strong> {{ $taiSan->phong->ten_phong ?? '—' }}</p>
+            <p class="mb-1"><strong>Tình trạng hiện tại:</strong> {{ $taiSan->tinh_trang_hien_tai ?? '—' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <input type="hidden" name="tai_san_id" value="{{ $taiSan->id }}">
+    @else
+      <div class="mb-3">
+        <label class="form-label">Chọn vị trí</label>
+        <select id="vi_tri" class="form-select form-control" required>
+          <option value="">-- Chọn vị trí --</option>
+          <option value="phong">Tài sản trong phòng</option>
+          <option value="kho">Tài sản trong kho</option>
+        </select>
+      </div>
+
+      {{-- 🔹 Nếu chọn "Kho" --}}
+      <div class="vi-tri-kho d-none">
+        <div class="mb-3">
+          <label class="form-label">Chọn loại tài sản (trong kho)</label>
+          <select id="loai_tai_san_kho" class="form-select form-control">
+            <option value="">-- Chọn loại tài sản --</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Chọn tài sản trong kho</label>
+          <select name="tai_san_id" id="tai_san_kho" class="form-select form-control">
+            <option value="">-- Chọn tài sản --</option>
+          </select>
+        </div>
+      </div>
+
+      {{-- 🔹 Nếu chọn "Phòng" --}}
+      <div class="vi-tri-phong d-none">
+        <div class="mb-3">
+          <label class="form-label">Chọn phòng</label>
+          <select id="phong_id" class="form-select form-control">
+            <option value="">-- Chọn phòng --</option>
+            @foreach ($phongs as $phong)
+              <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
+            @endforeach
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Chọn tài sản trong phòng</label>
+          <select name="tai_san_id" id="tai_san_phong" class="form-select form-control">
+            <option value="">-- Chọn tài sản --</option>
+          </select>
+
+          <div id="preview_taisan" class="mt-3 text-center"></div>
+        </div>
+      </div>
     @endif
 
-    {{-- 🧾 Form thêm tài sản --}}
-    <form id="assetForm" action="{{ route('taisan.store') }}" method="POST" class="card p-4 shadow-sm">
-        @csrf
-        <h5 class="fw-semibold text-success mb-3">Thông tin gán tài sản vào phòng</h5>
+    <div class="mb-3">
+      <label class="form-label">Ngày bảo trì</label>
+      <input type="date" name="ngay_bao_tri" class="form-control" required>
+    </div>
 
-        {{-- Chọn loại tài sản --}}
-        <div class="mb-3">
-            <label class="form-label fw-semibold text-secondary">Loại tài sản</label>
-            <select id="loai_id" class="form-select">
-                <option value="">-- Chọn loại tài sản --</option>
-                @foreach($loaiTaiSans as $loai)
-                <option value="{{ $loai->id }}">{{ $loai->ten_loai }}</option>
-                @endforeach
-            </select>
-        </div>
+    <div class="mb-3">
+      <label class="form-label">Mô tả</label>
+      <textarea name="mo_ta" class="form-control" rows="3" placeholder="Nhập mô tả (nếu có)"></textarea>
+    </div>
 
-        {{-- Danh sách tài sản --}}
-        <div class="mt-3" id="taisan_section" style="display:none;">
-            <label class="form-label fw-semibold text-secondary mb-2">Danh sách tài sản trong kho</label>
-            <div id="list_taisan" class="border p-3 bg-white rounded">
-                <p class="text-muted mb-0">Vui lòng chọn loại tài sản để xem danh sách...</p>
-            </div>
-        </div>
+    <div class="mb-3">
+      <label class="form-label">Ảnh minh chứng (nếu có)</label>
+      <input type="file" name="hinh_anh_truoc" class="form-control" accept="image/*">
+    </div>
 
-        {{-- Thông tin phòng và tình trạng --}}
-        <div class="row g-3 mt-4">
-            <div class="col-md-6">
-                <label class="form-label fw-semibold text-secondary">Phòng</label>
-                <select name="phong_id" class="form-select" required>
-                    <option value="">-- Chọn phòng --</option>
-                    @foreach($phongs as $phong)
-                    <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label fw-semibold text-secondary">Tình trạng khi gán</label>
-                <select name="tinh_trang" class="form-select" required>
-                    <option value="Bình thường">Bình thường</option>
-                    <option value="Hỏng">Hỏng</option>
-                    <option value="Cần bảo trì">Cần bảo trì</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="text-end mt-4">
-            <button type="submit" class="btn btn-success px-4 py-2 rounded-pill shadow-sm">
-                💾 Lưu tài sản vào phòng
-            </button>
-        </div>
-    </form>
+    <button type="submit" class="btn btn-primary">💾 Lưu lịch bảo trì</button>
+    <a href="{{ route('lichbaotri.index') }}" class="btn btn-secondary">Quay lại</a>
+  </form>
 </div>
 
+@if(!isset($taiSan))
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const loaiSelect = document.getElementById('loai_id');
-    const listTaiSan = document.getElementById('list_taisan');
-    const taisanSection = document.getElementById('taisan_section');
+  $(document).ready(function() {
+    const viTriSelect = $('#vi_tri');
+    const khoSection = $('.vi-tri-kho');
+    const phongSection = $('.vi-tri-phong');
+    const loaiSelect = $('#loai_tai_san_kho');
+    const taiSanKhoSelect = $('#tai_san_kho');
+    const phongSelect = $('#phong_id');
+    const taiSanPhongSelect = $('#tai_san_phong');
+    const previewTaiSan = $('#preview_taisan');
 
-    loaiSelect.addEventListener('change', async function() {
-        const loaiId = this.value;
-        taisanSection.style.display = 'block';
-        listTaiSan.innerHTML = '<p class="text-muted">Đang tải danh sách tài sản...</p>';
+    viTriSelect.on('change', function() {
+      const viTri = $(this).val();
+      khoSection.addClass('d-none');
+      phongSection.addClass('d-none');
+      previewTaiSan.html('');
 
-        if (!loaiId) {
-            listTaiSan.innerHTML = '<p class="text-muted">Vui lòng chọn loại tài sản.</p>';
-            return;
-        }
-
-        const res = await fetch(`{{ route('taisan.related', '') }}/${loaiId}`);
-        if (!res.ok) {
-            listTaiSan.innerHTML = '<p class="text-danger">Không thể tải danh sách.</p>';
-            return;
-        }
-
-        const data = await res.json();
-        if (data.length === 0) {
-            listTaiSan.innerHTML = '<p class="text-danger">Không có tài sản nào trong kho thuộc loại này.</p>';
-            return;
-        }
-
-        listTaiSan.innerHTML = '';
-        data.forEach(item => {
-            const imageUrl = item.hinh_anh || `https://via.placeholder.com/70x70?text=No+Image`;
-            const wrapper = document.createElement('div');
-            wrapper.className = 'asset-item mb-3';
-            wrapper.innerHTML = `
-                <input class="form-check-input me-2" type="checkbox" name="tai_san_ids[]" value="${item.id}" id="ts_${item.id}">
-                <img src="${imageUrl}" alt="${item.ten_tai_san}" class="asset-img">
-                <div class="asset-info">
-                    <label class="form-check-label" for="ts_${item.id}">
-                        <strong>${item.ma_tai_san ?? '---'}</strong> - ${item.ten_tai_san}
-                        <br>
-                        <small>Tình trạng: ${item.tinh_trang ?? 'Không rõ'}</small>
-                    </label>
-                </div>
-            `;
-            listTaiSan.appendChild(wrapper);
-        });
+      if (viTri === 'kho') {
+        khoSection.removeClass('d-none');
+        loadLoaiTaiSanKho();
+      } else if (viTri === 'phong') {
+        phongSection.removeClass('d-none');
+      }
     });
-});
+
+    loaiSelect.on('change', function() {
+      const loaiId = $(this).val();
+      if (!loaiId) return;
+      loadTaiSanKho(loaiId);
+    });
+
+    phongSelect.on('change', function() {
+      const phongId = $(this).val();
+      if (!phongId) return;
+      loadTaiSanPhong(phongId);
+    });
+
+    function loadTaiSanKho(loaiId) {
+      taiSanKhoSelect.html('<option>-- Đang tải tài sản... --</option>');
+      $.get(`/admin/lichbaotri/get-tai-san-kho/${loaiId}`, function(data) {
+        taiSanKhoSelect.html('<option value="">-- Chọn tài sản --</option>');
+        data.forEach(item => {
+          taiSanKhoSelect.append(`
+            <option value="${item.id}" data-img="${item.hinh_anh}" data-ten="${item.ten_tai_san}">
+              [${item.ma_tai_san}] ${item.ten_tai_san}
+            </option>
+          `);
+        });
+      });
+    }
+
+    function loadTaiSanPhong(phongId) {
+      taiSanPhongSelect.html('<option>-- Đang tải tài sản... --</option>');
+      $.get(`/admin/lichbaotri/get-tai-san-phong/${phongId}`, function(data) {
+        taiSanPhongSelect.html('<option value="">-- Chọn tài sản --</option>');
+        data.forEach(item => {
+          taiSanPhongSelect.append(`
+            <option
+              value="${item.id}"
+              data-img="${item.hinh_anh ?? ''}"
+              data-ten="${item.ten_tai_san}"
+              data-nguoi="${item.nguoi_su_dung}"
+              data-masv="${item.ma_sinh_vien ?? ''}"
+              data-slot="${item.ma_slot ?? ''}"
+            >
+              [${item.ma_tai_san}] ${item.ten_tai_san}
+              - Sử dụng: ${item.nguoi_su_dung}
+              ${item.ma_sinh_vien ? ' - Mã SV: ' + item.ma_sinh_vien : ''}
+            </option>
+          `);
+        });
+      });
+    }
+
+    taiSanPhongSelect.on('change', function() {
+      const selected = $(this).find(':selected');
+      const img = selected.data('img');
+      const ten = selected.data('ten');
+      const nguoi = selected.data('nguoi');
+      const maSV = selected.data('masv');
+      const maSlot = selected.data('slot');
+
+      previewTaiSan.html(img
+        ? `<div class="card p-2 shadow-sm" style="width:250px;margin:0 auto;">
+             <img src="${img}" class="card-img-top rounded" style="object-fit:cover;height:180px;">
+             <div class="card-body text-center p-2">
+               <h6 class="card-title mb-1">${ten}</h6>
+               <small class="text-muted">Sử dụng: ${nguoi}</small><br>
+               ${maSV ? `<small class="text-muted">Mã SV: ${maSV}</small><br>` : ''}
+               ${maSlot ? `<small class="text-muted">Slot: ${maSlot}</small>` : ''}
+             </div>
+           </div>`
+        : '<p class="text-muted">Không có hình ảnh</p>'
+      );
+    });
+
+    function loadLoaiTaiSanKho() {
+      loaiSelect.html('<option>-- Đang tải loại tài sản... --</option>');
+      $.get(`/admin/lichbaotri/get-loai-tai-san`, function(data) {
+        loaiSelect.html('<option value="">-- Chọn loại tài sản --</option>');
+        data.forEach(item => {
+          loaiSelect.append(`<option value="${item.id}">${item.ten_loai}</option>`);
+        });
+      });
+    }
+  });
 </script>
+@endif
 @endsection

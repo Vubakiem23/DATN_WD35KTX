@@ -16,6 +16,7 @@ class SinhVien extends Model
     protected $table = 'sinh_vien';
 
     protected $fillable = [
+        'user_id',
         'ma_sinh_vien',
         'ho_ten',
         'ngay_sinh',
@@ -66,6 +67,14 @@ class SinhVien extends Model
     public function phong(): BelongsTo
     {
         return $this->belongsTo(Phong::class, 'phong_id', 'id');
+    }
+
+    /**
+     * Quan hệ với User
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id', 'id');
     }
 
 

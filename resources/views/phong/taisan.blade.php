@@ -171,7 +171,7 @@
                     <tr
                       data-filter-key="{{ $asset->filter_key }}"
                       data-filter-label="{{ $asset->filter_label }}"
-                      data-row-quantity="{{ (int) ($asset->so_luong ?? 0) }}"
+                      data-row-quantity="{{ (int) ($asset->remaining_qty ?? 0) }}"
                     >
                       @php
                         $assetName = $asset->ten_tai_san ?? optional($asset->khoTaiSan)->ten_tai_san ?? $asset->filter_label;
@@ -190,11 +190,34 @@
                       </td>
                       <td>{{ $asset->khoTaiSan->ma_tai_san ?? '—' }}</td>
                       <td class="fw-semibold">{{ $asset->filter_label }}</td>
-                      <td><span class="badge badge-soft-teal">{{ $asset->so_luong ?? 0 }}</span></td>
+                      <td><span class="badge badge-soft-teal">{{ $asset->remaining_qty ?? 0 }}</span></td>
                       <td>{{ $asset->tinh_trang ?? 'Không rõ' }}</td>
-<td>
-  {{ $asset->lichBaoTri->first()->trang_thai ?? $asset->tinh_trang ?? 'Chưa cập nhật' }}
-</td>
+                      <td>
+                        @php
+                          $statusRaw = $asset->tinh_trang_hien_tai ?? $asset->tinh_trang ?? null;
+                          $normalized = $statusRaw ? mb_strtolower(trim($statusRaw), 'UTF-8') : '';
+                          $displayStatus = 'Chưa cập nhật';
+                          $badgeClass = 'bg-light';
+
+                          if (in_array($normalized, ['mới', 'moi', 'new'])) {
+                              $displayStatus = 'Mới';
+                              $badgeClass = 'bg-success';
+                          } elseif (in_array($normalized, ['bình thường', 'binh thuong', 'bt', 'hoàn thành', 'hoan thanh'])) {
+                              $displayStatus = 'Bình thường';
+                              $badgeClass = 'bg-success text-white';
+                          } elseif (in_array($normalized, ['cũ', 'cu'])) {
+                              $displayStatus = 'Cũ';
+                              $badgeClass = 'bg-secondary';
+                          } elseif (in_array($normalized, ['đang bảo trì', 'dang bao tri', 'bảo trì', 'bao tri', 'maintenance'])) {
+                              $displayStatus = 'Đang bảo trì';
+                              $badgeClass = 'bg-warning text-dark';
+                          } elseif (in_array($normalized, ['hỏng', 'hong', 'đã hỏng', 'da hong', 'broken'])) {
+                              $displayStatus = 'Hỏng';
+                              $badgeClass = 'bg-danger';
+                          }
+                        @endphp
+                        <span class="badge {{ $badgeClass }}">{{ $displayStatus }}</span>
+                      </td>
                       <td>{{ $asset->ghi_chu ?? '—' }}</td>
                       <td>
                         <div class="asset-actions">
@@ -328,12 +351,47 @@
                               <div class="slot-asset__details">
                                 <div class="slot-asset-name">{{ $assetName }}</div>
                                 <div class="slot-asset-code text-muted small">Mã: {{ $assetCode }}</div>
-                              <div class="slot-asset-meta text-muted small">
-                                  Chuẩn: {{ $asset->tinh_trang ?? 'Không rõ' }} · Hiện tại: {{ $asset->tinh_trang_hien_tai ?? 'Chưa cập nhật' }}
+                                <div class="slot-asset-meta text-muted small">
+                                  @php
+                                    $statusRaw = $asset->tinh_trang_hien_tai ?? $asset->tinh_trang ?? null;
+                                    $normalized = $statusRaw ? mb_strtolower(trim($statusRaw), 'UTF-8') : '';
+                                    $currentText = 'Chưa cập nhật';
+                                    if (in_array($normalized, ['mới', 'moi', 'new'])) {
+                                        $currentText = 'Mới';
+                                    } elseif (in_array($normalized, ['bình thường', 'binh thuong', 'bt', 'hoàn thành', 'hoan thanh'])) {
+                                        $currentText = 'Bình thường';
+                                    } elseif (in_array($normalized, ['cũ', 'cu'])) {
+                                        $currentText = 'Cũ';
+                                    } elseif (in_array($normalized, ['đang bảo trì', 'dang bao tri', 'bảo trì', 'bao tri', 'maintenance'])) {
+                                        $currentText = 'Đang bảo trì';
+                                    } elseif (in_array($normalized, ['hỏng', 'hong', 'đã hỏng', 'da hong', 'broken'])) {
+                                        $currentText = 'Hỏng';
+                                    }
+                                  @endphp
+                                  Chuẩn: {{ $asset->tinh_trang ?? 'Không rõ' }} · Hiện tại: {{ $currentText }}
                                 </div>
                               </div>
                             </div>
-                            <span class="badge badge-soft-primary">x{{ optional($asset->pivot)->so_luong ?? 0 }}</span>
+                            <div class="d-flex align-items-center gap-2">
+                              <span class="badge badge-soft-primary">x{{ optional($asset->pivot)->so_luong ?? 0 }}</span>
+                              <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger asset-actions__btn"
+                                data-role="remove-slot-asset"
+                                data-url="{{ route('slots.returnAssetToWarehouse', $slot->id) }}"
+                                data-asset-id="{{ $asset->id }}"
+                                title="Xóa tài sản khỏi slot"
+                              >
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 7.5h12" />
+                                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 7.5V5.25A1.5 1.5 0 0 1 11.25 3.75h1.5a1.5 1.5 0 0 1 1.5 1.5V7.5" />
+                                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 7.5V19.5A1.5 1.5 0 0 0 9 21h6a1.5 1.5 0 0 0 1.5-1.5V7.5" />
+                                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 11.25v6" />
+                                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 11.25v6" />
+                                </svg>
+                                <!-- <span>Xóa</span> -->
+                              </button>
+                            </div>
                           </li>
                         @endforeach
                       </ul>
@@ -1837,6 +1895,40 @@
       inputName: 'assets',
       slotSelectSelector: '[data-role="slot-select"]',
       requireSlotSelection: true,
+    });
+
+    // Xóa tài sản khỏi slot (detach pivot)
+    document.body.addEventListener('click', async (event) => {
+      const btn = event.target.closest('[data-role="remove-slot-asset"]');
+      if (!btn) {
+        return;
+      }
+      event.preventDefault();
+      const confirmed = window.confirm('Bạn có chắc muốn xóa tài sản này khỏi slot?');
+      if (!confirmed) {
+        return;
+      }
+      const url = btn.dataset.url;
+      const assetId = btn.dataset.assetId;
+      const formData = new FormData();
+      formData.append('tai_san_id', assetId);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: formData,
+        });
+        if (!res.ok) {
+          throw new Error('Request failed');
+        }
+        // Tải lại để cập nhật số lượng & thống kê
+        window.location.reload();
+      } catch (e) {
+        (window.showToast || window.alert)('Không thể xóa tài sản khỏi slot.');
+      }
     });
   });
 </script>

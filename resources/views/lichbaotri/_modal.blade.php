@@ -3,20 +3,54 @@
   <table class="table table-bordered">
     <tr>
       <th>Tài sản</th>
-      <td>{{ $lich->taiSan->ten_tai_san ?? $lich->khoTaiSan->ten_tai_san ?? 'Không xác định' }}</td>
+      <td>
+        @php
+        $tenTaiSan = $lich->taiSan->ten_tai_san ?? $lich->khoTaiSan->ten_tai_san ?? 'Không xác định';
+        $maTaiSan = $lich->taiSan->khoTaiSan->ma_tai_san
+        ?? $lich->khoTaiSan->ma_tai_san
+        ?? null;
+        @endphp
+
+        {{ $tenTaiSan }}
+        <small class="text-muted">({{ $maTaiSan ?? 'Không có mã' }})</small>
+      </td>
     </tr>
     <tr>
       <th>Vị trí</th>
       <td>
         @if($lich->taiSan && $lich->taiSan->phong)
-          Phòng: {{ $lich->taiSan->phong->ten_phong }}
+        Phòng: {{ $lich->taiSan->phong->ten_phong }}
         @elseif($lich->khoTaiSan)
-          Kho
+        Kho
         @else
-          -
+        -
         @endif
       </td>
     </tr>
+    <tr>
+      <th>Sinh viên sử dụng</th>
+      <td>
+        @php
+        $slot = $lich->taiSan?->slots?->first();
+        $sinhVien = $slot?->sinhVien;
+        @endphp
+
+        @if($sinhVien)
+        {{ $sinhVien->ho_ten }}
+        <small class="text-muted">
+          ({{ $sinhVien->ma_sinh_vien }})
+        </small>
+        @else
+        Tài sản chung
+        @endif
+      </td>
+    </tr>
+
+    <tr>
+      <th>Mã Slot</th>
+      <td>{{ $slot?->ma_slot ?? '-' }}</td>
+    </tr>
+
     <tr>
       <th>Ngày bảo trì</th>
       <td>{{ \Carbon\Carbon::parse($lich->ngay_bao_tri)->format('d/m/Y') }}</td>
@@ -46,21 +80,21 @@
     <div class="col-md-6 text-center">
       <h6>Ảnh trước bảo trì</h6>
       @if($lich->hinh_anh_truoc && file_exists(public_path('uploads/lichbaotri/'.$lich->hinh_anh_truoc)))
-        <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh_truoc) }}" class="img-fluid rounded shadow-sm" style="max-height:250px;">
+      <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh_truoc) }}" class="img-fluid rounded shadow-sm" style="max-height:250px;">
       @else
-        <div class="text-muted small">Không có ảnh</div>
+      <div class="text-muted small">Không có ảnh</div>
       @endif
     </div>
     <div class="col-md-6 text-center">
-  <h6>Ảnh sau bảo trì</h6>
-  @if($lich->hinh_anh && file_exists(public_path('uploads/lichbaotri/'.$lich->hinh_anh)))
-    <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh) }}" 
-         class="img-fluid rounded shadow-sm" 
-         style="max-height:250px;">
-  @else
-    <div class="text-muted small">Chưa cập nhật</div>
-  @endif
-</div>
+      <h6>Ảnh sau bảo trì</h6>
+      @if($lich->hinh_anh && file_exists(public_path('uploads/lichbaotri/'.$lich->hinh_anh)))
+      <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh) }}"
+        class="img-fluid rounded shadow-sm"
+        style="max-height:250px;">
+      @else
+      <div class="text-muted small">Chưa cập nhật</div>
+      @endif
+    </div>
 
   </div>
 </div>

@@ -12,6 +12,11 @@
     </div>
   @endif
 
+    <form action="{{ route('hoadon.timkiem') }}" method="GET" style="margin-bottom: 20px;">
+    <input type="text" name="keyword" placeholder="Tìm theo tháng, phòng, khu..." style="padding: 6px; width: 300px;">
+    <button type="submit" style="padding: 6px 12px;">Tìm kiếm</button>
+</form>
+
   {{-- Kiểm tra danh sách hóa đơn --}}
   @if($hoaDons->isEmpty())
     <div class="alert alert-info">Chưa có hóa đơn nào được thanh toán.</div>
@@ -19,6 +24,7 @@
     <table class="table table-bordered table-striped">
       <thead>
         <tr>
+          <th>Khu</th>
           <th>Tên phòng</th>
           <th>Số tiền đã thanh toán</th>
           <th>Ngày thanh toán</th>
@@ -31,6 +37,7 @@
       <tbody>
         @foreach($hoaDons as $hoaDon)
         <tr>
+          <td>{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td>
           <td>{{ $hoaDon->phong->ten_phong ?? 'Không xác định' }}</td>
           <td>{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }} VND</td>
           <td>{{ \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') }}</td>

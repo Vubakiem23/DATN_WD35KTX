@@ -6,27 +6,31 @@
 
 <div class="container mt-4">
 
-    <h4 class="mb-3">🔁 Tài sản loại: {{ $loai->ten_loai }}</h4>
+    <h3 class="asset-page__title mb-3">📦 Tài sản loại: {{ $loai->ten_loai }}</h3>
 
-    <a href="{{ route('kho.index') }}" class="btn btn-outline-dark" title="Quay về kho đồ">
-        <i class="fa fa-warehouse"></i>
+    <div class="mb-3 d-flex gap-2">
+        <a href="{{ route('kho.index') }}" class="btn btn-dergin btn-dergin--muted" title="Quay về kho đồ">
+            <i class="fa fa-warehouse"></i><span>Kho đồ</span>
     </a>
-    <a href="{{ route('kho.create', $loai->id) }}" class="btn btn-primary me-2">
-        <i class="fa fa-plus"></i> Thêm tài sản mới
+        <a href="{{ route('kho.create', $loai->id) }}" class="btn btn-dergin btn-dergin--info">
+            <i class="fa fa-plus"></i><span>Thêm tài sản mới</span>
     </a>
+    </div>
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     {{-- Form lọc --}}
-    <form action="{{ route('kho.related', $loai->id) }}" method="GET" class="mb-3">
-        <div class="row g-2">
-            <div class="col-md-3">
+    <div class="filter-card mb-3">
+        <form action="{{ route('kho.related', $loai->id) }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label"><i class="fa fa-magnifying-glass text-primary"></i> Tìm theo mã tài sản</label>
                 <input type="text" name="ma_tai_san" class="form-control"
-                    placeholder="Tìm theo mã tài sản"
+                    placeholder="Nhập mã..."
                     value="{{ request('ma_tai_san') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
+                <label class="form-label"><i class="fa fa-circle-info text-primary"></i> Tình trạng</label>
                 <select name="tinh_trang" class="form-select form-control">
                     <option value="">-- Chọn tình trạng --</option>
                     @foreach(['Mới', 'Hỏng', 'Cũ', 'Bảo trì', 'Bình thường'] as $status)
@@ -36,25 +40,27 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-filter"></i> Lọc
+            <div class="col-md-4 d-flex gap-2 filter-btns">
+                <button type="submit" class="btn btn-success flex-fill">
+                    <i class="fa fa-filter"></i> Lọc
                 </button>
-                <a href="{{ route('kho.related', $loai->id) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-clockwise"></i> Làm mới
+                @if(request('ma_tai_san') || request('tinh_trang'))
+                <a href="{{ route('kho.related', $loai->id) }}" class="btn btn-outline-secondary flex-fill">
+                    <i class="fa fa-rotate-left"></i> Làm mới
                 </a>
+                @endif
             </div>
+        </form>
         </div>
-    </form>
 
     {{-- Bảng tài sản --}}
-    <div class="card">
-        <div class="card-body p-0">
-            <table class="table table-bordered table-striped align-middle mb-0">
-                <thead class="table-light">
+    <div class="asset-table-wrapper">
+        <div class="table-responsive">
+            <table class="table align-middle asset-table mb-0">
+                <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Hình ảnh</th>
+                        <th class="text-center">#</th>
+                        <th class="text-center">Hình ảnh</th>
                         <th>Mã tài sản</th>
                         <th>Tên tài sản</th>
                         <th>Tình trạng</th>
@@ -67,47 +73,57 @@
                 </thead>
                 <tbody>
                     @forelse($taiSan as $item)
-                    <tr>
-                        <td>{{ $taiSan->firstItem() + $loop->index }}</td>
-                        <td class="text-center">
+                    <tr class="asset-row">
+                        <td class="text-center">{{ $taiSan->firstItem() + $loop->index }}</td>
+                        <td class="text-center asset-thumb-cell">
                             @if($item->hinh_anh)
+                            <div class="asset-thumb mx-auto">
                             <img src="{{ asset('storage/' . $item->hinh_anh) }}"
-                                alt="{{ $item->ten_tai_san }}"
-                                style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
+                                    alt="{{ $item->ten_tai_san }}">
+                            </div>
                             @else
-                            <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
-                                style="width:70px;height:70px;">
-                                <small>Chưa có hình</small>
+                            <div class="asset-thumb mx-auto bg-light text-muted d-flex align-items-center justify-content-center">
+                                <small class="small">Không ảnh</small>
                             </div>
                             @endif
                         </td>
                         <td>{{ $item->ma_tai_san }}</td>
                         <td>{{ $item->ten_tai_san }}</td>
                         <td>{{ $item->tinh_trang ?? '-' }}</td>
-                        <td>{{ $item->phong->ten_phong ?? 'Chưa gán phòng' }}</td>
+                        <td>
+                            @php
+                                // Lấy danh sách phòng từ các bản ghi tài sản con đã gán phòng
+                                $roomNames = optional($item->taiSans)
+                                    ->whereNotNull('phong_id')
+                                    ->pluck('phong.ten_phong')
+                                    ->filter()
+                                    ->unique()
+                                    ->values();
+                            @endphp
+                            {{ ($roomNames && $roomNames->count() > 0) ? $roomNames->join(', ') : 'Chưa gán phòng' }}
+                        </td>
 
 
                         <td>{{ $item->so_luong }}</td>
                         <td>{{ $item->don_vi_tinh ?? '-' }}</td>
                         <td>{{ $item->ghi_chu ?? '-' }}</td>
-                        <td class="text-end kho-actions">
-                            <a href="{{ route('kho.edit', $item->id) }}"
-                                class="btn btn-outline-primary btn-action" title="Sửa">
-                                <i class="fa fa-pencil"></i>
+                        <td class="action-cell">
+                            <a href="{{ route('kho.edit', $item->id) }}" class="btn btn-dergin" title="Sửa">
+                                <i class="fa fa-pencil"></i><span>Sửa</span>
                             </a>
                             <form action="{{ route('kho.destroy', $item->id) }}" method="POST" class="d-inline"
                                 onsubmit="return confirm('Bạn có chắc muốn xóa tài sản này không?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger btn-action" title="Xóa">
-                                    <i class="fa fa-trash"></i>
+                                <button type="submit" class="btn btn-dergin btn-dergin--danger" title="Xóa">
+                                    <i class="fa fa-trash"></i><span>Xóa</span>
                                 </button>
                             </form>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-3">Chưa có tài sản nào.</td>
+                        <td colspan="10" class="text-center text-muted py-3">Chưa có tài sản nào.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -124,18 +140,36 @@
 {{-- Style giống trang khu --}}
 @push('styles')
 <style>
-    .kho-actions .btn-action {
-        width: 40px;
-        height: 36px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 10px;
-    }
+    .asset-page__title{font-size:1.5rem;font-weight:700;color:#1f2937;}
+    .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
+    .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+    .btn-dergin i{font-size:.8rem}
+    .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
+    .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+    .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
 
-    .kho-actions .btn-action i {
-        font-size: 14px;
-    }
+    .asset-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
+    .asset-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
+    .asset-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
+    .asset-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+    .asset-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
+    .asset-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
+    .asset-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
+    .asset-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
+    .asset-thumb-cell{width:96px}
+    .asset-thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:0 0 64px;background:#e9ecef;display:flex;align-items:center;justify-content:center}
+    .asset-thumb img{width:100%;height:100%;object-fit:cover}
+
+    .action-cell{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;white-space:nowrap}
+    .action-cell form{margin:0}
+    .action-cell .btn{line-height:1}
+    .action-cell .btn-dergin{min-width:92px}
+    .action-cell .btn-dergin span{line-height:1;white-space:nowrap}
+
+    .filter-card{background:#f8f9fa;border:1px solid #ddd;border-radius:12px;padding:15px 20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+    .filter-card label{font-weight:600;color:#333}
+    .filter-btns .btn{height:42px;display:inline-flex;align-items:center;justify-content:center}
+    .filter-btns i{margin-right:5px}
 </style>
 @endpush
 @endsection

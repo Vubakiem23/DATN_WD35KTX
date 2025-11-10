@@ -6,8 +6,10 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\HoaDon;
 use App\Exports\HoaDonExport;
 use App\Models\Phong;
+use App\Models\SinhVien;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\HoaDonDienNuocImport;
+use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Http\Request;
 
@@ -25,7 +27,7 @@ class HoaDonController extends Controller
 
         Excel::import(new HoaDonDienNuocImport, $request->file('file'));
 
-        return back()->with('success', 'Nhập hóa đơn điện nước thành công!');
+        return back()->with('success', 'Nhập hóa đơn thành công!');
     }
 
     public function index(Request $request)
@@ -58,7 +60,7 @@ class HoaDonController extends Controller
             ->when($giaPhongMax, fn($q) => $q->whereHas('phong', fn($q) => $q->where('gia_phong', '<=', $giaPhongMax)))
             ->when($fromDate, fn($q) => $q->whereDate('created_at', '>=', $fromDate))
             ->when($toDate, fn($q) => $q->whereDate('created_at', '<=', $toDate))
-
+            ->orderByDesc('created_at')
             ->get()
             ->map(function ($hoaDon) {
                 $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
@@ -201,5 +203,70 @@ public function hienThiBienLai(HoaDon $hoaDon)
 {
     return view('hoadon.receipt', compact('hoaDon'))->render();
 }
+// gửi email hàng loạt 
 
+public function guiEmailHangLoat()
+{
+    $hoaDons = HoaDon::with('phong.sinhViens')
+        ->where('da_thanh_toan', false)
+        ->get();
+
+    $dem = 0;
+
+    foreach ($hoaDons as $hoaDon) {
+        foreach ($hoaDon->phong->sinhViens as $sinhVien) {
+            if ($sinhVien->email) {
+                Mail::send('emails.hoa_don', [
+                    'hoaDon' => $hoaDon,
+                    'sinhVien' => $sinhVien
+                ], function ($message) use ($sinhVien, $hoaDon) {
+                    $message->to($sinhVien->email)
+                            ->subject('Hóa đơn tiền phòng tháng ' . $hoaDon->thang);
+                });
+                $dem++;
+            }
+        }
+    }
+
+    return back()->with('success', 'Đã gửi ' . $dem . ' email hóa đơn thành công.');
+}
+
+
+// gửi email cho taats cả sinh viên trong phòng chưa thanh toán 
+public function guiEmailTheoPhong($phong_id)
+    {
+        $sinhViens = SinhVien::where('phong_id', $phong_id)->get();
+
+        foreach ($sinhViens as $sv) {
+            if (!$sv->email) continue;
+
+            Mail::raw('Thông báo gửi tới sinh viên trong phòng ' . $phong_id, function ($message) use ($sv) {
+                $message->to($sv->email)
+                        ->subject('Thông báo từ KTX');
+            });
+        }
+
+        return 'Đã gửi email tới ' . $sinhViens->count() . ' sinh viên trong phòng ' . $phong_id;
+    }
+     // tìm kiếm hóa đơn trong lịch sử thanh toán 
+    public function timKiem(Request $request)
+{
+    $keyword = $request->input('keyword');
+
+    $hoaDons = HoaDon::with('phong')
+        ->where('da_thanh_toan', true) // 👉 chỉ lấy hóa đơn đã thanh toán
+        ->where(function ($query) use ($keyword) {
+            $query->whereHas('phong', function ($q) use ($keyword) {
+                $q->where('ten_phong', 'like', "%$keyword%")
+                  ->orWhereHas('khu', function ($k) use ($keyword) {
+                      $k->where('ten_khu', 'like', "%$keyword%");
+                  });
+            })
+            ->orWhere('created_at', 'like', "%$keyword%");
+        })
+        ->orderByDesc('ngay_thanh_toan')
+        ->paginate(10);
+
+    return view('hoadon.lichsu', compact('hoaDons'));
+}
 }

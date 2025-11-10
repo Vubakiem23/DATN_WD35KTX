@@ -6,16 +6,33 @@
 <div class="container mt-4">
   @push('styles')
   <style>
-    .lich-actions .btn-action {
-      width: 40px;
-      height: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      font-size: 14px;
-      margin-right: 3px;
+    .page-title{font-size:1.5rem;font-weight:700;color:#1f2937}
+    .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
+    .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+    .btn-dergin i{font-size:.8rem}
+    .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+    .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+    .btn-dergin--success{background:linear-gradient(135deg,#10b981 0%,#22c55e 100%)}
+
+    .listing-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
+    .listing-table{margin-bottom:0;border-collapse:collapse!important;border-spacing:0!important}
+    .listing-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
+    .listing-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+    .listing-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
+    .listing-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
+    .listing-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
+    .listing-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
+
+    .lich-actions{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:6px;
+      white-space:nowrap;
     }
+    .lich-actions .btn-action{width:auto;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;font-size:14px;margin:0}
+    .lich-actions .btn-dergin{min-width:92px}
+    .lich-actions .btn-dergin span{line-height:1;white-space:nowrap}
 
     /* 🎨 Form lọc */
     .filter-card {
@@ -44,7 +61,12 @@
   </style>
   @endpush
 
-  <h4 class="mb-3">🛠️ Danh sách lịch bảo trì</h4>
+
+    <h4 class="page-title mb-0">🛠️ Danh sách lịch bảo trì</h4>
+    <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
+      <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
+    </a>
+  
 
   {{-- 🟢 Thông báo --}}
   @if(session('success'))
@@ -54,9 +76,83 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
-  {{-- 🎯 Bộ lọc --}}
+  {{-- 📊 Thống kê số tài sản bảo trì --}}
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-warning border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Chờ bảo trì</h6>
+              <h3 class="mb-0 text-warning">{{ $thongKe['cho_bao_tri'] ?? 0 }}</h3>
+            </div>
+            <div class="text-warning" style="font-size: 2rem;">
+              <i class="fa fa-clock"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-danger border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Đang bảo trì</h6>
+              <h3 class="mb-0 text-danger">{{ $thongKe['dang_bao_tri'] ?? 0 }}</h3>
+            </div>
+            <div class="text-danger" style="font-size: 2rem;">
+              <i class="fa fa-tools"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-success border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Hoàn thành</h6>
+              <h3 class="mb-0 text-success">{{ $thongKe['hoan_thanh'] ?? 0 }}</h3>
+            </div>
+            <div class="text-success" style="font-size: 2rem;">
+              <i class="fa fa-check-circle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm border-start border-primary border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Tổng tài sản</h6>
+              <h3 class="mb-0 text-primary">{{ $thongKe['tong_tai_san'] ?? 0 }}</h3>
+            </div>
+            <div class="text-primary" style="font-size: 2rem;">
+              <i class="fa fa-boxes"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+
+  {{-- 🎯 Bộ lọc khác --}}
   <div class="filter-card mb-4">
     <form method="GET" action="{{ route('lichbaotri.index') }}" class="row g-3 align-items-end">
+      {{-- Giữ lại tháng/năm từ bộ lọc trên --}}
+      @if(request('month'))
+        <input type="hidden" name="month" value="{{ request('month') }}">
+      @endif
+      @if(request('year'))
+        <input type="hidden" name="year" value="{{ request('year') }}">
+      @endif
+
       <div class="col-md-3">
         <label class="form-label"><i class="fa fa-circle-check text-primary"></i> Trạng thái</label>
         <select name="trang_thai" class="form-select form-control">
@@ -92,16 +188,11 @@
     </form>
   </div>
 
-  {{-- ➕ Nút thêm mới --}}
-  <a href="{{ route('lichbaotri.create') }}" class="btn btn-primary mb-3">
-    <i class="fa fa-plus-circle"></i> Lên lịch mới
-  </a>
-
   {{-- 🧾 Bảng danh sách --}}
-  <div class="card">
-    <div class="card-body p-0">
-      <table class="table mb-0 align-middle table-striped table-hover">
-        <thead class="table-light">
+  <div class="listing-table-wrapper">
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle listing-table">
+        <thead>
           <tr class="text-center">
             <th>#</th>
             <th>Ảnh minh chứng</th>
@@ -162,43 +253,45 @@
             <td>{{ $l->mo_ta ?? '-' }}</td>
 
             {{-- 🔧 Hành động --}}
-            <td class="text-end lich-actions">
-              <button type="button"
-                      class="btn btn-outline-info btn-action"
-                      title="Xem chi tiết"
-                      data-bs-toggle="modal"
-                      data-bs-target="#xemChiTietModal"
-                      data-id="{{ $l->id }}">
-                <i class="fa fa-eye"></i>
-              </button>
-
-              <a href="{{ route('lichbaotri.edit', $l->id) }}" 
-                 class="btn btn-outline-primary btn-action"
-                 title="Sửa">
-                <i class="fa fa-pencil"></i>
-              </a>
-
-              <form action="{{ route('lichbaotri.destroy', $l->id) }}" 
-                    method="POST" 
-                    class="d-inline"
-                    onsubmit="return confirm('Bạn có chắc muốn xóa lịch này không?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger btn-action" title="Xóa">
-                  <i class="fa fa-trash"></i>
+            <td class="text-end">
+              <div class="lich-actions">
+                <button type="button"
+                        class="btn-dergin btn-dergin--info btn-action"
+                        title="Xem chi tiết"
+                        data-toggle="modal"
+                        data-target="#xemChiTietModal"
+                        data-id="{{ $l->id }}">
+                  <i class="fa fa-eye"></i><span>Xem</span>
                 </button>
-              </form>
 
-              @if($l->trang_thai != 'Hoàn thành')
-              <button type="button"
-                      class="btn btn-outline-success btn-action"
-                      title="Hoàn thành"
-                      data-bs-toggle="modal" 
-                      data-bs-target="#hoanThanhModal" 
-                      data-id="{{ $l->id }}">
-                <i class="fa fa-check"></i>
-              </button>
-              @endif
+                <a href="{{ route('lichbaotri.edit', $l->id) }}" 
+                   class="btn-dergin btn-action"
+                   title="Sửa">
+                  <i class="fa fa-pencil"></i><span>Sửa</span>
+                </a>
+
+                <form action="{{ route('lichbaotri.destroy', $l->id) }}" 
+                      method="POST" 
+                      class="d-inline"
+                      onsubmit="return confirm('Bạn có chắc muốn xóa lịch này không?');">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="btn-dergin btn-dergin--danger btn-action" title="Xóa">
+                    <i class="fa fa-trash"></i><span>Xóa</span>
+                  </button>
+                </form>
+
+                @if($l->trang_thai != 'Hoàn thành')
+                <button type="button"
+                        class="btn-dergin btn-dergin--success btn-action"
+                        title="Hoàn thành"
+                        data-toggle="modal" 
+                        data-target="#hoanThanhModal" 
+                        data-id="{{ $l->id }}">
+                  <i class="fa fa-check"></i><span>Hoàn thành</span>
+                </button>
+                @endif
+              </div>
             </td>
           </tr>
           @empty
@@ -224,7 +317,7 @@
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="hoanThanhLabel">✅ Cập nhật hoàn thành bảo trì</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
       </div>
       <form id="hoanThanhForm" method="POST" enctype="multipart/form-data">
         @csrf
@@ -240,7 +333,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
           <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
         </div>
       </form>
@@ -254,7 +347,7 @@
     <div class="modal-content">
       <div class="modal-header bg-info text-white">
         <h5 class="modal-title" id="xemChiTietLabel">👁️ Chi tiết bảo trì</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body" id="chiTietContent">
         <div class="text-center text-muted py-3">Đang tải dữ liệu...</div>
@@ -262,34 +355,32 @@
     </div>
   </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+@push('scripts')
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // 🟢 Modal Hoàn thành
-    const modalHoanThanh = document.getElementById('hoanThanhModal');
-    modalHoanThanh.addEventListener('show.bs.modal', function(event) {
-      const button = event.relatedTarget;
-      const id = button.getAttribute('data-id');
-      const form = document.getElementById('hoanThanhForm');
-      form.action = "{{ route('lichbaotri.hoanthanh.submit', ':id') }}".replace(':id', id);
-      document.getElementById('lich_id').value = id;
-    });
-
-    // 🔵 Modal Xem chi tiết
-    const xemModal = document.getElementById('xemChiTietModal');
-    xemModal.addEventListener('show.bs.modal', function(event) {
-      const button = event.relatedTarget;
-      const id = button.getAttribute('data-id');
-      const contentDiv = document.getElementById('chiTietContent');
-      contentDiv.innerHTML = '<div class="text-center text-muted py-3">Đang tải dữ liệu...</div>';
-
-      fetch(`/admin/lichbaotri/show/${id}`)
-        .then(response => response.text())
-        .then(html => contentDiv.innerHTML = html)
-        .catch(() => contentDiv.innerHTML = '<div class="text-danger text-center">Lỗi tải dữ liệu</div>');
-    });
+$(function () {
+  // 🟢 Modal Hoàn thành (Bootstrap 4 - jQuery events)
+  $('#hoanThanhModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var id = button.data('id');
+    var $form = $('#hoanThanhForm');
+    // Dùng route relative (absolute=false) để tránh lệch domain (localhost vs 127.0.0.1)
+    $form.attr('action', "{{ route('lichbaotri.hoanthanh.submit', ['id' => 'ID_PLACEHOLDER'], false) }}".replace('ID_PLACEHOLDER', id));
+    $('#lich_id').val(id);
   });
+
+  // 🔵 Modal Xem chi tiết
+  $('#xemChiTietModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var id = button.data('id');
+    var $content = $('#chiTietContent');
+    $content.html('<div class="text-center text-muted py-3">Đang tải dữ liệu...</div>');
+
+    $.get("{{ route('lichbaotri.show', ['id' => 'ID_PLACEHOLDER'], false) }}".replace('ID_PLACEHOLDER', id))
+      .done(function (html) { $content.html(html); })
+      .fail(function () { $content.html('<div class="text-danger text-center">Lỗi tải dữ liệu</div>'); });
+  });
+});
 </script>
+@endpush
 @endsection

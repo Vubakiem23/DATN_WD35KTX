@@ -47,27 +47,27 @@
                         <a><i class="fa fa-home"></i> Ký Túc Xá VaMos <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li>
-                                <a href="{{ route('phong.index') }}"
+                        <a href="{{ route('phong.index') }}"
                                     class="{{ request()->routeIs('phong.*') ? 'active' : '' }}">
-                                    <i class="fa fa-door-open"></i> Quản lý phòng
+                                    <i class="fa fa-bed"></i> Quản lý phòng
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('khu.index') }}"
                                     class="{{ request()->routeIs('khu.*') ? 'active' : '' }}">
-                                    <i class="fa fa-door-open"></i> Quản lý khu
+                                    <i class="fa fa-building"></i> Quản lý khu
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('sinhvien.index') }}"
                                     class="{{ request()->routeIs('sinhvien.*') ? 'active' : '' }}">
-                                    <i class="fa fa-user-graduate"></i> Quản lý sinh viên
+                                    <i class="fa fa-users"></i> Quản lý sinh viên
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('vipham.index') }}"
-                                class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
-                                Quản lý sinh viên vi phạm
+                                class="{{ request()->routeIs('vipham.*') ? 'active' : '' }}">
+                                <i class="fa fa-exclamation-triangle"></i> Quản lý sinh viên vi phạm
                             </a>
                             </li>
                 </ul>
@@ -80,25 +80,25 @@
                         <li>
                             <a href="{{ route('taisan.index') }}"
                                 class="{{ request()->routeIs('taisan.*') ? 'active' : '' }}">
-                                Quản lý tài sản, thiết bị phòng
+                                <i class="fa fa-cubes"></i> Quản lý tài sản, thiết bị phòng
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('lichbaotri.index') }}"
                                 class="{{ request()->routeIs('lichbaotri.*') ? 'active' : '' }}">
-                                Lịch bảo trì
+                                <i class="fa fa-calendar-check-o"></i> Lịch bảo trì
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('kho.index') }}"
                                 class="{{ request()->routeIs('kho.*') ? 'active' : '' }}">
-                                Kho đồ
+                                <i class="fa fa-archive"></i> Kho đồ
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('loaitaisan.index') }}"
                                 class="{{ request()->routeIs('loaitaisan.*') ? 'active' : '' }}">
-                                Loại tài sản
+                                <i class="fa fa-tags"></i> Loại tài sản
                             </a>
                         </li>
                     </ul>
@@ -107,7 +107,7 @@
                 <li>
                     <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                        <li><a href="{{ route('hoadon.index') }}">Quản lý thu phí & hóa đơn</a></li>
+                        <li><a href="{{ route('hoadon.index') }}"><i class="fa fa-file-text-o"></i> Quản lý thu phí & hóa đơn</a></li>
 
 
 
@@ -124,10 +124,15 @@
                         <li>
                             <a href="{{ route('suco.index') }}"
                                 class="{{ request()->routeIs('suco.*') ? 'active' : '' }}">
-                                Quản lý yêu cầu sửa chữa, bảo trì
+                                <i class="fa fa-wrench"></i> Quản lý yêu cầu sửa chữa, bảo trì
                             </a>
                         </li>
-
+                        <li>
+                            <a href="{{ route('hoadonsuco.index') }}"
+                                class="{{ request()->routeIs('hoadonsuco.*') ? 'active' : '' }}">
+                                <i class="fa fa-file-text-o"></i> Hóa đơn sự cố
+                            </a>
+                        </li>
                     </ul>
 
 
@@ -148,7 +153,11 @@
                             <li>
                                 <a href="{{ route('thongbao.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
+
                                     Thông báo tin tức
+
+                                    <i class="fa fa-bullhorn"></i> Thông báo sự cố
+
                                 </a>
                                 <a href="{{ route('thongbao_su_co.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
@@ -163,7 +172,12 @@
                     <li>
                         <a><i class="fa fa-windows"></i> Báo cáo, thống kê <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
-                            <li><a href="#">Báo cáo hoạt động</a></li>
+                            <li>
+                                <a href="{{ route('admin.index') }}"
+                                    class="{{ request()->routeIs('admin.dashboard*') ? 'active' : '' }}">
+                                    <i class="fa fa-bar-chart"></i> Báo cáo thống kê
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>

@@ -42,8 +42,37 @@
                 </td>
             </tr>
             <tr>
-                <th>🏠 Phòng</th>
-                <td>{{ $suco->phong->ten_phong ?? '---' }}</td>
+                <th>🏠 Phòng / Khu</th>
+                <td>
+                    @php
+                        // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
+                        $student = $suco->sinhVien ?? null;
+                        $phong = null;
+                        if ($student) {
+                            // Kiểm tra slot và phong của slot
+                            if (isset($student->slot) && $student->slot && isset($student->slot->phong) && $student->slot->phong) {
+                                $phong = $student->slot->phong;
+                            } elseif (isset($student->phong) && $student->phong) {
+                                $phong = $student->phong;
+                            } elseif (isset($suco->phong) && $suco->phong) {
+                                $phong = $suco->phong;
+                            }
+                        } elseif (isset($suco->phong) && $suco->phong) {
+                            $phong = $suco->phong;
+                        }
+                        $tenPhongDisplay = $phong && isset($phong->ten_phong) ? $phong->ten_phong : null;
+                        $khu = ($phong && isset($phong->khu) && $phong->khu) ? $phong->khu : null;
+                        $tenKhuDisplay = $khu && isset($khu->ten_khu) ? $khu->ten_khu : null;
+                    @endphp
+                    @if ($tenPhongDisplay)
+                        <strong>{{ $tenPhongDisplay }}</strong>
+                        @if ($tenKhuDisplay)
+                            <span class="badge badge-soft-secondary ml-2">Khu {{ $tenKhuDisplay }}</span>
+                        @endif
+                    @else
+                        <em>Chưa được phân phòng</em>
+                    @endif
+                </td>
             </tr>
             <tr>
                 <th>📝 Mô tả sự cố</th>
@@ -87,7 +116,13 @@
                     @if($suco->payment_amount > 0)
                         <strong class="text-danger">{{ number_format($suco->payment_amount, 0, ',', '.') }} VNĐ</strong>
                     @else
-                        <em>Không yêu cầu thanh toán</em>
+                        <em>Chưa có hóa đơn</em>
+                        {{-- Nút tạo hóa đơn (chỉ hiện khi chưa có payment_amount và là admin/nhanvien) --}}
+                        @if((Auth::user()->role === 'admin' || Auth::user()->role === 'nhanvien'))
+                            <button type="button" class="btn btn-sm btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#taoHoaDonModal">
+                                <i class="fa fa-file-invoice"></i> Tạo hóa đơn
+                            </button>
+                        @endif
                     @endif
                 </td>
             </tr>
@@ -100,20 +135,21 @@
                         @else
                             <span class="badge bg-warning text-dark">Chưa thanh toán</span>
                         @endif
-                    @else
-                        <span class="badge bg-secondary">Không cần thanh toán</span>
-                    @endif
 
-                    @if($suco->payment_amount > 0 && !$suco->is_paid && (Auth::user()->role === 'admin' || Auth::user()->role === 'nhanvien'))
-                        <form action="{{ route('suco.thanhtoan', $suco->id) }}" 
-                              method="POST" 
-                              class="d-inline"
-                              onsubmit="return confirm('Xác nhận sinh viên đã thanh toán sự cố này?')">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-success ms-2">
-                                <i class="fa fa-check"></i> Xác nhận đã thanh toán
-                            </button>
-                        </form>
+                        {{-- Nút xác nhận thanh toán (chỉ hiện khi chưa thanh toán và là admin/nhanvien) --}}
+                        @if(!$suco->is_paid && (Auth::user()->role === 'admin' || Auth::user()->role === 'nhanvien'))
+                            <form action="{{ route('suco.thanhtoan', $suco->id) }}" 
+                                  method="POST" 
+                                  class="d-inline"
+                                  onsubmit="return confirm('Xác nhận sinh viên đã thanh toán sự cố này?')">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-success ms-2">
+                                    <i class="fa fa-check"></i> Xác nhận đã thanh toán
+                                </button>
+                            </form>
+                        @endif
+                    @else
+                        <span class="badge bg-secondary">Chưa có hóa đơn</span>
                     @endif
                 </td>
             </tr>
@@ -129,6 +165,47 @@
         </div>
     </div>
 </div>
+
+{{-- Modal tạo hóa đơn --}}
+@if((Auth::user()->role === 'admin' || Auth::user()->role === 'nhanvien') && $suco->payment_amount == 0)
+<div class="modal fade" id="taoHoaDonModal" tabindex="-1" aria-labelledby="taoHoaDonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taoHoaDonModalLabel">💰 Tạo hóa đơn sự cố</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('suco.taohoadon', $suco->id) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="payment_amount" class="form-label">Số tiền (VNĐ)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="payment_amount" 
+                               name="payment_amount" 
+                               min="0" 
+                               step="1000" 
+                               required
+                               placeholder="Nhập số tiền (0 = không cần thanh toán)">
+                        <small class="form-text text-muted">
+                            <strong>Lưu ý:</strong><br>
+                            • Nhập <strong>0</strong> nếu sự cố do ký túc xá (không cần thanh toán)<br>
+                            • Nhập số tiền > 0 nếu sự cố do sinh viên gây ra (cần thanh toán)
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save"></i> Tạo hóa đơn
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 <style>
 .table th { background-color: #f8f9fa; }

@@ -4,6 +4,12 @@
 @section('content')
 @push('styles')
 <style>
+  .page-title{font-size:1.5rem;font-weight:700;color:#1f2937}
+  .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
+  .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+  .btn-dergin i{font-size:.8rem}
+  .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+
   .filter-card {
     background: #f8f9fa;
     border: 1px solid #ddd;
@@ -26,7 +32,9 @@
 @endpush
 
 <div class="container mt-4">
-  <h3 class="mb-4">📦 Kho tài sản</h3>
+
+    <h3 class="page-title mb-0">📦 Kho tài sản</h3>
+
 
   {{-- 🟢 Bộ lọc --}}
   <div class="filter-card mb-4">
@@ -82,8 +90,8 @@
             <p class="small text-muted">
               Số lượng trong kho: {{ $loai->kho_tai_san_sum_so_luong ?? 0 }}
             </p>
-            <a href="{{ route('kho.related', $loai->id) }}" class="btn btn-primary btn-sm">
-              <i class="fa fa-boxes-stacked"></i> Xem tài sản
+            <a href="{{ route('kho.related', $loai->id) }}" class="btn-dergin btn-dergin--info">
+              <i class="fa fa-boxes-stacked"></i><span>Xem tài sản</span>
             </a>
           </div>
         </div>

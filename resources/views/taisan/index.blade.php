@@ -1,12 +1,17 @@
 @extends('admin.layouts.admin')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 @section('title', 'Quản lý tài sản phòng')
 
 @section('content')
 <div class="container mt-4">
 
-  <h3 class="page-title mb-3">🏢 Quản lý tài sản phòng</h3>
+  
+    <h3 class="asset-page__title mb-0">🏢 Quản lý tài sản phòng</h3>
+  <div class="mb-4">
+    <a href="{{ route('taisan.create') }}" class="btn btn-dergin btn-dergin--info">
+      <i class="fa fa-plus"></i><span>Thêm tài sản vào phòng "Tùy Chọn"</span>
+    </a>
+    </div>
 
   {{-- 🎨 Bộ lọc đẹp như trang lịch bảo trì --}}
   <div class="filter-card mb-4">
@@ -61,22 +66,16 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
-  {{-- Nút thêm --}}
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>📋 Danh sách tài sản</h4>
-    <a href="{{ route('taisan.create') }}" class="btn btn-success">
-      <i class="fa fa-plus"></i> Thêm tài sản
-    </a>
-  </div>
+  <h4 class="mb-2">📋 Danh sách tài sản</h4>
 
   {{-- 🧱 Bảng hiển thị --}}
-  <div class="card">
-    <div class="card-body p-0">
-      <table class="table align-middle mb-0 table-striped">
-        <thead class="table-light">
+  <div class="asset-table-wrapper">
+    <div class="table-responsive">
+      <table class="table align-middle asset-table">
+        <thead>
           <tr>
-            <th>#</th>
-            <th>Ảnh</th>
+            <th class="text-center">#</th>
+            <th class="text-center">Ảnh</th>
             <th>Mã tài sản</th>
             <th>Tên tài sản</th>
             <th>Phòng</th>
@@ -89,19 +88,18 @@
         </thead>
         <tbody>
           @forelse($listTaiSan as $item)
-          <tr>
-            <td>{{ $loop->iteration + ($listTaiSan->currentPage() - 1) * $listTaiSan->perPage() }}</td>
+          <tr class="asset-row">
+            <td class="text-center">{{ $loop->iteration + ($listTaiSan->currentPage() - 1) * $listTaiSan->perPage() }}</td>
 
             {{-- Ảnh --}}
-            <td>
+            <td class="text-center asset-thumb-cell">
               @if(!empty($item->khoTaiSan->hinh_anh))
-                <img src="{{ asset('storage/' . $item->khoTaiSan->hinh_anh) }}"
-                     style="width:60px;height:60px;object-fit:cover;border-radius:6px;"
-                     alt="Ảnh tài sản">
+                <div class="asset-thumb mx-auto">
+                  <img src="{{ asset('storage/' . $item->khoTaiSan->hinh_anh) }}" alt="Ảnh tài sản">
+                </div>
               @else
-                <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
-                     style="width:60px;height:60px;">
-                  <small>Không ảnh</small>
+                <div class="asset-thumb mx-auto bg-light text-muted d-flex align-items-center justify-content-center">
+                  <small class="small">Không ảnh</small>
                 </div>
               @endif
             </td>
@@ -134,7 +132,7 @@
             <td>
               <span class="badge 
                 @if($item->tinh_trang_hien_tai == 'Bình thường') bg-success text-white
-                @elseif($item->tinh_trang_hien_tai == 'cũ') bg-secondary
+                @elseif($item->tinh_trang_hien_tai == 'Cũ') bg-secondary
                 @elseif($item->tinh_trang_hien_tai == 'Đang bảo trì') bg-warning text-dark
                 @elseif($item->tinh_trang_hien_tai == 'Hỏng') bg-danger
                 @else bg-light @endif">
@@ -145,27 +143,31 @@
             <td>{{ $item->ghi_chu ?? '-' }}</td>
 
             {{-- Hành động --}}
-            <td class="text-end khu-actions">
-              <a href="{{ route('taisan.edit', $item->id) }}" class="btn btn-outline-primary btn-action" title="Sửa">
-                <i class="fa fa-pencil"></i>
+            <td class="action-cell">
+              <a href="{{ route('taisan.edit', $item->id) }}" class="btn btn-dergin" title="Sửa">
+                <i class="fa fa-pencil"></i><span>Sửa</span>
               </a>
 
               <a href="{{ route('lichbaotri.create', ['taisan_id' => $item->id]) }}"
-                 class="btn btn-outline-warning btn-action" title="Lên lịch bảo trì">
-                <i class="fa fa-calendar"></i>
+                 class="btn btn-dergin btn-dergin--muted" title="Lên lịch bảo trì">
+                <i class="fa fa-calendar"></i><span>Bảo trì</span>
               </a>
 
-              <button type="button" class="btn btn-outline-info btn-action btn-xemchitiet"
-                      data-id="{{ $item->id }}" title="Xem chi tiết">
-                <i class="fa fa-eye"></i>
+              <button type="button" class="btn btn-dergin btn-dergin--info btn-xemchitiet"
+                      data-id="{{ $item->id }}"
+                      data-url="{{ route('taisan.showModal', $item->id) }}"
+                      data-bs-toggle="modal" data-bs-target="#modalTaiSan"
+                      data-toggle="modal" data-target="#modalTaiSan"
+                      title="Xem chi tiết">
+                <i class="fa fa-eye"></i><span>Chi tiết</span>
               </button>
 
               <form action="{{ route('taisan.destroy', $item->id) }}" method="POST" class="d-inline"
                     onsubmit="return confirm('Xóa tài sản này khỏi phòng?');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger btn-action" title="Xóa">
-                  <i class="fa fa-trash"></i>
+                <button type="submit" class="btn btn-dergin btn-dergin--danger" title="Xóa">
+                  <i class="fa fa-trash"></i><span>Xóa</span>
                 </button>
               </form>
             </td>
@@ -210,6 +212,38 @@
 {{-- 🧩 CSS & JS --}}
 @push('styles')
 <style>
+  .asset-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
+  .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
+  .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+  .btn-dergin i{font-size:.8rem}
+  .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
+  .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+  .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+
+  .asset-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
+  .asset-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
+  .asset-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
+  .asset-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+  .asset-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
+  .asset-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
+  .asset-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
+  .asset-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
+  .asset-thumb-cell{width:96px}
+  .asset-thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:0 0 64px;background:#e9ecef;display:flex;align-items:center;justify-content:center}
+  .asset-thumb img{width:100%;height:100%;object-fit:cover}
+
+  .action-cell{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:.5rem;
+    white-space:nowrap;
+  }
+  .action-cell form{margin:0}
+  .action-cell .btn{line-height:1}
+  .action-cell .btn-dergin{min-width:92px}
+  .action-cell .btn-dergin span{line-height:1;white-space:nowrap}
+
   .filter-card {
     background: #f8f9fa;
     border: 1px solid #ddd;
@@ -230,27 +264,28 @@
   .filter-btns i {
     margin-right: 5px;
   }
-  .khu-actions .btn-action {
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-  }
-  .khu-actions .btn-action i {
-    font-size: 14px;
-  }
 </style>
 @endpush
 
+@push('scripts')
 <script>
-  $(document).ready(function() {
-    $('.btn-xemchitiet').click(function() {
+  $(function() {
+    // Dùng ủy quyền sự kiện để đảm bảo luôn bắt được click
+    $(document).on('click', '.btn-xemchitiet', function() {
       let id = $(this).data('id');
+      let url = $(this).data('url');
       let modal = $('#modalTaiSan');
 
-      modal.modal('show');
+      // Tương thích Bootstrap 4/5 khi hiển thị modal
+      try {
+        if (window.bootstrap && window.bootstrap.Modal) {
+          window.bootstrap.Modal.getOrCreateInstance(document.getElementById('modalTaiSan')).show();
+        } else {
+          modal.modal('show');
+        }
+      } catch (e) {
+        modal.modal('show');
+      }
       modal.find('.modal-body').html(`
         <div class="text-center py-4">
           <div class="spinner-border text-info" role="status"></div>
@@ -258,17 +293,43 @@
         </div>
       `);
 
+      if (!url) {
+        modal.find('.modal-body').html('<p class="text-danger text-center">Không xác định được URL chi tiết tài sản.</p>');
+        return;
+      }
+
       $.ajax({
-        url: '{{ route("taisan.showModal", "") }}/' + id,
+        url: url,
         type: 'GET',
-        success: function(response) {
-          modal.find('.modal-body').html(response.data);
+        // Nhận HTML thẳng từ server để gắn vào modal
+        dataType: 'html',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
         },
-        error: function() {
-          modal.find('.modal-body').html('<p class="text-danger text-center">Không thể tải dữ liệu tài sản.</p>');
+        timeout: 15000,
+        success: function(response) {
+          // Server trả HTML → gắn trực tiếp
+          modal.find('.modal-body').html(response || '<p class="text-muted text-center">Không có dữ liệu hiển thị.</p>');
+        },
+        error: function(xhr) {
+          console.error('Tải chi tiết tài sản thất bại:', {
+            status: xhr.status,
+            statusText: xhr.statusText,
+            responseText: xhr.responseText
+          });
+          modal.find('.modal-body').html(
+            `<div class="text-center text-danger">
+               <p class="mb-1">Không thể tải dữ liệu tài sản.</p>
+               <small>Mã lỗi: ${xhr.status} ${xhr.statusText}</small>
+             </div>`
+          );
+        },
+        complete: function() {
+          // Không để spinner kẹt nếu có sự cố hiếm gặp
         }
       });
     });
   });
 </script>
+@endpush
 @endsection

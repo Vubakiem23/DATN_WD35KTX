@@ -259,17 +259,8 @@ class SlotController extends Controller
 
             $slot->save();
 
-            // Tự động bàn giao bộ CSVC mặc định khi gán sinh viên vào slot
-            if (!empty($slot->sinh_vien_id)) {
-                try {
-                    $this->assignDefaultKitToSlot($slot);
-                } catch (\Throwable $e) {
-                    Log::warning('Không thể tự động bàn giao kit cho slot', [
-                        'slot_id' => $slot->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
+			// Bỏ tự động bàn giao CSVC mặc định khi gán sinh viên vào slot
+			// (Đồ chung của phòng không tự gán cho sinh viên)
 
             DB::commit();
 
@@ -632,6 +623,93 @@ class SlotController extends Controller
             DB::rollBack();
             Log::error('Lỗi bàn giao tài sản cho slot: '.$e->getMessage(), ['slot' => $slotId]);
             return response()->json(['message' => 'Không thể bàn giao tài sản'], 500);
+        }
+    }
+
+    /**
+     * Trả tài sản đã gán cho slot về kho (giảm khỏi phòng, tăng về kho)
+     */
+    public function returnAssetToWarehouse(Request $request, $slotId)
+    {
+        $request->validate([
+            'tai_san_id' => ['required', 'integer', 'exists:tai_san,id'],
+            'quantity' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $slot = Slot::with('phong')->lockForUpdate()->findOrFail($slotId);
+            $phong = $slot->phong;
+            if (!$phong) {
+                DB::rollBack();
+                return response()->json(['message' => 'Slot không thuộc phòng hợp lệ.'], 422);
+            }
+
+            $taiSan = TaiSan::lockForUpdate()->findOrFail($request->input('tai_san_id'));
+            if ((int) $taiSan->phong_id !== (int) $phong->id) {
+                DB::rollBack();
+                return response()->json(['message' => 'Tài sản không thuộc phòng của slot.'], 422);
+            }
+
+            // Lấy số lượng đang gán cho slot này
+            $pivotRow = $slot->taiSans()->where('tai_san_id', $taiSan->id)->first();
+            if (!$pivotRow) {
+                DB::rollBack();
+                return response()->json(['message' => 'Slot không được gán tài sản này.'], 422);
+            }
+            $assignedQty = (int) ($pivotRow->pivot->so_luong ?? 0);
+            if ($assignedQty <= 0) {
+                // Không còn gì để trả
+                $slot->taiSans()->detach($taiSan->id);
+                DB::commit();
+                return response()->json(['message' => 'Không có số lượng hợp lệ để trả về kho.']);
+            }
+
+            $qtyRequest = (int) $request->input('quantity', $assignedQty);
+            $qtyToReturn = max(1, min($qtyRequest, $assignedQty));
+
+            // Trả về kho nếu có tham chiếu kho
+            $kho = null;
+            if ($taiSan->kho_tai_san_id) {
+                $kho = KhoTaiSan::lockForUpdate()->find($taiSan->kho_tai_san_id);
+            }
+
+            // Giảm số lượng tài sản ở phòng
+            $taiSan->so_luong = max(0, (int) $taiSan->so_luong - $qtyToReturn);
+            $taiSan->save();
+
+            // Tăng kho
+            if ($kho) {
+                $kho->so_luong = (int) $kho->so_luong + $qtyToReturn;
+                $kho->save();
+            }
+
+            // Cập nhật pivot (bỏ gán hoặc giảm số lượng)
+            $newAssignedQty = $assignedQty - $qtyToReturn;
+            if ($newAssignedQty <= 0) {
+                $slot->taiSans()->detach($taiSan->id);
+            } else {
+                $slot->taiSans()->syncWithoutDetaching([$taiSan->id => ['so_luong' => $newAssignedQty]]);
+            }
+
+            // Xóa tài sản ở phòng nếu hết số lượng và không còn được gán slot nào
+            $remainingPivotSum = (int) $taiSan->slots()->sum('slot_tai_san.so_luong');
+            if ((int) $taiSan->so_luong === 0 && $remainingPivotSum === 0) {
+                $taiSan->delete();
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Đã trả tài sản về kho thành công.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Không tìm thấy dữ liệu phù hợp.'], 404);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Lỗi trả tài sản slot về kho: ' . $e->getMessage(), [
+                'slot_id' => $slotId,
+                'tai_san_id' => $request->input('tai_san_id'),
+            ]);
+            return response()->json(['message' => 'Không thể trả tài sản về kho.'], 500);
         }
     }
 

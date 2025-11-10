@@ -34,14 +34,21 @@
             <p class="mb-1"><strong>Mã tài sản:</strong> {{ $taiSan->khoTaiSan->ma_tai_san ?? '—' }}</p>
             <p class="mb-1"><strong>Phòng:</strong> {{ $taiSan->phong->ten_phong ?? '—' }}</p>
             <p class="mb-1"><strong>Tình trạng hiện tại:</strong> {{ $taiSan->tinh_trang_hien_tai ?? '—' }}</p>
+            @php
+              $slot = optional($taiSan->slots)->first();
+              $sv = $slot?->sinhVien;
+            @endphp
+            <p class="mb-1"><strong>Mã slot:</strong> {{ $slot->ma_slot ?? '—' }}</p>
+            <p class="mb-1"><strong>Sinh viên đang sử dụng:</strong> {{ $sv->ho_ten ?? 'Tài sản chung' }}</p>
+            @if(!empty($sv?->ma_sinh_vien))
+              <p class="mb-0"><strong>Mã sinh viên:</strong> {{ $sv->ma_sinh_vien }}</p>
+            @endif
           </div>
         </div>
       </div>
 
-      {{-- Ẩn input tài sản ID --}}
       <input type="hidden" name="tai_san_id" value="{{ $taiSan->id }}">
     @else
-      {{-- Nếu người dùng mở thủ công thì cho chọn --}}
       <div class="mb-3">
         <label class="form-label">Chọn vị trí</label>
         <select id="vi_tri" class="form-select form-control" required>
@@ -85,25 +92,21 @@
             <option value="">-- Chọn tài sản --</option>
           </select>
 
-          {{-- Ảnh xem trước --}}
           <div id="preview_taisan" class="mt-3 text-center"></div>
         </div>
       </div>
     @endif
 
-    {{-- 🔹 Ngày bảo trì --}}
     <div class="mb-3">
       <label class="form-label">Ngày bảo trì</label>
       <input type="date" name="ngay_bao_tri" class="form-control" required>
     </div>
 
-    {{-- 🔹 Mô tả --}}
     <div class="mb-3">
       <label class="form-label">Mô tả</label>
       <textarea name="mo_ta" class="form-control" rows="3" placeholder="Nhập mô tả (nếu có)"></textarea>
     </div>
 
-    {{-- 🔹 Ảnh minh chứng --}}
     <div class="mb-3">
       <label class="form-label">Ảnh minh chứng (nếu có)</label>
       <input type="file" name="hinh_anh_truoc" class="form-control" accept="image/*">
@@ -114,7 +117,6 @@
   </form>
 </div>
 
-{{-- 🧠 Script (giữ nguyên phần cũ cho trường hợp mở thủ công) --}}
 @if(!isset($taiSan))
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
@@ -174,35 +176,39 @@
         taiSanPhongSelect.html('<option value="">-- Chọn tài sản --</option>');
         data.forEach(item => {
           taiSanPhongSelect.append(`
-            <option value="${item.id}" data-img="${item.hinh_anh ?? ''}" data-ten="${item.ten_tai_san}" data-nguoi="${item.nguoi_su_dung}">
-              [${item.ma_tai_san}] ${item.ten_tai_san} - Người giữ: ${item.nguoi_su_dung}
+            <option
+              value="${item.id}"
+              data-img="${item.hinh_anh ?? ''}"
+              data-ten="${item.ten_tai_san}"
+              data-nguoi="${item.nguoi_su_dung}"
+              data-masv="${item.ma_sinh_vien ?? ''}"
+              data-slot="${item.ma_slot ?? ''}"
+            >
+              [${item.ma_tai_san}] ${item.ten_tai_san}
+              - Sử dụng: ${item.nguoi_su_dung}
+              ${item.ma_sinh_vien ? ' - Mã SV: ' + item.ma_sinh_vien : ''}
             </option>
           `);
         });
       });
     }
 
-    taiSanKhoSelect.on('change', function() {
-      const selected = $(this).find(':selected');
-      const img = selected.data('img');
-      const ten = selected.data('ten');
-      previewTaiSan.html(img
-        ? `<img src="${img}" class="rounded" style="width:200px;height:180px;object-fit:cover;">`
-        : '<p class="text-muted">Không có hình ảnh</p>'
-      );
-    });
-
     taiSanPhongSelect.on('change', function() {
       const selected = $(this).find(':selected');
       const img = selected.data('img');
       const ten = selected.data('ten');
       const nguoi = selected.data('nguoi');
+      const maSV = selected.data('masv');
+      const maSlot = selected.data('slot');
+
       previewTaiSan.html(img
         ? `<div class="card p-2 shadow-sm" style="width:250px;margin:0 auto;">
              <img src="${img}" class="card-img-top rounded" style="object-fit:cover;height:180px;">
              <div class="card-body text-center p-2">
                <h6 class="card-title mb-1">${ten}</h6>
-               <small class="text-muted">Người giữ: ${nguoi}</small>
+               <small class="text-muted">Sử dụng: ${nguoi}</small><br>
+               ${maSV ? `<small class="text-muted">Mã SV: ${maSV}</small><br>` : ''}
+               ${maSlot ? `<small class="text-muted">Slot: ${maSlot}</small>` : ''}
              </div>
            </div>`
         : '<p class="text-muted">Không có hình ảnh</p>'
