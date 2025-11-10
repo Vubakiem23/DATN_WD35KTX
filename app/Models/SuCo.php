@@ -49,4 +49,14 @@ class SuCo extends Model
     {
         return $this->anh ? asset($this->anh) : asset('images/no-image.png');
     }
+    public function thong_bao()
+    {
+        return $this->hasOne(\App\Models\ThongBaoSuCo::class, 'su_co_id');
+    }
+
+    public function sinh_vien()
+    {
+        return $this->belongsTo(\App\Models\SinhVien::class, 'sinh_vien_id');
+    }
+
 }

@@ -42,7 +42,7 @@
             .room-actions .btn-dergin{min-width:92px}
             .room-actions .btn-dergin span{line-height:1;white-space:nowrap}
             .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
-            .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+.btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
             .btn-dergin i{font-size:.8rem}
             .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
             .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
@@ -94,7 +94,7 @@
                                 @endphp
                                 <tr>
                                     <td class="fit text-center">{{ $sttBase + $loop->iteration }}</td>
-                                    <td class="font-weight-600">{{ $sv->ho_ten }}</td>
+<td class="font-weight-600">{{ $sv->ho_ten }}</td>
                                     <td class="fit">{{ $sv->ma_sinh_vien }}</td>
                                     <td class="fit">
                                         <img src="{{ $imgUrl }}" alt="Ảnh {{ $sv->ho_ten }}" class="avatar-56">
@@ -128,7 +128,7 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="text-center text-muted py-4">
-                                        <img src="https://dummyimage.com/120x80/eff3f9/9aa8b8&text=No+data" class="mb-2"
+<img src="https://dummyimage.com/120x80/eff3f9/9aa8b8&text=No+data" class="mb-2"
                                             alt="">
                                         <div>Chưa có sinh viên phù hợp</div>
                                     </td>
@@ -179,7 +179,7 @@
                                         <label class="small text-muted">Tình trạng hồ sơ</label>
                                         <select name="status" class="form-control">
                                             <option value="">-- Tất cả --</option>
-                                            <option value="Đã duyệt" @selected(request('status') == 'Đã duyệt')>Đã duyệt</option>
+<option value="Đã duyệt" @selected(request('status') == 'Đã duyệt')>Đã duyệt</option>
                                             <option value="Chờ duyệt" @selected(request('status') == 'Chờ duyệt')>Chờ duyệt</option>
                                         </select>
                                     </div>
@@ -222,7 +222,7 @@
                                         <input type="text" name="major_id" class="form-control"
                                             value="{{ request('major_id') }}" placeholder="VD: CNTT">
                                     </div>
-                                    <div class="col-md-4 mb-3">
+<div class="col-md-4 mb-3">
                                         <label class="small text-muted">Niên khóa</label>
                                         <input type="text" name="intake_year" class="form-control"
                                             value="{{ request('intake_year') }}" placeholder="VD: 2022/K17">
@@ -293,7 +293,7 @@
                     var response = res.data ?? '';
                     renderSinhvien(response);
                 },
-                error: function(request) {
+error: function(request) {
                     try {
                         var data = JSON.parse(request.responseText);
                         alert(data.message || 'Có lỗi xảy ra');
