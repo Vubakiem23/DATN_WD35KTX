@@ -5,13 +5,13 @@
 @section('content')
 <div class="container mt-4">
 
-  
-    <h3 class="asset-page__title mb-0">🏢 Quản lý tài sản phòng</h3>
+
+  <h3 class="asset-page__title mb-0">🏢 Quản lý tài sản phòng</h3>
   <div class="mb-4">
     <a href="{{ route('taisan.create') }}" class="btn btn-dergin btn-dergin--info">
       <i class="fa fa-plus"></i><span>Thêm tài sản vào phòng "Tùy Chọn"</span>
     </a>
-    </div>
+  </div>
 
   {{-- 🎨 Bộ lọc đẹp như trang lịch bảo trì --}}
   <div class="filter-card mb-4">
@@ -19,7 +19,7 @@
       <div class="col-md-4">
         <label class="form-label"><i class="fa fa-magnifying-glass text-primary"></i> Tìm kiếm</label>
         <input type="text" name="search" value="{{ request('search') }}" class="form-control"
-               placeholder="Nhập mã hoặc tên tài sản...">
+          placeholder="Nhập mã hoặc tên tài sản...">
       </div>
 
       <div class="col-md-3">
@@ -27,9 +27,9 @@
         <select name="phong_id" class="form-select form-control">
           <option value="">-- Tất cả phòng --</option>
           @foreach($phongs as $phong)
-            <option value="{{ $phong->id }}" {{ request('phong_id') == $phong->id ? 'selected' : '' }}>
-              {{ $phong->ten_phong }}
-            </option>
+          <option value="{{ $phong->id }}" {{ request('phong_id') == $phong->id ? 'selected' : '' }}>
+            {{ $phong->ten_phong }}
+          </option>
           @endforeach
         </select>
       </div>
@@ -50,9 +50,9 @@
           <i class="fa fa-filter"></i> Lọc
         </button>
         @if(request('search') || request('phong_id') || request('tinh_trang'))
-          <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary flex-fill">
-            <i class="fa fa-rotate-left"></i> Đặt lại
-          </a>
+        <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary flex-fill">
+          <i class="fa fa-rotate-left"></i> Đặt lại
+        </a>
         @endif
       </div>
     </form>
@@ -60,10 +60,10 @@
 
   {{-- 🔔 Thông báo --}}
   @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+  <div class="alert alert-success">{{ session('success') }}</div>
   @endif
   @if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
+  <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
   <h4 class="mb-2">📋 Danh sách tài sản</h4>
@@ -94,13 +94,13 @@
             {{-- Ảnh --}}
             <td class="text-center asset-thumb-cell">
               @if(!empty($item->khoTaiSan->hinh_anh))
-                <div class="asset-thumb mx-auto">
-                  <img src="{{ asset('storage/' . $item->khoTaiSan->hinh_anh) }}" alt="Ảnh tài sản">
-                </div>
+              <div class="asset-thumb mx-auto">
+                <img src="{{ asset('storage/' . $item->khoTaiSan->hinh_anh) }}" alt="Ảnh tài sản">
+              </div>
               @else
-                <div class="asset-thumb mx-auto bg-light text-muted d-flex align-items-center justify-content-center">
-                  <small class="small">Không ảnh</small>
-                </div>
+              <div class="asset-thumb mx-auto bg-light text-muted d-flex align-items-center justify-content-center">
+                <small class="small">Không ảnh</small>
+              </div>
               @endif
             </td>
 
@@ -109,12 +109,12 @@
             <td>{{ $item->phong->ten_phong ?? 'Chưa gán' }}</td>
             <td>
               @php
-                $sinhViens = $item->slots->pluck('sinhVien.ho_ten')->filter()->unique();
+              $sinhViens = $item->slots->pluck('sinhVien.ho_ten')->filter()->unique();
               @endphp
               @if($sinhViens->isNotEmpty())
-                {{ $sinhViens->implode(', ') }}
+              {{ $sinhViens->implode(', ') }}
               @else
-                <span class="text-muted">Chưa có</span>
+              <span class="text-muted">Chưa có</span>
               @endif
             </td>
 
@@ -148,22 +148,26 @@
                 <i class="fa fa-pencil"></i><span>Sửa</span>
               </a>
 
+              {{-- Ẩn nút bảo trì nếu tài sản đang trong trạng thái "Đang bảo trì" --}}
+              @if($item->tinh_trang_hien_tai !== 'Đang bảo trì')
               <a href="{{ route('lichbaotri.create', ['taisan_id' => $item->id]) }}"
-                 class="btn btn-dergin btn-dergin--muted" title="Lên lịch bảo trì">
+                class="btn btn-dergin btn-dergin--muted" title="Lên lịch bảo trì">
                 <i class="fa fa-calendar"></i><span>Bảo trì</span>
               </a>
+              @endif
+
 
               <button type="button" class="btn btn-dergin btn-dergin--info btn-xemchitiet"
-                      data-id="{{ $item->id }}"
-                      data-url="{{ route('taisan.showModal', $item->id) }}"
-                      data-bs-toggle="modal" data-bs-target="#modalTaiSan"
-                      data-toggle="modal" data-target="#modalTaiSan"
-                      title="Xem chi tiết">
+                data-id="{{ $item->id }}"
+                data-url="{{ route('taisan.showModal', $item->id) }}"
+                data-bs-toggle="modal" data-bs-target="#modalTaiSan"
+                data-toggle="modal" data-target="#modalTaiSan"
+                title="Xem chi tiết">
                 <i class="fa fa-eye"></i><span>Chi tiết</span>
               </button>
 
               <form action="{{ route('taisan.destroy', $item->id) }}" method="POST" class="d-inline"
-                    onsubmit="return confirm('Xóa tài sản này khỏi phòng?');">
+                onsubmit="return confirm('Xóa tài sản này khỏi phòng?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-dergin btn-dergin--danger" title="Xóa">
@@ -212,37 +216,145 @@
 {{-- 🧩 CSS & JS --}}
 @push('styles')
 <style>
-  .asset-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
-  .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
-  .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
-  .btn-dergin i{font-size:.8rem}
-  .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
-  .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
-  .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
-
-  .asset-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
-  .asset-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
-  .asset-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
-  .asset-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
-  .asset-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
-  .asset-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
-  .asset-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
-  .asset-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
-  .asset-thumb-cell{width:96px}
-  .asset-thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:0 0 64px;background:#e9ecef;display:flex;align-items:center;justify-content:center}
-  .asset-thumb img{width:100%;height:100%;object-fit:cover}
-
-  .action-cell{
-    display:flex;
-    align-items:center;
-    justify-content:flex-end;
-    gap:.5rem;
-    white-space:nowrap;
+  .asset-page__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
   }
-  .action-cell form{margin:0}
-  .action-cell .btn{line-height:1}
-  .action-cell .btn-dergin{min-width:92px}
-  .action-cell .btn-dergin span{line-height:1;white-space:nowrap}
+
+  .btn-dergin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    padding: .4rem .9rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: .72rem;
+    border: none;
+    color: #fff;
+    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+    box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+    transition: transform .2s ease, box-shadow .2s ease
+  }
+
+  .btn-dergin:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+    color: #fff
+  }
+
+  .btn-dergin i {
+    font-size: .8rem
+  }
+
+  .btn-dergin--muted {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
+  }
+
+  .btn-dergin--info {
+    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
+  }
+
+  .btn-dergin--danger {
+    background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
+  }
+
+  .asset-table-wrapper {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    padding: 1.25rem
+  }
+
+  .asset-table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0 12px
+  }
+
+  .asset-table thead th {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #6c757d;
+    border: none;
+    padding-bottom: .75rem
+  }
+
+  .asset-table tbody tr {
+    background: #f9fafc;
+    border-radius: 16px;
+    transition: transform .2s ease, box-shadow .2s ease
+  }
+
+  .asset-table tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08)
+  }
+
+  .asset-table tbody td {
+    border: none;
+    vertical-align: middle;
+    padding: 1rem .95rem
+  }
+
+  .asset-table tbody tr td:first-child {
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px
+  }
+
+  .asset-table tbody tr td:last-child {
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px
+  }
+
+  .asset-thumb-cell {
+    width: 96px
+  }
+
+  .asset-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    overflow: hidden;
+    flex: 0 0 64px;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center
+  }
+
+  .asset-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover
+  }
+
+  .action-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .5rem;
+    white-space: nowrap;
+  }
+
+  .action-cell form {
+    margin: 0
+  }
+
+  .action-cell .btn {
+    line-height: 1
+  }
+
+  .action-cell .btn-dergin {
+    min-width: 92px
+  }
+
+  .action-cell .btn-dergin span {
+    line-height: 1;
+    white-space: nowrap
+  }
 
   .filter-card {
     background: #f8f9fa;
@@ -251,16 +363,19 @@
     padding: 15px 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
+
   .filter-card label {
     font-weight: 600;
     color: #333;
   }
+
   .filter-btns .btn {
     height: 42px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
   }
+
   .filter-btns i {
     margin-right: 5px;
   }
