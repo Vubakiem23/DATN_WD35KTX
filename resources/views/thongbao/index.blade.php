@@ -27,9 +27,8 @@
         </div>
     </form>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Danh sách các thông báo</h4>
-        <a href="{{ route('thongbao.create') }}" class="btn btn-primary mb-3 btn-add">+ Thêm thông báo</a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('thongbao.create') }}" class="btn btn-dergin btn-dergin--info"><i class="fa fa-plus"></i><span>Thêm thông báo</span></a>
     </div>
 
     {{-- Thông báo thành công --}}
@@ -231,22 +230,9 @@
         border-bottom-right-radius: 16px
     }
 
-    .room-actions {
-        display: flex;
-        flex-wrap: nowrap;
-        justify-content: center;
-        gap: .4rem;
-        white-space: nowrap
-    }
-
-    .room-actions .btn-dergin {
-        min-width: 92px
-    }
-
-    .room-actions .btn-dergin span {
-        line-height: 1;
-        white-space: nowrap
-    }
+    .room-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem}
+    .room-actions .btn-dergin{min-width:80px}
+    .room-actions .btn-dergin span{line-height:1;white-space:normal}
 
     .img-thumb {
         height: 60px;
@@ -310,6 +296,9 @@
         object-fit: cover
     }
 
+    @media (max-width:1400px){
+        .room-actions .btn-dergin{min-width:72px;padding:.35rem .7rem}
+    }
     @media (max-width:992px) {
         .room-table thead {
             display: none
@@ -330,6 +319,7 @@
             justify-content: space-between;
             padding: .35rem 0
         }
+        .room-actions{justify-content:flex-start}
     }
 </style>
 @endpush
