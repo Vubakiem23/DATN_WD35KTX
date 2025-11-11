@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Phong;
 use App\Models\SinhVien;
+use App\Models\RoomAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -63,16 +64,33 @@ class AssignmentController extends Controller
             if ($sv->phong_id && $sv->phong_id != $phong->id) {
                 $old = Phong::lockForUpdate()->find($sv->phong_id);
                 if ($old) {
-                    // gỡ sv khỏi phòng cũ (chỉ gán null)
+                    // gỡ sv khỏi phòng cũ (chỉ gán null) và đóng lịch sử cũ
                     $sv->phong_id = null;
-                    $sv->save();
+                    $sv->saveOrFail();
+                    // đóng assignment đang mở (nếu có)
+                    $openAssignment = RoomAssignment::where('sinh_vien_id', $sv->id)
+                        ->whereNull('end_date')
+                        ->latest('start_date')
+                        ->first();
+                    if ($openAssignment) {
+                        $openAssignment->end_date = now()->toDateString();
+                        $openAssignment->saveOrFail();
+                    }
                     $old->updateStatusBasedOnCapacity();
                 }
             }
 
             // gán sv vào phòng
             $sv->phong_id = $phong->id;
-            $sv->save();
+            $sv->saveOrFail();
+
+            // ghi lịch sử mới
+            RoomAssignment::create([
+                'sinh_vien_id' => $sv->id,
+                'phong_id' => $phong->id,
+                'start_date' => now()->toDateString(),
+                'end_date' => null,
+            ]);
 
             // cập nhật trạng thái phòng
             $phong->updateStatusBasedOnCapacity();
