@@ -557,6 +557,40 @@
         </div>
     </div>
 
+    {{-- Modal đánh giá sau khi thanh toán --}}
+    <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ratingModalLabel">⭐ Đánh giá xử lý sự cố</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <form id="ratingForm" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <p class="mb-2 text-muted">Vui lòng đánh giá chất lượng xử lý (1 - 5 sao)</p>
+                        <div class="d-flex gap-2 justify-content-center fs-3" id="ratingStars">
+                            <span data-value="1" role="button">★</span>
+                            <span data-value="2" role="button">★</span>
+                            <span data-value="3" role="button">★</span>
+                            <span data-value="4" role="button">★</span>
+                            <span data-value="5" role="button">★</span>
+                        </div>
+                        <input type="hidden" name="rating" id="ratingValue" value="5">
+                        <div class="mt-3">
+                            <label for="ratingFeedback" class="form-label">Góp ý (tùy chọn)</label>
+                            <input type="text" class="form-control" id="ratingFeedback" name="feedback" placeholder="Nhập góp ý...">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Bỏ qua</button>
+                        <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- CSRF token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -567,6 +601,61 @@
             const confirmBtn = document.getElementById('confirmPaymentBtn');
             const paymentModal = document.getElementById('paymentModal');
             const paymentAmount = document.getElementById('paymentAmount');
+            const ratingModal = document.getElementById('ratingModal');
+            const ratingForm = document.getElementById('ratingForm');
+            const ratingStars = document.getElementById('ratingStars');
+            const ratingValue = document.getElementById('ratingValue');
+
+            // Fallback mở modal khi Bootstrap JS không hook tự động
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-bs-target="#paymentModal"][data-id]');
+                if (!btn || !paymentModal) return;
+                const hoaDonId = btn.getAttribute('data-id');
+                const amount = btn.getAttribute('data-amount');
+                if (confirmBtn && hoaDonId) confirmBtn.setAttribute('data-id', hoaDonId);
+                if (paymentAmount && amount) {
+                    paymentAmount.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+                }
+                // Reset fields
+                if (paymentMethodSelect) paymentMethodSelect.value = '';
+                const noteEl = document.getElementById('ghi_chu_thanh_toan');
+                if (noteEl) noteEl.value = '';
+                if (bankInfo) bankInfo.style.display = 'none';
+                // Cố gắng dùng Bootstrap nếu có, nếu không thì tự mở
+                try {
+                    const bsModal = bootstrap.Modal.getOrCreateInstance(paymentModal);
+                    bsModal.show();
+                } catch (_) {
+                    paymentModal.classList.add('show');
+                    paymentModal.style.display = 'block';
+                    paymentModal.removeAttribute('aria-hidden');
+                    paymentModal.setAttribute('aria-modal', 'true');
+                    // Thêm backdrop đơn giản
+                    if (!document.querySelector('.modal-backdrop')) {
+                        const backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                    document.body.classList.add('modal-open');
+                }
+            });
+
+            // Rating stars UI
+            if (ratingStars && ratingValue) {
+                const paint = (val) => {
+                    [...ratingStars.querySelectorAll('span')].forEach(el => {
+                        el.classList.toggle('text-warning', Number(el.getAttribute('data-value')) <= val);
+                        el.classList.toggle('text-muted', Number(el.getAttribute('data-value')) > val);
+                    });
+                };
+                ratingStars.addEventListener('click', (e) => {
+                    const star = e.target.closest('span[data-value]');
+                    if (!star) return;
+                    ratingValue.value = star.getAttribute('data-value');
+                    paint(Number(ratingValue.value));
+                });
+                paint(Number(ratingValue.value || 5));
+            }
 
             // Hiển thị thông tin chuyển khoản nếu chọn "chuyen_khoan"
             function toggleBankInfo() {
@@ -603,6 +692,23 @@
                     toggleBankInfo();
                 });
             }
+            // Fallback đóng modal khi không có Bootstrap
+            document.addEventListener('click', function(e) {
+                const closeBtn = e.target.closest('[data-bs-dismiss="modal"]');
+                if (!closeBtn) return;
+                const parentModal = closeBtn.closest('.modal');
+                if (!parentModal) return;
+                try {
+                    const bsModal = bootstrap.Modal.getOrCreateInstance(parentModal);
+                    bsModal.hide();
+                } catch (_) {
+                    parentModal.classList.remove('show');
+                    parentModal.style.display = 'none';
+                    parentModal.setAttribute('aria-hidden', 'true');
+                    document.body.classList.remove('modal-open');
+                    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                }
+            });
 
             // Gửi yêu cầu thanh toán
             if (confirmBtn) {
@@ -641,10 +747,37 @@
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
-                                alert('✅ ' + data.message);
-                                const modalInstance = bootstrap.Modal.getInstance(paymentModal);
-                                if (modalInstance) modalInstance.hide();
-                                setTimeout(() => location.reload(), 500);
+                                // Đóng modal thanh toán
+                                try {
+                                    const modalInstance = bootstrap.Modal.getInstance(paymentModal);
+                                    if (modalInstance) modalInstance.hide();
+                                } catch (_) {
+                                    paymentModal.classList.remove('show');
+                                    paymentModal.style.display = 'none';
+                                    document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                                    document.body.classList.remove('modal-open');
+                                }
+                                // Mở modal đánh giá ngay
+                                if (ratingForm) {
+                                    ratingForm.setAttribute('action', '/admin/suco/' + hoaDonId + '/danh-gia');
+                                }
+                                try {
+                                    const bsModal = bootstrap.Modal.getOrCreateInstance(ratingModal);
+                                    bsModal.show();
+                                } catch (_) {
+                                    if (ratingModal) {
+                                        ratingModal.classList.add('show');
+                                        ratingModal.style.display = 'block';
+                                        ratingModal.removeAttribute('aria-hidden');
+                                        ratingModal.setAttribute('aria-modal', 'true');
+                                        if (!document.querySelector('.modal-backdrop')) {
+                                            const backdrop = document.createElement('div');
+                                            backdrop.className = 'modal-backdrop fade show';
+                                            document.body.appendChild(backdrop);
+                                        }
+                                        document.body.classList.add('modal-open');
+                                    }
+                                }
                             } else {
                                 alert('❌ ' + (data.message || 'Có lỗi xảy ra!'));
                                 this.disabled = false;
@@ -657,6 +790,43 @@
                             this.disabled = false;
                             this.innerHTML = '<i class="fa fa-check"></i> Xác nhận thanh toán';
                         });
+                });
+            }
+
+            // Gửi đánh giá sau thanh toán
+            if (ratingForm) {
+                ratingForm.addEventListener('submit', function(ev) {
+                    ev.preventDefault();
+                    const action = ratingForm.getAttribute('action');
+                    const formData = new FormData(ratingForm);
+                    fetch(action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    })
+                    .then(res => {
+                        // Nếu server trả redirect/html, vẫn tiếp tục
+                        try { return res.json(); } catch (_) { return {}; }
+                    })
+                    .then(() => {
+                        // Đóng modal và refresh danh sách
+                        try {
+                            const bsModal = bootstrap.Modal.getInstance(ratingModal);
+                            if (bsModal) bsModal.hide();
+                        } catch (_) {
+                            if (ratingModal) {
+                                ratingModal.classList.remove('show');
+                                ratingModal.style.display = 'none';
+                            }
+                        }
+                        window.location.reload();
+                    })
+                    .catch(() => {
+                        window.location.reload();
+                    });
                 });
             }
         });

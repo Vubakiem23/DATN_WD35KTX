@@ -27,6 +27,18 @@
             @endif
         </div>
 
+        {{-- 🖼️ Ảnh sau khi xử lý (nếu có) --}}
+        @if(!empty($suco->anh_sau) && file_exists(public_path($suco->anh_sau)))
+        <div class="text-center mb-4">
+            <div class="mb-2 text-muted">Ảnh sau khi xử lý</div>
+            <img src="{{ asset($suco->anh_sau) }}" 
+                 alt="Ảnh sau xử lý" 
+                 class="img-thumbnail shadow-sm" 
+                 width="320" 
+                 style="border-radius: 10px; object-fit: cover;">
+        </div>
+        @endif
+
         {{-- 🧾 Thông tin chi tiết --}}
         <table class="table table-bordered">
             <tr>
@@ -94,6 +106,17 @@
                     @endif
                 </td>
             </tr>
+            {{-- 📈 Độ hoàn thiện --}}
+            <tr>
+                <th>📈 Độ hoàn thiện</th>
+                <td>
+                    @if(isset($suco->completion_percent))
+                        {{ $suco->completion_percent }}%
+                    @else
+                        <em>Chưa cập nhật</em>
+                    @endif
+                </td>
+            </tr>
 
             <tr>
                 <th>⚙️ Trạng thái xử lý</th>
@@ -150,6 +173,42 @@
                         @endif
                     @else
                         <span class="badge bg-secondary">Chưa có hóa đơn</span>
+                    @endif
+                </td>
+            </tr>
+            {{-- ⭐ Đánh giá (chỉ sau khi đã thanh toán) --}}
+            <tr id="rating">
+                <th>⭐ Đánh giá xử lý</th>
+                <td>
+                    @if($suco->is_paid)
+                        @if($suco->rating)
+                            <div class="mb-1">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <span class="{{ $i <= $suco->rating ? 'text-warning' : 'text-muted' }}">★</span>
+                                @endfor
+                                <span class="ms-2 text-muted">({{ $suco->rating }}/5)</span>
+                            </div>
+                            @if($suco->feedback)
+                                <div class="text-muted">"{{ $suco->feedback }}"</div>
+                            @endif
+                        @else
+                            <form action="{{ route('suco.danhgia', $suco->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <div class="d-flex align-items-center gap-2">
+                                    <select name="rating" class="form-select form-select-sm" style="width:auto;">
+                                        <option value="5">5 sao</option>
+                                        <option value="4">4 sao</option>
+                                        <option value="3">3 sao</option>
+                                        <option value="2">2 sao</option>
+                                        <option value="1">1 sao</option>
+                                    </select>
+                                    <input type="text" name="feedback" class="form-control form-control-sm" placeholder="Góp ý (tùy chọn)" style="max-width:320px;">
+                                    <button type="submit" class="btn btn-sm btn-primary">Gửi đánh giá</button>
+                                </div>
+                            </form>
+                        @endif
+                    @else
+                        <em>Chỉ có thể đánh giá sau khi đã thanh toán.</em>
                     @endif
                 </td>
             </tr>

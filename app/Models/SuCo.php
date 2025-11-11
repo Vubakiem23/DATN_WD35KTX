@@ -17,12 +17,17 @@ class SuCo extends Model
         'mo_ta',
         'ngay_gui',
         'trang_thai',      // trạng thái tiếp nhận: pending/in_progress/resolved
+        'completion_percent', // phần trăm hoàn thiện 0-100
         'payment_amount',   // số tiền
         'is_paid',          // thanh toán: true/false
         'anh',              // ảnh minh chứng
+        'anh_sau',          // ảnh sau khi xử lý
         'nguoi_tao',        // sinh_vien hoặc nhan_vien
         'ngay_hoan_thanh',  // 🆕 ngày hoàn thành sự cố
         'ngay_thanh_toan',  // 🆕 ngày thanh toán hóa đơn
+        'rating',           // đánh giá 1-5
+        'feedback',         // góp ý
+        'rated_at',         // thời gian đánh giá
     ];
 
     protected $casts = [
@@ -30,6 +35,7 @@ class SuCo extends Model
         'is_paid' => 'boolean',
         'ngay_hoan_thanh' => 'datetime', // 🆕 cast ngày hoàn thành
         'ngay_thanh_toan' => 'datetime', // 🆕 cast ngày thanh toán
+        'rated_at' => 'datetime',
     ];
 
     // 🧩 Quan hệ: Một sự cố thuộc về một sinh viên
@@ -48,6 +54,11 @@ class SuCo extends Model
     public function getAnhUrlAttribute()
     {
         return $this->anh ? asset($this->anh) : asset('images/no-image.png');
+    }
+    // 🖼️ Ảnh sau xử lý
+    public function getAnhSauUrlAttribute()
+    {
+        return $this->anh_sau ? asset($this->anh_sau) : null;
     }
     public function thong_bao()
     {
