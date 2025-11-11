@@ -151,9 +151,10 @@
               {{-- Ẩn nút bảo trì nếu tài sản đang trong trạng thái "Đang bảo trì" --}}
               @if($item->tinh_trang_hien_tai !== 'Đang bảo trì')
               <a href="{{ route('lichbaotri.create', ['taisan_id' => $item->id]) }}"
-                class="btn btn-dergin btn-dergin--muted" title="Lên lịch bảo trì">
-                <i class="fa fa-calendar"></i><span>Bảo trì</span>
-              </a>
+  class="btn btn-dergin btn-dergin--muted" title="Lên lịch bảo trì">
+  <i class="fa fa-calendar"></i><span>Bảo trì</span>
+</a>
+
               @endif
 
 
