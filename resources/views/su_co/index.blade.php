@@ -7,7 +7,7 @@
             <p class="text-muted mb-0">Theo dõi, xử lý và cập nhật trạng thái các sự cố ký túc xá</p>
         </div>
 
-        <div class="d-flex gap-2 mt-2 mb-3">
+        <div class="d-flex gap-2">
             <a href="{{ route('suco.create') }}" class="btn btn-dergin btn-dergin--info">
                 <i class="fa fa-plus"></i><span>Thêm sự cố</span>
         </a>
@@ -237,117 +237,33 @@
 
     @push('styles')
         <style>
-            html {
-                scroll-behavior: auto !important
+            .room-page__title{font-size:1.75rem;font-weight:700;color:#1f2937}
+            .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
+            .room-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
+            .room-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
+            .room-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+            .room-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
+            .room-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
+            .room-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
+            .room-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
+            .room-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem}
+            .room-actions .btn-dergin{min-width:80px}
+            .room-actions .btn-dergin span{line-height:1;white-space:normal}
+            .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
+            .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+            .btn-dergin i{font-size:.8rem}
+            .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
+            .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+            .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+            @media (max-width:1400px){.room-actions .btn-dergin{min-width:72px;padding:.35rem .7rem}}
+            @media (max-width:992px){
+                .room-table thead{display:none}
+                .room-table tbody{display:block}
+                .room-table tbody tr{display:flex;flex-direction:column;padding:1rem}
+                .room-table tbody td{display:flex;justify-content:space-between;padding:.35rem 0}
+                .room-actions{justify-content:flex-start}
             }
-
-            .room-page__title {
-                font-size: 1.75rem;
-                font-weight: 700;
-                color: #1f2937
-            }
-
-            .room-table-wrapper {
-                background: #fff;
-                border-radius: 14px;
-                box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-                padding: 1.25rem
-            }
-
-            .room-table {
-                margin-bottom: 0;
-                border-collapse: separate;
-                border-spacing: 0 12px
-            }
-
-            .room-table thead th {
-                font-size: .78rem;
-                text-transform: uppercase;
-                letter-spacing: .05em;
-                color: #6c757d;
-                border: none;
-                padding-bottom: .75rem
-            }
-
-            .room-table tbody tr {
-                background: #f9fafc;
-                border-radius: 16px;
-                transition: transform .2s ease, box-shadow .2s ease
-            }
-
-            .room-table tbody tr:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08)
-            }
-
-            .room-table tbody td {
-                border: none;
-                vertical-align: middle;
-                padding: 1rem .95rem
-            }
-
-            .room-table tbody tr td:first-child {
-                border-top-left-radius: 16px;
-                border-bottom-left-radius: 16px
-            }
-
-            .room-table tbody tr td:last-child {
-                border-top-right-radius: 16px;
-                border-bottom-right-radius: 16px
-            }
-
-            .room-actions {
-                display: flex;
-                flex-wrap: nowrap;
-                justify-content: center;
-                gap: .4rem;
-                white-space: nowrap
-            }
-
-            .room-actions .btn-dergin {
-                min-width: 92px
-            }
-
-            .btn-dergin {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: .35rem;
-                padding: .4rem .9rem;
-                border-radius: 999px;
-                font-weight: 600;
-                font-size: .72rem;
-                border: none;
-                color: #fff;
-                background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
-                box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
-                transition: transform .2s ease, box-shadow .2s ease
-            }
-
-            .btn-dergin:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
-                color: #fff
-            }
-
-            .btn-dergin--muted {
-                background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
-            }
-
-            .btn-dergin--info {
-                background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
-            }
-
-            .btn-dergin--danger {
-                background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
-            }
-
-            .avatar-56 {
-                width: 56px;
-                height: 56px;
-                border-radius: 50%;
-                object-fit: cover
-            }
+            .avatar-56{width:56px;height:56px;border-radius:50%;object-fit:cover}
         </style>
     @endpush
 

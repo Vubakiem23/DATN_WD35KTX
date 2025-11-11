@@ -90,6 +90,46 @@
                     </div>
                 </div>
                 @endif
+                
+                <hr>
+                <h6 class="mb-3">Vi phạm của sinh viên</h6>
+                @php
+                    $violations = $sinhVien->violations()->with('type')->latest('occurred_at')->get();
+                @endphp
+                @if($violations->count())
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Loại vi phạm</th>
+                                <th>Trạng thái</th>
+                                <th>Tiền phạt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($violations as $vp)
+                            <tr>
+                                <td>{{ optional($vp->occurred_at)->format('d/m/Y') ?? 'N/A' }}</td>
+                                <td>{{ $vp->type->name ?? 'Không rõ' }}</td>
+                                <td>
+                                    @php
+                                        $status = strtolower((string)$vp->status);
+                                        $processed = in_array($status, ['resolved','paid'], true);
+                                    @endphp
+                                    <span class="badge bg-{{ $processed ? 'success' : 'warning' }}">
+                                        {{ $processed ? 'Đã xử lý' : 'Chưa xử lý' }}
+                                    </span>
+                                </td>
+                                <td>{{ is_null($vp->penalty_amount) ? '0' : number_format((float)$vp->penalty_amount, 0, ',', '.') }} đ</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                    <p class="text-muted fst-italic">Chưa có vi phạm nào.</p>
+                @endif
             </div>
         </div>
     </div>
