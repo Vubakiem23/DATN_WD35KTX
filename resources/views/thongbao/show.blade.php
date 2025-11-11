@@ -1,4 +1,4 @@
-@extends('admin.layouts.admin', ['noSidebar' => true])
+@extends('admin.layouts.admin')
 
 @section('title', 'Chi tiết thông báo')
 

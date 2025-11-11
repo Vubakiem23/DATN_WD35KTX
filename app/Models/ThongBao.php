@@ -12,15 +12,16 @@ class ThongBao extends Model
     protected $table = 'thong_bao';
 
     protected $fillable = [
-        'tieu_de_id', // khóa ngoại tới bảng tiêu đề
-        'noi_dung',
-        'ngay_dang',
-        'doi_tuong',
-        'anh',
-        'file',      // đường dẫn file PDF, Word, Excel
-        'muc_do_id', // khóa ngoại tới bảng mức độ
-    ];
-
+    'tieu_de_id', // khóa ngoại tới bảng tiêu đề
+    'noi_dung',
+    'ngay_dang',
+    'doi_tuong',
+    'anh',
+    'file',       // đường dẫn file PDF, Word, Excel
+    'muc_do_id',  // khóa ngoại tới bảng mức độ
+    'phong_id',   // nếu có liên kết tới phòng
+    'user_id',    // khóa ngoại tới bảng users (người viết thông báo)
+];
     /**
      * Quan hệ với bảng tiêu đề
      */
@@ -51,6 +52,10 @@ class ThongBao extends Model
     public function phongs()
     {
         return $this->belongsToMany(Phong::class, 'thong_bao_phong', 'thong_bao_id', 'phong_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**

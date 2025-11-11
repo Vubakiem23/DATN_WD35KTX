@@ -414,9 +414,8 @@
 <body class="nav-md">
     <div class="container body">
         <div class="main_container">
-            @if(empty($noSidebar))
+            
             @include('admin.partials.side-bar')
-            @endif
 
             @include('admin.partials.top-navigation')
 

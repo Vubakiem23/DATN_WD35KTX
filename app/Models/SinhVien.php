@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Schema;
 
 class SinhVien extends Model
 {
+    
     protected $table = 'sinh_vien';
 
     protected $fillable = [
@@ -154,5 +155,26 @@ class SinhVien extends Model
     public function scopeIntakeYear($q, $year)
     {
         return $year ? $q->where('khoa_hoc', $year) : $q;
+    }
+
+
+
+    public function thongBao()
+    {
+        return $this->hasMany(ThongBaoSinhVien::class, 'sinh_vien_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($sinhVien) {
+            // Khi sinh viên được thêm => tự tạo thông báo
+            ThongBaoSinhVien::create([
+                'sinh_vien_id' => $sinhVien->id,
+                'noi_dung' => 'Hồ sơ của bạn đang được duyệt.',
+                'trang_thai' => 'Chờ duyệt',
+            ]);
+        });
     }
 }

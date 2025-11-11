@@ -1,4 +1,10 @@
 @extends('admin.layouts.admin')
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap 5 JS Bundle (gồm Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 @section('content')
 <div class="container py-4">
 
@@ -99,13 +105,14 @@
                        <i class="fa fa-pencil"></i><span>Sửa</span>
                      </a>
                      <button type="button"
-                             class="btn btn-dergin btn-dergin--info"
-                             data-bs-toggle="modal"
-                             data-bs-target="#paymentModal"
-                             title="Thanh toán"
-                             data-id="{{ $hoaDon->id }}">
-                       <i class="fa fa-credit-card"></i><span>Thanh toán</span>
-                     </button>
+                            class="btn btn-dergin btn-dergin--info"
+                            data-bs-toggle="modal"
+                            data-bs-target="#paymentModal"
+                            title="Thanh toán"
+                            data-id="{{ $hoaDon->id }}">
+                      <i class="fa fa-credit-card"></i><span>Thanh toán</span>
+                    </button>
+
                    @endif
                    <button class="btn btn-dergin btn-dergin--danger" type="submit" title="Xóa">
                      <i class="fa fa-trash"></i><span>Xóa</span>
