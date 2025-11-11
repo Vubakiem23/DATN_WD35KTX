@@ -69,7 +69,8 @@ class ClientController extends Controller
             'phong' => $sinhVien->phong ?? null,
             'so_su_co' => SuCo::where('sinh_vien_id', $sinhVien->id)->count(),
             'su_co_chua_xu_ly' => SuCo::where('sinh_vien_id', $sinhVien->id)
-                ->whereIn('trang_thai', ['pending', 'in_progress'])
+                // Đếm các sự cố chưa hoàn thành: Tiếp nhận hoặc Đang xử lý
+                ->whereIn('trang_thai', ['Tiếp nhận', 'Đang xử lý'])
                 ->count(),
             'hoa_don_chua_thanh_toan' => $phongId ? HoaDon::where('phong_id', $phongId)
                 ->where(function($q) {

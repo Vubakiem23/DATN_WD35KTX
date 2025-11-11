@@ -123,7 +123,7 @@
                 <td>
                     <span class="badge 
                         @if($suco->trang_thai == 'Tiếp nhận') bg-secondary
-                        @elseif($suco->trang_thai == 'Đang xử lý') bg-info
+                        @elseif($suco->trang_thai == 'Đang xử lý') bg-warning text-dark
                         @elseif($suco->trang_thai == 'Hoàn thành') bg-success
                         @else bg-danger
                         @endif">

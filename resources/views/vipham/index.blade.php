@@ -22,20 +22,25 @@
             .room-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
             .room-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
             .room-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
-            .room-actions{display:flex;flex-wrap:nowrap;justify-content:center;gap:.4rem;white-space:nowrap}
-            .room-actions .btn-dergin{min-width:92px}
-            .room-actions .btn-dergin span{line-height:1;white-space:nowrap}
+            .room-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem}
+            .room-actions .btn-dergin{min-width:80px}
+            .room-actions .btn-dergin span{line-height:1;white-space:normal}
             .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
             .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
             .btn-dergin i{font-size:.8rem}
             .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
             .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
             .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+            /* Giảm tràn ngang trên màn hình rộng vừa */
+            @media (max-width:1400px){
+                .room-actions .btn-dergin{min-width:72px;padding:.35rem .7rem}
+            }
             @media (max-width:992px){
                 .room-table thead{display:none}
                 .room-table tbody{display:block}
                 .room-table tbody tr{display:flex;flex-direction:column;padding:1rem}
                 .room-table tbody td{display:flex;justify-content:space-between;padding:.35rem 0}
+                .room-actions{justify-content:flex-start}
             }
         </style>
         @endpush
@@ -104,7 +109,7 @@
                                 <th class="fit">Trạng thái</th>
                                 <th class="text-end fit">Tiền phạt</th>
                                 <th class="fit">Biên lai</th>
-                                <th>Ghi chú</th>
+                                <!-- <th>Ghi chú</th> -->
                                 <th class="text-end fit">Thao tác</th>
                             </tr>
                         </thead>
@@ -139,14 +144,14 @@
                                     </td>
                                     <td class="text-end fit">{{ $v->penalty_amount ? number_format($v->penalty_amount, 0, ',', '.') : '-' }}</td>
                                     <td class="fit">{{ $v->receipt_no ?? '-' }}</td>
-                                    <td>
+                                    <!-- <td>
                                         @if ($v->note)
                                             <span data-toggle="tooltip"
                                                 title="{{ $v->note }}">{{ $noteShort }}</span>
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
-                                    </td>
+                                    </td> -->
                                     <td class="text-end fit">
                                         <div class="room-actions">
                                             <a href="{{ route('vipham.show', $v->id) }}" class="btn btn-dergin btn-dergin--muted" title="Xem chi tiết"><i class="fa fa-eye"></i><span>Chi tiết</span></a>

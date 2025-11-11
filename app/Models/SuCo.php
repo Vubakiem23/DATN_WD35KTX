@@ -33,6 +33,7 @@ class SuCo extends Model
     protected $casts = [
         'payment_amount' => 'decimal:2',
         'is_paid' => 'boolean',
+        'ngay_gui' => 'datetime',
         'ngay_hoan_thanh' => 'datetime', // 🆕 cast ngày hoàn thành
         'ngay_thanh_toan' => 'datetime', // 🆕 cast ngày thanh toán
         'rated_at' => 'datetime',
