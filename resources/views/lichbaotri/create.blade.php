@@ -8,51 +8,169 @@
     font-weight: 700;
     color: #1e293b;
   }
+
   .card {
     border: none;
-    border-radius: 14px;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
   }
+
   .form-control,
   .form-select {
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid #d1d5db;
     padding: 10px 14px;
     transition: 0.2s ease;
+    font-size: 0.92rem;
   }
+
   .form-control:focus,
   .form-select:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
   }
+
   .btn-primary {
-    background-color: #2563eb;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
     border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-weight: 500;
+    border-radius: 12px;
+    padding: 10px 22px;
+    font-weight: 600;
   }
+
   .btn-secondary {
-    border-radius: 8px;
-    padding: 10px 18px;
+    border-radius: 12px;
+    padding: 10px 22px;
   }
+
   .section-title {
     font-weight: 600;
     color: #2563eb;
     border-left: 4px solid #2563eb;
     padding-left: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 18px;
   }
+
   .asset-info-box {
-    background: #f8fafc;
-    border: 1px dashed #2563eb;
+    background: #f1f5f9;
+    border: 1px solid #cbd5f5;
     font-size: 13px;
-    padding: 5px 8px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    line-height: 1.4;
   }
+
   .asset-info-box span {
     display: block;
-    line-height: 1.3rem;
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  .asset-info-box small {
+    display: block;
+    color: #64748b;
+    font-weight: 400;
+  }
+
+  .asset-table-wrapper {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .asset-table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .asset-table thead th {
+    background: #f8fafc;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: .03em;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 14px;
+  }
+
+  .asset-table tbody tr {
+    transition: background .2s ease;
+  }
+
+  .asset-table tbody tr:hover {
+    background: #f9fbff;
+  }
+
+  .asset-table tbody td {
+    padding: 14px 14px;
+    vertical-align: middle;
+  }
+
+  .asset-table textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .asset-table .del {
+    border-radius: 12px;
+    padding-inline: 14px;
+  }
+
+  .empty-state {
+    text-align: center;
+  }
+
+  #addRow {
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 992px) {
+    .asset-table-wrapper {
+      border: none;
+      box-shadow: none;
+    }
+
+    .asset-table thead {
+      display: none;
+    }
+
+    .asset-table tbody tr {
+      display: block;
+      margin-bottom: 18px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .asset-table tbody td {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .asset-table tbody td::before {
+      content: attr(data-title);
+      flex: 0 0 120px;
+      font-weight: 600;
+      color: #475569;
+      font-size: 0.85rem;
+      margin-right: 12px;
+    }
+
+    .asset-table tbody td:last-child {
+      border-bottom: none;
+      justify-content: flex-end;
+    }
+
+    .asset-table textarea {
+      width: 100%;
+    }
   }
 </style>
 
@@ -129,56 +247,68 @@
 
   @if($errors->any())
   <div class="alert alert-danger shadow-sm">
-    <ul class="mb-0">
-      @foreach($errors->all() as $error)
-      <li>{{ $error }}</li>
-      @endforeach
-    </ul>
-  </div>
+      <ul class="mb-0">
+        @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
   @endif
 
   <form action="{{ route('lichbaotri.store') }}" method="POST" enctype="multipart/form-data" class="p-4 card">
     @csrf
 
     <h6 class="section-title">Chọn vị trí tài sản</h6>
-    <div class="mb-3">
+      <div class="mb-3">
       <select id="vi_tri" class="form-select" required>
-        <option value="">-- Chọn vị trí --</option>
+          <option value="">-- Chọn vị trí --</option>
         <option value="phong">Trong phòng</option>
         <option value="kho">Trong kho</option>
-      </select>
-    </div>
+        </select>
+      </div>
 
     <div class="vi-tri-phong d-none mb-4">
       <select id="phong_id" class="form-select">
-        <option value="">-- Chọn phòng --</option>
-        @foreach ($phongs as $phong)
-          <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
-        @endforeach
-      </select>
-    </div>
+            <option value="">-- Chọn phòng --</option>
+            @foreach ($phongs as $phong)
+              <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
+            @endforeach
+          </select>
+        </div>
 
     <div class="vi-tri-kho d-none mb-4">
       <select id="loai_tai_san_kho" class="form-select">
         <option value="">-- Chọn loại tài sản --</option>
-      </select>
+          </select>
     </div>
 
     <h6 class="section-title">Danh sách tài sản</h6>
-    <table class="table table-bordered align-middle" id="assetTable">
-      <thead>
-        <tr>
-          <th>Tài sản</th>
-          <th>Thông tin</th>
-          <th>Mô tả</th>
-          <th>Ảnh</th>
-          <th>#</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="asset-table-wrapper mb-3">
+      <div class="table-responsive">
+        <table class="table asset-table align-middle" id="assetTable">
+          <thead>
+            <tr>
+              <th style="min-width:170px;">Tài sản</th>
+              <th style="min-width:210px;">Thông tin</th>
+              <th style="min-width:220px;">Mô tả</th>
+              <th style="min-width:180px;">Ảnh trước bảo trì</th>
+              <th style="width:80px;">#</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="empty-state">
+              <td colspan="5" class="py-4">
+                <div class="text-muted">
+                  Chưa có tài sản nào trong danh sách. Vui lòng chọn vị trí và nhấn <strong>Thêm tài sản</strong>.
+        </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-    <button type="button" id="addRow" class="btn btn-outline-primary mb-3">
+    <button type="button" id="addRow" class="btn btn-outline-primary mb-4">
       ➕ Thêm tài sản
     </button>
 
@@ -221,24 +351,47 @@ $(function () {
     addRow();
   });
 
+  function removeEmptyState() {
+    body.find('.empty-state').remove();
+  }
+
+  function showEmptyState() {
+    if (body.children().length) return;
+    body.append(`
+      <tr class="empty-state">
+        <td colspan="5" class="py-4 text-muted">
+          Chưa có tài sản nào trong danh sách. Vui lòng chọn vị trí và nhấn <strong>Thêm tài sản</strong>.
+        </td>
+      </tr>
+    `);
+  }
+
   function addRow() {
+    removeEmptyState();
     body.append(`
       <tr>
-        <td>
+        <td data-title="Tài sản">
           <select name="tai_san_id[]" class="form-select asset-select" required>
             ${assets.map(a => `<option value="${a.id}">${a.ten_tai_san} [${a.ma_tai_san}]</option>`).join('')}
           </select>
         </td>
-        <td class="asset-info">
+        <td data-title="Thông tin" class="asset-info">
           <div class="asset-info-box">
-            <span class="ts-ma">Mã: -</span>
-            <span class="ts-user">SV: -</span>
-            <span class="ts-slot">Slot: -</span>
+            <span class="ts-name">Tên tài sản</span>
+            <small class="ts-ma">Mã: -</small>
+            <small class="ts-user">Sinh viên sử dụng: -</small>
+            <small class="ts-slot">Slot: -</small>
           </div>
         </td>
-        <td><textarea name="mo_ta[]" class="form-control" rows="2"></textarea></td>
-        <td><input type="file" name="hinh_anh[]" class="form-control"></td>
-        <td><button type="button" class="btn btn-danger btn-sm del">✖</button></td>
+        <td data-title="Mô tả">
+          <textarea name="mo_ta[]" class="form-control" rows="2" placeholder="Mô tả ngắn gọn công việc cần bảo trì..."></textarea>
+        </td>
+        <td data-title="Ảnh trước bảo trì">
+          <input type="file" name="hinh_anh[]" class="form-control" accept="image/*">
+        </td>
+        <td data-title="Thao tác" class="text-center">
+          <button type="button" class="btn btn-danger btn-sm del">✖</button>
+        </td>
       </tr>
     `);
 
@@ -250,13 +403,15 @@ $(function () {
     const data = assets.find(a => a.id == id);
 
     const box = $(this).closest('tr').find('.asset-info-box');
+    box.find('.ts-name').text(data?.ten_tai_san ?? 'Tên tài sản');
     box.find('.ts-ma').text(`Mã: ${data?.ma_tai_san ?? '-'}`);
-    box.find('.ts-user').text(`SV: ${data?.nguoi_su_dung ?? 'Chung'}`);
+    box.find('.ts-user').text(`Sinh viên sử dụng: ${data?.nguoi_su_dung ?? 'Chưa phân bổ'}`);
     box.find('.ts-slot').text(`Slot: ${data?.ma_slot ?? '-'}`);
   });
 
   body.on('click', '.del', function () {
     $(this).closest('tr').remove();
+    showEmptyState();
   });
 
   function loadLoai() {
@@ -265,8 +420,9 @@ $(function () {
       $('#loai_tai_san_kho').html(`
         <option value="">-- Chọn loại tài sản --</option>
         ${d.map(i => `<option value="${i.id}">${i.ten_loai}</option>`).join('')}
-      `);
-    });
+          `);
+        });
+    showEmptyState();
   }
 
   function loadPhong(id) {
@@ -281,8 +437,9 @@ $(function () {
       assets = d;
       body.html('');
     });
-  }
-});
+    showEmptyState();
+    }
+  });
 </script>
 @endif
 

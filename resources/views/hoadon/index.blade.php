@@ -48,7 +48,7 @@
         </a>
         <button type="button" class="btn btn-dergin btn-dergin--info" title="Bộ lọc" data-bs-toggle="modal" data-bs-target="#filterModal">
             <i class="fa fa-filter"></i><span>Lọc</span>
-        </button>
+</button>
     </div>
     
     <form method="POST" action="{{ route('hoadon.guiemailhangloat') }}">
@@ -81,7 +81,7 @@
 
 
             <td class="text-center">
-               <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')" class="d-inline">
+              <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')" class="d-inline">
                 @csrf
                 @method('DELETE')
 
@@ -89,7 +89,7 @@
                    <a href="{{ route('hoadon.show', $hoaDon->id) }}" class="btn btn-dergin btn-dergin--muted" title="Chi tiết">
                      <i class="fa fa-eye"></i><span>Chi tiết</span>
                    </a>
-                   @if($hoaDon->trang_thai !== 'Đã thanh toán')
+                  @if($hoaDon->trang_thai !== 'Đã thanh toán')
                     <button type="button"
                             class="btn btn-dergin btn-dergin--info"
                             title="Sửa giá điện/nước"
@@ -117,7 +117,7 @@
                    <button class="btn btn-dergin btn-dergin--danger" type="submit" title="Xóa">
                      <i class="fa fa-trash"></i><span>Xóa</span>
                    </button>
-                 </div>
+                </div>
               </form>
             </td>
         </tr>

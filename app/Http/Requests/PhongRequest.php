@@ -18,6 +18,29 @@ class PhongRequest extends FormRequest
     }
 
     /**
+     * Chuẩn hóa dữ liệu trước khi validate
+     */
+    protected function prepareForValidation(): void
+    {
+        $giaMoiNguoi = $this->input('gia_moi_nguoi', null);
+        $usePerPerson = in_array(
+            strtolower((string) $this->input('su_dung_gia_moi_nguoi', '0')),
+            ['1', 'true', 'on'],
+            true
+        );
+
+        if ($usePerPerson && $giaMoiNguoi !== null && $giaMoiNguoi !== '' && is_numeric($giaMoiNguoi)) {
+            $sucChua = (int) $this->input('suc_chua', 1);
+            if ($sucChua < 1) {
+                $sucChua = 1;
+            }
+            $this->merge([
+                'gia_phong' => (int) $giaMoiNguoi * $sucChua,
+            ]);
+        }
+    }
+
+    /**
      * Các quy tắc validation
      */
     public function rules()
@@ -65,6 +88,17 @@ class PhongRequest extends FormRequest
                 'integer',
                 'min:0',
                 'max:1000000000'
+            ],
+            'gia_moi_nguoi' => [
+                'nullable',
+                'integer',
+                'min:0',
+                'max:1000000000',
+                'required_if:su_dung_gia_moi_nguoi,1'
+            ],
+            'su_dung_gia_moi_nguoi' => [
+                'nullable',
+                'boolean'
             ],
             'trang_thai' => [
                 'required',
@@ -127,6 +161,13 @@ class PhongRequest extends FormRequest
             'gia_phong.min' => 'Giá phòng không được âm',
             'gia_phong.max' => 'Giá phòng quá lớn',
 
+            'gia_moi_nguoi.required_if' => 'Giá mỗi sinh viên là bắt buộc khi nhập theo đầu người',
+            'gia_moi_nguoi.integer' => 'Giá mỗi sinh viên phải là số nguyên (VND)',
+            'gia_moi_nguoi.min' => 'Giá mỗi sinh viên không được âm',
+            'gia_moi_nguoi.max' => 'Giá mỗi sinh viên quá lớn',
+
+            'su_dung_gia_moi_nguoi.boolean' => 'Trạng thái sử dụng giá theo đầu người không hợp lệ',
+
             // ghi_chu
             'ghi_chu.string' => 'Ghi chú phải là chuỗi ký tự',
             'ghi_chu.max' => 'Ghi chú không được vượt quá :max ký tự',
@@ -152,6 +193,8 @@ class PhongRequest extends FormRequest
             'suc_chua' => 'sức chứa',
             'trang_thai' => 'trạng thái',
             'gia_phong' => 'giá phòng',
+            'gia_moi_nguoi' => 'giá mỗi sinh viên',
+            'su_dung_gia_moi_nguoi' => 'chế độ giá theo đầu người',
             'ghi_chu' => 'ghi chú',
             'hinh_anh' => 'hình ảnh',
         ];
@@ -163,9 +206,26 @@ class PhongRequest extends FormRequest
     protected function passedValidation()
     {
         // Chuẩn hóa dữ liệu
-        $this->merge([
+        $payload = [
             'ten_phong' => trim($this->ten_phong),
             'ghi_chu' => $this->ghi_chu ? trim($this->ghi_chu) : null,
-        ]);
+        ];
+
+        $giaMoiNguoi = $this->input('gia_moi_nguoi', null);
+        $usePerPerson = in_array(
+            strtolower((string) $this->input('su_dung_gia_moi_nguoi', '0')),
+            ['1', 'true', 'on'],
+            true
+        );
+
+        if ($usePerPerson && $giaMoiNguoi !== null && $giaMoiNguoi !== '' && is_numeric($giaMoiNguoi)) {
+            $sucChua = (int) $this->input('suc_chua', 1);
+            if ($sucChua < 1) {
+                $sucChua = 1;
+            }
+            $payload['gia_phong'] = (int) $giaMoiNguoi * $sucChua;
+        }
+
+        $this->merge($payload);
     }
 }

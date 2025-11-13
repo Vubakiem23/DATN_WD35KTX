@@ -11,10 +11,10 @@
     <div class="mb-3 d-flex gap-2">
         <a href="{{ route('kho.index') }}" class="btn btn-dergin btn-dergin--muted" title="Quay về kho đồ">
             <i class="fa fa-warehouse"></i><span>Kho đồ</span>
-        </a>
+    </a>
         <a href="{{ route('kho.create', $loai->id) }}" class="btn btn-dergin btn-dergin--info">
             <i class="fa fa-plus"></i><span>Thêm tài sản mới</span>
-        </a>
+    </a>
     </div>
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -51,7 +51,7 @@
                 @endif
             </div>
         </form>
-    </div>
+        </div>
 
     {{-- Bảng tài sản --}}
     <div class="asset-table-wrapper">
@@ -77,7 +77,7 @@
                         <td class="text-center asset-thumb-cell">
                             @if($item->hinh_anh)
                             <div class="asset-thumb mx-auto">
-                                <img src="{{ asset('storage/' . $item->hinh_anh) }}"
+                            <img src="{{ asset('storage/' . $item->hinh_anh) }}"
                                     alt="{{ $item->ten_tai_san }}">
                             </div>
                             @else

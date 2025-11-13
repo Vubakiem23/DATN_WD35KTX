@@ -13,6 +13,101 @@
   </div>
 @endif
 
+@push('styles')
+<style>
+  .form-section-actions{
+    margin-top:2rem;
+    padding:1.15rem 1.25rem;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    background:#f9fafb;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:.75rem;
+    flex-wrap:wrap;
+  }
+  .form-section-actions .form-action-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:.5rem;
+    font-weight:600;
+    border-radius:999px;
+    padding:.65rem 1.6rem;
+    transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .form-section-actions .form-action-btn:focus-visible{
+    outline:2px solid rgba(59,130,246,.35);
+    outline-offset:2px;
+  }
+  .form-section-actions .form-action-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 12px 24px rgba(15,23,42,.12);
+  }
+  .form-action-btn--primary{
+    background:#16a34a;
+    border:1px solid #15803d;
+    color:#fff;
+  }
+  .form-action-btn--primary:hover{
+    background:#15803d;
+  }
+  .form-action-btn--ghost{
+    background:#fff;
+    border:1px solid #d1d5db;
+    color:#374151;
+  }
+  .form-action-btn--ghost:hover{
+    background:#f3f4f6;
+  }
+  .form-price-row{
+    align-items:stretch;
+  }
+  .form-price-row .form-price-col{
+    display:flex;
+    flex-direction:column;
+    gap:.5rem;
+    height:100%;
+  }
+  .form-price-row .form-price-col .form-label{
+    display:flex;
+    align-items:flex-end;
+    min-height:44px;
+    margin-bottom:0;
+  }
+  .form-price-row .form-price-col .form-control,
+  .form-price-row .form-price-col select{
+    flex-shrink:0;
+  }
+  .form-price-row .form-price-col .form-text{
+    margin-top:auto;
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    color:#6b7280;
+    line-height:1.45;
+  }
+  .form-price-row .form-price-col .form-text--spacer{
+    visibility:hidden;
+  }
+  @media (max-width:991.98px){
+    .form-price-row .form-price-col .form-label{
+      min-height:auto;
+    }
+    .form-price-row .form-price-col .form-text{
+      min-height:auto;
+      align-items:flex-start;
+      margin-top:.5rem;
+    }
+  }
+  @media (max-width:575.98px){
+    .form-section-actions{
+      justify-content:center;
+    }
+  }
+</style>
+@endpush
+
 <div class="row g-3">
 @isset($khoTaiSans)
   <div class="col-12 col-lg-5 order-lg-1 order-2">
@@ -26,14 +121,14 @@
           .asset-picker::-webkit-scrollbar-thumb{background:#ced4da;border-radius:10px}
           .asset-group{border:1px solid #e5e7eb;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.06);transition:box-shadow .2s ease,border-color .2s ease}
           .asset-group.is-open{box-shadow:0 10px 24px rgba(15,23,42,.1);border-color:#d1d5db}
-          .asset-group__header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.25rem;background:#f8fafc;border-bottom:1px solid #e5e7eb;flex-wrap:wrap}
+          .asset-group__header{display:grid;grid-template-columns:minmax(0,1.4fr) auto auto;align-items:center;gap:1.25rem;padding:1rem 1.25rem;background:#f8fafc;border-bottom:1px solid #e5e7eb}
           .asset-group__title{display:flex;align-items:center;gap:1rem;min-width:200px}
           .asset-thumb{width:52px;height:52px;border-radius:14px;object-fit:cover;border:1px solid #e5e7eb;background:#f1f5f9}
           .asset-thumb--sm{width:40px;height:40px;border-radius:12px}
           .asset-group__name{font-weight:600;color:#1f2937;margin-bottom:.15rem}
-          .asset-group__meta{display:flex;align-items:center;gap:.75rem}
+          .asset-group__meta{display:flex;align-items:center;gap:.75rem;justify-self:flex-start}
           .asset-group__meta .badge{background:#fff;color:#1f2937;border:1px solid #d1d5db;font-weight:500;border-radius:999px;padding:.35rem .75rem}
-          .asset-group__actions{display:flex;align-items:center;gap:.5rem}
+          .asset-group__actions{display:flex;align-items:center;gap:.5rem;justify-self:flex-end}
           .asset-group__actions .btn{white-space:nowrap}
           .asset-list{display:none;flex-direction:column;gap:.75rem;padding:1rem 1.25rem;background:#fff}
           .asset-list.show{display:flex}
@@ -52,6 +147,9 @@
           .asset-item.is-selected .asset-toggle{background:#4f46e5;color:#fff;border-color:#4f46e5;box-shadow:0 0 0 4px rgba(99,102,241,.18)}
           .asset-item .asset-hidden{display:none}
           @media (max-width: 991.98px){
+            .asset-group__header{grid-template-columns:minmax(0,1fr);row-gap:1rem}
+            .asset-group__meta{justify-self:stretch;justify-content:space-between}
+            .asset-group__actions{justify-self:flex-start}
             .asset-picker{max-height:none;padding-right:0}
             .asset-item{grid-template-columns:minmax(0,1fr) auto;align-items:flex-start}
             .asset-item__extras{margin-right:0}
@@ -263,24 +361,78 @@
   </div>
 </div>
 
-<div class="row">
-  <div class="col-md-4 mb-3">
+@php
+  $capacityValue = max(1, (int) old('suc_chua', $phong->suc_chua ?? 1));
+  $totalPriceValue = (int) old('gia_phong', $phong->gia_phong ?? 0);
+  $perPersonOld = old('gia_moi_nguoi', null);
+  $perPersonValue = null;
+  $perPersonAutofilled = false;
+  if ($perPersonOld !== null && $perPersonOld !== '') {
+    $perPersonValue = (int) $perPersonOld;
+  } elseif ($totalPriceValue > 0) {
+    $perPersonValue = (int) round($totalPriceValue / max(1, $capacityValue));
+    $perPersonAutofilled = true;
+  }
+  $perPersonApprox = !is_null($perPersonValue) && ($perPersonValue * $capacityValue) !== $totalPriceValue;
+  $usePerPersonInitial = old('su_dung_gia_moi_nguoi', (!is_null($perPersonValue) && !$perPersonAutofilled) ? '1' : '0');
+@endphp
+
+<div class="row form-price-row">
+  <div class="col-lg-3 col-md-6 mb-3 form-price-col">
     <label class="form-label">Sức chứa <span class="text-danger">*</span></label>
     <input type="number" name="suc_chua" value="{{ old('suc_chua', $phong->suc_chua ?? 1) }}" class="form-control @error('suc_chua') is-invalid @enderror" min="1" max="8" required>
     @error('suc_chua')
       <div class="invalid-feedback">{{ $message }}</div>
     @enderror
+    <div class="form-text form-text--spacer" aria-hidden="true">&nbsp;</div>
   </div>
 
-  <div class="col-md-4 mb-3">
+  <div class="col-lg-3 col-md-6 mb-3 form-price-col">
+    <label class="form-label">Giá mỗi sinh viên (VND/tháng)</label>
+    <input type="number"
+           name="gia_moi_nguoi"
+           value="{{ $perPersonValue ?? '' }}"
+           class="form-control @error('gia_moi_nguoi') is-invalid @enderror"
+           min="0"
+           step="1"
+           placeholder="Nhập giá cho 1 sinh viên"
+           data-prefilled="{{ $perPersonAutofilled ? '1' : '0' }}"
+           required>
+    @error('gia_moi_nguoi')
+      <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+    <input type="hidden" name="su_dung_gia_moi_nguoi" value="{{ $usePerPersonInitial }}" data-per-person-flag>
+    <div class="form-text text-muted">Hệ thống sẽ nhân với sức chứa để ra giá phòng tổng.</div>
+  </div>
+
+  <div class="col-lg-3 col-md-6 mb-3 form-price-col">
     <label class="form-label">Giá phòng (VND/tháng) <span class="text-danger">*</span></label>
-    <input type="number" name="gia_phong" value="{{ old('gia_phong', $phong->gia_phong ?? 0) }}" class="form-control @error('gia_phong') is-invalid @enderror" min="0" step="1" required>
+    <input type="number"
+           name="gia_phong"
+           value="{{ old('gia_phong', $phong->gia_phong ?? 0) }}"
+           class="form-control @error('gia_phong') is-invalid @enderror"
+           min="0"
+           step="1"
+           required
+           readonly
+           tabindex="-1"
+           data-total-price-input
+           data-initial-total="{{ $totalPriceValue }}">
     @error('gia_phong')
       <div class="invalid-feedback">{{ $message }}</div>
     @enderror
+    <div class="form-text text-muted" data-price-summary>
+      @if(!is_null($perPersonValue))
+        {{ $capacityValue }} × {{ number_format($perPersonValue, 0, ',', '.') }}
+        {{ $perPersonApprox ? '~' : '=' }}
+        {{ number_format($totalPriceValue, 0, ',', '.') }} VND/tháng
+      @else
+        Nhập giá mỗi sinh viên để tự động tính tổng.
+      @endif
+    </div>
   </div>
 
-  <div class="col-md-4 mb-3">
+  <div class="col-lg-3 col-md-6 mb-3 form-price-col">
     <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
     @php $defaultStatus = old('trang_thai', $phong->trang_thai ?? 'Trống'); @endphp
     @if(isset($phong))
@@ -290,6 +442,7 @@
         <option value="Đã ở" {{ $defaultStatus === 'Đã ở' ? 'selected' : '' }}>Đã ở</option>
         <option value="Bảo trì" {{ $defaultStatus === 'Bảo trì' ? 'selected' : '' }}>Bảo trì</option>
     </select>
+    <div class="form-text form-text--spacer" aria-hidden="true">&nbsp;</div>
     @else
       <input type="hidden" name="trang_thai" value="Trống">
       <input type="text" class="form-control" value="Trống" readonly>
@@ -325,13 +478,15 @@
     </div>
   @endif
 </div>
-<div class="mb-3">
-  <button class="btn btn-success" type="submit" {{ (isset($khus) && count($khus)) ? '' : 'disabled' }}>
-    <i class="fas fa-save"></i> Lưu
-  </button>
-  <a href="{{ route('phong.index') }}" class="btn btn-secondary">
-    <i class="fas fa-times"></i> Hủy
+<div class="form-section-actions">
+  <a href="{{ route('phong.index') }}" class="btn form-action-btn form-action-btn--ghost">
+    <i class="fa fa-chevron-left"></i>
+    Hủy
   </a>
+  <button class="btn form-action-btn form-action-btn--primary" type="submit" {{ (isset($khus) && count($khus)) ? '' : 'disabled' }}>
+    <i class="fa fa-save"></i>
+    Lưu phòng
+  </button>
 </div>
 
   </div>
@@ -346,10 +501,27 @@ document.addEventListener('DOMContentLoaded', function(){
   const khuSelect = document.querySelector('select[name="khu_id"]');
   const genderHidden = document.querySelector('input[name="gioi_tinh"]');
   const genderDisplay = document.querySelector('input[name="gioi_tinh_display"]');
-  if(!capacityInput || !typeSelect) return;
+  const perPersonInput = document.querySelector('input[name="gia_moi_nguoi"]');
+  const totalPriceInput = document.querySelector('input[name="gia_phong"][data-total-price-input]');
+  const priceSummary = document.querySelector('[data-price-summary]');
+  const perPersonModeInput = document.querySelector('input[name="su_dung_gia_moi_nguoi"][data-per-person-flag]');
+  if(!capacityInput) return;
 
   const MAX_CAPACITY = 8;
   const MIN_CAPACITY = parseInt(capacityInput.getAttribute('min'), 10) || 1;
+  const initialTotal = totalPriceInput ? parseInt(totalPriceInput.getAttribute('data-initial-total') || totalPriceInput.value || '0', 10) : 0;
+  let lockTotalUntilEdit = perPersonInput ? perPersonInput.dataset.prefilled === '1' : false;
+
+  if (perPersonModeInput) {
+    const hasValue = perPersonInput && perPersonInput.value.trim() !== '';
+    if (lockTotalUntilEdit) {
+      perPersonModeInput.value = '0';
+    } else if (perPersonModeInput.value !== '1' && perPersonModeInput.value !== '0') {
+      perPersonModeInput.value = hasValue ? '1' : '0';
+    } else if (!lockTotalUntilEdit) {
+      perPersonModeInput.value = hasValue ? '1' : perPersonModeInput.value;
+    }
+  }
 
   const sanitizeCapacity = () => {
     const raw = capacityInput.value;
@@ -364,6 +536,78 @@ document.addEventListener('DOMContentLoaded', function(){
       capacityInput.value = cap;
     }
     return cap;
+  };
+
+  const formatCurrency = (value) => {
+    const number = Number(value) || 0;
+    return new Intl.NumberFormat('vi-VN').format(number);
+  };
+
+  const getCapacityForCalculation = () => {
+    const cap = sanitizeCapacity();
+    if (cap === null) {
+      const fallback = parseInt(capacityInput.value, 10);
+      if (!isNaN(fallback) && fallback > 0) {
+        return fallback;
+      }
+      return MIN_CAPACITY;
+    }
+    return cap;
+  };
+
+  const syncPriceSummary = () => {
+    if (!totalPriceInput) return;
+    const cap = getCapacityForCalculation();
+    let perPerson = null;
+
+    if (perPersonInput) {
+      const raw = (perPersonInput.value || '').trim();
+      if (raw !== '') {
+        const num = parseInt(raw, 10);
+        if (!isNaN(num) && num >= 0) {
+          perPerson = num;
+        }
+      }
+    }
+
+    if (perPerson !== null) {
+      const computedTotal = perPerson * cap;
+      if (lockTotalUntilEdit) {
+        totalPriceInput.value = initialTotal;
+        if (priceSummary) {
+          const indicator = computedTotal === initialTotal ? '=' : '~';
+          priceSummary.textContent = `${cap} × ${formatCurrency(perPerson)} ${indicator} ${formatCurrency(initialTotal)} VND/tháng`;
+        }
+        if (perPersonModeInput) {
+          // Giữ nguyên cờ hiện tại (thường là 0) cho đến khi người dùng sửa giá
+          perPersonModeInput.value = perPersonModeInput.value === '1' ? '1' : '0';
+        }
+      } else {
+        totalPriceInput.value = computedTotal;
+        if (priceSummary) {
+          priceSummary.textContent = `${cap} × ${formatCurrency(perPerson)} = ${formatCurrency(computedTotal)} VND/tháng`;
+        }
+        totalPriceInput.setAttribute('data-initial-total', totalPriceInput.value);
+        if (perPersonModeInput) {
+          perPersonModeInput.value = '1';
+        }
+      }
+    } else {
+      if (!lockTotalUntilEdit) {
+        totalPriceInput.value = '';
+        if (perPersonModeInput) {
+          perPersonModeInput.value = '0';
+        }
+      }
+      if (priceSummary) {
+        const fallbackTotal = parseInt(totalPriceInput.value || initialTotal || '0', 10);
+        if (!isNaN(fallbackTotal) && fallbackTotal > 0) {
+          priceSummary.textContent = `Giá tổng hiện tại: ${formatCurrency(fallbackTotal)} VND/tháng. Nhập giá mỗi sinh viên để cập nhật giá mới.`;
+        } else {
+          priceSummary.textContent = 'Nhập giá mỗi sinh viên để hệ thống tự tính tổng.';
+        }
+      }
+    }
   };
 
   const computeLabel = (cap) => {
@@ -389,11 +633,63 @@ document.addEventListener('DOMContentLoaded', function(){
   };
 
   // Initial apply on load
-  applyTypeFromCapacity();
+  if (typeSelect) {
+    applyTypeFromCapacity();
+  } else {
+    sanitizeCapacity();
+  }
+  syncPriceSummary();
 
   // Update on change/input
-  capacityInput.addEventListener('input', applyTypeFromCapacity);
-  capacityInput.addEventListener('change', applyTypeFromCapacity);
+  capacityInput.addEventListener('input', () => {
+    if (lockTotalUntilEdit) {
+      lockTotalUntilEdit = false;
+    }
+    if (typeSelect) applyTypeFromCapacity();
+    syncPriceSummary();
+  });
+  capacityInput.addEventListener('change', () => {
+    if (lockTotalUntilEdit) {
+      lockTotalUntilEdit = false;
+    }
+    if (typeSelect) applyTypeFromCapacity();
+    syncPriceSummary();
+  });
+
+  if (perPersonInput) {
+    const markManualPrice = () => {
+      if (lockTotalUntilEdit) {
+        lockTotalUntilEdit = false;
+      }
+      if (perPersonModeInput) {
+        const hasValue = perPersonInput.value.trim() !== '';
+        perPersonModeInput.value = hasValue ? '1' : '0';
+      }
+      syncPriceSummary();
+    };
+    perPersonInput.addEventListener('input', markManualPrice);
+    perPersonInput.addEventListener('change', markManualPrice);
+  }
+
+  const form = capacityInput.closest('form');
+  if (form) {
+    form.addEventListener('submit', () => {
+      if (lockTotalUntilEdit) {
+        if (perPersonInput) {
+          perPersonInput.value = '';
+        }
+        if (perPersonModeInput) {
+          perPersonModeInput.value = '0';
+        }
+      } else {
+        if (perPersonModeInput) {
+          const hasValue = perPersonInput && perPersonInput.value.trim() !== '';
+          perPersonModeInput.value = hasValue ? '1' : '0';
+        }
+        syncPriceSummary();
+      }
+    });
+  }
 
   // Sync gender from selected Khu
   if (khuSelect && genderHidden && genderDisplay) {

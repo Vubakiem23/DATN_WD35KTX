@@ -250,42 +250,42 @@
                 @endphp
 
                 <table class="table table-hover mb-0 room-table">
-                    <thead>
-                        <tr>
-                            <th class="fit text-center">STT</th>
-                            <th>Họ và tên</th>
+                        <thead>
+                            <tr>
+                                <th class="fit text-center">STT</th>
+                                <th>Họ và tên</th>
                             <th class="fit text-center">Hình ảnh</th>
                             <th class="fit text-center">Mã SV</th>
                             <th class="fit text-center">Phòng</th>
                             <th class="fit text-center">Trạng thái</th>
                             <th class="fit text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($sinhviens as $sv)
-                            @php
-                                $status = $sv->trang_thai_ho_so ?? 'Khác';
-                                $badgeClass =
-                                    $status === 'Đã duyệt'
-                                        ? 'badge-soft-success'
-                                        : ($status === 'Chờ duyệt'
-                                            ? 'badge-soft-warning'
-                                            : 'badge-soft-secondary');
-                                $imgUrl = $sv->anh_sinh_vien
-                                    ? asset('storage/' . $sv->anh_sinh_vien)
-                                    : asset('images/default-avatar.png');
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($sinhviens as $sv)
+                                @php
+                                    $status = $sv->trang_thai_ho_so ?? 'Khác';
+                                    $badgeClass =
+                                        $status === 'Đã duyệt'
+                                            ? 'badge-soft-success'
+                                            : ($status === 'Chờ duyệt'
+                                                ? 'badge-soft-warning'
+                                                : 'badge-soft-secondary');
+                                    $imgUrl = $sv->anh_sinh_vien
+                                        ? asset('storage/' . $sv->anh_sinh_vien)
+                                        : asset('images/default-avatar.png');
 
                                 // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
                                 $phongHienTai = $sv->slot && $sv->slot->phong ? $sv->slot->phong : $sv->phong ?? null;
-                            @endphp
-                            <tr>
-                                <td class="fit text-center">{{ $sttBase + $loop->iteration }}</td>
+                                @endphp
+                                <tr>
+                                    <td class="fit text-center">{{ $sttBase + $loop->iteration }}</td>
 
-                                <td class="font-weight-600">{{ $sv->ho_ten }}</td>
+                                    <td class="font-weight-600">{{ $sv->ho_ten }}</td>
 
                                 <td class="fit text-center">
-                                    <img src="{{ $imgUrl }}" alt="Ảnh {{ $sv->ho_ten }}" class="avatar-56">
-                                </td>
+                                        <img src="{{ $imgUrl }}" alt="Ảnh {{ $sv->ho_ten }}" class="avatar-56">
+                                    </td>
 
                                 <td class="fit text-center">
                                     {{ $sv->ma_sinh_vien }}
@@ -297,7 +297,7 @@
 
                                 <td class="fit text-center">
                                     <span class="badge {{ $badgeClass }}">{{ $status }}</span>
-                                </td>
+                                    </td>
 
                                 <td class="fit text-center">
                                     <div class="room-actions dropdown position-relative">
@@ -312,62 +312,62 @@
                                                     data-id="{{ $sv->id }}">
                                                     <i class="fa fa-eye text-muted"></i>
                                                     <span>Xem chi tiết</span>
-                                                </button>
+                                            </button>
                                             </li>
 
                                             <li>
-                                                <a href="{{ route('sinhvien.edit', $sv->id) }}"
+                                            <a href="{{ route('sinhvien.edit', $sv->id) }}"
                                                     class="dropdown-item d-flex align-items-center gap-2">
                                                     <i class="fa fa-pencil text-primary"></i>
                                                     <span>Sửa</span>
-                                                </a>
+                                            </a>
                                             </li>
 
                                             @if (($sv->trang_thai_ho_so ?? '') !== 'Đã duyệt')
                                                 <li>
-                                                    <form action="{{ route('sinhvien.approve', $sv->id) }}" method="POST"
-                                                        class="d-inline">
-                                                        @csrf @method('PATCH')
+                                                <form action="{{ route('sinhvien.approve', $sv->id) }}" method="POST"
+                                                    class="d-inline">
+                                                    @csrf @method('PATCH')
                                                         <button class="dropdown-item d-flex align-items-center gap-2">
                                                             <i class="fa fa-check text-success"></i>
                                                             <span>Duyệt</span>
-                                                        </button>
-                                                    </form>
+                                                    </button>
+                                                </form>
                                                 </li>
                                             @endif
 
                                             <li>
-                                                <form action="{{ route('sinhvien.destroy', $sv->id) }}" method="POST"
+                                            <form action="{{ route('sinhvien.destroy', $sv->id) }}" method="POST"
                                                     class="d-inline"
                                                     onsubmit="return confirm('Xác nhận xóa sinh viên này?')">
-                                                    @csrf @method('DELETE')
+                                                @csrf @method('DELETE')
                                                     <button
                                                         class="dropdown-item d-flex align-items-center gap-2 text-danger">
-                                                        <i class="fa fa-trash"></i>
+                                                    <i class="fa fa-trash"></i>
                                                         <span>Xóa</span>
-                                                    </button>
-                                                </form>
+                                                </button>
+                                            </form>
                                             </li>
                                         </ul>
-                                    </div>
-                                </td>
+                                        </div>
+                                    </td>
 
 
 
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
-                                    <img src="https://dummyimage.com/120x80/eff3f9/9aa8b8&text=No+data" class="mb-2"
-                                        alt="">
-                                    <div>Chưa có sinh viên phù hợp</div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <img src="https://dummyimage.com/120x80/eff3f9/9aa8b8&text=No+data" class="mb-2"
+                                            alt="">
+                                        <div>Chưa có sinh viên phù hợp</div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
         {{-- MODAL BỘ LỌC --}}
         <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
@@ -523,13 +523,13 @@
             })();
         </script>
 
-        <script>
+    <script>
             // Mở modal chi tiết sinh viên
             (function() {
                 $(function() {
-                    $('.openModalBtn').on('click', function() {
+            $('.openModalBtn').on('click', function() {
                         var id = $(this).data('id');
-                        get_sinh_vien(id);
+                get_sinh_vien(id);
                         try {
                             var modalEl = document.getElementById('exampleModal');
                             var modal = window.bootstrap ? new bootstrap.Modal(modalEl) : null;
@@ -539,20 +539,20 @@
                                 $('#exampleModal').modal('show');
                             }
                         } catch (e) {
-                            $('#exampleModal').modal('show');
+                $('#exampleModal').modal('show');
                         }
-                    });
-                });
+            });
+        });
 
                 window.get_sinh_vien = function(id) {
                     var url = `{{ route('sinhvien.show.modal', ['id' => ':id']) }}`.replace(':id', id);
-                    $.ajax({
-                        url: url,
-                        type: 'GET',
+            $.ajax({
+                url: url,
+                type: 'GET',
                         success: function(res) {
                             var response = res.data ?? '';
-                            renderSinhvien(response);
-                        },
+                    renderSinhvien(response);
+                },
                         error: function(request) {
                             try {
                                 var data = JSON.parse(request.responseText);
@@ -608,6 +608,6 @@
                     }
                 });
             })();
-        </script>
+    </script>
     @endpush
 @endsection
