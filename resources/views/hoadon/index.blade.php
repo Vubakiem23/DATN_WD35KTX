@@ -107,164 +107,148 @@
 
 
 
-    <div class="room-table-wrapper">
+ 
       <div class="table-responsive">
       <table class="table table-hover mb-0 room-table text-center align-middle">
-        <thead class="">
-            <tr class="text-center" style="color: #1a1a1a;" >
-                <th>Khu</th>
-                <th>Phòng</th>
-                <th>Loại phòng</th>
-                <th>Thành tiền</th>
-                <th>Trạng thái</th>
-                <th> 🔧Thao Tác</th>
-            </tr>
-        </thead>
-       <tbody>
-    @foreach($hoaDons as $hoaDon)
-        <tr >
-            <td style="color: #555555;">{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td>
-            <td style="color: #555555;">{{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}</td>
-            <td style="color: #555555;">{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td>
-            <td style="color: #555555">{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }}</td>
-            <td>
-              @if($hoaDon->trang_thai === 'Đã thanh toán')
-                <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill" style="background-color: #d4edda; color: #2e7d32;">
-                  <i class="fa -circle me-2"></i> Đã thanh toán 
-                </div>
-              @else
-                <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill" style="background-color: #fff3cd; color: #d32f2f;">
-                  <i class="fa fa-clock me-2"></i> Chưa thanh toán
-                </div>
-              @endif
-            </td>
+    <thead>
+        <tr class="text-center" style="color: #1a1a1a;">
+            <th>Khu</th>
+            <th>Phòng</th>
+            <th>Loại phòng</th>
+            <th>Thành tiền</th>
+            <th>Trạng thái</th>
+            <th>🔧 Thao Tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($hoaDons as $hoaDon)
+            <tr>
+                <td style="color:#555555;">{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td>
+                <td style="color:#555555;">{{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}</td>
+                <td style="color:#555555;">{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td>
+                <td style="color:#555555;">{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }}</td>
+                <td>
+                    @if($hoaDon->trang_thai === 'Đã thanh toán')
+                        <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill" style="background-color:#d4edda; color:#2e7d32;">
+                            <i class="fa fa-check-circle me-2"></i> Đã thanh toán
+                        </div>
+                    @else
+                        <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill" style="background-color:#fff3cd; color:#d32f2f;">
+                            <i class="fa fa-clock me-2"></i> Chưa thanh toán
+                        </div>
+                    @endif
+                </td>
+                <td class="text-center">
+  <div class="dropdown position-relative">
+    <button class="btn btn-circle bg-primary text-white" type="button"
+        id="actionDropdown{{ $hoaDon->id }}"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        title="Thao tác">
+  <i class="fa fa-cog"></i>
+</button>
 
 
 
-            <td class="text-center">
-  <div class="dropdown d-inline-block position-relative">
-    <button class="btn btn-dergin btn-dergin--muted dropdown-toggle" type="button"
-            id="actionDropdown{{ $hoaDon->id }}"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            title="Thao tác">
-      <i class="fa fa-cog"></i>
-    </button>
-
-    <ul class="dropdown-menu dropdown-menu-side" aria-labelledby="actionDropdown{{ $hoaDon->id }}">
+    <ul class="dropdown-menu custom-dropdown" aria-labelledby="actionDropdown{{ $hoaDon->id }}">
       <li>
         <a class="dropdown-item d-flex align-items-center" href="{{ route('hoadon.show', $hoaDon->id) }}">
-          <i class="fa fa-eye me-2 text-primary"></i> Xem chi tiết
+          👁️ <span class="ms-2">Xem chi tiết</span>
         </a>
       </li>
-
-      @if($hoaDon->trang_thai !== 'Đã thanh toán')
-        <li>
-          <a class="dropdown-item d-flex align-items-center" href="{{ route('hoadon.edit', $hoaDon->id) }}">
-            <i class="fa fa-pencil me-2 text-warning"></i> Sửa
-          </a>
-        </li>
-        <li>
-          <button type="button" class="dropdown-item d-flex align-items-center"
-                  data-bs-toggle="modal" data-bs-target="#paymentModal"
-                  data-id="{{ $hoaDon->id }}">
-            <i class="fa fa-credit-card me-2 text-success"></i> Thanh toán
-          </button>
-        </li>
-      @endif
-
+      <li>
+        <a class="dropdown-item d-flex align-items-center" href="{{ route('hoadon.edit', $hoaDon->id) }}">
+          ✏️ <span class="ms-2">Sửa</span>
+        </a>
+      </li>
+      <li>
+        <button type="button" class="dropdown-item d-flex align-items-center"
+                data-bs-toggle="modal" data-bs-target="#paymentModal"
+                data-id="{{ $hoaDon->id }}">
+          📄 <span class="ms-2">Thanh toán</span>
+        </button>
+      </li>
       <li>
         <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST"
               onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')">
           @csrf
           @method('DELETE')
           <button class="dropdown-item d-flex align-items-center text-danger" type="submit">
-            <i class="fa fa-trash me-2"></i> Xóa
+            🗑️ <span class="ms-2">Xóa</span>
           </button>
         </form>
       </li>
     </ul>
-
-    <style>
-      .dropdown-menu-side {
-        position: absolute !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        left: auto !important;
-        right: 120% !important;
-        margin-right: 10px;
-        min-width: 160px;
-        z-index: 9999;
-        display: none;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        background-color: #fff;
-      }
-
-      .dropdown.show .dropdown-menu-side {
-        display: block !important;
-      }
-
-      .dropdown-menu-side .dropdown-item {
-        padding: 8px 12px;
-        font-size: 14px;
-      }
-
-      .dropdown-menu-side i {
-        width: 18px;
-        text-align: center;
-      }
-    </style>
   </div>
 </td>
 
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<style>
+.custom-dropdown {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left : auto !important;
+  right: 60% !important;
+  min-width: 160px;
+  z-index: 9999;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background-color: #fff;
+  display: none;
+}
+
+.dropdown.show .custom-dropdown {
+  display: block !important;
+}
+
+.custom-dropdown .dropdown-item {
+  padding: 8px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+</style>
+<style>
+/* Nút tròn xoe */
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;          /* bo tròn xoe */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;             /* kích thước icon */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hiệu ứng hover */
+.btn-circle:hover {
+  background-color: #0b5ed7;   /* đậm hơn bg-primary */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+  transform: translateY(-1px);
+}
+
+/* Tùy chọn: icon xoay nhẹ khi mở dropdown */
+.dropdown.show .btn-circle i {
+  animation: spin 0.5s ease;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(90deg); }
+}
+</style>
 
 
 
-               <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')" class="d-inline">
-                @csrf
-                @method('DELETE')
 
-                 <div class="room-actions justify-content-center">
-                   <a href="{{ route('hoadon.show', $hoaDon->id) }}" class="btn btn-dergin btn-dergin--muted" title="Chi tiết">
-                     <i class="fa fa-eye"></i><span>Chi tiết</span>
-                   </a>
-                   @if($hoaDon->trang_thai !== 'Đã thanh toán')
-                    <button type="button"
-                            class="btn btn-dergin btn-dergin--info"
-                            title="Sửa giá điện/nước"
-                            data-bs-toggle="modal"
-                            data-bs-target="#quickUpdateModal"
-                            data-id="{{ $hoaDon->id }}"
-                            data-url="{{ route('hoadon.quickupdate', $hoaDon->id) }}"
-                            data-dien="{{ $hoaDon->don_gia_dien }}"
-                            data-nuoc="{{ $hoaDon->don_gia_nuoc }}">
-                      <i class="fa fa-bolt"></i><span>Giá điện/nước</span>
-                    </button>
-                    <a href="{{ route('hoadon.edit', $hoaDon->id) }}" class="btn btn-dergin" title="Sửa">
-                       <i class="fa fa-pencil"></i><span>Sửa</span>
-                     </a>
-                     <button type="button"
-                            class="btn btn-dergin btn-dergin--info"
-                            data-bs-toggle="modal"
-                            data-bs-target="#paymentModal"
-                            title="Thanh toán"
-                            data-id="{{ $hoaDon->id }}">
-                      <i class="fa fa-credit-card"></i><span>Thanh toán</span>
-                    </button>
 
-                   @endif
-                   <button class="btn btn-dergin btn-dergin--danger" type="submit" title="Xóa">
-                     <i class="fa fa-trash"></i><span>Xóa</span>
-                   </button>
-                 </div>
-              </form>
-            </td>
-
-        </tr>
-    @endforeach
-</tbody>
-    </table>
     
 
 </div>
