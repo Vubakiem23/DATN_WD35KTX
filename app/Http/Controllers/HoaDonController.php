@@ -31,58 +31,75 @@ class HoaDonController extends Controller
     }
 
     public function index(Request $request)
-    {
-        $trangThai = $request->get('trang_thai');
-        $fromDate = $request->get('from_date');
-        $toDate = $request->get('to_date');
+{
+    $trangThai = $request->get('trang_thai');
+    $fromDate = $request->get('from_date');
+    $toDate = $request->get('to_date');
 
+    $giaPhongMin = $request->get('gia_phong_min');
+    $giaPhongMax = $request->get('gia_phong_max');
 
-        $giaPhongMin = $request->get('gia_phong_min');
-        $giaPhongMax = $request->get('gia_phong_max');
+    $khu = $request->get('khu');
+    $phongId = $request->get('phong_id');
 
-        $khu = $request->get('khu');
-        $phongId = $request->get('phong_id');
-
-
-
-        $hoaDons = HoaDon::with(['phong.khu'])
-    ->when($khu, function ($query) use ($khu) {
-        $query->whereHas('phong.khu', function ($q) use ($khu) {
-            $q->where('ten_khu', $khu); // hoặc where('id', $khu) nếu lọc theo ID
-        });
-            })
-            ->when($phongId, function ($query) use ($phongId) {
-                $query->where('phong_id', $phongId);
-            })
-            ->when($trangThai === 'da_thanh_toan', fn($q) => $q->where('da_thanh_toan', true))
-            ->when($trangThai === 'chua_thanh_toan', fn($q) => $q->where('da_thanh_toan', false))
-            ->when($giaPhongMin, fn($q) => $q->whereHas('phong', fn($q) => $q->where('gia_phong', '>=', $giaPhongMin)))
-            ->when($giaPhongMax, fn($q) => $q->whereHas('phong', fn($q) => $q->where('gia_phong', '<=', $giaPhongMax)))
-            ->when($fromDate, fn($q) => $q->whereDate('created_at', '>=', $fromDate))
-            ->when($toDate, fn($q) => $q->whereDate('created_at', '<=', $toDate))
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function ($hoaDon) {
-                $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
-                $so_nuoc = $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu;
-
-                $hoaDon->khoang_thoi_gian = ($hoaDon->created_at ? $hoaDon->created_at->format('d/m/Y') : '-') . ' → ' .
-                    ($hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-');
-
-                // Kiểm tra phong trước khi truy cập
-                $giaPhong = optional($hoaDon->phong)->gia_phong ?? 0;
-
-                $hoaDon->gia_phong = $giaPhong;
-                $hoaDon->tien_dien = $so_dien * $hoaDon->don_gia_dien;
-                $hoaDon->tien_nuoc = $so_nuoc * $hoaDon->don_gia_nuoc;
-                $hoaDon->thanh_tien = $hoaDon->tien_dien + $hoaDon->tien_nuoc + $giaPhong;
-
-                return $hoaDon;
+    $hoaDons = HoaDon::with(['phong.khu'])
+        ->when($khu, function ($query) use ($khu) {
+            $query->whereHas('phong.khu', function ($q) use ($khu) {
+                $q->where('ten_khu', $khu); // hoặc where('id', $khu) nếu lọc theo ID
             });
+        })
+        ->when($phongId, function ($query) use ($phongId) {
+            $query->where('phong_id', $phongId);
+        })
+        ->when($trangThai === 'da_thanh_toan', fn($q) => $q->where('da_thanh_toan', true))
+        ->when($trangThai === 'chua_thanh_toan', fn($q) => $q->where('da_thanh_toan', false))
+        ->when($giaPhongMin, fn($q) => $q->whereHas('phong', fn($q) => $q->where('gia_phong', '>=', $giaPhongMin)))
+        ->when($giaPhongMax, fn($q) => $q->whereHas('phong', fn($q) => $q->where('gia_phong', '<=', $giaPhongMax)))
+        ->when($fromDate, fn($q) => $q->whereDate('created_at', '>=', $fromDate))
+        ->when($toDate, fn($q) => $q->whereDate('created_at', '<=', $toDate))
+        ->orderByDesc('created_at')
+        ->get()
+        ->map(function ($hoaDon) {
+            $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
+            $so_nuoc = $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu;
 
-        $dsPhongs = Phong::all();
-        return view('hoadon.index', compact('hoaDons', 'dsPhongs'));
-    }
+            $hoaDon->khoang_thoi_gian = ($hoaDon->created_at ? $hoaDon->created_at->format('d/m/Y') : '-') . ' → ' .
+                ($hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-');
+
+            $giaPhong = optional($hoaDon->phong)->gia_phong ?? 0;
+
+            $hoaDon->gia_phong = $giaPhong;
+            $hoaDon->tien_dien = $so_dien * $hoaDon->don_gia_dien;
+            $hoaDon->tien_nuoc = $so_nuoc * $hoaDon->don_gia_nuoc;
+            $hoaDon->thanh_tien = $hoaDon->tien_dien + $hoaDon->tien_nuoc + $giaPhong;
+
+            return $hoaDon;
+        });
+
+    // ✅ Tính toán thống kê
+    $tongHoaDon = $hoaDons->count();
+    $tongTien = $hoaDons->sum('thanh_tien');
+
+    $daThanhToan = $hoaDons->where('da_thanh_toan', true);
+    $chuaThanhToan = $hoaDons->where('da_thanh_toan', false);
+
+    $tongDaThanhToan = $daThanhToan->count();
+    $tienDaThanhToan = $daThanhToan->sum('thanh_tien');
+
+    $tongChuaThanhToan = $chuaThanhToan->count();
+    $tienChuaThanhToan = $chuaThanhToan->sum('thanh_tien');
+
+    $dsPhongs = Phong::all();
+
+    // ✅ Truyền dữ liệu sang view
+    return view('hoadon.index', compact(
+        'hoaDons', 'dsPhongs',
+        'tongHoaDon', 'tongTien',
+        'tongDaThanhToan', 'tienDaThanhToan',
+        'tongChuaThanhToan', 'tienChuaThanhToan'
+    ));
+}
+
 
 
     public function destroy($id)
@@ -179,43 +196,6 @@ $hoaDon->thanh_tien = ($so_dien * $hoaDon->don_gia_dien) + ($so_nuoc * $hoaDon->
     return redirect()->route('hoadon.index')->with('success', 'Hóa đơn đã được cập nhật!');
 }
 
-    /**
-     * Cập nhật nhanh đơn giá điện/nước qua AJAX trên danh sách.
-     */
-    public function quickUpdate(Request $request, $id)
-    {
-        $request->validate([
-            'don_gia_dien' => 'required|numeric|min:0',
-            'don_gia_nuoc' => 'required|numeric|min:0',
-        ]);
-
-        $hoaDon = HoaDon::with('phong')->findOrFail($id);
-        $hoaDon->don_gia_dien = $request->don_gia_dien;
-        $hoaDon->don_gia_nuoc = $request->don_gia_nuoc;
-
-        $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
-        $so_nuoc = $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu;
-        $gia_phong = optional($hoaDon->phong)->gia_phong ?? 0;
-        $hoaDon->tien_dien = $so_dien * $hoaDon->don_gia_dien;
-        $hoaDon->tien_nuoc = $so_nuoc * $hoaDon->don_gia_nuoc;
-        $hoaDon->thanh_tien = $hoaDon->tien_dien + $hoaDon->tien_nuoc + $gia_phong;
-        $hoaDon->save();
-
-        return response()->json([
-            'success' => true,
-            'don_gia_dien' => $hoaDon->don_gia_dien,
-            'don_gia_nuoc' => $hoaDon->don_gia_nuoc,
-            'tien_dien' => $hoaDon->tien_dien,
-            'tien_nuoc' => $hoaDon->tien_nuoc,
-            'thanh_tien' => $hoaDon->thanh_tien,
-            'formatted' => [
-                'tien_dien' => number_format($hoaDon->tien_dien, 0, ',', '.'),
-                'tien_nuoc' => number_format($hoaDon->tien_nuoc, 0, ',', '.'),
-                'thanh_tien' => number_format($hoaDon->thanh_tien, 0, ',', '.'),
-            ],
-        ]);
-    }
-
     public function lichSu()
     {
         // Lấy danh sách hóa đơn đã thanh toán, kèm thông tin phòng
@@ -251,22 +231,25 @@ public function guiEmailHangLoat()
     $dem = 0;
 
     foreach ($hoaDons as $hoaDon) {
-        foreach ($hoaDon->phong->sinhViens as $sinhVien) {
-            if ($sinhVien->email) {
-                Mail::send('emails.hoa_don', [
-                    'hoaDon' => $hoaDon,
-                    'sinhVien' => $sinhVien
-                ], function ($message) use ($sinhVien, $hoaDon) {
-                    $message->to($sinhVien->email)
-                            ->subject('Hóa đơn tiền phòng tháng ' . $hoaDon->thang);
-                });
-                $dem++;
+        if ($hoaDon->phong && $hoaDon->phong->sinhViens) {
+            foreach ($hoaDon->phong->sinhViens as $sinhVien) {
+                if ($sinhVien->email) {
+                    Mail::send('emails.hoa_don', [
+                        'hoaDon' => $hoaDon,
+                        'sinhVien' => $sinhVien
+                    ], function ($message) use ($sinhVien, $hoaDon) {
+                        $message->to($sinhVien->email)
+                                ->subject('Hóa đơn tiền phòng tháng ' . $hoaDon->thang);
+                    });
+                    $dem++;
+                }
             }
         }
     }
 
     return back()->with('success', 'Đã gửi ' . $dem . ' email hóa đơn thành công.');
 }
+
 
 
 // gửi email cho taats cả sinh viên trong phòng chưa thanh toán 
@@ -307,40 +290,3 @@ public function guiEmailTheoPhong($phong_id)
     return view('hoadon.lichsu', compact('hoaDons'));
 }
 }
-    {
-        $sinhViens = SinhVien::where('phong_id', $phong_id)->get();
-
-        foreach ($sinhViens as $sv) {
-            if (!$sv->email) continue;
-
-            Mail::raw('Thông báo gửi tới sinh viên trong phòng ' . $phong_id, function ($message) use ($sv) {
-                $message->to($sv->email)
-                        ->subject('Thông báo từ KTX');
-            });
-        }
-
-        return 'Đã gửi email tới ' . $sinhViens->count() . ' sinh viên trong phòng ' . $phong_id;
-    }
-     // tìm kiếm hóa đơn trong lịch sử thanh toán 
-    public function timKiem(Request $request)
-{
-    $keyword = $request->input('keyword');
-
-    $hoaDons = HoaDon::with('phong')
-        ->where('da_thanh_toan', true) // 👉 chỉ lấy hóa đơn đã thanh toán
-        ->where(function ($query) use ($keyword) {
-            $query->whereHas('phong', function ($q) use ($keyword) {
-                $q->where('ten_phong', 'like', "%$keyword%")
-                  ->orWhereHas('khu', function ($k) use ($keyword) {
-                      $k->where('ten_khu', 'like', "%$keyword%");
-                  });
-            })
-            ->orWhere('created_at', 'like', "%$keyword%");
-        })
-        ->orderByDesc('ngay_thanh_toan')
-        ->paginate(10);
-
-    return view('hoadon.lichsu', compact('hoaDons'));
-}
-}
-

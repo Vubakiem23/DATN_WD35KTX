@@ -9,6 +9,44 @@
 <div class="container py-4">
 
     <h2 class="mb-4">Danh sách hóa đơn</h2>
+    <div class="row text-center mb-4">
+  <div class="col-md-3">
+    <div class="card bg-light shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title" style="color: #0d47a1;">Tổng hóa đơn</h5>
+        <p class="card-text fs-4" style="color: #0d47a1;">{{ $tongHoaDon }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-light shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title" style="color: #0d47a1;">Tổng tiền</h5>
+        <p class="card-text fs-4" style="color: #0d47a1;">{{ number_format($tongTien, 0, ',', '.') }} ₫</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-light shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title" style="color: #0d47a1;" >Đã thanh toán</h5>
+        <p class="card-text fs-5" style="color: #0d47a1;">{{ $tongDaThanhToan }} ({{ number_format($tienDaThanhToan, 0, ',', '.') }} ₫)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-light shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title" style="color: #0d47a1;">Chưa thanh toán</h5>
+        <p class="card-text fs-5" style="color: #0d47a1;">{{ $tongChuaThanhToan }} ({{ number_format($tienChuaThanhToan, 0, ',', '.') }} ₫)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 
     <style>
         .room-actions{display:flex;gap:.5rem;flex-wrap:wrap}
@@ -26,113 +64,439 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <div class="d-flex gap-3 mb-1 align-items-center">
-        {{-- Nhập từ Excel --}}
-        <form action="{{ route('hoadon.import') }}" method="POST" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
-            @csrf
-            <input type="file" name="file" class="form-control form-control" required style="width: auto;">
-            <button type="submit" class="btn btn-dergin btn-dergin--info" title="Nhập Excel" style="margin-left: 20px;">
-                <i class="fa fa-download"></i><span>Nhập Excel</span>
-            </button>
-        </form>
-
-        {{-- Xuất Excel --}}
-        <form method="GET" action="{{ route('hoadon.export') }}" class="d-flex align-items-center">
-            <input type="hidden" name="trang_thai" value="{{ request('trang_thai') }}">
-            <button type="submit" class="btn btn-dergin" title="Xuất Excel">
-                <i class="fa fa-upload"></i><span>Xuất Excel</span>
-            </button>
-        </form>
-        <a href="{{ route('hoadon.lichsu') }}" class="btn btn-dergin btn-dergin--muted" title="Lịch sử">
-            <i class="fa fa-history"></i><span>Lịch sử</span>
-        </a>
-        <button type="button" class="btn btn-dergin btn-dergin--info" title="Bộ lọc" data-bs-toggle="modal" data-bs-target="#filterModal">
-            <i class="fa fa-filter"></i><span>Lọc</span>
-</button>
-    </div>
-    
-    <form method="POST" action="{{ route('hoadon.guiemailhangloat') }}">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+  {{-- Nhập từ Excel --}}
+  <form action="{{ route('hoadon.import') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
     @csrf
-    <button type="submit" class="btn btn-dergin btn-dergin--info mb-3" onclick="return confirm('Gửi email cho tất cả sinh viên chưa thanh toán?')">
-        <i class="fa fa-envelope"></i><span>Gửi hóa đơn</span>
+    <input type="file" name="file" class="form-control" required style="width: auto;">
+    <button type="submit" class="btn btn-dergin btn-dergin--info" title="Nhập Excel">
+      <i class="fa fa-download"></i><span>Nhập Excel</span>
     </button>
-</form>
-    <table class="table table-bordered table-sm text-center align-middle table-hover">
-        <thead class="">
-            <tr class="text-center">
-                <th>Khu</th>
-                <th>Phòng</th>
-                <th>Loại phòng</th>
-                <th>Thành tiền</th>
-                <th>Trạng thái</th>
-                <th> 🔧Thao Tác</th>
-            </tr>
-        </thead>
-       <tbody>
-    @foreach($hoaDons as $hoaDon)
-        <tr >
-            <td>{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td>
-            <td>{{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}</td>
-            <td>{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td>
-            <td>{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }}</td>
-            <td class="{{ $hoaDon->trang_thai === 'Đã thanh toán' ? 'text-success fw-bold' : 'text-danger fw-bold' }}">
-              {{ $hoaDon->trang_thai ?? 'Chưa thanh toán' }}
-            </td>
+  </form>
+
+  {{-- Xuất Excel --}}
+  <form method="GET" action="{{ route('hoadon.export') }}" class="d-flex align-items-center">
+    <input type="hidden" name="trang_thai" value="{{ request('trang_thai') }}">
+    <button type="submit" class="btn btn-dergin" title="Xuất Excel">
+      <i class="fa fa-upload"></i><span>Xuất Excel</span>
+    </button>
+  </form>
+
+  {{-- Lịch sử --}}
+  <div class="d-flex align-items-center" style="margin-bottom: +15px;">
+    <a href="{{ route('hoadon.lichsu') }}" class="btn btn-dergin btn-dergin--muted" title="Lịch sử">
+      <i class="fa fa-history"></i><span>Lịch sử</span>
+    </a>
+  </div>
+
+  {{-- Bộ lọc --}}
+  <div class="d-flex align-items-center" style="margin-bottom: +15px;">
+    <button type="button" class="btn btn-dergin btn-dergin--info" title="Bộ lọc" data-bs-toggle="modal" data-bs-target="#filterModal">
+      <i class="fa fa-filter"></i><span>Lọc</span>
+    </button>
+  </div>
+
+  {{-- Gửi email hàng loạt --}}
+  <form method="POST" action="{{ route('hoadon.guiemailhangloat') }}" class="d-flex align-items-center">
+    @csrf
+    <button type="submit" class="btn btn-dergin btn-dergin--info" title="Gửi hóa đơn" onclick="return confirm('Gửi email cho tất cả sinh viên chưa thanh toán?')">
+      <i class="fa fa-envelope"></i><span>Gửi hóa đơn</span>
+    </button>
+  </form>
+</div>
 
 
-            <td class="text-center">
-              <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')" class="d-inline">
-                @csrf
-                @method('DELETE')
 
-                 <div class="room-actions justify-content-center">
-                   <a href="{{ route('hoadon.show', $hoaDon->id) }}" class="btn btn-dergin btn-dergin--muted" title="Chi tiết">
-                     <i class="fa fa-eye"></i><span>Chi tiết</span>
-                   </a>
-                  @if($hoaDon->trang_thai !== 'Đã thanh toán')
-                    <button type="button"
-                            class="btn btn-dergin btn-dergin--info"
-                            title="Sửa giá điện/nước"
-                            data-bs-toggle="modal"
-                            data-bs-target="#quickUpdateModal"
-                            data-id="{{ $hoaDon->id }}"
-                            data-url="{{ route('hoadon.quickupdate', $hoaDon->id) }}"
-                            data-dien="{{ $hoaDon->don_gia_dien }}"
-                            data-nuoc="{{ $hoaDon->don_gia_nuoc }}">
-                      <i class="fa fa-bolt"></i><span>Giá điện/nước</span>
-                    </button>
-                    <a href="{{ route('hoadon.edit', $hoaDon->id) }}" class="btn btn-dergin" title="Sửa">
-                       <i class="fa fa-pencil"></i><span>Sửa</span>
-                     </a>
-                     <button type="button"
-                            class="btn btn-dergin btn-dergin--info"
-                            data-bs-toggle="modal"
-                            data-bs-target="#paymentModal"
-                            title="Thanh toán"
-                            data-id="{{ $hoaDon->id }}">
-                      <i class="fa fa-credit-card"></i><span>Thanh toán</span>
-                    </button>
-
-                   @endif
-                   <button class="btn btn-dergin btn-dergin--danger" type="submit" title="Xóa">
-                     <i class="fa fa-trash"></i><span>Xóa</span>
-                   </button>
-                </div>
-              </form>
-            </td>
+ 
+      <div class="table-responsive">
+      <table class="table table-hover mb-0 room-table text-center align-middle">
+    <thead>
+        <tr class="text-center" style="color: #1a1a1a;">
+            <th>Khu</th>
+            <th>Phòng</th>
+            <th>Loại phòng</th>
+            <th>Thành tiền</th>
+            <th>Trạng thái</th>
+            <th>🔧 Thao Tác</th>
         </tr>
-    @endforeach
-</tbody>
-    </table>
+    </thead>
+    <tbody>
+        @foreach($hoaDons as $hoaDon)
+            <tr>
+                <td style="color:#555555;">{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td>
+                <td style="color:#555555;">{{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}</td>
+                <td style="color:#555555;">{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td>
+                <td style="color:#555555;">{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }}</td>
+                <td>
+                    @if($hoaDon->trang_thai === 'Đã thanh toán')
+                        <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill" style="background-color:#d4edda; color:#2e7d32;">
+                            <i class="fa fa-check-circle me-2"></i> Đã thanh toán
+                        </div>
+                    @else
+                        <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill" style="background-color:#fff3cd; color:#d32f2f;">
+                            <i class="fa fa-clock me-2"></i> Chưa thanh toán
+                        </div>
+                    @endif
+                </td>
+                <td class="text-center">
+  <div class="dropdown position-relative">
+    <button class="btn btn-circle bg-primary text-white" type="button"
+        id="actionDropdown{{ $hoaDon->id }}"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        title="Thao tác">
+  <i class="fa fa-cog"></i>
+</button>
+
+
+
+    <ul class="dropdown-menu custom-dropdown" aria-labelledby="actionDropdown{{ $hoaDon->id }}">
+      <li>
+        <a class="dropdown-item d-flex align-items-center" href="{{ route('hoadon.show', $hoaDon->id) }}">
+          👁️ <span class="ms-2">Xem chi tiết</span>
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item d-flex align-items-center" href="{{ route('hoadon.edit', $hoaDon->id) }}">
+          ✏️ <span class="ms-2">Sửa</span>
+        </a>
+      </li>
+      <li>
+        <button type="button" class="dropdown-item d-flex align-items-center"
+                data-bs-toggle="modal" data-bs-target="#paymentModal"
+                data-id="{{ $hoaDon->id }}">
+          📄 <span class="ms-2">Thanh toán</span>
+        </button>
+      </li>
+      <li>
+        <form action="{{ route('hoadon.destroy', $hoaDon->id) }}" method="POST"
+              onsubmit="return confirm('Bạn có chắc muốn xóa hóa đơn này không?')">
+          @csrf
+          @method('DELETE')
+          <button class="dropdown-item d-flex align-items-center text-danger" type="submit">
+            🗑️ <span class="ms-2">Xóa</span>
+          </button>
+        </form>
+      </li>
+    </ul>
+  </div>
+</td>
+
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+<style>
+.custom-dropdown {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left : auto !important;
+  right: 60% !important;
+  min-width: 160px;
+  z-index: 9999;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background-color: #fff;
+  display: none;
+}
+
+.dropdown.show .custom-dropdown {
+  display: block !important;
+}
+
+.custom-dropdown .dropdown-item {
+  padding: 8px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+</style>
+<style>
+/* Nút tròn xoe */
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;          /* bo tròn xoe */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;             /* kích thước icon */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hiệu ứng hover */
+.btn-circle:hover {
+  background-color: #0b5ed7;   /* đậm hơn bg-primary */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.16);
+  transform: translateY(-1px);
+}
+
+/* Tùy chọn: icon xoay nhẹ khi mở dropdown */
+.dropdown.show .btn-circle i {
+  animation: spin 0.5s ease;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(90deg); }
+}
+</style>
+
+
+
+
+
     
 
 </div>
-  
+
+
+@push('styles')
+                <style>
+                    .room-table-wrapper {
+                        background: #fff;
+                        border-radius: 14px;
+                        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+                        padding: 1.25rem;
+                    }
+
+                    .room-table {
+                        margin-bottom: 0;
+                        border-collapse: separate;
+                        border-spacing: 0 12px;
+                    }
+
+                    .room-table thead th {
+                        font-size: .78rem;
+                        text-transform: uppercase;
+                        letter-spacing: .05em;
+                        color: #6c757d;
+                        border: none;
+                        padding-bottom: .75rem;
+                    }
+
+                    .room-table tbody tr {
+                        background: #f9fafc;
+                        border-radius: 16px;
+                        transition: transform .2s ease, box-shadow .2s ease;
+                    }
+
+                    .room-table tbody tr:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+                    }
+
+                    .room-table tbody td {
+                        border: none;
+                        vertical-align: middle;
+                        padding: 1rem .95rem;
+                    }
+
+                    .room-table tbody tr td:first-child {
+                        border-top-left-radius: 16px;
+                        border-bottom-left-radius: 16px;
+                    }
+
+                    .room-table tbody tr td:last-child {
+                        border-top-right-radius: 16px;
+                        border-bottom-right-radius: 16px;
+                    }
+
+                    .room-actions {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: .4rem;
+                        flex-wrap: wrap;
+                    }
+
+                    .room-actions form {
+                        display: contents !important;
+                        /* ✅ giúp nút trong flex vẫn submit được */
+                    }
+
+                    .btn-dergin {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: .35rem;
+                        padding: .4rem .9rem;
+                        border-radius: 999px;
+                        font-weight: 600;
+                        font-size: .72rem;
+                        border: none;
+                        color: #fff;
+                        background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+                        box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+                        transition: transform .2s ease, box-shadow .2s ease;
+                    }
+
+                    .btn-dergin:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+                        color: #fff;
+                    }
+
+                    .btn-dergin--muted {
+                        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
+                    }
+
+                    .btn-dergin--info {
+                        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
+                    }
+
+                    .btn-dergin--success {
+                        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%)
+                    }
+
+                    .btn-dergin--danger {
+                        background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
+                    }
+
+                    .badge-soft-success {
+                        background: rgba(34, 197, 94, .15);
+                        color: #16a34a;
+                    }
+
+                    .badge-soft-warning {
+                        background: rgba(251, 191, 36, .15);
+                        color: #ca8a04;
+                    }
+
+                    .badge-soft-secondary {
+                        background: rgba(107, 114, 128, .15);
+                        color: #374151;
+                    }
+
+                    .text-truncate {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        display: block;
+                    }
+                </style>
+            @endpush
+
+            @push('styles')
+                <style>
+                    .room-table-wrapper {
+                        background: #fff;
+                        border-radius: 14px;
+                        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+                        padding: 1.25rem;
+                    }
+
+                    .room-table {
+                        margin-bottom: 0;
+                        border-collapse: separate;
+                        border-spacing: 0 12px;
+                    }
+
+                    .room-table thead th {
+                        font-size: .78rem;
+                        text-transform: uppercase;
+                        letter-spacing: .05em;
+                        color: #6c757d;
+                        border: none;
+                        padding-bottom: .75rem;
+                    }
+
+                    .room-table tbody tr {
+                        background: #f9fafc;
+                        border-radius: 16px;
+                        transition: transform .2s ease, box-shadow .2s ease;
+                    }
+
+                    .room-table tbody tr:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+                    }
+
+                    .room-table tbody td {
+                        border: none;
+                        vertical-align: middle;
+                        padding: 1rem .95rem;
+                    }
+
+                    .room-table tbody tr td:first-child {
+                        border-top-left-radius: 16px;
+                        border-bottom-left-radius: 16px;
+                    }
+
+                    .room-table tbody tr td:last-child {
+                        border-top-right-radius: 16px;
+                        border-bottom-right-radius: 16px;
+                    }
+
+                    .room-actions {
+                        display: flex;
+                        flex-wrap: nowrap;
+                        justify-content: center;
+                        gap: .4rem;
+                        white-space: nowrap;
+                    }
+
+                    .btn-dergin {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: .35rem;
+                        padding: .4rem .9rem;
+                        border-radius: 999px;
+                        font-weight: 600;
+                        font-size: .72rem;
+                        border: none;
+                        color: #fff;
+                        background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+                        box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+                        transition: transform .2s ease, box-shadow .2s ease;
+                    }
+
+                    .btn-dergin:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+                        color: #fff;
+                    }
+
+                    .btn-dergin--muted {
+                        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
+                    }
+
+                    .btn-dergin--info {
+                        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
+                    }
+
+                    .btn-dergin--success {
+                        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%)
+                    }
+
+                    .btn-dergin--danger {
+                        background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
+                    }
+
+                    .badge-soft-success {
+                        background: rgba(34, 197, 94, .15);
+                        color: #16a34a;
+                    }
+
+                    .badge-soft-warning {
+                        background: rgba(251, 191, 36, .15);
+                        color: #ca8a04;
+                    }
+
+                    .badge-soft-secondary {
+                        background: rgba(107, 114, 128, .15);
+                        color: #374151;
+                    }
+                </style>
+            @endpush
 
 
 
-
-
+{{-- xử lí thanh toán --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const paymentMethodSelect = document.getElementById('paymentMethod');
