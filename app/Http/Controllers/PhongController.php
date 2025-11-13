@@ -438,6 +438,41 @@ class PhongController extends Controller
                 }
             ])->findOrFail($id);
 
+            $roomAssets = TaiSan::with([
+                'khoTaiSan',
+                'slots' => function ($query) {
+                    $query->select('slots.id', 'slots.ma_slot', 'slots.phong_id', 'slots.sinh_vien_id');
+                },
+                'slots.sinhVien:id,ho_ten,ma_sinh_vien'
+            ])
+                ->where('phong_id', $phong->id)
+                ->orderBy('ten_tai_san')
+                ->get();
+
+            $roomAssets = $roomAssets->map(function ($asset) {
+                $assignedQuantity = $asset->slots->sum(function ($slot) {
+                    return max(0, (int) ($slot->pivot->so_luong ?? 0));
+                });
+                $availableQuantity = max(0, (int) ($asset->so_luong ?? 0) - $assignedQuantity);
+
+                $asset->setAttribute('assigned_slot_quantity', $assignedQuantity);
+                $asset->setAttribute('available_quantity', $availableQuantity);
+
+                return $asset;
+            })->filter(function ($asset) {
+                return (int) $asset->available_quantity > 0;
+            })->values();
+
+            $commonAssetStats = [
+                'total_items' => $roomAssets->count(),
+                'total_quantity' => $roomAssets->sum(function ($asset) {
+                    return (int) ($asset->available_quantity ?? 0);
+                }),
+                'total_assigned' => $roomAssets->sum(function ($asset) {
+                    return (int) ($asset->assigned_slot_quantity ?? 0);
+                }),
+            ];
+
             // Chỉ lấy sinh viên đã duyệt và CHƯA được gán vào slot nào
             $assignedIds = Slot::whereNotNull('sinh_vien_id')->pluck('sinh_vien_id');
             $sinhViens = SinhVien::where('trang_thai_ho_so', 'Đã duyệt')
@@ -445,7 +480,7 @@ class PhongController extends Controller
                 ->orderBy('ho_ten')
                 ->get();
 
-            return view('phong.show', compact('phong', 'sinhViens'));
+            return view('phong.show', compact('phong', 'sinhViens', 'roomAssets', 'commonAssetStats'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning('Phòng không tồn tại: ID ' . $id);
             return redirect()->route('phong.index')->with('error', 'Phòng không tồn tại trong hệ thống!');
