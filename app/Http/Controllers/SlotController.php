@@ -178,7 +178,8 @@ class SlotController extends Controller
     {
         DB::beginTransaction();
         try {
-            $slot = Slot::with(['phong', 'sinhVien'])->findOrFail($id);
+            $slot = Slot::with(['phong', 'sinhVien', 'taiSans'])->findOrFail($id);
+            $previousStudentId = $slot->sinh_vien_id;
 
             // Validate input
             $data = $request->validate([
@@ -259,6 +260,10 @@ class SlotController extends Controller
 
             $slot->save();
 
+            if ($previousStudentId && empty($slot->sinh_vien_id)) {
+                $this->returnAllSlotAssetsToWarehouse($slot);
+            }
+
 			// Bỏ tự động bàn giao CSVC mặc định khi gán sinh viên vào slot
 			// (Đồ chung của phòng không tự gán cho sinh viên)
 
@@ -270,7 +275,7 @@ class SlotController extends Controller
             ]);
 
             // Trả về slot kèm thông tin sinh viên
-            $slot->load('sinhVien', 'phong');
+            $slot->load('sinhVien', 'phong', 'taiSans');
             return response()->json([
                 'message' => 'Gán sinh viên thành công',
                 'slot' => $slot
@@ -993,6 +998,53 @@ class SlotController extends Controller
             $targetQty = min($targetQty, $maxAssignable);
 
             $slot->taiSans()->syncWithoutDetaching([$taiSan->id => ['so_luong' => $targetQty]]);
+        }
+    }
+
+    /**
+     * Trả toàn bộ tài sản đang gán cho slot về kho (được dùng khi bỏ gán sinh viên)
+     */
+    private function returnAllSlotAssetsToWarehouse(Slot $slot): void
+    {
+        $slot->loadMissing(['taiSans']);
+
+        $assignedAssets = $slot->taiSans;
+        if ($assignedAssets->isEmpty()) {
+            return;
+        }
+
+        foreach ($assignedAssets as $asset) {
+            $pivotQty = (int) ($asset->pivot->so_luong ?? 0);
+
+            $slot->taiSans()->detach($asset->id);
+
+            if ($pivotQty <= 0) {
+                continue;
+            }
+
+            $roomAsset = TaiSan::lockForUpdate()->find($asset->id);
+            if (!$roomAsset) {
+                continue;
+            }
+
+            if ($roomAsset->kho_tai_san_id) {
+                $warehouseAsset = KhoTaiSan::lockForUpdate()->find($roomAsset->kho_tai_san_id);
+            } else {
+                $warehouseAsset = null;
+            }
+
+            $roomAsset->so_luong = max(0, (int) $roomAsset->so_luong - $pivotQty);
+            $roomAsset->save();
+
+            if ($warehouseAsset) {
+                $warehouseAsset->so_luong = (int) $warehouseAsset->so_luong + $pivotQty;
+                $warehouseAsset->save();
+            }
+
+            $remainingPivotSum = (int) $roomAsset->slots()->sum('slot_tai_san.so_luong');
+            if ((int) $roomAsset->so_luong === 0 && $remainingPivotSum === 0) {
+                $roomAsset->delete();
+            }
         }
     }
 

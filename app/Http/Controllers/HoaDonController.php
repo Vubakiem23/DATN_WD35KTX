@@ -179,6 +179,43 @@ $hoaDon->thanh_tien = ($so_dien * $hoaDon->don_gia_dien) + ($so_nuoc * $hoaDon->
     return redirect()->route('hoadon.index')->with('success', 'Hóa đơn đã được cập nhật!');
 }
 
+    /**
+     * Cập nhật nhanh đơn giá điện/nước qua AJAX trên danh sách.
+     */
+    public function quickUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'don_gia_dien' => 'required|numeric|min:0',
+            'don_gia_nuoc' => 'required|numeric|min:0',
+        ]);
+
+        $hoaDon = HoaDon::with('phong')->findOrFail($id);
+        $hoaDon->don_gia_dien = $request->don_gia_dien;
+        $hoaDon->don_gia_nuoc = $request->don_gia_nuoc;
+
+        $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
+        $so_nuoc = $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu;
+        $gia_phong = optional($hoaDon->phong)->gia_phong ?? 0;
+        $hoaDon->tien_dien = $so_dien * $hoaDon->don_gia_dien;
+        $hoaDon->tien_nuoc = $so_nuoc * $hoaDon->don_gia_nuoc;
+        $hoaDon->thanh_tien = $hoaDon->tien_dien + $hoaDon->tien_nuoc + $gia_phong;
+        $hoaDon->save();
+
+        return response()->json([
+            'success' => true,
+            'don_gia_dien' => $hoaDon->don_gia_dien,
+            'don_gia_nuoc' => $hoaDon->don_gia_nuoc,
+            'tien_dien' => $hoaDon->tien_dien,
+            'tien_nuoc' => $hoaDon->tien_nuoc,
+            'thanh_tien' => $hoaDon->thanh_tien,
+            'formatted' => [
+                'tien_dien' => number_format($hoaDon->tien_dien, 0, ',', '.'),
+                'tien_nuoc' => number_format($hoaDon->tien_nuoc, 0, ',', '.'),
+                'thanh_tien' => number_format($hoaDon->thanh_tien, 0, ',', '.'),
+            ],
+        ]);
+    }
+
     public function lichSu()
     {
         // Lấy danh sách hóa đơn đã thanh toán, kèm thông tin phòng
@@ -270,3 +307,40 @@ public function guiEmailTheoPhong($phong_id)
     return view('hoadon.lichsu', compact('hoaDons'));
 }
 }
+    {
+        $sinhViens = SinhVien::where('phong_id', $phong_id)->get();
+
+        foreach ($sinhViens as $sv) {
+            if (!$sv->email) continue;
+
+            Mail::raw('Thông báo gửi tới sinh viên trong phòng ' . $phong_id, function ($message) use ($sv) {
+                $message->to($sv->email)
+                        ->subject('Thông báo từ KTX');
+            });
+        }
+
+        return 'Đã gửi email tới ' . $sinhViens->count() . ' sinh viên trong phòng ' . $phong_id;
+    }
+     // tìm kiếm hóa đơn trong lịch sử thanh toán 
+    public function timKiem(Request $request)
+{
+    $keyword = $request->input('keyword');
+
+    $hoaDons = HoaDon::with('phong')
+        ->where('da_thanh_toan', true) // 👉 chỉ lấy hóa đơn đã thanh toán
+        ->where(function ($query) use ($keyword) {
+            $query->whereHas('phong', function ($q) use ($keyword) {
+                $q->where('ten_phong', 'like', "%$keyword%")
+                  ->orWhereHas('khu', function ($k) use ($keyword) {
+                      $k->where('ten_khu', 'like', "%$keyword%");
+                  });
+            })
+            ->orWhere('created_at', 'like', "%$keyword%");
+        })
+        ->orderByDesc('ngay_thanh_toan')
+        ->paginate(10);
+
+    return view('hoadon.lichsu', compact('hoaDons'));
+}
+}
+

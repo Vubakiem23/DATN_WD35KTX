@@ -90,7 +90,18 @@
                      <i class="fa fa-eye"></i><span>Chi tiết</span>
                    </a>
                    @if($hoaDon->trang_thai !== 'Đã thanh toán')
-                     <a href="{{ route('hoadon.edit', $hoaDon->id) }}" class="btn btn-dergin" title="Sửa">
+                    <button type="button"
+                            class="btn btn-dergin btn-dergin--info"
+                            title="Sửa giá điện/nước"
+                            data-bs-toggle="modal"
+                            data-bs-target="#quickUpdateModal"
+                            data-id="{{ $hoaDon->id }}"
+                            data-url="{{ route('hoadon.quickupdate', $hoaDon->id) }}"
+                            data-dien="{{ $hoaDon->don_gia_dien }}"
+                            data-nuoc="{{ $hoaDon->don_gia_nuoc }}">
+                      <i class="fa fa-bolt"></i><span>Giá điện/nước</span>
+                    </button>
+                    <a href="{{ route('hoadon.edit', $hoaDon->id) }}" class="btn btn-dergin" title="Sửa">
                        <i class="fa fa-pencil"></i><span>Sửa</span>
                      </a>
                      <button type="button"
@@ -128,6 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const bankInfo = document.getElementById('bankInfo');
   const confirmBtn = document.getElementById('confirmPaymentBtn');
   const paymentModal = document.getElementById('paymentModal');
+  const quickUpdateModal = document.getElementById('quickUpdateModal');
+  const quickUpdateBtn = document.getElementById('quickUpdateBtn');
 
   // Hiển thị thông tin chuyển khoản nếu chọn "chuyen_khoan"
   function toggleBankInfo() {
@@ -149,6 +162,23 @@ document.addEventListener('DOMContentLoaded', function () {
       const hoaDonId = button?.getAttribute('data-id');
       if (confirmBtn && hoaDonId) {
         confirmBtn.setAttribute('data-id', hoaDonId);
+      }
+    });
+  }
+
+  // Điền dữ liệu vào modal sửa nhanh
+  if (quickUpdateModal) {
+    quickUpdateModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const id = button?.getAttribute('data-id') || '';
+      const url = button?.getAttribute('data-url') || '';
+      const dien = button?.getAttribute('data-dien') || '';
+      const nuoc = button?.getAttribute('data-nuoc') || '';
+      quickUpdateModal.querySelector('input[name="don_gia_dien"]').value = dien;
+      quickUpdateModal.querySelector('input[name="don_gia_nuoc"]').value = nuoc;
+      if (quickUpdateBtn) {
+        quickUpdateBtn.setAttribute('data-id', id);
+        quickUpdateBtn.setAttribute('data-url', url);
       }
     });
   }
@@ -192,6 +222,36 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Lỗi gửi yêu cầu:', err);
         alert('❌ Không thể gửi yêu cầu. Vui lòng thử lại!');
       });
+    });
+  }
+
+  // Gửi cập nhật nhanh giá điện/nước
+  if (quickUpdateBtn) {
+    quickUpdateBtn.addEventListener('click', function () {
+      const url = this.getAttribute('data-url');
+      const dien = quickUpdateModal.querySelector('input[name="don_gia_dien"]').value;
+      const nuoc = quickUpdateModal.querySelector('input[name="don_gia_nuoc"]').value;
+      if (!url) { alert('Không xác định được URL cập nhật.'); return; }
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ don_gia_dien: dien, don_gia_nuoc: nuoc })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data?.success) {
+          alert('✅ Đã cập nhật giá điện/nước.');
+          const modal = bootstrap.Modal.getInstance(quickUpdateModal);
+          modal?.hide();
+          setTimeout(() => location.reload(), 300);
+        } else {
+          alert('❌ Cập nhật thất bại.');
+        }
+      })
+      .catch(() => alert('❌ Lỗi kết nối, vui lòng thử lại.'));
     });
   }
 });
@@ -250,7 +310,33 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
 </div>
 
-
+<!-- Modal cập nhật nhanh giá điện/nước -->
+<div class="modal fade" id="quickUpdateModal" tabindex="-1" aria-labelledby="quickUpdateLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quickUpdateLabel">Sửa nhanh giá điện / nước</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Đơn giá điện (đ/kWh)</label>
+            <input type="number" name="don_gia_dien" class="form-control" min="0" step="100">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Đơn giá nước (đ/m³)</label>
+            <input type="number" name="don_gia_nuoc" class="form-control" min="0" step="100">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" id="quickUpdateBtn" class="btn btn-success">Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 {{-- modal bộ lọc --}}
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
