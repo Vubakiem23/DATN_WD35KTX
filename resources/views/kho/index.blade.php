@@ -68,7 +68,7 @@
 
 <div class="container mt-4">
 
-  <h3 class="page-title mb-0">📦 Kho tài sản</h3>
+  <h3 class="page-title mb-0"> Kho tài sản</h3>
   <p class="text-muted mb-0">Theo dõi và tổ chức tài sản trong cửa hàng kho.</p>
 
 

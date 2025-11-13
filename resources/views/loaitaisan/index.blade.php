@@ -98,7 +98,7 @@
   @endpush
 
 
-    <h4 class="page-title mb-0">📋 Danh sách loại tài sản</h4>
+    <h4 class="page-title mb-0"> Danh sách loại tài sản</h4>
     <p class="text-muted mb-0">Theo dõi và tổ chức loại tài sản.</p>
     
   
