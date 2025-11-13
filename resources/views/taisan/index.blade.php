@@ -6,7 +6,7 @@
 <div class="container mt-4">
 
 
-  <h3 class="asset-page__title mb-0">🏢 Quản lý tài sản phòng</h3>
+  <h3 class="asset-page__title mb-0">Quản lý tài sản phòng</h3>
   <p class="text-muted mb-0">Theo dõi và tổ chức tài sản trong các phòng.</p>
   <div class="mb-4">
     <a href="{{ route('taisan.create') }}" class="btn btn-dergin btn-dergin--info">
@@ -67,7 +67,7 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
-  <h4 class="mb-2">📋 Danh sách tài sản</h4>
+  <h4 class="mb-2"> Danh sách tài sản</h4>
 
   {{-- 🧱 Bảng hiển thị --}}
   <div class="asset-table-wrapper">

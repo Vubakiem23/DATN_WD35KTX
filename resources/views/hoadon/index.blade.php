@@ -8,44 +8,12 @@
 @section('content')
 <div class="container py-4">
 
-    <h2 class="mb-4">Danh sách hóa đơn</h2>
+     <div>
+                    <h3 class="page-title mb-0">Danh Sách Hóa Đơn</h3>
+                    <p class="text-muted mb-0">Theo dõi và tổ chức danh sách hóa đơn.</p>
+                </div>
     <div class="row text-center mb-4">
-  <div class="col-md-3">
-    <div class="card bg-light shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title" style="color: #0d47a1;">Tổng hóa đơn</h5>
-        <p class="card-text fs-4" style="color: #0d47a1;">{{ $tongHoaDon }}</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card bg-light shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title" style="color: #0d47a1;">Tổng tiền</h5>
-        <p class="card-text fs-4" style="color: #0d47a1;">{{ number_format($tongTien, 0, ',', '.') }} ₫</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card bg-light shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title" style="color: #0d47a1;" >Đã thanh toán</h5>
-        <p class="card-text fs-5" style="color: #0d47a1;">{{ $tongDaThanhToan }} ({{ number_format($tienDaThanhToan, 0, ',', '.') }} ₫)</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-3">
-    <div class="card bg-light shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title" style="color: #0d47a1;">Chưa thanh toán</h5>
-        <p class="card-text fs-5" style="color: #0d47a1;">{{ $tongChuaThanhToan }} ({{ number_format($tienChuaThanhToan, 0, ',', '.') }} ₫)</p>
-      </div>
-    </div>
-  </div>
-</div>
+  
 
 
     <style>
@@ -58,6 +26,11 @@
         .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
         .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
         .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+        .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937
+  }
     </style>
 
     @if(session('success'))
@@ -117,7 +90,7 @@
             <th>Loại phòng</th>
             <th>Thành tiền</th>
             <th>Trạng thái</th>
-            <th>🔧 Thao Tác</th>
+            <th>Thao Tác</th>
         </tr>
     </thead>
     <tbody>

@@ -212,13 +212,13 @@
   @endpush
 
 
-  <h4 class="page-title mb-0">🛠️ Danh sách lịch bảo trì</h4>
+  <h4 class="page-title mb-0"> Danh sách lịch bảo trì</h4>
   <p class="text-muted mb-0">Theo dõi và tổ chức lịch bảo trì tài sản.</p>
-
+<div class="mb-4">
   <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
     <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
   </a>
-
+</div>
 
   {{-- 🟢 Thông báo --}}
   @if(session('success'))
@@ -228,7 +228,56 @@
   <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
-  {{-- 📊 Thống kê số tài sản bảo trì --}}
+
+
+
+
+
+  {{-- 🎯 Bộ lọc khác --}}
+  <div class="filter-card mb-4">
+    <form method="GET" action="{{ route('lichbaotri.index') }}" class="row g-3 align-items-end">
+      {{-- Giữ lại tháng/năm từ bộ lọc trên --}}
+      @if(request('month'))
+      <input type="hidden" name="month" value="{{ request('month') }}">
+      @endif
+      @if(request('year'))
+      <input type="hidden" name="year" value="{{ request('year') }}">
+      @endif
+
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa fa-circle-check text-primary"></i> Trạng thái</label>
+        <select name="trang_thai" class="form-select form-control">
+          <option value="">-- Tất cả --</option>
+          <option value="Chờ bảo trì" {{ request('trang_thai') == 'Chờ bảo trì' ? 'selected' : '' }}>Chờ bảo trì</option>
+          <option value="Đang bảo trì" {{ request('trang_thai') == 'Đang bảo trì' ? 'selected' : '' }}>Đang bảo trì</option>
+          <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa fa-calendar text-primary"></i> Ngày bảo trì</label>
+        <input type="date" name="ngay_bao_tri" value="{{ request('ngay_bao_tri') }}" class="form-control">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa fa-location-dot text-primary"></i> Vị trí</label>
+        <select name="vi_tri" class="form-select form-control">
+          <option value="">-- Tất cả --</option>
+          <option value="phong" {{ request('vi_tri') == 'phong' ? 'selected' : '' }}>Phòng</option>
+          <option value="kho" {{ request('vi_tri') == 'kho' ? 'selected' : '' }}>Kho</option>
+        </select>
+      </div>
+
+      <div class="col-md-3 d-flex gap-2 filter-btns">
+        <button type="submit" class="btn btn-success flex-fill">
+          <i class="fa fa-filter"></i> Lọc
+        </button>
+        <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
+          <i class="fa fa-rotate-left"></i> Đặt lại
+        </a>
+      </div>
+    </form>
+  </div>
   <div class="row mb-4">
     <div class="col-md-3">
       <div class="card shadow-sm border-start border-warning border-4">
@@ -291,55 +340,6 @@
       </div>
     </div>
   </div>
-
-
-
-  {{-- 🎯 Bộ lọc khác --}}
-  <div class="filter-card mb-4">
-    <form method="GET" action="{{ route('lichbaotri.index') }}" class="row g-3 align-items-end">
-      {{-- Giữ lại tháng/năm từ bộ lọc trên --}}
-      @if(request('month'))
-      <input type="hidden" name="month" value="{{ request('month') }}">
-      @endif
-      @if(request('year'))
-      <input type="hidden" name="year" value="{{ request('year') }}">
-      @endif
-
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-circle-check text-primary"></i> Trạng thái</label>
-        <select name="trang_thai" class="form-select form-control">
-          <option value="">-- Tất cả --</option>
-          <option value="Chờ bảo trì" {{ request('trang_thai') == 'Chờ bảo trì' ? 'selected' : '' }}>Chờ bảo trì</option>
-          <option value="Đang bảo trì" {{ request('trang_thai') == 'Đang bảo trì' ? 'selected' : '' }}>Đang bảo trì</option>
-          <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
-        </select>
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-calendar text-primary"></i> Ngày bảo trì</label>
-        <input type="date" name="ngay_bao_tri" value="{{ request('ngay_bao_tri') }}" class="form-control">
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-location-dot text-primary"></i> Vị trí</label>
-        <select name="vi_tri" class="form-select form-control">
-          <option value="">-- Tất cả --</option>
-          <option value="phong" {{ request('vi_tri') == 'phong' ? 'selected' : '' }}>Phòng</option>
-          <option value="kho" {{ request('vi_tri') == 'kho' ? 'selected' : '' }}>Kho</option>
-        </select>
-      </div>
-
-      <div class="col-md-3 d-flex gap-2 filter-btns">
-        <button type="submit" class="btn btn-success flex-fill">
-          <i class="fa fa-filter"></i> Lọc
-        </button>
-        <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
-          <i class="fa fa-rotate-left"></i> Đặt lại
-        </a>
-      </div>
-    </form>
-  </div>
-
   {{-- 🧾 Bảng danh sách --}}
   <div class="listing-table-wrapper">
     <div class="table-responsive">
