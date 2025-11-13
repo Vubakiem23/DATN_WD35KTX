@@ -97,7 +97,7 @@ public function store(Request $request)
         }
 
         DB::commit();
-        return redirect()->route('taisan.index')
+        return redirect()->route('taisan.byPhong', ['phong' => $validated['phong_id']])
             ->with('success', 'Đã thêm tài sản vào phòng thành công!');
     } catch (\Throwable $e) {
         DB::rollBack();
@@ -215,19 +215,46 @@ public function store(Request $request)
         $phong = Phong::with(['khu'])->findOrFail($phongId);
 
         $roomAssets = $phong->taiSan()
-            ->with('khoTaiSan')
+            ->with(['khoTaiSan', 'slots'])
             ->orderBy('ten_tai_san')
             ->get();
 
-        $roomAssetFilterAccumulator = [];
-
-        $roomAssets = $roomAssets->map(function ($asset) use (&$roomAssetFilterAccumulator) {
+        $roomAssetsWithMeta = $roomAssets->map(function ($asset) {
             $label = $asset->khoTaiSan->ten_tai_san ?? $asset->ten_tai_san ?? 'Không xác định';
             $normalized = Str::lower(trim($label));
             $filterKey = 'asset-' . md5($normalized);
+            $assignedQuantity = $asset->slots->sum(function ($slotItem) {
+                return (int) ($slotItem->pivot->so_luong ?? 0);
+            });
+            $availableQuantity = max(0, (int) ($asset->so_luong ?? 0) - $assignedQuantity);
 
             $asset->setAttribute('filter_label', $label);
             $asset->setAttribute('filter_key', $filterKey);
+            $asset->setAttribute('assigned_slot_quantity', $assignedQuantity);
+            $asset->setAttribute('available_quantity', $availableQuantity);
+
+            return $asset;
+        });
+
+        $totalCommonAssetQuantity = $roomAssetsWithMeta->sum(function ($asset) {
+            return max(0, (int) ($asset->available_quantity ?? 0));
+        });
+
+        $totalSlotAssetQuantity = $roomAssetsWithMeta->sum(function ($asset) {
+            return (int) ($asset->assigned_slot_quantity ?? 0);
+        });
+
+        $totalRoomInventoryQuantity = $totalCommonAssetQuantity + $totalSlotAssetQuantity;
+
+        $roomAssets = $roomAssetsWithMeta->filter(function ($asset) {
+            return (int) $asset->available_quantity > 0;
+        })->values();
+
+        $roomAssetFilterAccumulator = [];
+
+        foreach ($roomAssets as $asset) {
+            $filterKey = $asset->filter_key;
+            $label = $asset->filter_label;
 
             if (!isset($roomAssetFilterAccumulator[$filterKey])) {
                 $roomAssetFilterAccumulator[$filterKey] = [
@@ -239,14 +266,8 @@ public function store(Request $request)
             }
 
             $roomAssetFilterAccumulator[$filterKey]['item_count']++;
-            $roomAssetFilterAccumulator[$filterKey]['total_quantity'] += (int) ($asset->so_luong ?? 0);
-
-            return $asset;
-        });
-
-        $totalRoomAssetQuantity = $roomAssets->sum(function ($asset) {
-            return (int) ($asset->so_luong ?? 0);
-        });
+            $roomAssetFilterAccumulator[$filterKey]['total_quantity'] += (int) ($asset->available_quantity ?? 0);
+        }
 
         $roomAssetFilters = collect($roomAssetFilterAccumulator)
             ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
@@ -283,7 +304,9 @@ public function store(Request $request)
             'slots' => $slots,
             'warehouseAssets' => $warehouseAssets,
             'roomAssetFilters' => $roomAssetFilters,
-            'totalRoomAssetQuantity' => $totalRoomAssetQuantity,
+            'totalCommonAssetQuantity' => $totalCommonAssetQuantity,
+            'totalSlotAssetQuantity' => $totalSlotAssetQuantity,
+            'totalRoomInventoryQuantity' => $totalRoomInventoryQuantity,
         ]);
     }
 }

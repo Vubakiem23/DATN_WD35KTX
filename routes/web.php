@@ -206,6 +206,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/hoadon/{id}', [HoaDonController::class, 'show'])->name('hoadon.show');
     Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
     Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
+    // Cập nhật nhanh đơn giá điện/nước (AJAX)
+    Route::post('/hoadon/{id}/quick-update', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
     Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
     Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
      Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
@@ -312,4 +314,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // =================== IMPORT ADMIN EXTRA ===================
 
     require __DIR__ . '/admin.php';
+
+
 
