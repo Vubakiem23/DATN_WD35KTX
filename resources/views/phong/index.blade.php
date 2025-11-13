@@ -31,7 +31,7 @@
         
                 <div>
                     <h3 class="khu-page__title mb-1">Khu Ký Túc Xá</h3>
-                    <!-- <p class="text-muted mb-0">Theo dõi và tổ chức các khu theo giới tính và số lượng phòng.</p> -->
+                    <p class="text-muted mb-0">Theo dõi và tổ chức các khu theo giới tính và số lượng phòng.</p>
                     </div>
         @php
             $khuList = $phongs->groupBy(function($p){ return optional($p->khu)->ten_khu ?? 'Không xác định'; });
@@ -107,9 +107,13 @@
           .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
           .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
           .btn-dergin:disabled,.btn-dergin.disabled{opacity:.5;pointer-events:none}
-          .room-actions{display:flex;flex-wrap:nowrap;justify-content:center;gap:.4rem;white-space:nowrap}
-          .room-actions .btn-dergin{min-width:92px}
-          .room-actions .btn-dergin span{line-height:1;white-space:nowrap}
+          .room-actions{display:flex;justify-content:center}
+          .room-actions.dropdown{position:relative}
+          .room-actions .action-gear{min-width:40px;padding:.45rem .7rem;border-radius:999px}
+          .room-actions .dropdown-menu{position:absolute;top:50% !important;right:110%;left:auto;transform:translateY(-50%);z-index:1050;min-width:190px;border-radius:16px;padding:.4rem 0;margin:0;border:1px solid #e5e7eb;box-shadow:0 16px 40px rgba(15,23,42,.18);font-size:.82rem;background:#fff}
+          .room-actions .dropdown-item{display:flex;align-items:center;gap:.55rem;padding:.42rem .9rem;color:#4b5563}
+          .room-actions .dropdown-item i{width:16px;text-align:center}
+          .room-actions .dropdown-item:hover{background:#eef2ff;color:#111827}
           .price-tag{font-weight:600;color:#111827}
           .room-empty-state{font-size:.88rem;color:#6b7280}
           .room-pagination{margin-top:1.25rem}
@@ -206,25 +210,49 @@
                                             <span class="badge badge-status {{ $statusClass }}">{{ $statusLabel }}</span>
                                         </td>
                                         <td data-label="Thao tác" class="text-center">
-                                            <div class="room-actions justify-content-center">
-                                                <a href="{{ route('phong.show', $p->id) }}" class="btn btn-dergin btn-dergin--muted" title="Xem chi tiết"><i class="fa fa-eye"></i><span>Chi tiết</span></a>
-                                                <a href="{{ route('phong.edit', $p) }}" class="btn btn-dergin" title="Chỉnh sửa"><i class="fa fa-pencil"></i><span>Sửa</span></a>
-                                                <a href="{{ route('taisan.byPhong', $p->id) }}" class="btn btn-dergin btn-dergin--info" title="Quản lý CSVC"><i class="fa fa-archive"></i><span>CSVC</span></a>
-                                                <form id="delete-phong-{{ $p->id }}" action="{{ route('phong.destroy', $p) }}" method="POST" class="d-inline">
-                                            @csrf @method('DELETE')
-                                            <button type="button"
-                                                            class="btn btn-dergin btn-dergin--danger btn-delete-phong"
-                                                    data-form-id="delete-phong-{{ $p->id }}"
-                                                    data-ten="{{ $p->ten_phong }}"
-                                                    data-used="{{ $p->usedSlots() }}"
-                                                    data-total="{{ $p->totalSlots() }}"
-                                                    data-assets="{{ $p->taiSan()->count() }}"
-                                                    {{ ($p->usedSlots() > 0 || $p->taiSan()->count() > 0) ? 'disabled' : '' }}
-                                                    title="{{ $p->usedSlots() > 0 ? 'Không thể xóa phòng đang có người ở' : ($p->taiSan()->count() > 0 ? 'Không thể xóa phòng còn tài sản' : '') }}">
-                                                        <i class="fa fa-trash"></i><span>Xóa</span>
-                                            </button>
-                                        </form>
-                                    </div>
+                                            <div class="room-actions dropdown position-relative">
+                                                <button type="button" class="btn btn-dergin btn-dergin--muted action-gear">
+                                                    <i class="fa fa-gear"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a href="{{ route('phong.show', $p->id) }}" class="dropdown-item">
+                                                            <i class="fa fa-eye text-muted"></i>
+                                                            <span>Chi tiết</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('phong.edit', $p) }}" class="dropdown-item">
+                                                            <i class="fa fa-pencil text-primary"></i>
+                                                            <span>Sửa</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{{ route('taisan.byPhong', $p->id) }}" class="dropdown-item">
+                                                            <i class="fa fa-archive text-info"></i>
+                                                            <span>CSVC</span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <button type="button"
+                                                            class="dropdown-item text-danger btn-delete-phong"
+                                                            data-form-id="delete-phong-{{ $p->id }}"
+                                                            data-ten="{{ $p->ten_phong }}"
+                                                            data-used="{{ $p->usedSlots() }}"
+                                                            data-total="{{ $p->totalSlots() }}"
+                                                            data-assets="{{ $p->taiSan()->count() }}"
+                                                            {{ ($p->usedSlots() > 0 || $p->taiSan()->count() > 0) ? 'disabled' : '' }}
+                                                            title="{{ $p->usedSlots() > 0 ? 'Không thể xóa phòng đang có người ở' : ($p->taiSan()->count() > 0 ? 'Không thể xóa phòng còn tài sản' : '') }}">
+                                                            <i class="fa fa-trash"></i>
+                                                            <span>Xóa</span>
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                                <form id="delete-phong-{{ $p->id }}" action="{{ route('phong.destroy', $p) }}" method="POST" class="d-none">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -435,6 +463,28 @@
                 }
 
                 document.addEventListener('click', function(e){
+                    const allMenus = document.querySelectorAll('.room-actions .dropdown-menu');
+                    const gearBtn = e.target.closest('.action-gear');
+                    const insideMenu = e.target.closest('.room-actions .dropdown-menu');
+
+                    if(gearBtn){
+                        e.preventDefault();
+                        const wrapper = gearBtn.closest('.room-actions');
+                        const menu = wrapper ? wrapper.querySelector('.dropdown-menu') : null;
+                        const isOpen = menu && menu.classList.contains('show');
+                        allMenus.forEach(function(m){ m.classList.remove('show'); });
+                        if(menu && !isOpen){
+                            menu.classList.add('show');
+                        }
+                        return;
+                    }
+
+                    if(!insideMenu){
+                        allMenus.forEach(function(m){ m.classList.remove('show'); });
+                    } else if(e.target.closest('.dropdown-item') || e.target.closest('button')){
+                        allMenus.forEach(function(m){ m.classList.remove('show'); });
+                    }
+
                     const btn = e.target.closest('.btn-delete-phong');
                     if(btn){
                     const disabled = btn.hasAttribute('disabled');

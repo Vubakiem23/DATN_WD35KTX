@@ -137,28 +137,52 @@
                                         <span class="badge badge-soft-warning">Chưa TT</span>
                                 @endif
                             </td>
-                                <td class="text-end fit">
-                                    <div class="room-actions">
-                                        <a href="{{ route('suco.show', $sc->id) }}"
-                                            class="btn btn-dergin btn-dergin--muted" title="Xem"><i
-                                                class="fa fa-eye"></i><span>Xem</span></a>
-                                        <a href="{{ route('suco.edit', $sc->id) }}" class="btn btn-dergin"
-                                            title="Sửa"><i class="fa fa-pencil"></i><span>Sửa</span></a>
-                                        <form action="{{ route('suco.destroy', $sc->id) }}" method="POST" class="d-inline"
-                                            onsubmit="return confirm('Xác nhận xóa?');">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-dergin btn-dergin--danger" type="submit"
-                                                title="Xóa"><i class="fa fa-trash"></i><span>Xóa</span></button>
-                                </form>
-                                        @if ($sc->trang_thai != 'Hoàn thành')
-                                            <button type="button" class="btn btn-dergin btn-dergin--info"
-                                            data-bs-toggle="modal" data-bs-target="#hoanThanhModal"
-                                                data-id="{{ $sc->id }}" data-ngay="{{ $sc->ngay_hoan_thanh }}"
-                                                data-nguoi_tao="{{ $sc->nguoi_tao }}">
-                                                <i class="fa fa-check"></i><span>Hoàn thành</span>
-                                    </button>
-                                @endif
+                                <td class="text-end fit action-cell">
+                                    <div class="room-actions dropdown position-relative">
+                                        <button type="button" class="btn btn-dergin btn-dergin--muted action-gear" title="Tác vụ">
+                                            <i class="fa fa-gear"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a href="{{ route('suco.show', $sc->id) }}" class="dropdown-item">
+                                                    <i class="fa fa-eye text-info"></i>
+                                                    <span>Xem</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="{{ route('suco.edit', $sc->id) }}" class="dropdown-item">
+                                                    <i class="fa fa-pencil text-primary"></i>
+                                                    <span>Sửa</span>
+                                                </a>
+                                            </li>
+                                            @if ($sc->trang_thai != 'Hoàn thành')
+                                                <li>
+                                                    <button type="button"
+                                                        class="dropdown-item text-success btn-hoan-thanh"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#hoanThanhModal"
+                                                        data-id="{{ $sc->id }}"
+                                                        data-ngay="{{ $sc->ngay_hoan_thanh }}"
+                                                        data-nguoi_tao="{{ $sc->nguoi_tao }}">
+                                                        <i class="fa fa-check"></i>
+                                                        <span>Hoàn thành</span>
+                                                    </button>
+                                                </li>
+                                            @endif
+                                            <li>
+                                                <button type="button"
+                                                    class="dropdown-item text-danger btn-delete-su-co"
+                                                    data-form-id="delete-su-co-{{ $sc->id }}">
+                                                    <i class="fa fa-trash"></i>
+                                                    <span>Xóa</span>
+                                                </button>
+                                            </li>
+                                        </ul>
                                     </div>
+                                    <form id="delete-su-co-{{ $sc->id }}" action="{{ route('suco.destroy', $sc->id) }}" method="POST" class="d-none">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
                             </td>
                         </tr>
                     @empty
@@ -224,7 +248,7 @@
                             <label for="payment_amount" class="form-label">Giá tiền thanh toán</label>
                             <input type="number" name="payment_amount" id="payment_amount" class="form-control" min="0" step="1000" placeholder="Nhập số tiền (VNĐ)">
                             <small class="text-muted">Nếu > 0, hệ thống sẽ chuyển sang trang Hóa đơn sự cố để thanh toán.</small>
-                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -238,7 +262,7 @@
     @push('styles')
         <style>
             .room-page__title{font-size:1.75rem;font-weight:700;color:#1f2937}
-            .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
+            .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem;overflow:visible}
             .room-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
             .room-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
             .room-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
@@ -246,22 +270,41 @@
             .room-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
             .room-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
             .room-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
-            .room-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem}
-            .room-actions .btn-dergin{min-width:80px}
-            .room-actions .btn-dergin span{line-height:1;white-space:normal}
             .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
             .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
             .btn-dergin i{font-size:.8rem}
             .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
             .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
             .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
-            @media (max-width:1400px){.room-actions .btn-dergin{min-width:72px;padding:.35rem .7rem}}
+            .table-responsive{position:relative;overflow:visible}
+            .room-table thead th:last-child,
+            .room-table tbody td:last-child{
+                position:sticky;
+                right:0;
+                background:#f9fafc;
+                z-index:5;
+                box-shadow:-6px 0 16px rgba(15,23,42,0.06);
+                padding-right:1.2rem;
+            }
+            .room-table tbody tr{position:relative;overflow:visible}
+            .action-cell{position:relative;overflow:visible}
+            .room-actions{display:flex;justify-content:center}
+            .room-actions.dropdown{position:relative}
+            .room-actions .action-gear{min-width:40px;padding:.45rem .7rem;border-radius:999px}
+            .room-actions .dropdown-menu{position:absolute;top:50%!important;right:110%;left:auto;bottom:auto;transform:translateY(-50%);z-index:1050;min-width:190px;border-radius:16px;padding:.4rem 0;margin:0;border:1px solid #e5e7eb;box-shadow:0 16px 40px rgba(15,23,42,.18);font-size:.82rem;background:#fff}
+            @media (max-width:768px){.room-actions .dropdown-menu{top:calc(100% + 12px)!important;right:auto;left:50%;transform:translate(-50%,0);min-width:min(220px,calc(100vw - 32px))}}
+            .room-actions .dropdown-item{display:flex;align-items:center;gap:.55rem;padding:.42rem .9rem;color:#4b5563}
+            .room-actions .dropdown-item i{width:16px;text-align:center}
+            .room-actions .dropdown-item:hover{background:#eef2ff;color:#111827}
+            .room-actions .dropdown-item.text-danger,
+            .room-actions .dropdown-item.text-danger:hover{color:#dc2626;font-weight:500}
+            @media (max-width:1400px){.room-actions .action-gear{min-width:44px;padding:.35rem .55rem}}
             @media (max-width:992px){
                 .room-table thead{display:none}
                 .room-table tbody{display:block}
                 .room-table tbody tr{display:flex;flex-direction:column;padding:1rem}
                 .room-table tbody td{display:flex;justify-content:space-between;padding:.35rem 0}
-                .room-actions{justify-content:flex-start}
+                .action-cell{justify-content:flex-end}
             }
             .avatar-56{width:56px;height:56px;border-radius:50%;object-fit:cover}
         </style>
@@ -301,23 +344,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 updatePaymentVisibility();
 
-                // Fallback: gắn sự kiện click vào nút mở modal để set sẵn action
-                document.addEventListener('click', function(e) {
-                    const btn = e.target.closest('[data-bs-target="#hoanThanhModal"][data-id]');
-                    if (!btn) return;
-                    const id = btn.getAttribute('data-id');
-                    const ngay = btn.getAttribute('data-ngay');
+                const closeAllMenus = () => {
+                    document.querySelectorAll('.room-actions .dropdown-menu.show').forEach(menu => menu.classList.remove('show'));
+                };
+
+                const showHoanThanhModal = (trigger) => {
+                    if (!trigger) return;
+                    const id = trigger.getAttribute('data-id');
+                    const ngay = trigger.getAttribute('data-ngay');
                     document.getElementById('suco_id').value = id;
                     document.getElementById('ngay_hoan_thanh').value = ngay || '';
                     form.action = "{{ route('suco.hoanthanh', ':id') }}".replace(':id', id);
                     if (paymentToggle) paymentToggle.checked = false;
                     updatePaymentVisibility();
-                    // Chủ động mở modal phòng trường hợp Bootstrap không hook tự động
                     try {
                         const bsModal = bootstrap.Modal.getOrCreateInstance(modal);
                         bsModal.show();
                     } catch (_) {
-                        // Fallback thủ công nếu không có Bootstrap JS
                         modal.classList.add('show');
                         modal.style.display = 'block';
                         modal.removeAttribute('aria-hidden');
@@ -328,6 +371,47 @@ document.addEventListener('DOMContentLoaded', function() {
                             document.body.appendChild(backdrop);
                         }
                         document.body.classList.add('modal-open');
+                    }
+                };
+
+                document.addEventListener('click', function(e) {
+                    const gearBtn = e.target.closest('.action-gear');
+                    if (gearBtn) {
+                        e.preventDefault();
+                        const menu = gearBtn.closest('.room-actions')?.querySelector('.dropdown-menu');
+                        const isOpen = menu && menu.classList.contains('show');
+                        closeAllMenus();
+                        if (menu && !isOpen) {
+                            menu.classList.add('show');
+                        }
+                        return;
+                    }
+
+                    const deleteBtn = e.target.closest('.btn-delete-su-co');
+                    if (deleteBtn) {
+                        e.preventDefault();
+                        const formId = deleteBtn.getAttribute('data-form-id');
+                        if (formId && confirm('Bạn có chắc muốn xóa sự cố này không?')) {
+                            const targetForm = document.getElementById(formId);
+                            if (targetForm) {
+                                targetForm.submit();
+                            }
+                        }
+                        closeAllMenus();
+                        return;
+                    }
+
+                    const modalTrigger = e.target.closest('[data-bs-target="#hoanThanhModal"][data-id]');
+                    if (modalTrigger) {
+                        closeAllMenus();
+                        showHoanThanhModal(modalTrigger);
+                        return;
+                    }
+
+                    if (e.target.closest('.room-actions .dropdown-item')) {
+                        closeAllMenus();
+                    } else if (!e.target.closest('.room-actions')) {
+                        closeAllMenus();
                     }
                 });
 

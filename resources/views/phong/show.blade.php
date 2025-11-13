@@ -132,6 +132,9 @@
     .room-info-card--price .room-info-card__icon{color:#dc2626;background:rgba(248,113,113,.2)}
     .room-info-card__label{font-size:.72rem;font-weight:600;color:#6b7280;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.15rem}
     .room-info-card__value{font-size:1rem;font-weight:600;color:#1f2937}
+    .room-info-card__meta{margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.4rem}
+    .room-info-card__meta-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .65rem;border-radius:999px;font-size:.78rem;font-weight:600;background:rgba(244,114,182,.12);color:#be185d;border:1px solid rgba(244,114,182,.35)}
+    .room-info-card__meta-badge i{font-size:.75rem}
     .room-occupancy{border-radius:18px;background:#f1f5f9;padding:1.1rem 1.25rem;border:1px solid rgba(148,163,184,.32);box-shadow:0 12px 28px rgba(15,23,42,.05);margin-bottom:1.25rem}
     .room-occupancy__label{font-size:.75rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
     .room-occupancy__value{font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:.5rem}
@@ -233,6 +236,15 @@
           </div>
         </div>
         @if(!is_null($phong->gia_phong))
+        @php
+          $computedPerPersonPrice = null;
+          $totalSlots = $phong->totalSlots();
+          if (!is_null($phong->gia_moi_nguoi)) {
+            $computedPerPersonPrice = $phong->gia_moi_nguoi;
+          } elseif (!is_null($phong->gia_phong) && $totalSlots > 0) {
+            $computedPerPersonPrice = (int) round($phong->gia_phong / $totalSlots);
+          }
+        @endphp
         <div class="room-info-card room-info-card--price">
           <div class="room-info-card__icon">
             <i class="fa fa-money"></i>
@@ -240,6 +252,14 @@
           <div>
             <div class="room-info-card__label">Giá phòng</div>
             <div class="room-info-card__value">{{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</div>
+            @if(!is_null($computedPerPersonPrice))
+              <div class="room-info-card__meta">
+                <span class="room-info-card__meta-badge">
+                  <i class="fa fa-user"></i>
+                  {{ number_format($computedPerPersonPrice, 0, ',', '.') }} VND/SV · {{ $totalSlots }} chỗ
+                </span>
+              </div>
+            @endif
           </div>
         </div>
         @endif
