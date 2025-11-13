@@ -6,33 +6,126 @@
 <div class="container mt-4">
   @push('styles')
   <style>
-    .page-title{font-size:1.5rem;font-weight:700;color:#1f2937}
-    .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
-    .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
-    .btn-dergin i{font-size:.8rem}
-    .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
-    .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
-    .btn-dergin--success{background:linear-gradient(135deg,#10b981 0%,#22c55e 100%)}
-
-    .listing-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
-    .listing-table{margin-bottom:0;border-collapse:collapse!important;border-spacing:0!important}
-    .listing-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
-    .listing-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
-    .listing-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
-    .listing-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
-    .listing-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
-    .listing-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
-
-    .lich-actions{
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      gap:6px;
-      white-space:nowrap;
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937
     }
-    .lich-actions .btn-action{width:auto;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;font-size:14px;margin:0}
-    .lich-actions .btn-dergin{min-width:92px}
-    .lich-actions .btn-dergin span{line-height:1;white-space:nowrap}
+
+    .btn-dergin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      padding: .4rem .9rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: .72rem;
+      border: none;
+      color: #fff;
+      background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+      box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+      transition: transform .2s ease, box-shadow .2s ease
+    }
+
+    .btn-dergin:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+      color: #fff
+    }
+
+    .btn-dergin i {
+      font-size: .8rem
+    }
+
+    .btn-dergin--info {
+      background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
+    }
+
+    .btn-dergin--danger {
+      background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
+    }
+
+    .btn-dergin--success {
+      background: linear-gradient(135deg, #10b981 0%, #22c55e 100%)
+    }
+
+    .listing-table-wrapper {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      padding: 1.25rem
+    }
+
+    .listing-table {
+      margin-bottom: 0;
+      border-collapse: collapse !important;
+      border-spacing: 0 !important
+    }
+
+    .listing-table thead th {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #6c757d;
+      border: none;
+      padding-bottom: .75rem
+    }
+
+    .listing-table tbody tr {
+      background: #f9fafc;
+      border-radius: 16px;
+      transition: transform .2s ease, box-shadow .2s ease
+    }
+
+    .listing-table tbody tr:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08)
+    }
+
+    .listing-table tbody td {
+      border: none;
+      vertical-align: middle;
+      padding: 1rem .95rem
+    }
+
+    .listing-table tbody tr td:first-child {
+      border-top-left-radius: 16px;
+      border-bottom-left-radius: 16px
+    }
+
+    .listing-table tbody tr td:last-child {
+      border-top-right-radius: 16px;
+      border-bottom-right-radius: 16px
+    }
+
+    .lich-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .lich-actions .btn-action {
+      width: auto;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 14px;
+      margin: 0
+    }
+
+    .lich-actions .btn-dergin {
+      min-width: 92px
+    }
+
+    .lich-actions .btn-dergin span {
+      line-height: 1;
+      white-space: nowrap
+    }
 
     /* 🎨 Form lọc */
     .filter-card {
@@ -62,18 +155,18 @@
   @endpush
 
 
-    <h4 class="page-title mb-0">🛠️ Danh sách lịch bảo trì</h4>
-    <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
-      <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
-    </a>
-  
+  <h4 class="page-title mb-0">🛠️ Danh sách lịch bảo trì</h4>
+  <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
+    <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
+  </a>
+
 
   {{-- 🟢 Thông báo --}}
   @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+  <div class="alert alert-success">{{ session('success') }}</div>
   @endif
   @if(session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
+  <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
   {{-- 📊 Thống kê số tài sản bảo trì --}}
@@ -140,17 +233,17 @@
     </div>
   </div>
 
- 
+
 
   {{-- 🎯 Bộ lọc khác --}}
   <div class="filter-card mb-4">
     <form method="GET" action="{{ route('lichbaotri.index') }}" class="row g-3 align-items-end">
       {{-- Giữ lại tháng/năm từ bộ lọc trên --}}
       @if(request('month'))
-        <input type="hidden" name="month" value="{{ request('month') }}">
+      <input type="hidden" name="month" value="{{ request('month') }}">
       @endif
       @if(request('year'))
-        <input type="hidden" name="year" value="{{ request('year') }}">
+      <input type="hidden" name="year" value="{{ request('year') }}">
       @endif
 
       <div class="col-md-3">
@@ -216,23 +309,23 @@
             {{-- Ảnh minh chứng --}}
             <td class="text-center">
               @if($l->trang_thai == 'Hoàn thành')
-                  @if($l->hinh_anh)
-                      <img src="{{ asset('uploads/lichbaotri/'.$l->hinh_anh) }}" 
-                           alt="Ảnh sau bảo trì"
-                           style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
-                  @else
-                      <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
-                           style="width:70px;height:70px;">-</div>
-                  @endif
+              @if($l->hinh_anh)
+              <img src="{{ asset('uploads/lichbaotri/'.$l->hinh_anh) }}"
+                alt="Ảnh sau bảo trì"
+                style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
               @else
-                  @if($l->hinh_anh_truoc)
-                      <img src="{{ asset('uploads/lichbaotri/'.$l->hinh_anh_truoc) }}" 
-                           alt="Ảnh trước bảo trì"
-                           style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
-                  @else
-                      <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
-                           style="width:70px;height:70px;">-</div>
-                  @endif
+              <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
+                style="width:70px;height:70px;">-</div>
+              @endif
+              @else
+              @if($l->hinh_anh_truoc)
+              <img src="{{ asset('uploads/lichbaotri/'.$l->hinh_anh_truoc) }}"
+                alt="Ảnh trước bảo trì"
+                style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
+              @else
+              <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
+                style="width:70px;height:70px;">-</div>
+              @endif
               @endif
             </td>
 
@@ -250,30 +343,39 @@
               </span>
             </td>
 
-            <td>{{ $l->mo_ta ?? '-' }}</td>
+            <td>
+              @if($l->mo_ta)
+              <div><strong>Trước:</strong> {{ Str::limit($l->mo_ta, 50) }}</div>
+              @endif
+              @if($l->mo_ta_sau)
+              <div><strong>Sau:</strong> {{ Str::limit($l->mo_ta_sau, 50) }}</div>
+              @endif
+            </td>
+
+
 
             {{-- 🔧 Hành động --}}
             <td class="text-end">
               <div class="lich-actions">
                 <button type="button"
-                        class="btn-dergin btn-dergin--info btn-action"
-                        title="Xem chi tiết"
-                        data-toggle="modal"
-                        data-target="#xemChiTietModal"
-                        data-id="{{ $l->id }}">
+                  class="btn-dergin btn-dergin--info btn-action"
+                  title="Xem chi tiết"
+                  data-toggle="modal"
+                  data-target="#xemChiTietModal"
+                  data-id="{{ $l->id }}">
                   <i class="fa fa-eye"></i><span>Xem</span>
                 </button>
 
-                <a href="{{ route('lichbaotri.edit', $l->id) }}" 
-                   class="btn-dergin btn-action"
-                   title="Sửa">
+                <a href="{{ route('lichbaotri.edit', $l->id) }}"
+                  class="btn-dergin btn-action"
+                  title="Sửa">
                   <i class="fa fa-pencil"></i><span>Sửa</span>
                 </a>
 
-                <form action="{{ route('lichbaotri.destroy', $l->id) }}" 
-                      method="POST" 
-                      class="d-inline"
-                      onsubmit="return confirm('Bạn có chắc muốn xóa lịch này không?');">
+                <form action="{{ route('lichbaotri.destroy', $l->id) }}"
+                  method="POST"
+                  class="d-inline"
+                  onsubmit="return confirm('Bạn có chắc muốn xóa lịch này không?');">
                   @csrf
                   @method('DELETE')
                   <button type="submit" class="btn-dergin btn-dergin--danger btn-action" title="Xóa">
@@ -283,11 +385,11 @@
 
                 @if($l->trang_thai != 'Hoàn thành')
                 <button type="button"
-                        class="btn-dergin btn-dergin--success btn-action"
-                        title="Hoàn thành"
-                        data-toggle="modal" 
-                        data-target="#hoanThanhModal" 
-                        data-id="{{ $l->id }}">
+                  class="btn-dergin btn-dergin--success btn-action"
+                  title="Hoàn thành"
+                  data-toggle="modal"
+                  data-target="#hoanThanhModal"
+                  data-id="{{ $l->id }}">
                   <i class="fa fa-check"></i><span>Hoàn thành</span>
                 </button>
                 @endif
@@ -310,36 +412,57 @@
   </div>
 </div>
 
- 
+
 {{-- ✅ Modal Hoàn thành --}}
 <div class="modal fade" id="hoanThanhModal" tabindex="-1" aria-labelledby="hoanThanhLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content shadow-lg border-0 rounded-3">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title" id="hoanThanhLabel">✅ Cập nhật hoàn thành bảo trì</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
       </div>
+
       <form id="hoanThanhForm" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="modal-body">
           <input type="hidden" name="id" id="lich_id">
+
+          {{-- Ngày hoàn thành --}}
           <div class="mb-3">
-            <label for="ngay_hoan_thanh" class="form-label">Ngày hoàn thành</label>
-            <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh" class="form-control" required>
+            <label for="ngay_hoan_thanh" class="form-label fw-semibold"> Ngày hoàn thành</label>
+            <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh" 
+                   class="form-control" required>
           </div>
+
+          {{-- Ảnh sau bảo trì --}}
           <div class="mb-3">
-            <label for="hinh_anh_sau" class="form-label">Ảnh sau bảo trì</label>
-            <input type="file" name="hinh_anh_sau" id="hinh_anh_sau" class="form-control" accept="image/*">
+            <label for="hinh_anh" class="form-label fw-semibold"> Ảnh sau bảo trì</label>
+            <input type="file" name="hinh_anh" id="hinh_anh" 
+                   class="form-control" accept="image/*">
+          </div>
+
+          {{-- Mô tả sau bảo trì --}}
+          <div class="mb-3">
+            <label for="mo_ta_sau" class="form-label fw-semibold"> Mô tả sau bảo trì</label>
+            <textarea name="mo_ta_sau" id="mo_ta_sau" rows="3" 
+                      class="form-control" 
+                      placeholder="Nhập mô tả tình trạng sau khi bảo trì..." required></textarea>
           </div>
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-          <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa fa-times"></i> Đóng
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save"></i> Lưu thay đổi
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
 
 {{-- 👁️ Modal Xem Chi Tiết --}}
 <div class="modal fade" id="xemChiTietModal" tabindex="-1" aria-labelledby="xemChiTietLabel" aria-hidden="true">
@@ -358,29 +481,33 @@
 
 @push('scripts')
 <script>
-$(function () {
-  // 🟢 Modal Hoàn thành (Bootstrap 4 - jQuery events)
-  $('#hoanThanhModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var id = button.data('id');
-    var $form = $('#hoanThanhForm');
-    // Dùng route relative (absolute=false) để tránh lệch domain (localhost vs 127.0.0.1)
-    $form.attr('action', "{{ route('lichbaotri.hoanthanh.submit', ['id' => 'ID_PLACEHOLDER'], false) }}".replace('ID_PLACEHOLDER', id));
-    $('#lich_id').val(id);
-  });
+  $(function() {
+    // 🟢 Modal Hoàn thành (Bootstrap 4 - jQuery events)
+    $('#hoanThanhModal').on('show.bs.modal', function(event) {
+      var button = $(event.relatedTarget);
+      var id = button.data('id');
+      var $form = $('#hoanThanhForm');
+      // Dùng route relative (absolute=false) để tránh lệch domain (localhost vs 127.0.0.1)
+      $form.attr('action', "{{ route('lichbaotri.hoanthanh.submit', ['id' => 'ID_PLACEHOLDER'], false) }}".replace('ID_PLACEHOLDER', id));
+      $('#lich_id').val(id);
+    });
 
-  // 🔵 Modal Xem chi tiết
-  $('#xemChiTietModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var id = button.data('id');
-    var $content = $('#chiTietContent');
-    $content.html('<div class="text-center text-muted py-3">Đang tải dữ liệu...</div>');
+    // 🔵 Modal Xem chi tiết
+    $('#xemChiTietModal').on('show.bs.modal', function(event) {
+      var button = $(event.relatedTarget);
+      var id = button.data('id');
+      var $content = $('#chiTietContent');
+      $content.html('<div class="text-center text-muted py-3">Đang tải dữ liệu...</div>');
 
-    $.get("{{ route('lichbaotri.show', ['id' => 'ID_PLACEHOLDER'], false) }}".replace('ID_PLACEHOLDER', id))
-      .done(function (html) { $content.html(html); })
-      .fail(function () { $content.html('<div class="text-danger text-center">Lỗi tải dữ liệu</div>'); });
+      $.get("{{ route('lichbaotri.show', ['id' => 'ID_PLACEHOLDER'], false) }}".replace('ID_PLACEHOLDER', id))
+        .done(function(html) {
+          $content.html(html);
+        })
+        .fail(function() {
+          $content.html('<div class="text-danger text-center">Lỗi tải dữ liệu</div>');
+        });
+    });
   });
-});
 </script>
 @endpush
 @endsection

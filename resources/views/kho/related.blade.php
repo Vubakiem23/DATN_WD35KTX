@@ -11,10 +11,10 @@
     <div class="mb-3 d-flex gap-2">
         <a href="{{ route('kho.index') }}" class="btn btn-dergin btn-dergin--muted" title="Quay về kho đồ">
             <i class="fa fa-warehouse"></i><span>Kho đồ</span>
-    </a>
+        </a>
         <a href="{{ route('kho.create', $loai->id) }}" class="btn btn-dergin btn-dergin--info">
             <i class="fa fa-plus"></i><span>Thêm tài sản mới</span>
-    </a>
+        </a>
     </div>
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -51,7 +51,7 @@
                 @endif
             </div>
         </form>
-        </div>
+    </div>
 
     {{-- Bảng tài sản --}}
     <div class="asset-table-wrapper">
@@ -65,7 +65,6 @@
                         <th>Tên tài sản</th>
                         <th>Tình trạng</th>
                         <th>Vị trí</th>
-                        <th>Số lượng</th>
                         <th>Đơn vị</th>
                         <th>Ghi chú</th>
                         <th class="text-end">Hành động</th>
@@ -78,7 +77,7 @@
                         <td class="text-center asset-thumb-cell">
                             @if($item->hinh_anh)
                             <div class="asset-thumb mx-auto">
-                            <img src="{{ asset('storage/' . $item->hinh_anh) }}"
+                                <img src="{{ asset('storage/' . $item->hinh_anh) }}"
                                     alt="{{ $item->ten_tai_san }}">
                             </div>
                             @else
@@ -92,19 +91,18 @@
                         <td>{{ $item->tinh_trang ?? '-' }}</td>
                         <td>
                             @php
-                                // Lấy danh sách phòng từ các bản ghi tài sản con đã gán phòng
-                                $roomNames = optional($item->taiSans)
-                                    ->whereNotNull('phong_id')
-                                    ->pluck('phong.ten_phong')
-                                    ->filter()
-                                    ->unique()
-                                    ->values();
+                            // Lấy danh sách phòng từ các bản ghi tài sản con đã gán phòng
+                            $roomNames = optional($item->taiSans)
+                            ->whereNotNull('phong_id')
+                            ->pluck('phong.ten_phong')
+                            ->filter()
+                            ->unique()
+                            ->values();
                             @endphp
                             {{ ($roomNames && $roomNames->count() > 0) ? $roomNames->join(', ') : 'Chưa gán phòng' }}
                         </td>
 
 
-                        <td>{{ $item->so_luong }}</td>
                         <td>{{ $item->don_vi_tinh ?? '-' }}</td>
                         <td>{{ $item->ghi_chu ?? '-' }}</td>
                         <td class="action-cell">
@@ -140,36 +138,169 @@
 {{-- Style giống trang khu --}}
 @push('styles')
 <style>
-    .asset-page__title{font-size:1.5rem;font-weight:700;color:#1f2937;}
-    .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
-    .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
-    .btn-dergin i{font-size:.8rem}
-    .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
-    .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
-    .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+    .asset-page__title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
 
-    .asset-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
-    .asset-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
-    .asset-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
-    .asset-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
-    .asset-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
-    .asset-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
-    .asset-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
-    .asset-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
-    .asset-thumb-cell{width:96px}
-    .asset-thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:0 0 64px;background:#e9ecef;display:flex;align-items:center;justify-content:center}
-    .asset-thumb img{width:100%;height:100%;object-fit:cover}
+    .btn-dergin {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+        padding: .4rem .9rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: .72rem;
+        border: none;
+        color: #fff;
+        background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+        box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+        transition: transform .2s ease, box-shadow .2s ease
+    }
 
-    .action-cell{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;white-space:nowrap}
-    .action-cell form{margin:0}
-    .action-cell .btn{line-height:1}
-    .action-cell .btn-dergin{min-width:92px}
-    .action-cell .btn-dergin span{line-height:1;white-space:nowrap}
+    .btn-dergin:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+        color: #fff
+    }
 
-    .filter-card{background:#f8f9fa;border:1px solid #ddd;border-radius:12px;padding:15px 20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
-    .filter-card label{font-weight:600;color:#333}
-    .filter-btns .btn{height:42px;display:inline-flex;align-items:center;justify-content:center}
-    .filter-btns i{margin-right:5px}
+    .btn-dergin i {
+        font-size: .8rem
+    }
+
+    .btn-dergin--muted {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
+    }
+
+    .btn-dergin--info {
+        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
+    }
+
+    .btn-dergin--danger {
+        background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
+    }
+
+    .asset-table-wrapper {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        padding: 1.25rem
+    }
+
+    .asset-table {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0 12px
+    }
+
+    .asset-table thead th {
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: #6c757d;
+        border: none;
+        padding-bottom: .75rem
+    }
+
+    .asset-table tbody tr {
+        background: #f9fafc;
+        border-radius: 16px;
+        transition: transform .2s ease, box-shadow .2s ease
+    }
+
+    .asset-table tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08)
+    }
+
+    .asset-table tbody td {
+        border: none;
+        vertical-align: middle;
+        padding: 1rem .95rem
+    }
+
+    .asset-table tbody tr td:first-child {
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px
+    }
+
+    .asset-table tbody tr td:last-child {
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px
+    }
+
+    .asset-thumb-cell {
+        width: 96px
+    }
+
+    .asset-thumb {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        overflow: hidden;
+        flex: 0 0 64px;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center
+    }
+
+    .asset-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover
+    }
+
+    .action-cell {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: .5rem;
+        white-space: nowrap
+    }
+
+    .action-cell form {
+        margin: 0
+    }
+
+    .action-cell .btn {
+        line-height: 1
+    }
+
+    .action-cell .btn-dergin {
+        min-width: 92px
+    }
+
+    .action-cell .btn-dergin span {
+        line-height: 1;
+        white-space: nowrap
+    }
+
+    .filter-card {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 15px 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .08)
+    }
+
+    .filter-card label {
+        font-weight: 600;
+        color: #333
+    }
+
+    .filter-btns .btn {
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center
+    }
+
+    .filter-btns i {
+        margin-right: 5px
+    }
 </style>
 @endpush
 @endsection

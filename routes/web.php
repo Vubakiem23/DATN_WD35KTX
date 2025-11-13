@@ -228,13 +228,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
     // ---------------- SỰ CỐ ----------------
-    Route::resource('suco', SuCoController::class);
-    // Route nút hoàn thành
-    Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.hoanthanh');
-    // Route xác nhận thanh toán
-    Route::post('suco/{id}/thanh-toan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
-    // Route tạo hóa đơn
-    Route::post('suco/{id}/tao-hoa-don', [SuCoController::class, 'taoHoaDon'])->name('suco.taohoadon');
 
     // ---------------- HÓA ĐƠN SỰ CỐ ----------------
     Route::prefix('hoadonsuco')->group(function () {
@@ -250,6 +243,16 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
 });
 Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+
+// ====== SỰ CỐ: Mở cho admin + nhân viên (UI + hành động) ======
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    // Resource (UI danh sách/chi tiết/chỉnh sửa, v.v.)
+    Route::resource('suco', SuCoController::class);
+    Route::post('suco/{suco}/hoan-thanh', [SuCoController::class, 'hoanThanh'])->name('suco.hoanthanh');
+    Route::post('suco/{id}/thanh-toan', [SuCoController::class, 'thanhToan'])->name('suco.thanhtoan');
+    Route::post('suco/{id}/tao-hoa-don', [SuCoController::class, 'taoHoaDon'])->name('suco.taohoadon');
+    Route::post('suco/{id}/danh-gia', [SuCoController::class, 'danhGia'])->name('suco.danhgia');
+});
 
 
     // // TÀI SẢN
@@ -292,7 +295,6 @@ Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->n
 
 
     // ---------------- SỰ CỐ ----------------
-    Route::resource('suco', SuCoController::class);
     // ====== VI PHẠM (violations) ======
     Route::resource('vipham', ViolationController::class);
     Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');

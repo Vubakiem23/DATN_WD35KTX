@@ -206,7 +206,8 @@ class SuCoController extends Controller
     {
         $suco = SuCo::findOrFail($id);
 
-        if (!Auth::check() || !in_array(Auth::user()->role, ['admin', 'nhanvien'])) {
+        $role = Auth::check() ? trim(strtolower((string) Auth::user()->getRole())) : null;
+        if (!$role || !in_array($role, ['admin', 'nhanvien'])) {
             return redirect()->back()->with('error', 'Bạn không có quyền thực hiện thao tác này!');
         }
 
@@ -219,37 +220,64 @@ class SuCoController extends Controller
             ->with('info', 'Sự cố này không cần hoặc đã được thanh toán!');
     }
 
-    // Nút hoàn thành sự cố - CHỈ sửa trạng thái và ảnh, KHÔNG sửa thanh toán
+    // Nút hoàn thành sự cố - cập nhật trạng thái, ngày hoàn thành, ảnh sau sửa, % hoàn thiện
     public function hoanThanh(Request $request, SuCo $suco)
     {
+        // Chỉ admin hoặc nhân viên mới được hoàn thành sự cố
+        $role = Auth::check() ? trim(strtolower((string) Auth::user()->getRole())) : null;
+        if (!$role || !in_array($role, ['admin', 'nhanvien'])) {
+            return redirect()->back()->with('error', 'Bạn không có quyền thực hiện thao tác này!');
+        }
+
         $request->validate([
             'ngay_hoan_thanh' => 'required|date',
-            'anh' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'completion_percent' => 'required|integer|min:0|max:100',
+            'anh_sau' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'co_thanh_toan' => 'nullable|boolean',
+            'payment_amount' => 'nullable|numeric|min:0',
         ]);
 
-        // CHỈ cập nhật trạng thái và ngày hoàn thành
+        // Cập nhật trạng thái và ngày hoàn thành
         $suco->trang_thai = 'Hoàn thành';
         $suco->ngay_hoan_thanh = $request->ngay_hoan_thanh;
+        if ($request->filled('completion_percent')) {
+            $suco->completion_percent = (int) $request->completion_percent;
+        }
 
-        // Xử lý upload ảnh nếu có
-        if ($request->hasFile('anh')) {
-            // Xóa ảnh cũ nếu tồn tại
-            if ($suco->anh && File::exists(public_path($suco->anh))) {
-                File::delete(public_path($suco->anh));
-            }
-
+        // Ảnh sau xử lý (không ghi đè ảnh gốc)
+        if ($request->hasFile('anh_sau')) {
             $uploadPath = public_path('uploads/suco');
             if (!File::exists($uploadPath)) {
                 File::makeDirectory($uploadPath, 0755, true);
             }
-
-            $file = $request->file('anh');
+            // Xóa ảnh sau cũ nếu có
+            if ($suco->anh_sau && File::exists(public_path($suco->anh_sau))) {
+                File::delete(public_path($suco->anh_sau));
+            }
+            $file = $request->file('anh_sau');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $file->move($uploadPath, $filename);
-            $suco->anh = 'uploads/suco/' . $filename;
+            $suco->anh_sau = 'uploads/suco/' . $filename;
+        }
+
+        // Có thanh toán? nếu có thì ghi số tiền, ngược lại đặt 0 và chưa thanh toán
+        if ($request->boolean('co_thanh_toan')) {
+            $amount = (float) ($request->payment_amount ?? 0);
+            $suco->payment_amount = max(0, $amount);
+            // Khi hoàn thành, chưa thanh toán ngay; sẽ chuyển sang trang hóa đơn
+            $suco->is_paid = false;
+        } else {
+            $suco->payment_amount = 0;
+            $suco->is_paid = false;
         }
 
         $suco->save();
+
+        // Nếu có số tiền cần thanh toán, điều hướng sang danh sách hóa đơn sự cố
+        if ($suco->payment_amount > 0 && !$suco->is_paid) {
+            return redirect()->route('hoadonsuco.index')
+                ->with('success', 'Đã cập nhật hoàn thành. Vui lòng tiến hành thanh toán hóa đơn sự cố.');
+        }
 
         return redirect()->back()->with('success', 'Cập nhật hoàn thành thành công!');
     }
@@ -259,7 +287,8 @@ class SuCoController extends Controller
     {
         $suco = SuCo::findOrFail($id);
 
-        if (!Auth::check() || !in_array(Auth::user()->role, ['admin', 'nhanvien'])) {
+        $role = Auth::check() ? trim(strtolower((string) Auth::user()->getRole())) : null;
+        if (!$role || !in_array($role, ['admin', 'nhanvien'])) {
             return redirect()->back()->with('error', 'Bạn không có quyền thực hiện thao tác này!');
         }
 
@@ -283,6 +312,35 @@ class SuCoController extends Controller
             ($request->payment_amount > 0 ? 'Sinh viên cần thanh toán ' . number_format($request->payment_amount, 0, ',', '.') . ' VNĐ' : 'Sự cố này không cần thanh toán'));
     }
 
+    // ⭐ Sinh viên đánh giá chất lượng xử lý sau khi thanh toán
+    public function danhGia(Request $request, $id)
+    {
+        $suco = SuCo::findOrFail($id);
+
+        // Chỉ cho phép đánh giá khi đã thanh toán
+        if (!$suco->is_paid) {
+            return redirect()->back()->with('error', 'Bạn chỉ có thể đánh giá sau khi đã thanh toán!');
+        }
+
+        // Nếu có đăng nhập sinh viên, yêu cầu là chủ sự cố
+        if (Auth::check() && trim(strtolower((string) Auth::user()->getRole())) === 'sinhvien') {
+            if ($suco->sinh_vien_id != Auth::user()->id) {
+                return redirect()->back()->with('error', 'Bạn không có quyền đánh giá sự cố này!');
+            }
+        }
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'feedback' => 'nullable|string|max:2000',
+        ]);
+
+        $suco->rating = (int) $request->rating;
+        $suco->feedback = $request->feedback;
+        $suco->rated_at = now();
+        $suco->save();
+
+        return redirect()->back()->with('success', 'Cảm ơn bạn đã đánh giá!');
+    }
 
 
 

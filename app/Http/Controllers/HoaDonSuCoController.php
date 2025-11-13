@@ -69,7 +69,8 @@ class HoaDonSuCoController extends Controller
      */
     public function xacNhanThanhToan($id)
     {
-        if (!Auth::check() || !in_array(Auth::user()->role, ['admin', 'nhanvien'])) {
+        $role = Auth::check() ? trim(strtolower((string) Auth::user()->getRole())) : null;
+        if (!$role || !in_array($role, ['admin', 'nhanvien'])) {
             return redirect()->back()->with('error', 'Bạn không có quyền thực hiện thao tác này!');
         }
 
@@ -94,7 +95,8 @@ class HoaDonSuCoController extends Controller
      */
     public function huyThanhToan($id)
     {
-        if (!Auth::check() || !in_array(Auth::user()->role, ['admin'])) {
+        $role = Auth::check() ? trim(strtolower((string) Auth::user()->getRole())) : null;
+        if ($role !== 'admin') {
             return redirect()->back()->with('error', 'Chỉ admin mới có quyền hủy thanh toán!');
         }
 
@@ -118,7 +120,7 @@ class HoaDonSuCoController extends Controller
         $suco = SuCo::findOrFail($id);
 
         // Kiểm tra quyền: sinh viên chỉ được thanh toán hóa đơn của chính mình
-        if (Auth::user()->role === 'sinhvien') {
+        if (trim(strtolower((string) Auth::user()->getRole())) === 'sinhvien') {
             if ($suco->sinh_vien_id != Auth::user()->id) {
                 return response()->json([
                     'success' => false,

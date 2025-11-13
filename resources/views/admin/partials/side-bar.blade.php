@@ -153,11 +153,8 @@
                             <li>
                                 <a href="{{ route('thongbao.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
-
+                                    <i class="fa fa-bullhorn"></i> 
                                     Thông báo tin tức
-
-                                    <i class="fa fa-bullhorn"></i> Thông báo sự cố
-
                                 </a>
                                 <a href="{{ route('thongbao_su_co.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">

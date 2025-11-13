@@ -95,15 +95,17 @@
                     <div class="col-md-6">
                         <p><strong>Tên phòng:</strong> {{ $stats['phong']->ten_phong }}</p>
                         <p><strong>Khu:</strong> {{ $stats['phong']->khu->ten_khu ?? 'N/A' }}</p>
-                        <p><strong>Số người:</strong> {{ $stats['phong']->so_nguoi ?? 'N/A' }} người</p>
+                        <p><strong>Số người:</strong> 
+                            {{ $stats['phong'] ? $stats['phong']->usedSlots() : 'N/A' }} người
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <p><strong>Trạng thái:</strong> 
-                            <span class="badge bg-{{ $stats['phong']->trang_thai == 'Đang sử dụng' ? 'success' : 'secondary' }}">
+                            <span class="badge bg-{{ in_array($stats['phong']->trang_thai ?? '', ['Đang sử dụng', 'Đã ở']) ? 'success' : 'secondary' }}">
                                 {{ $stats['phong']->trang_thai ?? 'N/A' }}
                             </span>
                         </p>
-                        <p><strong>Mô tả:</strong> {{ $stats['phong']->mo_ta ?? 'Không có mô tả' }}</p>
+                        <p><strong>Mô tả:</strong> {{ $stats['phong']->ghi_chu ?? ($stats['phong']->mo_ta ?? 'Không có mô tả') }}</p>
                     </div>
                 </div>
                 <a href="{{ route('client.phong') }}" class="btn btn-primary mt-2">
@@ -143,16 +145,16 @@
                             <tbody>
                                 @foreach($suCoGanDay as $suCo)
                                 <tr>
-                                    <td>{{ $suCo->ngay_gui ? $suCo->ngay_gui->format('d/m/Y') : 'N/A' }}</td>
+                                    <td>{{ $suCo->ngay_gui ? \Illuminate\Support\Carbon::parse($suCo->ngay_gui)->format('d/m/Y') : 'N/A' }}</td>
                                     <td>{{ Str::limit($suCo->mo_ta, 50) }}</td>
                                     <td>{{ $suCo->phong->ten_phong ?? 'N/A' }}</td>
                                     <td>
-                                        @if($suCo->trang_thai == 'pending')
-                                            <span class="badge bg-warning">Chờ xử lý</span>
-                                        @elseif($suCo->trang_thai == 'in_progress')
-                                            <span class="badge bg-info">Đang xử lý</span>
-                                        @elseif($suCo->trang_thai == 'resolved')
-                                            <span class="badge bg-success">Đã xử lý</span>
+                                        @if($suCo->trang_thai == 'Tiếp nhận')
+                                            <span class="badge bg-secondary">Tiếp nhận</span>
+                                        @elseif($suCo->trang_thai == 'Đang xử lý')
+                                            <span class="badge bg-warning text-dark">Đang xử lý</span>
+                                        @elseif($suCo->trang_thai == 'Hoàn thành')
+                                            <span class="badge bg-success">Hoàn thành</span>
                                         @else
                                             <span class="badge bg-secondary">{{ $suCo->trang_thai }}</span>
                                         @endif

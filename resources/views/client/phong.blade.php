@@ -52,7 +52,7 @@
                     </div>
                     <div class="col-md-6">
                         <p><strong><i class="fas fa-file-alt me-2"></i>Mô tả:</strong></p>
-                        <p>{{ $phong->mo_ta ?? 'Không có mô tả' }}</p>
+                        <p>{{ $phong->ghi_chu ?? 'Không có mô tả' }}</p>
                     </div>
                 </div>
 
@@ -108,12 +108,27 @@
                 </h5>
             </div>
             <div class="card-body">
-                <p><strong>Họ tên:</strong> {{ $sinhVien->ho_ten }}</p>
-                <p><strong>Mã SV:</strong> {{ $sinhVien->ma_sinh_vien }}</p>
-                <p><strong>Lớp:</strong> {{ $sinhVien->lop }}</p>
-                <p><strong>Ngành:</strong> {{ $sinhVien->nganh }}</p>
-                <p><strong>Email:</strong> {{ $sinhVien->email }}</p>
-                <p><strong>SĐT:</strong> {{ $sinhVien->so_dien_thoai }}</p>
+                <p><strong>Họ tên:</strong> {{ $sinhVien->ho_ten ?? 'N/A' }}</p>
+                <p><strong>Mã SV:</strong> {{ $sinhVien->ma_sinh_vien ?? 'N/A' }}</p>
+                <p><strong>Ngày sinh:</strong> {{ optional($sinhVien->ngay_sinh)->format('d/m/Y') ?? 'N/A' }}</p>
+                <p><strong>Giới tính:</strong> {{ $sinhVien->gioi_tinh ?? 'N/A' }}</p>
+                <p><strong>Quê quán:</strong> {{ $sinhVien->que_quan ?? 'N/A' }}</p>
+                <p><strong>Nơi ở hiện tại:</strong> {{ $sinhVien->noi_o_hien_tai ?? 'N/A' }}</p>
+                <p><strong>Lớp:</strong> {{ $sinhVien->lop ?? 'N/A' }}</p>
+                <p><strong>Ngành:</strong> {{ $sinhVien->nganh ?? 'N/A' }}</p>
+                <p><strong>Khóa học:</strong> {{ $sinhVien->khoa_hoc ?? 'N/A' }}</p>
+                <p><strong>Email:</strong> {{ $sinhVien->email ?? 'N/A' }}</p>
+                <p><strong>SĐT:</strong> {{ $sinhVien->so_dien_thoai ?? 'N/A' }}</p>
+                <hr>
+                <p class="mb-2 fw-bold text-secondary">Căn cước công dân</p>
+                <p><strong>Số CCCD:</strong> {{ $sinhVien->citizen_id_number ?? 'N/A' }}</p>
+                <p><strong>Ngày cấp:</strong> {{ optional($sinhVien->citizen_issue_date)->format('d/m/Y') ?? 'N/A' }}</p>
+                <p><strong>Nơi cấp:</strong> {{ $sinhVien->citizen_issue_place ?? 'N/A' }}</p>
+                <hr>
+                <p class="mb-2 fw-bold text-secondary">Người liên hệ</p>
+                <p><strong>Họ tên:</strong> {{ $sinhVien->guardian_name ?? 'N/A' }}</p>
+                <p><strong>Quan hệ:</strong> {{ $sinhVien->guardian_relationship ?? 'N/A' }}</p>
+                <p><strong>SĐT:</strong> {{ $sinhVien->guardian_phone ?? 'N/A' }}</p>
             </div>
         </div>
     </div>
