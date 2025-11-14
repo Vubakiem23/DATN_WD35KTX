@@ -63,47 +63,48 @@ class TaiSanController extends Controller
         return view('taisan.create', compact('phongs', 'loaiTaiSans', 'taiSans', 'selectedLoai', 'selectedTaiSan'));
     }
 
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'phong_id' => ['required', 'integer', 'exists:phong,id'],
-        'tai_san_ids' => ['required', 'array', 'min:1'],
-        'tai_san_ids.*' => ['integer', 'exists:kho_tai_san,id'],
-        'tinh_trang' => ['nullable', 'string', 'max:255'],
-    ]);
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'phong_id' => ['required', 'integer', 'exists:phong,id'],
+            'tai_san_ids' => ['required', 'array', 'min:1'],
+            'tai_san_ids.*' => ['integer', 'exists:kho_tai_san,id'],
+            'tinh_trang' => ['nullable', 'string', 'max:255'],
+        ]);
 
-    DB::beginTransaction();
-    try {
-        foreach ($validated['tai_san_ids'] as $khoId) {
-            $kho = KhoTaiSan::lockForUpdate()->findOrFail($khoId);
+        DB::beginTransaction();
+        try {
+            foreach ($validated['tai_san_ids'] as $khoId) {
+                $kho = KhoTaiSan::lockForUpdate()->findOrFail($khoId);
 
-            if ($kho->so_luong < 1) {
-                throw new \Exception('Kho "' . $kho->ten_tai_san . '" không còn hàng.');
+                if ($kho->so_luong < 1) {
+                    throw new \Exception('Kho "' . $kho->ten_tai_san . '" không còn hàng.');
+                }
+
+                // ✅ Tạo mới tài sản với so_luong mặc định là 1
+                TaiSan::create([
+                    'phong_id' => $validated['phong_id'],
+                    'kho_tai_san_id' => $kho->id,
+                    'ten_tai_san' => $kho->ten_tai_san,
+                    'hinh_anh' => $kho->hinh_anh,
+                    'so_luong' => 1, // ✅ thêm dòng này để tránh lỗi SQL 1364
+                    'tinh_trang' => $kho->tinh_trang,  // lấy từ kho
+                    'tinh_trang_hien_tai' => $kho->tinh_trang, // cũng lấy từ kho
+
+                ]);
+
+                // ✅ Giảm số lượng trong kho
+                $kho->decrement('so_luong', 1);
             }
 
-            // ✅ Tạo mới tài sản với so_luong mặc định là 1
-            TaiSan::create([
-                'phong_id' => $validated['phong_id'],
-                'kho_tai_san_id' => $kho->id,
-                'ten_tai_san' => $kho->ten_tai_san,
-                'hinh_anh' => $kho->hinh_anh,
-                'so_luong' => 1, // ✅ thêm dòng này để tránh lỗi SQL 1364
-                'tinh_trang' => $validated['tinh_trang'] ?? 'Bình thường',
-                'tinh_trang_hien_tai' => 'Bình thường',
-            ]);
-
-            // ✅ Giảm số lượng trong kho
-            $kho->decrement('so_luong', 1);
+            DB::commit();
+            return redirect()->route('taisan.byPhong', ['phong' => $validated['phong_id']])
+                ->with('success', 'Đã thêm tài sản vào phòng thành công!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
         }
-
-        DB::commit();
-        return redirect()->route('taisan.byPhong', ['phong' => $validated['phong_id']])
-            ->with('success', 'Đã thêm tài sản vào phòng thành công!');
-    } catch (\Throwable $e) {
-        DB::rollBack();
-        return back()->withInput()->withErrors(['error' => $e->getMessage()]);
     }
-}
 
     public function edit($id)
     {
@@ -175,20 +176,20 @@ public function store(Request $request)
 
     /** 🖼️ Modal xem chi tiết */
     public function showModal($id)
-{
-    $taiSan = TaiSan::with(['phong', 'khoTaiSan'])->find($id);
-    if (!$taiSan) {
-        // Trả về HTML báo lỗi (không JSON)
-        return response('<p class="text-danger">Không tìm thấy tài sản.</p>', 404)
-               ->header('Content-Type', 'text/html; charset=utf-8');
+    {
+        $taiSan = TaiSan::with(['phong', 'khoTaiSan'])->find($id);
+        if (!$taiSan) {
+            // Trả về HTML báo lỗi (không JSON)
+            return response('<p class="text-danger">Không tìm thấy tài sản.</p>', 404)
+                ->header('Content-Type', 'text/html; charset=utf-8');
+        }
+
+        // Nếu bạn có view partial resources/views/taisan/_modal.blade.php
+        $html = view('taisan._modal', compact('taiSan'))->render();
+
+        // Trả raw HTML (important)
+        return response($html, 200)->header('Content-Type', 'text/html; charset=utf-8');
     }
-
-    // Nếu bạn có view partial resources/views/taisan/_modal.blade.php
-    $html = view('taisan._modal', compact('taiSan'))->render();
-
-    // Trả raw HTML (important)
-    return response($html, 200)->header('Content-Type', 'text/html; charset=utf-8');
-}
 
     public function related(Request $request, $loai_id)
     {

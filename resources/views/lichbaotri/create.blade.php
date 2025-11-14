@@ -186,44 +186,44 @@
 
     <input type="hidden" name="tai_san_id[]" value="{{ $taiSan->id }}">
 
- <h6 class="section-title">Thông tin tài sản</h6>
-<div class="d-flex gap-3 align-items-start mb-3">
+    <h6 class="section-title">Thông tin tài sản</h6>
+    <div class="d-flex gap-3 align-items-start mb-3">
 
-  {{-- Ảnh tài sản --}}
- <div>
-    @if (!empty($taiSan->khoTaiSan->hinh_anh))
-      <img src="{{ Storage::url('kho/' . $taiSan->khoTaiSan->hinh_anh) }}"
-           alt="Ảnh tài sản"
-           style="width:100px;height:100px;object-fit:cover;border-radius:6px;">
-    @else
-      <div style="width:100px;height:100px;background:#e5e7eb;border-radius:6px;display:flex;align-items:center;justify-content:center;">
-        Không có ảnh
+      {{-- Ảnh tài sản --}}
+      <div>
+        @if (!empty($taiSan->khoTaiSan->hinh_anh))
+        <img src="{{ Storage::url('kho/' . $taiSan->khoTaiSan->hinh_anh) }}"
+          alt="Ảnh tài sản"
+          style="width:100px;height:100px;object-fit:cover;border-radius:6px;">
+        @else
+        <div style="width:100px;height:100px;background:#e5e7eb;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+          Không có ảnh
+        </div>
+        @endif
       </div>
-    @endif
-</div>
 
 
-  {{-- Thông tin chi tiết --}}
-  <div>
-    <strong>Tên:</strong> {{ $taiSan->khoTaiSan->ten_tai_san }} <br>
+      {{-- Thông tin chi tiết --}}
+      <div>
+        <strong>Tên:</strong> {{ $taiSan->khoTaiSan->ten_tai_san }} <br>
 
-    <strong>Mã:</strong> {{ $taiSan->khoTaiSan->ma_tai_san }} <br>
+        <strong>Mã:</strong> {{ $taiSan->khoTaiSan->ma_tai_san }} <br>
 
-    <strong>Phòng:</strong> {{ $taiSan->phong->ten_phong ?? 'Trong kho' }} <br>
+        <strong>Phòng:</strong> {{ $taiSan->phong->ten_phong ?? 'Trong kho' }} <br>
 
 
-    {{-- ✅ Người đang sử dụng từ Slot --}}
-    <strong>Sinh viên sử dụng:</strong>
-    @php
-      $slot = $taiSan->slots->first();
-    @endphp
-    {{ $slot && $slot->sinhVien ? $slot->sinhVien->ho_ten : 'Không có' }} <br>
+        {{-- ✅ Người đang sử dụng từ Slot --}}
+        <strong>Sinh viên sử dụng:</strong>
+        @php
+        $slot = $taiSan->slots->first();
+        @endphp
+        {{ $slot && $slot->sinhVien ? $slot->sinhVien->ho_ten : 'Không có' }} <br>
 
-    <strong>Mã Slot:</strong>
-    {{ $slot ? $slot->ma_slot : '-' }}
-  </div>
+        <strong>Mã Slot:</strong>
+        {{ $slot ? $slot->ma_slot : '-' }}
+      </div>
 
-</div>
+    </div>
 
 
     <h6 class="section-title">Mô tả bảo trì</h6>
@@ -247,39 +247,39 @@
 
   @if($errors->any())
   <div class="alert alert-danger shadow-sm">
-      <ul class="mb-0">
-        @foreach($errors->all() as $error)
-          <li>{{ $error }}</li>
-        @endforeach
-      </ul>
-    </div>
+    <ul class="mb-0">
+      @foreach($errors->all() as $error)
+      <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+  </div>
   @endif
 
   <form action="{{ route('lichbaotri.store') }}" method="POST" enctype="multipart/form-data" class="p-4 card">
     @csrf
 
     <h6 class="section-title">Chọn vị trí tài sản</h6>
-      <div class="mb-3">
+    <div class="mb-3">
       <select id="vi_tri" class="form-select" required>
-          <option value="">-- Chọn vị trí --</option>
+        <option value="">-- Chọn vị trí --</option>
         <option value="phong">Trong phòng</option>
         <option value="kho">Trong kho</option>
-        </select>
-      </div>
+      </select>
+    </div>
 
     <div class="vi-tri-phong d-none mb-4">
       <select id="phong_id" class="form-select">
-            <option value="">-- Chọn phòng --</option>
-            @foreach ($phongs as $phong)
-              <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
-            @endforeach
-          </select>
-        </div>
+        <option value="">-- Chọn phòng --</option>
+        @foreach ($phongs as $phong)
+        <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
+        @endforeach
+      </select>
+    </div>
 
     <div class="vi-tri-kho d-none mb-4">
       <select id="loai_tai_san_kho" class="form-select">
         <option value="">-- Chọn loại tài sản --</option>
-          </select>
+      </select>
     </div>
 
     <h6 class="section-title">Danh sách tài sản</h6>
@@ -300,7 +300,7 @@
               <td colspan="5" class="py-4">
                 <div class="text-muted">
                   Chưa có tài sản nào trong danh sách. Vui lòng chọn vị trí và nhấn <strong>Thêm tài sản</strong>.
-        </div>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -315,7 +315,7 @@
     <h6 class="section-title">Ngày bảo trì</h6>
     <input type="date" name="ngay_bao_tri" class="form-control" required>
 
-    <div class="text-end">
+    <div class="text-end mt-3">
       <button type="submit" class="btn btn-primary me-2">💾 Lưu</button>
       <a href="{{ route('lichbaotri.index') }}" class="btn btn-secondary">↩️ Quay lại</a>
     </div>
@@ -328,47 +328,47 @@
 
 @if(!$taiSan)
 <script>
-$(function () {
-  const body = $('#assetTable tbody');
-  let assets = [];
+  $(function() {
+    const body = $('#assetTable tbody');
+    let assets = [];
 
-  $('#vi_tri').on('change', function () {
-    body.html('');
-    const showPhong = $(this).val() === 'phong';
-    const showKho = $(this).val() === 'kho';
+    $('#vi_tri').on('change', function() {
+      body.html('');
+      const showPhong = $(this).val() === 'phong';
+      const showKho = $(this).val() === 'kho';
 
-    $('.vi-tri-phong').toggleClass('d-none', !showPhong);
-    $('.vi-tri-kho').toggleClass('d-none', !showKho);
+      $('.vi-tri-phong').toggleClass('d-none', !showPhong);
+      $('.vi-tri-kho').toggleClass('d-none', !showKho);
 
-    if (showKho) loadLoai();
-  });
+      if (showKho) loadLoai();
+    });
 
-  $('#phong_id').on('change', e => loadPhong(e.target.value));
-  $('#loai_tai_san_kho').on('change', e => loadKho(e.target.value));
-  
-  $('#addRow').on('click', () => {
-    if (!assets.length) return alert("Hãy chọn tài sản trước!");
-    addRow();
-  });
+    $('#phong_id').on('change', e => loadPhong(e.target.value));
+    $('#loai_tai_san_kho').on('change', e => loadKho(e.target.value));
 
-  function removeEmptyState() {
-    body.find('.empty-state').remove();
-  }
+    $('#addRow').on('click', () => {
+      if (!assets.length) return alert("Hãy chọn tài sản trước!");
+      addRow();
+    });
 
-  function showEmptyState() {
-    if (body.children().length) return;
-    body.append(`
+    function removeEmptyState() {
+      body.find('.empty-state').remove();
+    }
+
+    function showEmptyState() {
+      if (body.children().length) return;
+      body.append(`
       <tr class="empty-state">
         <td colspan="5" class="py-4 text-muted">
           Chưa có tài sản nào trong danh sách. Vui lòng chọn vị trí và nhấn <strong>Thêm tài sản</strong>.
         </td>
       </tr>
     `);
-  }
+    }
 
-  function addRow() {
-    removeEmptyState();
-    body.append(`
+    function addRow() {
+      removeEmptyState();
+      body.append(`
       <tr>
         <td data-title="Tài sản">
           <select name="tai_san_id[]" class="form-select asset-select" required>
@@ -395,49 +395,49 @@ $(function () {
       </tr>
     `);
 
-    $('.asset-select').last().trigger('change');
-  }
+      $('.asset-select').last().trigger('change');
+    }
 
-  body.on('change', '.asset-select', function () {
-    const id = $(this).val();
-    const data = assets.find(a => a.id == id);
+    body.on('change', '.asset-select', function() {
+      const id = $(this).val();
+      const data = assets.find(a => a.id == id);
 
-    const box = $(this).closest('tr').find('.asset-info-box');
-    box.find('.ts-name').text(data?.ten_tai_san ?? 'Tên tài sản');
-    box.find('.ts-ma').text(`Mã: ${data?.ma_tai_san ?? '-'}`);
-    box.find('.ts-user').text(`Sinh viên sử dụng: ${data?.nguoi_su_dung ?? 'Chưa phân bổ'}`);
-    box.find('.ts-slot').text(`Slot: ${data?.ma_slot ?? '-'}`);
-  });
+      const box = $(this).closest('tr').find('.asset-info-box');
+      box.find('.ts-name').text(data?.ten_tai_san ?? 'Tên tài sản');
+      box.find('.ts-ma').text(`Mã: ${data?.ma_tai_san ?? '-'}`);
+      box.find('.ts-user').text(`Sinh viên sử dụng: ${data?.nguoi_su_dung ?? 'Chưa phân bổ'}`);
+      box.find('.ts-slot').text(`Slot: ${data?.ma_slot ?? '-'}`);
+    });
 
-  body.on('click', '.del', function () {
-    $(this).closest('tr').remove();
-    showEmptyState();
-  });
+    body.on('click', '.del', function() {
+      $(this).closest('tr').remove();
+      showEmptyState();
+    });
 
-  function loadLoai() {
-    $.get(`/admin/lichbaotri/get-loai-tai-san`, d => {
-      assets = [];
-      $('#loai_tai_san_kho').html(`
+    function loadLoai() {
+      $.get(`/admin/lichbaotri/get-loai-tai-san`, d => {
+        assets = [];
+        $('#loai_tai_san_kho').html(`
         <option value="">-- Chọn loại tài sản --</option>
         ${d.map(i => `<option value="${i.id}">${i.ten_loai}</option>`).join('')}
           `);
-        });
-    showEmptyState();
-  }
+      });
+      showEmptyState();
+    }
 
-  function loadPhong(id) {
-    $.get(`/admin/lichbaotri/get-tai-san-phong/${id}`, d => {
-      assets = d;
-      body.html('');
-    });
-  }
+    function loadPhong(id) {
+      $.get(`/admin/lichbaotri/get-tai-san-phong/${id}`, d => {
+        assets = d;
+        body.html('');
+      });
+    }
 
-  function loadKho(id) {
-    $.get(`/admin/lichbaotri/get-tai-san-kho/${id}`, d => {
-      assets = d;
-      body.html('');
-    });
-    showEmptyState();
+    function loadKho(id) {
+      $.get(`/admin/lichbaotri/get-tai-san-kho/${id}`, d => {
+        assets = d;
+        body.html('');
+      });
+      showEmptyState();
     }
   });
 </script>
