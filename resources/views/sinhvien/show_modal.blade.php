@@ -73,7 +73,8 @@
             <div class="row mb-2">
                 @php
                     // Ưu tiên lấy phòng từ slot (nếu có), nếu không thì lấy từ phong_id trực tiếp
-                    $phongHienTai = $sinhvien->slot && $sinhvien->slot->phong ? $sinhvien->slot->phong : ($sinhvien->phong ?? null);
+                    $phongHienTai =
+                        $sinhvien->slot && $sinhvien->slot->phong ? $sinhvien->slot->phong : $sinhvien->phong ?? null;
                 @endphp
                 <div class="col-md-4"><strong>Phòng:</strong> {{ $phongHienTai->ten_phong ?? '—' }}</div>
                 <div class="col-md-4"><strong>Khu:</strong> {{ $phongHienTai->khu->ten_khu ?? '—' }}</div>

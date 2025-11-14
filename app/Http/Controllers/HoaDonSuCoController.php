@@ -121,7 +121,7 @@ class HoaDonSuCoController extends Controller
 
         // Kiểm tra quyền: sinh viên chỉ được thanh toán hóa đơn của chính mình
         if (trim(strtolower((string) Auth::user()->getRole())) === 'sinhvien') {
-            if ($suco->sinh_vien_id != Auth::user()->id) {
+            if ($suco->sinh_vien_id != Auth::user()-> id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Bạn không có quyền thanh toán hóa đơn này!'

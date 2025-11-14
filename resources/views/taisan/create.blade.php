@@ -5,31 +5,18 @@
 @section('content')
 <style>/* 🌿 Tổng thể */
 body { background:#f8fafc; }
-.page-title { font-weight:700; color:#155724; }
+.page-title { font-weight:700; color:#0c4a6e; }
 .card { border:none; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
 
 /* 🧩 Nút & form */
 .btn { border-radius:999px; }
-.btn-success { background:#198754; border:none; }
-.btn-success:hover { background:#157347; }
-
-/* 📦 Item tài sản */
-.asset-item {
-  display:flex; align-items:center; gap:12px;
-  padding:10px 14px; border:1px solid #e5e7eb; border-radius:12px;
-  background:#fff; transition:all .15s ease;
-  cursor:pointer;
-}
-.asset-item:hover { transform:translateY(-2px); box-shadow:0 2px 6px rgba(0,0,0,.05); }
-.asset-img { width:60px; height:60px; object-fit:cover; border-radius:10px; border:1px solid #e2e8f0; }
-
-/* ✅ Preview */
-.selected-item {
-  display:flex; gap:8px; align-items:center;
-  padding:6px 10px; background:#e8f5e9; border-radius:8px;
-  margin-bottom:6px; border:1px solid #d4edda;
-}
-.selected-item img { border-radius:6px; }
+.btn-success { background:#0ea5e9; border:none; }
+.btn-success:hover,
+.btn-success:focus { background:#0284c7; }
+.btn-success:focus { box-shadow:0 0 0 0.25rem rgba(14,165,233,0.35); outline:none; }
+.text-success { color:#0284c7 !important; }
+.bg-success { background-color:#0284c7 !important; border-color:#0284c7 !important; }
+.badge.bg-success { background-color:#0284c7 !important; }
 
 /* 🧭 Danh sách loại */
 #loaiList button {
@@ -37,84 +24,83 @@ body { background:#f8fafc; }
   background:transparent; border-radius:8px;
   transition:all .15s;
 }
-#loaiList button:hover { background:#e9f7ef; }
+#loaiList button:hover { background:#e0f2fe; }
 #loaiList button.active {
-  background:#198754; color:#fff; font-weight:600;
-}
-
-/* ⚙️ Debug box */
-.debug-box {
-  position:fixed; right:16px; bottom:16px;
-  width:280px; max-height:40vh; overflow:auto;
-  background:#fff; border:1px solid #dee2e6;
-  box-shadow:0 6px 18px rgba(0,0,0,.06);
-  padding:8px 12px; border-radius:10px;
-  font-size:12px; z-index:2000; color:#0f5132;
-}
-.debug-box h6 { font-size:13px; margin-bottom:4px; }
-.badge-debug {
-  display:inline-block; margin:2px 4px 2px 0;
-  padding:3px 8px; background:#f1f3f5;
-  border-radius:999px; color:#0f5132; border:1px solid #d1e7dd;
+  background:#0ea5e9; color:#fff; font-weight:600;
 }
 
 /* 🪟 Modal */
-.modal-content {
-  border-radius:14px; overflow:hidden;
-  border:none; box-shadow:0 8px 24px rgba(0,0,0,0.08);
+.modal-content{border-radius:14px;overflow:hidden;border:none;box-shadow:0 8px 24px rgba(0,0,0,0.08)}
+.modal-header{background:#0ea5e9;color:#fff}
+.asset-list-scroll{max-height:65vh;overflow-y:auto;background:#fff;border-radius:12px;padding:0.35rem;border:1px solid #e5e7eb}
+.selected-preview{max-height:65vh;overflow-y:auto;background:#fff;border-radius:12px;padding:0.5rem;border:1px solid #e5e7eb}
+.asset-item{display:grid;grid-template-columns:minmax(0,1.2fr) auto;gap:1rem;align-items:center;padding:1rem 1.15rem;border:1px solid #e5e7eb;border-radius:16px;background:#fff;box-shadow:0 10px 18px rgba(15,23,42,.04);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.asset-item:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.08)}
+.asset-item__info{display:flex;align-items:center;gap:.85rem}
+.asset-item__thumb{width:64px;height:64px;border-radius:16px;object-fit:cover;border:1px solid #e5e7eb;background:#f7fafc}
+.asset-item__name{font-weight:600;color:#111827}
+.asset-item__code{font-size:.85rem;color:#6b7280}
+.asset-item__actions{display:flex;align-items:center;justify-content:flex-end}
+.asset-toggle{display:inline-flex;align-items:center;gap:.4rem;border-radius:999px;padding:.45rem 1.05rem;border:1px solid #38bdf8;color:#0284c7;font-weight:600;background:#f0f9ff;transition:all .2s ease}
+.asset-toggle:hover{background:#0284c7;color:#fff}
+.asset-item.is-selected{border-color:#0284c7;box-shadow:0 18px 32px rgba(2,132,199,.18)}
+.asset-item.is-selected .asset-toggle{background:#0284c7;color:#fff;border-color:#0284c7;box-shadow:0 0 0 4px rgba(56,189,248,.18)}
+.asset-item.is-selected .asset-toggle:hover{opacity:.9}
+.selected-item{display:flex;align-items:center;gap:.5rem;margin-bottom:.65rem;padding:.5rem;border-radius:12px;background:#e0f2fe;border:1px solid #bae6fd}
+.selected-item img{width:40px;height:40px;object-fit:cover;border-radius:10px;border:1px solid #bae6fd}
+@media (max-width: 991.98px){
+  .asset-item{grid-template-columns:minmax(0,1fr);row-gap:.75rem}
+  .asset-item__actions{justify-content:flex-start}
 }
-.modal-header { background:#198754; color:#fff; }
-.asset-list-scroll { max-height:65vh; overflow-y:auto; background:#fff; border-radius:8px; }
-.selected-preview { max-height:65vh; overflow-y:auto; background:#fff; }
 </style>
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h3 class="page-title mb-1">🧰 Thêm tài sản vào phòng</h3>
+        <div>
+            <h3 class="page-title mb-1">🧰 Thêm tài sản vào phòng</h3>
       <p class="text-muted small mb-0">Chọn tài sản từ kho và gán vào phòng mong muốn.</p>
     </div>
     <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary"><i class="fa fa-arrow-left me-1"></i> Quay lại</a>
-  </div>
-  @if ($errors->any())
+        </div>
+    @if ($errors->any())
     <div class="alert alert-danger rounded-3 shadow-sm">
       <ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
     </div>
-  @endif
+    @endif
 
   <form id="assetForm" action="{{ route('taisan.store') }}" method="POST" class="card p-4">
-    @csrf
+        @csrf
     <h5 class="fw-semibold text-success mb-3">Thông tin gán tài sản</h5>
 
-    <div class="mb-3">
+        <div class="mb-3">
       <label class="form-label fw-semibold text-secondary">Tài sản</label><br>
       <button type="button" id="openPickerBtn" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assetPickerModal">
         <i class="fa fa-search me-1"></i> Chọn tài sản
       </button>
       <div id="selectedAssetsList" class="mt-2 small text-muted">Chưa chọn</div>
-    </div>
+        </div>
     <div class="row g-3 mt-3">
-      <div class="col-md-6">
-        <label class="form-label fw-semibold text-secondary">Phòng</label>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-secondary">Phòng</label>
         <select name="phong_id" class="form-select form-control" required>
-          <option value="">-- Chọn phòng --</option>
-          @foreach($phongs as $phong)
-            <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
-          @endforeach
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-semibold text-secondary">Tình trạng khi gán</label>
+                    <option value="">-- Chọn phòng --</option>
+                    @foreach($phongs as $phong)
+                    <option value="{{ $phong->id }}">{{ $phong->ten_phong }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold text-secondary">Tình trạng khi gán</label>
         <select name="tinh_trang" class="form-select form-control" required>
-          <option value="Bình thường">Bình thường</option>
-          <option value="Hỏng">Hỏng</option>
-          <option value="Cần bảo trì">Cần bảo trì</option>
-        </select>
-      </div>
-    </div>
-    <div class="text-end mt-4">
+                    <option value="Bình thường">Bình thường</option>
+                    <option value="Hỏng">Hỏng</option>
+                    <option value="Cần bảo trì">Cần bảo trì</option>
+                </select>
+            </div>
+        </div>
+        <div class="text-end mt-4">
       <button type="submit" class="btn btn-success px-4 py-2 shadow-sm"><i class="fa fa-save me-1"></i> Lưu tài sản</button>
-    </div>
-  </form>
+        </div>
+    </form>
 </div>
 {{-- 🧭 Modal chọn tài sản --}}
 <div class="modal fade" id="assetPickerModal" tabindex="-1" aria-hidden="true">
@@ -154,11 +140,6 @@ body { background:#f8fafc; }
       </div>
     </div>
   </div>
-</div>
-{{-- 🧩 Debug box --}}
-<div class="debug-box" id="debugBox" aria-live="polite">
-  <h6>Debug</h6>
-  <div id="debugContent"><span class="badge-debug">Init</span></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -207,12 +188,12 @@ body { background:#f8fafc; }
       debug('Required DOM nodes found');
     } catch (err) {
       debug('Waiting for DOM failed:', err.message);
-      return;
-   }
+            return;
+        }
     // confirmBtn exists?
     if (!confirmBtn) {
       debug('confirmSelection element not found — abort');
-      return;
+            return;
    }
     // Avoid double-binding: mark when we've bound
     if (confirmBtn.dataset.bound === '1') {
@@ -236,26 +217,41 @@ body { background:#f8fafc; }
     const relatedBase = "{{ url('admin/taisan/related') }}";
     const selectedAssets = new Map();
 
-    // If asset list exists, ensure checkboxes delegate works (delegation on listTaiSan)
+    function updateAssetItemState(container, active) {
+      if (!container) return;
+      container.classList.toggle('is-selected', active);
+      const btn = container.querySelector('.asset-toggle');
+      if (!btn) return;
+      const label = btn.querySelector('.asset-toggle__label');
+      if (label) {
+        label.textContent = active ? 'Bỏ chọn' : 'Chọn';
+      }
+    }
+    function upsertSelected(id, payload) {
+      if (selectedAssets.has(id)) {
+        selectedAssets.delete(id);
+      } else {
+        selectedAssets.set(id, payload);
+      }
+    }
     if (listTaiSan) {
-      listTaiSan.addEventListener('change', (e) => {
-        const target = e.target;
-        if (!target) return;
-        if (target.matches('input[type="checkbox"]')) {
-          const id = target.value;
-          const label = target.closest('.asset-item')?.querySelector('label')?.innerText || id;
-          // minimal item representation
-          if (target.checked) {
-            selectedAssets.set(id, { id: id, ten_tai_san: label.trim(), hinh_anh: target.closest('.asset-item')?.querySelector('img')?.src });
-            debug('checked', id);
-          } else {
-            selectedAssets.delete(id);
-            debug('unchecked', id);
-          }
-          renderPreview();
-        }
+      listTaiSan.addEventListener('click', (e) => {
+        const btn = e.target.closest('.asset-toggle');
+        if (!btn) return;
+        const item = btn.closest('.asset-item');
+        const id = String(btn.dataset.id || '');
+        if (!id) return;
+        const payload = {
+          id,
+          ten_tai_san: btn.dataset.name || id,
+          hinh_anh: btn.dataset.img || undefined
+        };
+        upsertSelected(id, payload);
+        updateAssetItemState(item, selectedAssets.has(id));
+        renderPreview();
       });
-   }    // render preview helper
+    }
+    // render preview helper
     function renderPreview() {
       if (!selectedPreview || !countSelected) return;
       selectedPreview.innerHTML = '';
@@ -277,7 +273,7 @@ body { background:#f8fafc; }
       clearAllBtn.addEventListener('click', (ev) => {
         ev.preventDefault();
         selectedAssets.clear();
-        document.querySelectorAll('#list_taisan input[type="checkbox"]').forEach(chk => chk.checked = false);
+        listTaiSan?.querySelectorAll('.asset-item').forEach(item => updateAssetItemState(item, false));
         renderPreview();
         debug('Cleared all selections');
       });
@@ -350,13 +346,31 @@ body { background:#f8fafc; }
             }
             data.forEach(item => {
               const div = document.createElement('div');
-              div.className = 'asset-item mb-2';
-              const checked = selectedAssets.has(String(item.id)) ? 'checked' : '';
+              div.className = 'asset-item mb-3';
+              const id = String(item.id);
+              const isSelected = selectedAssets.has(id);
+              const img = item.hinh_anh || 'https://via.placeholder.com/96';
+              const code = item.ma_tai_san || `TS-${item.id}`;
               div.innerHTML = `
-                <input class="form-check-input" type="checkbox" value="${item.id}" id="ts_${item.id}" ${checked}>
-                <img src="${item.hinh_anh || 'https://via.placeholder.com/70'}" class="asset-img">
-                <label for="ts_${item.id}"><strong>${item.ma_tai_san ?? '---'}</strong> - ${item.ten_tai_san}</label>`;
+                <div class="asset-item__info">
+                  <img src="${img}" alt="${item.ten_tai_san}" class="asset-item__thumb">
+                  <div>
+                    <div class="asset-item__name">${item.ten_tai_san}</div>
+                    <div class="asset-item__code">Mã: ${code}</div>
+                  </div>
+                </div>
+                <div class="asset-item__actions">
+                  <button type="button" class="asset-toggle" data-id="${id}">
+                    <span class="asset-toggle__label">${isSelected ? 'Bỏ chọn' : 'Chọn'}</span>
+                  </button>
+                </div>`;
               listTaiSan.appendChild(div);
+              const toggleBtn = div.querySelector('.asset-toggle');
+              if (toggleBtn) {
+                toggleBtn.dataset.name = item.ten_tai_san || '';
+                toggleBtn.dataset.img = img;
+              }
+              updateAssetItemState(div, isSelected);
             });
             debug('Assets rendered for loai', loaiId);
           } catch (err) {

@@ -38,6 +38,10 @@
       font-size: .8rem
     }
 
+    .btn-dergin--muted {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
+    }
+
     .btn-dergin--info {
       background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
     }
@@ -99,32 +103,85 @@
       border-bottom-right-radius: 16px
     }
 
-    .lich-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
+    .action-cell {
+      position: relative;
+      text-align: right;
       white-space: nowrap;
     }
 
-    .lich-actions .btn-action {
-      width: auto;
-      height: 36px;
+    .action-menu {
       display: inline-flex;
+      justify-content: flex-end;
+    }
+
+    .action-menu.dropdown {
+      position: relative;
+    }
+
+    .action-menu .action-gear {
+      min-width: 40px;
+      padding: .45rem .7rem;
+      border-radius: 999px;
+    }
+
+    .action-menu .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 50% !important;
+      right: 110%;
+      left: auto;
+      transform: translateY(-50%);
+      z-index: 1050;
+      min-width: 190px;
+      border-radius: 16px;
+      padding: .4rem 0;
+      margin: 0;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+      font-size: .82rem;
+      background: #fff;
+    }
+
+    .action-menu .dropdown-menu.show {
+      display: block;
+    }
+
+    .action-menu .dropdown-item {
+      display: flex;
       align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      font-size: 14px;
-      margin: 0
+      gap: .55rem;
+      padding: .42rem .9rem;
+      color: #4b5563;
+      font-weight: 600;
     }
 
-    .lich-actions .btn-dergin {
-      min-width: 92px
+    .action-menu .dropdown-item i {
+      width: 16px;
+      text-align: center;
+      font-size: .82rem;
     }
 
-    .lich-actions .btn-dergin span {
-      line-height: 1;
-      white-space: nowrap
+    .action-menu .dropdown-item:hover {
+      background: #eef2ff;
+      color: #111827;
+    }
+
+    .action-menu .dropdown-item.text-danger {
+      color: #dc2626;
+    }
+
+    .action-menu .dropdown-item.text-danger:hover {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .action-menu .dropdown-item.text-success {
+      color: #15803d;
+    }
+
+    .action-menu .dropdown-item.text-success:hover {
+      background: #dcfce7;
+      color: #166534;
     }
 
     /* 🎨 Form lọc */
@@ -155,11 +212,13 @@
   @endpush
 
 
-  <h4 class="page-title mb-0">🛠️ Danh sách lịch bảo trì</h4>
+  <h4 class="page-title mb-0"> Danh sách lịch bảo trì</h4>
+  <p class="text-muted mb-0">Theo dõi và tổ chức lịch bảo trì tài sản.</p>
+<div class="mb-4">
   <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
     <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
   </a>
-
+</div>
 
   {{-- 🟢 Thông báo --}}
   @if(session('success'))
@@ -169,7 +228,56 @@
   <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
-  {{-- 📊 Thống kê số tài sản bảo trì --}}
+
+
+
+
+
+  {{-- 🎯 Bộ lọc khác --}}
+  <div class="filter-card mb-4">
+    <form method="GET" action="{{ route('lichbaotri.index') }}" class="row g-3 align-items-end">
+      {{-- Giữ lại tháng/năm từ bộ lọc trên --}}
+      @if(request('month'))
+      <input type="hidden" name="month" value="{{ request('month') }}">
+      @endif
+      @if(request('year'))
+      <input type="hidden" name="year" value="{{ request('year') }}">
+      @endif
+
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa fa-circle-check text-primary"></i> Trạng thái</label>
+        <select name="trang_thai" class="form-select form-control">
+          <option value="">-- Tất cả --</option>
+          <option value="Chờ bảo trì" {{ request('trang_thai') == 'Chờ bảo trì' ? 'selected' : '' }}>Chờ bảo trì</option>
+          <option value="Đang bảo trì" {{ request('trang_thai') == 'Đang bảo trì' ? 'selected' : '' }}>Đang bảo trì</option>
+          <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa fa-calendar text-primary"></i> Ngày bảo trì</label>
+        <input type="date" name="ngay_bao_tri" value="{{ request('ngay_bao_tri') }}" class="form-control">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label"><i class="fa fa-location-dot text-primary"></i> Vị trí</label>
+        <select name="vi_tri" class="form-select form-control">
+          <option value="">-- Tất cả --</option>
+          <option value="phong" {{ request('vi_tri') == 'phong' ? 'selected' : '' }}>Phòng</option>
+          <option value="kho" {{ request('vi_tri') == 'kho' ? 'selected' : '' }}>Kho</option>
+        </select>
+      </div>
+
+      <div class="col-md-3 d-flex gap-2 filter-btns">
+        <button type="submit" class="btn btn-success flex-fill">
+          <i class="fa fa-filter"></i> Lọc
+        </button>
+        <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
+          <i class="fa fa-rotate-left"></i> Đặt lại
+        </a>
+      </div>
+    </form>
+  </div>
   <div class="row mb-4">
     <div class="col-md-3">
       <div class="card shadow-sm border-start border-warning border-4">
@@ -232,55 +340,6 @@
       </div>
     </div>
   </div>
-
-
-
-  {{-- 🎯 Bộ lọc khác --}}
-  <div class="filter-card mb-4">
-    <form method="GET" action="{{ route('lichbaotri.index') }}" class="row g-3 align-items-end">
-      {{-- Giữ lại tháng/năm từ bộ lọc trên --}}
-      @if(request('month'))
-      <input type="hidden" name="month" value="{{ request('month') }}">
-      @endif
-      @if(request('year'))
-      <input type="hidden" name="year" value="{{ request('year') }}">
-      @endif
-
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-circle-check text-primary"></i> Trạng thái</label>
-        <select name="trang_thai" class="form-select form-control">
-          <option value="">-- Tất cả --</option>
-          <option value="Chờ bảo trì" {{ request('trang_thai') == 'Chờ bảo trì' ? 'selected' : '' }}>Chờ bảo trì</option>
-          <option value="Đang bảo trì" {{ request('trang_thai') == 'Đang bảo trì' ? 'selected' : '' }}>Đang bảo trì</option>
-          <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
-        </select>
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-calendar text-primary"></i> Ngày bảo trì</label>
-        <input type="date" name="ngay_bao_tri" value="{{ request('ngay_bao_tri') }}" class="form-control">
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-location-dot text-primary"></i> Vị trí</label>
-        <select name="vi_tri" class="form-select form-control">
-          <option value="">-- Tất cả --</option>
-          <option value="phong" {{ request('vi_tri') == 'phong' ? 'selected' : '' }}>Phòng</option>
-          <option value="kho" {{ request('vi_tri') == 'kho' ? 'selected' : '' }}>Kho</option>
-        </select>
-      </div>
-
-      <div class="col-md-3 d-flex gap-2 filter-btns">
-        <button type="submit" class="btn btn-success flex-fill">
-          <i class="fa fa-filter"></i> Lọc
-        </button>
-        <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
-          <i class="fa fa-rotate-left"></i> Đặt lại
-        </a>
-      </div>
-    </form>
-  </div>
-
   {{-- 🧾 Bảng danh sách --}}
   <div class="listing-table-wrapper">
     <div class="table-responsive">
@@ -355,45 +414,54 @@
 
 
             {{-- 🔧 Hành động --}}
-            <td class="text-end">
-              <div class="lich-actions">
-                <button type="button"
-                  class="btn-dergin btn-dergin--info btn-action"
-                  title="Xem chi tiết"
-                  data-toggle="modal"
-                  data-target="#xemChiTietModal"
-                  data-id="{{ $l->id }}">
-                  <i class="fa fa-eye"></i><span>Xem</span>
+            <td class="text-end action-cell">
+              <div class="action-menu dropdown position-relative">
+                <button type="button" class="btn btn-dergin btn-dergin--muted action-gear" title="Tác vụ">
+                  <i class="fa fa-gear"></i>
                 </button>
-
-                <a href="{{ route('lichbaotri.edit', $l->id) }}"
-                  class="btn-dergin btn-action"
-                  title="Sửa">
-                  <i class="fa fa-pencil"></i><span>Sửa</span>
-                </a>
-
-                <form action="{{ route('lichbaotri.destroy', $l->id) }}"
-                  method="POST"
-                  class="d-inline"
-                  onsubmit="return confirm('Bạn có chắc muốn xóa lịch này không?');">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" class="btn-dergin btn-dergin--danger btn-action" title="Xóa">
-                    <i class="fa fa-trash"></i><span>Xóa</span>
-                  </button>
-                </form>
-
-                @if($l->trang_thai != 'Hoàn thành')
-                <button type="button"
-                  class="btn-dergin btn-dergin--success btn-action"
-                  title="Hoàn thành"
-                  data-toggle="modal"
-                  data-target="#hoanThanhModal"
-                  data-id="{{ $l->id }}">
-                  <i class="fa fa-check"></i><span>Hoàn thành</span>
-                </button>
-                @endif
+                <ul class="dropdown-menu">
+                  <li>
+                    <button type="button"
+                      class="dropdown-item"
+                      data-toggle="modal"
+                      data-target="#xemChiTietModal"
+                      data-id="{{ $l->id }}">
+                      <i class="fa fa-eye text-info"></i>
+                      <span>Xem</span>
+                    </button>
+                  </li>
+                  <li>
+                    <a href="{{ route('lichbaotri.edit', $l->id) }}" class="dropdown-item">
+                      <i class="fa fa-pencil text-primary"></i>
+                      <span>Sửa</span>
+                    </a>
+                  </li>
+                  <li>
+                    <button type="button"
+                      class="dropdown-item text-danger btn-delete-lich"
+                      data-form-id="delete-lich-{{ $l->id }}">
+                      <i class="fa fa-trash"></i>
+                      <span>Xóa</span>
+                    </button>
+                  </li>
+                  @if($l->trang_thai != 'Hoàn thành')
+                  <li>
+                    <button type="button"
+                      class="dropdown-item text-success"
+                      data-toggle="modal"
+                      data-target="#hoanThanhModal"
+                      data-id="{{ $l->id }}">
+                      <i class="fa fa-check"></i>
+                      <span>Hoàn thành</span>
+                    </button>
+                  </li>
+                  @endif
+                </ul>
               </div>
+              <form id="delete-lich-{{ $l->id }}" action="{{ route('lichbaotri.destroy', $l->id) }}" method="POST" class="d-none">
+                @csrf
+                @method('DELETE')
+              </form>
             </td>
           </tr>
           @empty
@@ -482,6 +550,45 @@
 @push('scripts')
 <script>
   $(function() {
+    $(document).on('click', function(e) {
+      const $target = $(e.target);
+      const $gear = $target.closest('.action-gear');
+
+      if ($gear.length) {
+        e.preventDefault();
+        const $wrapper = $gear.closest('.action-menu');
+        const $menu = $wrapper.find('.dropdown-menu').first();
+        const isOpen = $menu.hasClass('show');
+        $('.action-menu .dropdown-menu').removeClass('show');
+        if (!isOpen) {
+          $menu.addClass('show');
+        }
+        return;
+      }
+
+      if (!$target.closest('.action-menu .dropdown-menu').length) {
+        $('.action-menu .dropdown-menu').removeClass('show');
+      }
+    });
+
+    $(document).on('click', '.action-menu .dropdown-item', function() {
+      $('.action-menu .dropdown-menu').removeClass('show');
+    });
+
+    $(document).on('click', '.btn-delete-lich', function(e) {
+      e.preventDefault();
+      const formId = $(this).data('form-id');
+      if (!formId) {
+        return;
+      }
+      if (confirm('Bạn có chắc muốn xóa lịch này không?')) {
+        const form = document.getElementById(formId);
+        if (form) {
+          form.submit();
+        }
+      }
+    });
+
     // 🟢 Modal Hoàn thành (Bootstrap 4 - jQuery events)
     $('#hoanThanhModal').on('show.bs.modal', function(event) {
       var button = $(event.relatedTarget);

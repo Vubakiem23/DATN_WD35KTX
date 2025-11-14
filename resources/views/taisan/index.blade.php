@@ -6,7 +6,8 @@
 <div class="container mt-4">
 
 
-  <h3 class="asset-page__title mb-0">🏢 Quản lý tài sản phòng</h3>
+  <h3 class="asset-page__title mb-0">Quản lý tài sản phòng</h3>
+  <p class="text-muted mb-0">Theo dõi và tổ chức tài sản trong các phòng.</p>
   <div class="mb-4">
     <a href="{{ route('taisan.create') }}" class="btn btn-dergin btn-dergin--info">
       <i class="fa fa-plus"></i><span>Thêm tài sản vào phòng "Tùy Chọn"</span>
@@ -19,7 +20,7 @@
       <div class="col-md-4">
         <label class="form-label"><i class="fa fa-magnifying-glass text-primary"></i> Tìm kiếm</label>
         <input type="text" name="search" value="{{ request('search') }}" class="form-control"
-          placeholder="Nhập mã hoặc tên tài sản...">
+               placeholder="Nhập mã hoặc tên tài sản...">
       </div>
 
       <div class="col-md-3">
@@ -27,9 +28,9 @@
         <select name="phong_id" class="form-select form-control">
           <option value="">-- Tất cả phòng --</option>
           @foreach($phongs as $phong)
-          <option value="{{ $phong->id }}" {{ request('phong_id') == $phong->id ? 'selected' : '' }}>
-            {{ $phong->ten_phong }}
-          </option>
+            <option value="{{ $phong->id }}" {{ request('phong_id') == $phong->id ? 'selected' : '' }}>
+              {{ $phong->ten_phong }}
+            </option>
           @endforeach
         </select>
       </div>
@@ -50,9 +51,9 @@
           <i class="fa fa-filter"></i> Lọc
         </button>
         @if(request('search') || request('phong_id') || request('tinh_trang'))
-        <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary flex-fill">
-          <i class="fa fa-rotate-left"></i> Đặt lại
-        </a>
+          <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary flex-fill">
+            <i class="fa fa-rotate-left"></i> Đặt lại
+          </a>
         @endif
       </div>
     </form>
@@ -60,13 +61,13 @@
 
   {{-- 🔔 Thông báo --}}
   @if(session('success'))
-  <div class="alert alert-success">{{ session('success') }}</div>
+    <div class="alert alert-success">{{ session('success') }}</div>
   @endif
   @if(session('error'))
-  <div class="alert alert-danger">{{ session('error') }}</div>
+    <div class="alert alert-danger">{{ session('error') }}</div>
   @endif
 
-  <h4 class="mb-2">📋 Danh sách tài sản</h4>
+  <h4 class="mb-2"> Danh sách tài sản</h4>
 
   {{-- 🧱 Bảng hiển thị --}}
   <div class="asset-table-wrapper">
@@ -100,7 +101,7 @@
               @else
               <div class="asset-thumb mx-auto bg-light text-muted d-flex align-items-center justify-content-center">
                 <small class="small">Không ảnh</small>
-              </div>
+                </div>
               @endif
             </td>
 
@@ -109,12 +110,12 @@
             <td>{{ $item->phong->ten_phong ?? 'Chưa gán' }}</td>
             <td>
               @php
-              $sinhViens = $item->slots->pluck('sinhVien.ho_ten')->filter()->unique();
+                $sinhViens = $item->slots->pluck('sinhVien.ho_ten')->filter()->unique();
               @endphp
               @if($sinhViens->isNotEmpty())
-              {{ $sinhViens->implode(', ') }}
+                {{ $sinhViens->implode(', ') }}
               @else
-              <span class="text-muted">Chưa có</span>
+                <span class="text-muted">Chưa có</span>
               @endif
             </td>
 
@@ -143,37 +144,50 @@
             <td>{{ $item->ghi_chu ?? '-' }}</td>
 
             {{-- Hành động --}}
-            <td class="action-cell">
-              <a href="{{ route('taisan.edit', $item->id) }}" class="btn btn-dergin" title="Sửa">
-                <i class="fa fa-pencil"></i><span>Sửa</span>
-              </a>
-
-              {{-- Ẩn nút bảo trì nếu tài sản đang trong trạng thái "Đang bảo trì" --}}
-              @if($item->tinh_trang_hien_tai !== 'Đang bảo trì')
-              <a href="{{ route('lichbaotri.create', ['taisan_id' => $item->id]) }}"
-  class="btn btn-dergin btn-dergin--muted" title="Lên lịch bảo trì">
-  <i class="fa fa-calendar"></i><span>Bảo trì</span>
-</a>
-
-              @endif
-
-
-              <button type="button" class="btn btn-dergin btn-dergin--info btn-xemchitiet"
-                data-id="{{ $item->id }}"
-                data-url="{{ route('taisan.showModal', $item->id) }}"
-                data-bs-toggle="modal" data-bs-target="#modalTaiSan"
-                data-toggle="modal" data-target="#modalTaiSan"
-                title="Xem chi tiết">
-                <i class="fa fa-eye"></i><span>Chi tiết</span>
+            <td class="action-cell text-end">
+              <div class="action-menu dropdown position-relative">
+                <button type="button" class="btn btn-dergin btn-dergin--muted action-gear">
+                  <i class="fa fa-gear"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{{ route('taisan.edit', $item->id) }}" class="dropdown-item">
+                      <i class="fa fa-pencil text-primary"></i>
+                      <span>Sửa</span>
+                    </a>
+                  </li>
+                  @if($item->tinh_trang_hien_tai !== 'Đang bảo trì')
+                  <li>
+                    <a href="{{ route('lichbaotri.create', ['taisan_id' => $item->id]) }}" class="dropdown-item">
+                      <i class="fa fa-calendar text-primary"></i>
+                      <span>Bảo trì</span>
+                    </a>
+                  </li>
+                  @endif
+                  <li>
+                    <button type="button"
+                      class="dropdown-item btn-xemchitiet"
+                      data-id="{{ $item->id }}"
+                      data-url="{{ route('taisan.showModal', $item->id) }}"
+                      data-bs-toggle="modal" data-bs-target="#modalTaiSan"
+                      data-toggle="modal" data-target="#modalTaiSan">
+                      <i class="fa fa-eye text-info"></i>
+                      <span>Chi tiết</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button"
+                      class="dropdown-item text-danger btn-delete-taisan"
+                      data-form-id="delete-taisan-{{ $item->id }}">
+                      <i class="fa fa-trash"></i>
+                      <span>Xóa</span>
               </button>
-
-              <form action="{{ route('taisan.destroy', $item->id) }}" method="POST" class="d-inline"
-                onsubmit="return confirm('Xóa tài sản này khỏi phòng?');">
+                  </li>
+                </ul>
+              </div>
+              <form id="delete-taisan-{{ $item->id }}" action="{{ route('taisan.destroy', $item->id) }}" method="POST" class="d-none">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-dergin btn-dergin--danger" title="Xóa">
-                  <i class="fa fa-trash"></i><span>Xóa</span>
-                </button>
               </form>
             </td>
           </tr>
@@ -333,28 +347,84 @@
   }
 
   .action-cell {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: .5rem;
+    position: relative;
+    text-align: right;
     white-space: nowrap;
   }
 
-  .action-cell form {
-    margin: 0
+  .action-menu {
+    display: inline-flex;
+    justify-content: flex-end;
   }
 
-  .action-cell .btn {
-    line-height: 1
+  .action-menu.dropdown {
+    position: relative;
   }
 
-  .action-cell .btn-dergin {
-    min-width: 92px
+  .action-menu .action-gear {
+    min-width: 40px;
+    padding: .45rem .7rem;
+    border-radius: 999px;
   }
 
-  .action-cell .btn-dergin span {
-    line-height: 1;
-    white-space: nowrap
+  .action-menu .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 50% !important;
+    right: 110%;
+    left: auto;
+    transform: translateY(-50%);
+    z-index: 1050;
+    min-width: 190px;
+    border-radius: 16px;
+    padding: .4rem 0;
+    margin: 0;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+    font-size: .82rem;
+    background: #fff;
+  }
+
+  .action-menu .dropdown-menu.show {
+    display: block;
+  }
+
+  .action-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .42rem .9rem;
+    color: #4b5563;
+    font-weight: 600;
+  }
+
+  .action-menu .dropdown-item i {
+    width: 16px;
+    text-align: center;
+    font-size: .82rem;
+  }
+
+  .action-menu .dropdown-item:hover {
+    background: #eef2ff;
+    color: #111827;
+  }
+
+  .action-menu .dropdown-item.text-danger {
+    color: #dc2626;
+  }
+
+  .action-menu .dropdown-item.text-danger:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .action-menu .dropdown-item.text-success {
+    color: #15803d;
+  }
+
+  .action-menu .dropdown-item.text-success:hover {
+    background: #dcfce7;
+    color: #166534;
   }
 
   .filter-card {
@@ -386,6 +456,45 @@
 @push('scripts')
 <script>
   $(function() {
+    $(document).on('click', function(e) {
+      const $target = $(e.target);
+      const $gear = $target.closest('.action-gear');
+
+      if ($gear.length) {
+        e.preventDefault();
+        const $wrapper = $gear.closest('.action-menu');
+        const $menu = $wrapper.find('.dropdown-menu').first();
+        const isOpen = $menu.hasClass('show');
+        $('.action-menu .dropdown-menu').removeClass('show');
+        if (!isOpen) {
+          $menu.addClass('show');
+        }
+        return;
+      }
+
+      if (!$target.closest('.action-menu .dropdown-menu').length) {
+        $('.action-menu .dropdown-menu').removeClass('show');
+      }
+    });
+
+    $(document).on('click', '.action-menu .dropdown-item', function() {
+      $('.action-menu .dropdown-menu').removeClass('show');
+    });
+
+    $(document).on('click', '.btn-delete-taisan', function(e) {
+      e.preventDefault();
+      const formId = $(this).data('form-id');
+      if (!formId) {
+        return;
+      }
+      if (confirm('Xóa tài sản này khỏi phòng?')) {
+        const form = document.getElementById(formId);
+        if (form) {
+          form.submit();
+        }
+      }
+    });
+
     // Dùng ủy quyền sự kiện để đảm bảo luôn bắt được click
     $(document).on('click', '.btn-xemchitiet', function() {
       let id = $(this).data('id');
@@ -400,7 +509,7 @@
           modal.modal('show');
         }
       } catch (e) {
-        modal.modal('show');
+      modal.modal('show');
       }
       modal.find('.modal-body').html(`
         <div class="text-center py-4">

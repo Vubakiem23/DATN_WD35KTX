@@ -42,22 +42,64 @@
     .filter-card .btn {
       border-radius: 10px;
     }
-    .loai-actions{
-      display:flex;
-      justify-content:flex-end;
-      align-items:center;
-      gap:6px;
+    .action-cell{
+      position:relative;
+      text-align:right;
       white-space:nowrap;
     }
-    .loai-actions .btn-action{width:auto;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;margin:0}
-    .loai-actions .btn-action i{font-size:14px}
-    .loai-actions .btn-dergin{min-width:92px}
-    .loai-actions .btn-dergin span{line-height:1;white-space:nowrap}
+    .action-menu{
+      display:inline-flex;
+      justify-content:flex-end;
+    }
+    .action-menu.dropdown{position:relative;}
+    .action-menu .action-gear{
+      min-width:40px;
+      padding:.45rem .7rem;
+      border-radius:999px;
+    }
+    .action-menu .dropdown-menu{
+      display:none;
+      position:absolute;
+      top:50% !important;
+      right:110%;
+      left:auto;
+      transform:translateY(-50%);
+      z-index:1050;
+      min-width:190px;
+      border-radius:16px;
+      padding:.4rem 0;
+      margin:0;
+      border:1px solid #e5e7eb;
+      box-shadow:0 16px 40px rgba(15,23,42,.18);
+      font-size:.82rem;
+      background:#fff;
+    }
+    .action-menu .dropdown-menu.show{display:block;}
+    .action-menu .dropdown-item{
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.42rem .9rem;
+      color:#4b5563;
+      font-weight:600;
+    }
+    .action-menu .dropdown-item i{
+      width:16px;
+      text-align:center;
+      font-size:.82rem;
+    }
+    .action-menu .dropdown-item:hover{
+      background:#eef2ff;
+      color:#111827;
+    }
+    .action-menu .dropdown-item.text-danger{color:#dc2626;}
+    .action-menu .dropdown-item.text-danger:hover{background:#fee2e2;color:#b91c1c;}
   </style>
   @endpush
 
 
-    <h4 class="page-title mb-0">📋 Danh sách loại tài sản</h4>
+    <h4 class="page-title mb-0"> Danh sách loại tài sản</h4>
+    <p class="text-muted mb-0">Theo dõi và tổ chức loại tài sản.</p>
     
   
 
@@ -124,21 +166,31 @@
             <td>{{ $loai->created_at->format('d/m/Y') }}</td>
 
             {{-- 🎯 Nút hành động --}}
-            <td class="text-end loai-actions">
-              <a href="{{ route('loaitaisan.edit', $loai->id) }}" 
-                 class="btn-dergin btn-action" 
-                 title="Sửa">
-                <i class="fa fa-pencil"></i><span>Sửa</span>
-              </a>
-
-              <form action="{{ route('loaitaisan.destroy', $loai->id) }}" 
-                    method="POST" class="d-inline"
-                    onsubmit="return confirm('Bạn có chắc muốn xóa loại tài sản này không?');">
+            <td class="text-end action-cell">
+              <div class="action-menu dropdown position-relative">
+                <button type="button" class="btn btn-dergin btn-dergin--muted action-gear" title="Tác vụ">
+                  <i class="fa fa-gear"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{{ route('loaitaisan.edit', $loai->id) }}" class="dropdown-item">
+                      <i class="fa fa-pencil text-primary"></i>
+                      <span>Sửa</span>
+                    </a>
+                  </li>
+                  <li>
+                    <button type="button"
+                      class="dropdown-item text-danger btn-delete-loai"
+                      data-form-id="delete-loai-{{ $loai->id }}">
+                      <i class="fa fa-trash"></i>
+                      <span>Xóa</span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              <form id="delete-loai-{{ $loai->id }}" action="{{ route('loaitaisan.destroy', $loai->id) }}" method="POST" class="d-none">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn-dergin btn-dergin--muted btn-action" title="Xóa">
-                  <i class="fa fa-trash"></i><span>Xóa</span>
-                </button>
               </form>
             </td>
           </tr>
@@ -157,4 +209,48 @@
     {{ $loais->links('pagination::bootstrap-5') }}
   </div>
 </div>
+@push('scripts')
+<script>
+  $(function() {
+    $(document).on('click', function(e) {
+      const $target = $(e.target);
+      const $gear = $target.closest('.action-gear');
+
+      if ($gear.length) {
+        e.preventDefault();
+        const $wrapper = $gear.closest('.action-menu');
+        const $menu = $wrapper.find('.dropdown-menu').first();
+        const isOpen = $menu.hasClass('show');
+        $('.action-menu .dropdown-menu').removeClass('show');
+        if (!isOpen) {
+          $menu.addClass('show');
+        }
+        return;
+      }
+
+      if (!$target.closest('.action-menu .dropdown-menu').length) {
+        $('.action-menu .dropdown-menu').removeClass('show');
+      }
+    });
+
+    $(document).on('click', '.action-menu .dropdown-item', function() {
+      $('.action-menu .dropdown-menu').removeClass('show');
+    });
+
+    $(document).on('click', '.btn-delete-loai', function(e) {
+      e.preventDefault();
+      const formId = $(this).data('form-id');
+      if (!formId) {
+        return;
+      }
+      if (confirm('Bạn có chắc muốn xóa loại tài sản này không?')) {
+        const form = document.getElementById(formId);
+        if (form) {
+          form.submit();
+        }
+      }
+    });
+  });
+</script>
+@endpush
 @endsection

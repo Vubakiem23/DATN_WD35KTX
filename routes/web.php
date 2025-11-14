@@ -198,6 +198,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('khu', KhuController::class)->except(['edit', 'update', 'destroy']);
     // ---------------- HÓA ĐƠN ----------------
     Route::prefix('hoadon')->group(function () {
+
         Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
         Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
         Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
@@ -210,6 +211,22 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
         Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
     });
+
+    Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
+    Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
+    Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
+    Route::get('/hoadon/export', [HoaDonController::class, 'export'])->name('hoadon.export');
+    Route::get('/hoadon/lichsu', [HoaDonController::class, 'lichSu'])->name('hoadon.lichsu');
+    Route::get('/hoadon/{id}', [HoaDonController::class, 'show'])->name('hoadon.show');
+    Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
+    Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
+    // Cập nhật nhanh đơn giá điện/nước (AJAX)
+    Route::post('/hoadon/{id}/quick-update', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
+    Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
+    Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
+     Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+});
+
     Route::post('/hoadon/gui-email-hang-loat', [HoaDonController::class, 'guiEmailHangLoat'])->name('hoadon.guiemailhangloat');
     Route::get('/testmailpit', [HoaDonController::class, 'testMail']);
     Route::get('/sendemailphong/{phong_id}', [HoaDonController::class, 'guiEmailTheoPhong']);
@@ -339,4 +356,8 @@ Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
 // =================== IMPORT ADMIN EXTRA ===================
 
+
 require __DIR__ . '/admin.php';
+
+
+

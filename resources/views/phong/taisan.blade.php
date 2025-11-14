@@ -40,11 +40,9 @@
     $roomAssetCount = $roomAssets->count();
     $slotCount = $slots->count();
     $warehouseAssetCount = $warehouseAssets->count();
-    $totalSlotAssetQuantity = $slots->reduce(function ($carry, $slot) {
-      return $carry + $slot->taiSans->sum(function ($item) {
-        return (int) optional($item->pivot)->so_luong;
-      });
-    }, 0);
+    $totalCommonAssetQuantity = $totalCommonAssetQuantity ?? 0;
+    $totalSlotAssetQuantity = $totalSlotAssetQuantity ?? 0;
+    $totalRoomInventoryQuantity = $totalRoomInventoryQuantity ?? ($totalCommonAssetQuantity + $totalSlotAssetQuantity);
   @endphp
 
   <div class="row g-4 page-grid-top">
@@ -122,7 +120,7 @@
                 class="asset-filter"
                 data-role="room-asset-filter"
                 data-total-rows="{{ $roomAssets->count() }}"
-                data-total-quantity="{{ $totalRoomAssetQuantity }}"
+                data-total-quantity="{{ $totalCommonAssetQuantity }}"
               >
                 <div class="asset-filter__menu" role="tablist">
                   <button
@@ -147,7 +145,7 @@
                   @endforeach
                 </div>
                 <div class="asset-filter__summary">
-                  <span data-filter-summary>Đang hiển thị {{ $roomAssets->count() }} dòng · Tổng số lượng: {{ $totalRoomAssetQuantity }}</span>
+                  <span data-filter-summary>Đang hiển thị {{ $roomAssets->count() }} dòng · Tổng số lượng: {{ $totalCommonAssetQuantity }}</span>
                 </div>
               </div>
             @endif
@@ -159,7 +157,6 @@
                     <th>Ảnh</th>
                     <th>Mã tài sản</th>
                     <th>Tên tài sản</th>
-                    <th>Số lượng</th>
                     <th>Tình trạng chuẩn</th>
                     <th>Hiện tại</th>
                     <th>Ghi chú</th>
@@ -171,7 +168,7 @@
                     <tr
                       data-filter-key="{{ $asset->filter_key }}"
                       data-filter-label="{{ $asset->filter_label }}"
-                      data-row-quantity="{{ (int) ($asset->remaining_qty ?? 0) }}"
+                      data-row-quantity="{{ (int) ($asset->available_quantity ?? 0) }}"
                     >
                       @php
                         $assetName = $asset->ten_tai_san ?? optional($asset->khoTaiSan)->ten_tai_san ?? $asset->filter_label;
@@ -190,7 +187,6 @@
                       </td>
                       <td>{{ $asset->khoTaiSan->ma_tai_san ?? '—' }}</td>
                       <td class="fw-semibold">{{ $asset->filter_label }}</td>
-                      <td><span class="badge badge-soft-teal">{{ $asset->remaining_qty ?? 0 }}</span></td>
                       <td>{{ $asset->tinh_trang ?? 'Không rõ' }}</td>
                       <td>
                         @php
@@ -473,13 +469,13 @@
             </div>
             <div class="stat-pill">
               <span class="stat-pill__label">Số lượng hiện hữu</span>
-              <span class="stat-pill__value">{{ number_format($totalRoomAssetQuantity) }}</span>
-              <span class="stat-pill__hint">Món được cấp chung phòng</span>
+              <span class="stat-pill__value">{{ number_format($totalRoomInventoryQuantity) }}</span>
+              <span class="stat-pill__hint">Món trong phòng (chung + slots)</span>
             </div>
             <div class="stat-pill">
-              <span class="stat-pill__label">Slot đã bàn giao</span>
-              <span class="stat-pill__value">{{ number_format($slotCount) }}</span>
-              <span class="stat-pill__hint">{{ number_format($totalSlotAssetQuantity) }} món tại slot</span>
+              <span class="stat-pill__label">Tài sản đã bàn giao cho slots</span>
+              <span class="stat-pill__value">{{ number_format($totalSlotAssetQuantity) }}</span>
+              <span class="stat-pill__hint">{{ number_format($slotCount) }} slot đang giữ tài sản</span>
             </div>
             <div class="stat-pill">
               <span class="stat-pill__label">Kho khả dụng</span>
@@ -510,12 +506,17 @@
         @else
           @php
             $roomFormOrigin = old('form_origin');
-            $oldRoomAssetsInput = $roomFormOrigin === 'room_assets' ? old('assets', []) : [];
-            $oldRoomAssetsInput = is_array($oldRoomAssetsInput)
-              ? array_filter($oldRoomAssetsInput, function ($qty) {
-                  return is_numeric($qty) && (int) $qty > 0;
-                })
-              : [];
+            $oldRoomAssetsInput = $roomFormOrigin === 'room_assets' ? old('tai_san_ids', []) : [];
+            if (!is_array($oldRoomAssetsInput)) {
+              $oldRoomAssetsInput = [];
+            }
+            $oldRoomAssetsInput = array_values(array_filter($oldRoomAssetsInput, function ($id) {
+              return is_numeric($id);
+            }));
+            $oldRoomAssetLookup = [];
+            foreach ($oldRoomAssetsInput as $assetId) {
+              $oldRoomAssetLookup[(int) $assetId] = true;
+            }
           @endphp
           <div class="asset-modal">
             <div class="row g-4">
@@ -537,7 +538,6 @@
                         $itemImage = $item->hinh_anh
                           ? asset('storage/' . ltrim($item->hinh_anh, '/'))
                           : $assetImagePlaceholder;
-                        $oldQty = $oldRoomAssetsInput[$item->id] ?? null;
                       @endphp
                       <div
                         class="asset-option"
@@ -548,7 +548,7 @@
                         data-stock="{{ (int) $item->so_luong }}"
                         data-condition="{{ $item->tinh_trang ?? 'Không rõ' }}"
                         data-image="{{ $itemImage }}"
-                        data-old-qty="{{ $oldQty ?? '' }}"
+                        data-preselected="{{ isset($oldRoomAssetLookup[$item->id]) ? '1' : '0' }}"
                       >
                         <div class="asset-option__body">
                           <div class="asset-option__thumb">
@@ -1550,6 +1550,7 @@
       inputName = 'assets',
       slotSelectSelector = null,
       requireSlotSelection = false,
+      inputMode = 'map', // 'map' => inputName[id]=qty, 'array' => inputName[]=id
     } = {}) => {
       const modalEl = document.getElementById(modalId);
       if (!modalEl) {
@@ -1654,6 +1655,7 @@
         const name = optionEl.dataset.name || 'Không xác định';
         const code = optionEl.dataset.code || 'N/A';
         const condition = optionEl.dataset.condition || 'Không rõ';
+        const oldQty = optionEl.dataset.oldQty;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'selected-asset';
@@ -1712,8 +1714,13 @@
 
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
-        hiddenInput.name = `${inputName}[${id}]`;
-        hiddenInput.value = '1';
+        if (inputMode === 'array') {
+          hiddenInput.name = `${inputName}[]`;
+          hiddenInput.value = id;
+        } else {
+          hiddenInput.name = `${inputName}[${id}]`;
+          hiddenInput.value = (typeof oldQty !== 'undefined' && oldQty !== '') ? oldQty : '1';
+        }
         wrapper.appendChild(hiddenInput);
 
         selectedList.appendChild(wrapper);
@@ -1725,6 +1732,7 @@
         });
 
         optionEl.dataset.oldQty = '';
+        optionEl.dataset.preselected = '0';
       };
 
       const toggleSelection = (optionEl, forceSelect = null) => {
@@ -1782,7 +1790,11 @@
         });
 
         const oldQty = optionEl.dataset.oldQty;
-        if (oldQty) {
+        const hasOldQty = typeof oldQty !== 'undefined' && oldQty !== '';
+        const preselected = optionEl.dataset.preselected === '1' || optionEl.dataset.preselected === 'true';
+        if (hasOldQty) {
+          toggleSelection(optionEl, true);
+        } else if (preselected) {
           toggleSelection(optionEl, true);
         }
       });
@@ -1888,7 +1900,8 @@
     setupRoomAssetFilter();
 
     initAssetPicker('modalAddRoomAsset', {
-      inputName: 'assets',
+      inputName: 'tai_san_ids',
+      inputMode: 'array',
     });
 
     initAssetPicker('modalAddSlotAsset', {
@@ -1933,4 +1946,5 @@
   });
 </script>
 @endpush
+
 

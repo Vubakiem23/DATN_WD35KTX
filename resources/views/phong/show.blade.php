@@ -39,6 +39,20 @@
     .khu-rooms-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
     .slot-actions{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:flex-end}
 
+    .room-detail-layout{display:flex;flex-direction:column;gap:1.5rem;margin:0;}
+    .room-detail-layout__aside,
+    .room-detail-layout__main{width:100%;}
+    .room-detail-layout__aside{display:flex;flex-direction:column;gap:1.25rem;}
+    .room-detail-layout__aside .card,
+    .room-detail-layout__main > *{width:100%;}
+    @media (min-width: 992px){
+      .room-detail-layout{flex-direction:row;align-items:flex-start;}
+      .room-detail-layout__aside{flex:0 0 360px;max-width:360px;}
+      .room-detail-layout__main{flex:1 1 auto;}
+    }
+
+    .khu-rooms-wrapper{overflow-x:auto;}
+
     .room-cover{aspect-ratio: 4 / 3; width:100%; object-fit:cover; border-radius:.25rem;}
     .slot-thumb{width:110px;height:72px;object-fit:cover;border-radius:.35rem;}
     .table td, .table th{vertical-align: middle;}
@@ -108,6 +122,74 @@
     #assignStudentModal .assign-student-select{padding:.65rem 1rem;border-radius:14px;border:1px solid rgba(99,102,241,.28);box-shadow:0 10px 28px rgba(79,70,229,.12);font-weight:600;color:#1e1b4b;transition:border-color .2s ease,box-shadow .2s ease;font-size:14px;line-height:1.5;min-height:calc(2.5rem + 2px)}
     #assignStudentModal .assign-student-select:focus{border-color:#4f46e5;box-shadow:0 0 0 .25rem rgba(79,70,229,.18);outline:none}
     #assignStudentModal .assign-student-select option{white-space:normal;line-height:1.5;padding:.35rem .5rem;font-weight:500}
+    .room-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem}
+    .room-info-card{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-radius:18px;background:#f8fafc;border:1px solid rgba(148,163,184,.28);box-shadow:0 10px 24px rgba(15,23,42,.06);transition:transform .2s ease,box-shadow .2s ease}
+    .room-info-card:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(15,23,42,.09)}
+    .room-info-card__icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;color:#4338ca;background:rgba(99,102,241,.18)}
+    .room-info-card--zone .room-info-card__icon{color:#1d4ed8;background:rgba(59,130,246,.18)}
+    .room-info-card--type .room-info-card__icon{color:#16a34a;background:rgba(34,197,94,.16)}
+    .room-info-card--capacity .room-info-card__icon{color:#7c3aed;background:rgba(167,139,250,.2)}
+    .room-info-card--price .room-info-card__icon{color:#dc2626;background:rgba(248,113,113,.2)}
+    .room-info-card__label{font-size:.72rem;font-weight:600;color:#6b7280;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.15rem}
+    .room-info-card__value{font-size:1rem;font-weight:600;color:#1f2937}
+    .room-info-card__meta{margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.4rem}
+    .room-info-card__meta-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .65rem;border-radius:999px;font-size:.78rem;font-weight:600;background:rgba(244,114,182,.12);color:#be185d;border:1px solid rgba(244,114,182,.35)}
+    .room-info-card__meta-badge i{font-size:.75rem}
+    .room-occupancy{border-radius:18px;background:#f1f5f9;padding:1.1rem 1.25rem;border:1px solid rgba(148,163,184,.32);box-shadow:0 12px 28px rgba(15,23,42,.05);margin-bottom:1.25rem}
+    .room-occupancy__label{font-size:.75rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+    .room-occupancy__value{font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:.5rem}
+    .room-occupancy .progress{height:12px;border-radius:999px;background:#e2e8f0;overflow:hidden}
+    .room-occupancy .progress-bar{border-radius:999px}
+    .room-assets-card{border-radius:16px;box-shadow:0 12px 28px rgba(15,23,42,0.08);overflow:hidden}
+    .room-assets-card .card-header{background:#fff;border-bottom:1px solid rgba(148,163,184,.25);padding:1.35rem 1.5rem}
+    .room-assets-card .card-title{font-size:1.05rem;font-weight:600;color:#1f2937;margin-bottom:.15rem}
+    .room-assets-card .card-subtitle{font-size:.85rem;color:#6b7280}
+    .badge-soft-primary{background:rgba(78,84,200,.12);color:#4e54c8;border:1px solid rgba(78,84,200,.2);font-weight:600;border-radius:999px;padding:.35rem .75rem}
+    .asset-card__header{display:flex;align-items:flex-start;justify-content:space-between;gap:1.25rem;flex-wrap:wrap}
+    .card-toggle{display:block;width:100%;padding:0;background:none;border:none;text-align:left;cursor:pointer}
+    .card-toggle:focus{outline:none}
+    .asset-card__collapse-trigger{flex:1 1 260px;text-align:left;display:flex;align-items:flex-start}
+    .toggle-content{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.75rem 1.25rem;width:100%}
+    .toggle-content .section-heading{flex:1 1 260px;min-width:0}
+    .toggle-meta{display:inline-flex;align-items:center;gap:.75rem;margin-left:auto;flex:0 0 auto}
+    .toggle-icon{transition:transform .2s ease}
+    [data-bs-toggle="collapse"][aria-expanded="false"] .toggle-icon,
+    [data-toggle="collapse"][aria-expanded="false"] .toggle-icon{transform:rotate(-90deg)}
+    .section-heading{display:flex;flex-direction:column;gap:.35rem}
+    .section-heading__title{font-weight:700;color:#1e1b4b}
+    .section-heading__title-icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;background:rgba(79,70,229,.1);color:#4f46e5;margin-right:.75rem}
+    .section-heading__title-icon .icon{width:20px;height:20px}
+    .section-heading__meta{display:flex;flex-wrap:wrap;gap:.65rem .95rem;font-size:.85rem;color:#475569}
+    .section-heading__meta-item{display:inline-flex;align-items:center;gap:.35rem}
+    .section-heading__meta-item .icon{color:#4f46e5}
+    .section-heading__desc{color:#6b7280;font-size:.875rem}
+    .asset-card__actions{display:flex;align-items:center;justify-content:flex-end;gap:.5rem;flex-wrap:wrap}
+    .asset-card__actions .btn{border-radius:10px;font-weight:600;padding-inline:1rem;white-space:nowrap}
+    @media (max-width: 767.98px){
+      .toggle-content{flex-direction:column;align-items:stretch}
+      .toggle-meta{margin-left:0;justify-content:space-between;width:100%}
+    }
+    @media (max-width: 576px){
+      .asset-card__header{flex-direction:column;align-items:stretch}
+      .asset-card__actions{justify-content:flex-start}
+    }
+    .room-assets-summary{display:flex;flex-wrap:wrap;gap:.65rem;font-size:.82rem;color:#64748b;margin-bottom:1rem}
+    .room-assets-summary span{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .6rem;border-radius:999px;background:#eef2ff;color:#4338ca;font-weight:600}
+    .room-assets-summary svg{color:#4338ca}
+    .room-assets-list{display:flex;flex-direction:column;gap:.9rem;margin:0;padding:0;list-style:none}
+    .room-asset-item{display:flex;gap:.85rem;align-items:flex-start;padding:.65rem .35rem;border-bottom:1px dashed rgba(148,163,184,.2)}
+    .room-asset-item:last-child{border-bottom:none;padding-bottom:0}
+    .room-asset-thumb{width:54px;height:54px;border-radius:14px;overflow:hidden;flex-shrink:0;background:#eef2ff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(148,163,184,.15)}
+    .room-asset-thumb img{width:100%;height:100%;object-fit:cover}
+    .room-asset-meta{flex:1;display:flex;flex-direction:column;gap:.35rem}
+    .room-asset-meta__name{font-weight:600;color:#1f2937}
+    .room-asset-meta__code{font-size:.8rem;color:#6b7280}
+    .room-asset-meta__status{font-size:.8rem;color:#475569}
+    .room-asset-qty{text-align:right;font-size:.8rem;color:#334155;min-width:110px}
+    .room-asset-qty .badge{font-size:.78rem}
+    .room-asset-assignees{display:flex;flex-wrap:wrap;gap:.3rem}
+    .room-asset-assignee{background:#f1f5f9;color:#0f172a;font-weight:500;border-radius:999px;padding:.2rem .55rem;font-size:.75rem}
+    .room-assets-empty{padding:1rem;border-radius:14px;background:#f8fafc;border:1px dashed rgba(148,163,184,.4);font-size:.9rem;color:#64748b;text-align:center}
     @media (max-width: 992px){
       .slots-table th:nth-child(1){width:20%}
       .slots-table th:nth-child(2){width:25%}
@@ -118,27 +200,80 @@
     }
   </style>
   @endpush
-  <div class="row g-3">
-    <div class="col-12 col-lg-4">
-      <div class="card mb-3 shadow-sm h-100">
+  <div class="room-detail-layout">
+    <div class="room-detail-layout__aside">
+      <div class="card shadow-sm">
     @if($phong->hinh_anh)
       <img src="{{ asset('storage/'.$phong->hinh_anh) }}" class="room-cover" alt="{{ $phong->ten_phong }}">
     @endif
     <div class="card-body">
-      <div class="d-flex flex-wrap gap-3 mb-3">
-        <span class="badge bg-primary">Khu: {{ optional($phong->khu)->ten_khu ?? '-' }}</span>
-        <span class="badge bg-info text-dark">Loại: {{ \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</span>
-        <span class="badge bg-secondary">Sức chứa: {{ $phong->totalSlots() }}</span>
-      </div>
+      <div class="room-info-grid">
+        <div class="room-info-card room-info-card--zone">
+          <div class="room-info-card__icon">
+            <i class="fa fa-building"></i>
+          </div>
+          <div>
+            <div class="room-info-card__label">Khu</div>
+            <div class="room-info-card__value">{{ optional($phong->khu)->ten_khu ?? '-' }}</div>
+          </div>
+        </div>
+        <div class="room-info-card room-info-card--type">
+          <div class="room-info-card__icon">
+            <i class="fa fa-bed"></i>
+          </div>
+          <div>
+            <div class="room-info-card__label">Loại phòng</div>
+            <div class="room-info-card__value">{{ \App\Models\Phong::labelLoaiPhongBySlots($phong->totalSlots()) }}</div>
+          </div>
+        </div>
+        <div class="room-info-card room-info-card--capacity">
+          <div class="room-info-card__icon">
+            <i class="fa fa-users"></i>
+          </div>
+          <div>
+            <div class="room-info-card__label">Sức chứa</div>
+            <div class="room-info-card__value">{{ $phong->totalSlots() }} người</div>
+          </div>
+        </div>
         @if(!is_null($phong->gia_phong))
-        <div class="mb-3">
-          <span class="badge bg-dark">Giá: {{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</span>
+        @php
+          $computedPerPersonPrice = null;
+          $totalSlots = $phong->totalSlots();
+          if (!is_null($phong->gia_moi_nguoi)) {
+            $computedPerPersonPrice = $phong->gia_moi_nguoi;
+          } elseif (!is_null($phong->gia_phong) && $totalSlots > 0) {
+            $computedPerPersonPrice = (int) round($phong->gia_phong / $totalSlots);
+          }
+        @endphp
+        <div class="room-info-card room-info-card--price">
+          <div class="room-info-card__icon">
+            <i class="fa fa-money"></i>
+          </div>
+          <div>
+            <div class="room-info-card__label">Giá phòng</div>
+            <div class="room-info-card__value">{{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</div>
+            @if(!is_null($computedPerPersonPrice))
+              <div class="room-info-card__meta">
+                <span class="room-info-card__meta-badge">
+                  <i class="fa fa-user"></i>
+                  {{ number_format($computedPerPersonPrice, 0, ',', '.') }} VND/SV · {{ $totalSlots }} chỗ
+                </span>
+              </div>
+            @endif
+          </div>
         </div>
         @endif
+      </div>
       @php $total=$phong->totalSlots(); $used=$phong->usedSlots(); $pct=$total?round($used*100/$total):0; @endphp
-      <div class="small text-muted mb-2">Tỉ lệ lấp đầy: {{ $used }} / {{ $total }} ({{ $pct }}%)</div>
-      <div class="progress mb-3" style="height:10px;max-width:420px;">
-        <div class="progress-bar {{ $pct==100 ? 'bg-warning text-dark' : 'bg-success' }}" role="progressbar" style="width: {{ $pct }}%" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+      <div class="room-occupancy">
+        <div class="room-occupancy__label">
+          <i class="fa fa-chart-pie"></i>
+          Tỉ lệ lấp đầy
+        </div>
+        <div class="room-occupancy__value">{{ $used }} / {{ $total }} ({{ $pct }}%)</div>
+        <div class="progress">
+          <div class="progress-bar {{ $pct==100 ? 'bg-warning text-dark' : 'bg-success' }}" role="progressbar" style="width: {{ $pct }}%" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
       </div>
       @if($phong->ghi_chu)
         <ul class="list-unstyled mb-0 mt-2 small text-muted">
@@ -147,8 +282,115 @@
       @endif
     </div>
       </div>
+      <div class="card shadow-sm room-assets-card">
+        <div class="card-header bg-white border-0">
+          <div class="asset-card__header">
+            <button
+              class="card-toggle asset-card__collapse-trigger"
+              type="button"
+              data-bs-toggle="collapse"
+              data-toggle="collapse"
+              data-bs-target="#roomCommonAssetsCollapse"
+              data-target="#roomCommonAssetsCollapse"
+              aria-expanded="true"
+              aria-controls="roomCommonAssetsCollapse"
+              data-role="room-assets-toggle"
+            >
+              <div class="toggle-content">
+                <div class="section-heading">
+                  <h5 class="section-heading__title mb-1">
+                    <span class="section-heading__title-icon">
+                      <svg class="icon icon--lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path fill="currentColor" d="M11.47 3.84a.75.75 0 0 1 1.06 0l8.25 7.88a.75.75 0 0 1-.52 1.28H19.5v7a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-2a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 1-.75.75h-3.5a.75.75 0 0 1-.75-.75v-7h-1.76a.75.75 0 0 1-.52-1.28l8.25-7.88Z" />
+                      </svg>
+                    </span>
+                    Tài sản chung  phòng {{ $phong->ten_phong }}
+                  </h5>
+                  <div class="section-heading__meta">
+                  </div>
+                  <p class="section-heading__desc mb-0">Danh sách vật dụng sử dụng chung trong phòng</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div id="roomCommonAssetsCollapse" class="collapse show">
+          <div class="card-body">
+          @php
+            $totalCommonQuantity = $commonAssetStats['total_quantity'] ?? 0;
+            $totalCommonAssigned = $commonAssetStats['total_assigned'] ?? 0;
+            $roomAssetPlaceholder = asset('uploads/default.png');
+          @endphp
+          <div class="room-assets-summary">
+            <span>
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4.5c-1.243 0-2.25 1.007-2.25 2.25S10.757 9 12 9s2.25-1.007 2.25-2.25S13.243 4.5 12 4.5Zm0-1.5a3.75 3.75 0 1 1 0 7.5 3.75 3.75 0 0 1 0-7.5ZM4.5 18.75a7.5 7.5 0 0 1 15 0a.75.75 0 0 1-1.5 0a6 6 0 1 0-12 0a.75.75 0 0 1-1.5 0Z"/></svg>
+              Tổng {{ $totalCommonQuantity }} món
+            </span>
+          </div>
+          @if($roomAssets->isEmpty())
+            <div class="room-assets-empty">
+              Phòng chưa được cấp tài sản chung nào từ kho.
+            </div>
+          @else
+            <ul class="room-assets-list">
+              @foreach($roomAssets as $asset)
+                @php
+                  $assetName = $asset->ten_tai_san ?? optional($asset->khoTaiSan)->ten_tai_san ?? 'Chưa cập nhật tên';
+                  $assetCode = optional($asset->khoTaiSan)->ma_tai_san ?? ($asset->ma_tai_san ?? '—');
+                  $rawImage = $asset->hinh_anh ?? optional($asset->khoTaiSan)->hinh_anh;
+                  $assetImage = $roomAssetPlaceholder;
+                  if (!empty($rawImage)) {
+                      $assetImage = filter_var($rawImage, FILTER_VALIDATE_URL)
+                        ? $rawImage
+                        : asset('storage/' . ltrim($rawImage, '/'));
+                  }
+                  $assignedQty = (int) ($asset->assigned_slot_quantity ?? $asset->slots->sum(function ($slot) {
+                      return (int) ($slot->pivot->so_luong ?? 0);
+                  }));
+                  $availableQty = (int) ($asset->available_quantity ?? max(0, (int) $asset->so_luong - $assignedQty));
+                @endphp
+                <li class="room-asset-item">
+                  <div class="room-asset-thumb">
+                    <img src="{{ $assetImage }}" alt="Ảnh {{ $assetName }}">
+                  </div>
+                  <div class="room-asset-meta">
+                    <div class="room-asset-meta__name">{{ $assetName }}</div>
+                    <div class="room-asset-meta__code">Mã: {{ $assetCode }}</div>
+                    <div class="room-asset-meta__status">
+                      Tình trạng chuẩn: {{ $asset->tinh_trang ?? 'Chưa cập nhật' }}
+                      @if(!empty($asset->tinh_trang_hien_tai))
+                        · Hiện tại: {{ $asset->tinh_trang_hien_tai }}
+                      @endif
+                    </div>
+                    @if($assignedQty > 0)
+                      <div class="room-asset-assignees">
+                        @foreach($asset->slots as $slot)
+                          @php
+                            $pivotQty = (int) ($slot->pivot->so_luong ?? 0);
+                            if ($pivotQty <= 0) {
+                                continue;
+                            }
+                            $studentName = optional($slot->sinhVien)->ho_ten;
+                            $badgeTitle = $studentName
+                              ? $slot->ma_slot . ' · ' . $studentName . ' · x' . $pivotQty
+                              : $slot->ma_slot . ' · x' . $pivotQty;
+                          @endphp
+                          <span class="room-asset-assignee" title="{{ $badgeTitle }}">
+                            {{ $slot->ma_slot }} x{{ $pivotQty }}
+                          </span>
+                        @endforeach
+                      </div>
+                    @endif
+                  </div>
+                </li>
+              @endforeach
+            </ul>
+          @endif
+        </div>
+        </div>
+      </div>
     </div>
-    <div class="col-12 col-lg-8">
+    <div class="room-detail-layout__main">
       {{-- Danh sách slot --}}
       <div class="khu-toolbar mb-3">
         <div class="d-flex justify-content-end">
@@ -321,6 +563,40 @@
 {{-- (Đã bỏ modal sửa slot) --}}
 @push('scripts')
 <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const collapseEl = document.getElementById('roomCommonAssetsCollapse');
+    const toggleBtn = document.querySelector('[data-role="room-assets-toggle"]');
+    if (!collapseEl || !toggleBtn) {
+      return;
+    }
+    const hasBootstrap = !!(window.bootstrap && bootstrap.Collapse);
+    const hasjQueryCollapse = !hasBootstrap && window.jQuery && typeof window.jQuery.fn.collapse === 'function';
+    if (hasBootstrap) {
+      bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+    } else if (hasjQueryCollapse) {
+      window.jQuery(collapseEl).collapse({ toggle: false });
+    }
+    toggleBtn.addEventListener('click', function (event) {
+      if (hasBootstrap) {
+        return; // Bootstrap data API will handle the toggle
+      }
+      if (hasjQueryCollapse) {
+        event.preventDefault();
+        window.jQuery(collapseEl).collapse('toggle');
+      } else {
+        event.preventDefault();
+        collapseEl.classList.toggle('show');
+        updateState();
+      }
+    });
+    const updateState = () => {
+      const expanded = collapseEl.classList.contains('show');
+      toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    };
+    collapseEl.addEventListener('shown.bs.collapse', updateState);
+    collapseEl.addEventListener('hidden.bs.collapse', updateState);
+    updateState();
+  });
   let currentSlotId = null;
   function openCreateSlots(){
     $('#createSlotsQuickModal').modal('show');

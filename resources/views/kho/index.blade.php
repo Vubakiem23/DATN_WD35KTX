@@ -68,7 +68,9 @@
 
 <div class="container mt-4">
 
-  <h3 class="page-title mb-0">📦 Kho tài sản</h3>
+  <h3 class="page-title mb-0"> Kho tài sản</h3>
+  <p class="text-muted mb-0">Theo dõi và tổ chức tài sản trong cửa hàng kho.</p>
+
 
 
   {{-- 🟢 Bộ lọc --}}
@@ -76,6 +78,7 @@
     <form method="GET" action="{{ route('kho.index') }}" class="row g-3 align-items-end">
       <div class="col-md-3">
         <label class="form-label"><i class="fa fa-layer-group text-primary"></i> Loại tài sản</label>
+
         <select name="loai_id" class="form-select form-control">
           <option value="">-- Tất cả --</option>
           @foreach($tatCaLoai as $loai)

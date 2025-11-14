@@ -231,6 +231,20 @@ public function hoanthanhSubmit(Request $request, $id)
     $lich->trang_thai = 'Hoàn thành';
     $lich->save();
 
+    $lich->loadMissing(['taiSan', 'khoTaiSan']);
+
+    if ($lich->taiSan) {
+        $lich->taiSan->update([
+            'tinh_trang_hien_tai' => 'Bình thường',
+        ]);
+    }
+
+    if ($lich->khoTaiSan) {
+        $lich->khoTaiSan->update([
+            'tinh_trang' => 'Bình thường',
+        ]);
+    }
+
     return redirect()->route('lichbaotri.index')->with('success', 'Đã cập nhật hoàn thành bảo trì.');
 }
 
@@ -365,3 +379,5 @@ public function hoanthanhSubmit(Request $request, $id)
         return response()->json($taiSans);
     }
 }
+
+

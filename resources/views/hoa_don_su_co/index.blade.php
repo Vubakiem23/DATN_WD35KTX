@@ -195,47 +195,60 @@
 
                                     {{-- 🔹 Cột hành động --}}
                                     <td class="text-end">
-                                        <div class="room-actions">
-                                            {{-- Xem chi tiết --}}
-                                            <a href="{{ route('suco.show', $hd->id) }}"
-                                                class="btn btn-dergin btn-dergin--muted" title="Xem chi tiết">
-                                                <i class="fa fa-eye"></i><span>Xem</span>
-                                            </a>
-
-                                            {{-- Chưa thanh toán --}}
-                                            @if (!$hd->is_paid)
-                                                {{-- Mở modal thanh toán --}}
-                                                <button type="button" class="btn btn-dergin btn-dergin--info"
-                                                    data-bs-toggle="modal" data-bs-target="#paymentModal"
-                                                    data-id="{{ $hd->id }}"
-                                                    data-amount="{{ $hd->payment_amount }}">
-                                                    <i class="fa fa-money"></i><span>Thanh toán</span>
-                                                </button>
-
-                                                {{-- Xác nhận nhanh (admin/nhân viên) --}}
-                                                @if (auth()->user()->role === 'admin' || auth()->user()->role === 'nhanvien')
-                                                    <form action="{{ route('hoadonsuco.xacnhan', $hd->id) }}"
-                                                        method="POST"
-                                                        onsubmit="return confirm('Xác nhận thanh toán {{ number_format($hd->payment_amount, 0, ',', '.') }} ₫?');">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-dergin btn-dergin--success">
-                                                            <i class="fa fa-check"></i><span>Xác nhận</span>
+                                        <div class="room-actions dropdown position-relative">
+                                            <button type="button" class="btn btn-dergin btn-dergin--muted action-gear"
+                                                title="Tác vụ">
+                                                <i class="fa fa-gear"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a href="{{ route('suco.show', $hd->id) }}"
+                                                        class="dropdown-item d-flex align-items-center gap-2">
+                                                        <i class="fa fa-eye text-muted"></i>
+                                                        <span>Xem chi tiết</span>
+                                                    </a>
+                                                </li>
+                                                @if (!$hd->is_paid)
+                                                    <li>
+                                                        <button type="button"
+                                                            class="dropdown-item d-flex align-items-center gap-2 text-info"
+                                                            data-bs-toggle="modal" data-bs-target="#paymentModal"
+                                                            data-id="{{ $hd->id }}"
+                                                            data-amount="{{ $hd->payment_amount }}">
+                                                            <i class="fa fa-money"></i>
+                                                            <span>Thanh toán</span>
                                                         </button>
-                                                    </form>
+                                                    </li>
+                                                    @if (auth()->user()->role === 'admin' || auth()->user()->role === 'nhanvien')
+                                                        <li>
+                                                            <form action="{{ route('hoadonsuco.xacnhan', $hd->id) }}"
+                                                                method="POST"
+                                                                onsubmit="return confirm('Xác nhận thanh toán {{ number_format($hd->payment_amount, 0, ',', '.') }} ₫?');">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                    class="dropdown-item d-flex align-items-center gap-2 text-success">
+                                                                    <i class="fa fa-check"></i>
+                                                                    <span>Xác nhận</span>
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    @endif
+                                                @else
+                                                    @if (auth()->user()->role === 'admin')
+                                                        <li>
+                                                            <form action="{{ route('hoadonsuco.huy', $hd->id) }}" method="POST"
+                                                                onsubmit="return confirm('Bạn có chắc muốn hủy xác nhận thanh toán?');">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                    class="dropdown-item d-flex align-items-center gap-2 text-danger">
+                                                                    <i class="fa fa-undo"></i>
+                                                                    <span>Hủy thanh toán</span>
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    @endif
                                                 @endif
-
-                                                {{-- Đã thanh toán --}}
-                                            @else
-                                                @if (auth()->user()->role === 'admin')
-                                                    <form action="{{ route('hoadonsuco.huy', $hd->id) }}" method="POST"
-                                                        onsubmit="return confirm('Bạn có chắc muốn hủy xác nhận thanh toán?');">
-                                                        @csrf
-                                                        <button type="submit" class="btn btn-dergin btn-dergin--danger">
-                                                            <i class="fa fa-undo"></i><span>Hủy TT</span>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            @endif
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>
@@ -308,14 +321,66 @@
                     .room-actions {
                         display: flex;
                         justify-content: center;
+                    }
+
+                    .room-actions.dropdown {
+                        position: relative;
+                    }
+
+                    .room-actions .action-gear {
+                        min-width: 40px;
+                        padding: .45rem .7rem;
+                        border-radius: 999px;
+                    }
+
+                    .room-actions .dropdown-menu {
+                        position: absolute;
+                        top: 50% !important;
+                        right: 110%;
+                        left: auto;
+                        bottom: auto;
+                        transform: translateY(-50%);
+                        z-index: 1050;
+                        min-width: 190px;
+                        border-radius: 16px;
+                        padding: .4rem 0;
+                        margin: 0;
+                        border: 1px solid #e5e7eb;
+                        box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+                        font-size: .82rem;
+                        background: #fff;
+                    }
+
+                    .room-actions .dropdown-item {
+                        display: flex;
                         align-items: center;
-                        gap: .4rem;
-                        flex-wrap: wrap;
+                        gap: .55rem;
+                        padding: .42rem .9rem;
+                        color: #4b5563;
+                    }
+
+                    .room-actions .dropdown-item i {
+                        width: 16px;
+                        text-align: center;
+                    }
+
+                    .room-actions .dropdown-item:hover {
+                        background: #eef2ff;
+                        color: #111827;
                     }
 
                     .room-actions form {
                         display: contents !important;
-                        /* ✅ giúp nút trong flex vẫn submit được */
+                    }
+
+                    @media (max-width: 768px) {
+                        .room-actions .dropdown-menu {
+                            top: calc(100% + 12px) !important;
+                            right: auto;
+                            left: 50%;
+                            transform: translate(-50%, 0);
+                            min-width: min(240px, calc(100vw - 32px));
+                        }
                     }
 
                     .btn-dergin {
@@ -379,121 +444,6 @@
                     }
                 </style>
             @endpush
-
-            @push('styles')
-                <style>
-                    .room-table-wrapper {
-                        background: #fff;
-                        border-radius: 14px;
-                        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-                        padding: 1.25rem;
-                    }
-
-                    .room-table {
-                        margin-bottom: 0;
-                        border-collapse: separate;
-                        border-spacing: 0 12px;
-                    }
-
-                    .room-table thead th {
-                        font-size: .78rem;
-                        text-transform: uppercase;
-                        letter-spacing: .05em;
-                        color: #6c757d;
-                        border: none;
-                        padding-bottom: .75rem;
-                    }
-
-                    .room-table tbody tr {
-                        background: #f9fafc;
-                        border-radius: 16px;
-                        transition: transform .2s ease, box-shadow .2s ease;
-                    }
-
-                    .room-table tbody tr:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-                    }
-
-                    .room-table tbody td {
-                        border: none;
-                        vertical-align: middle;
-                        padding: 1rem .95rem;
-                    }
-
-                    .room-table tbody tr td:first-child {
-                        border-top-left-radius: 16px;
-                        border-bottom-left-radius: 16px;
-                    }
-
-                    .room-table tbody tr td:last-child {
-                        border-top-right-radius: 16px;
-                        border-bottom-right-radius: 16px;
-                    }
-
-                    .room-actions {
-                        display: flex;
-                        flex-wrap: nowrap;
-                        justify-content: center;
-                        gap: .4rem;
-                        white-space: nowrap;
-                    }
-
-                    .btn-dergin {
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: .35rem;
-                        padding: .4rem .9rem;
-                        border-radius: 999px;
-                        font-weight: 600;
-                        font-size: .72rem;
-                        border: none;
-                        color: #fff;
-                        background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
-                        box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
-                        transition: transform .2s ease, box-shadow .2s ease;
-                    }
-
-                    .btn-dergin:hover {
-                        transform: translateY(-1px);
-                        box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
-                        color: #fff;
-                    }
-
-                    .btn-dergin--muted {
-                        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
-                    }
-
-                    .btn-dergin--info {
-                        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
-                    }
-
-                    .btn-dergin--success {
-                        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%)
-                    }
-
-                    .btn-dergin--danger {
-                        background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
-                    }
-
-                    .badge-soft-success {
-                        background: rgba(34, 197, 94, .15);
-                        color: #16a34a;
-                    }
-
-                    .badge-soft-warning {
-                        background: rgba(251, 191, 36, .15);
-                        color: #ca8a04;
-                    }
-
-                    .badge-soft-secondary {
-                        background: rgba(107, 114, 128, .15);
-                        color: #374151;
-                    }
-                </style>
-            @endpush
-
 
             <div class="d-flex justify-content-center mt-3">
                 {{ $hoa_dons->onEachSide(1)->links('pagination::bootstrap-4') }}
@@ -606,37 +556,63 @@
             const ratingStars = document.getElementById('ratingStars');
             const ratingValue = document.getElementById('ratingValue');
 
-            // Fallback mở modal khi Bootstrap JS không hook tự động
+            const closeAllMenus = () => {
+                document.querySelectorAll('.room-actions .dropdown-menu.show')
+                    .forEach(menu => menu.classList.remove('show'));
+            };
+
+            // Fallback mở modal khi Bootstrap JS không hook tự động + dropdown gear
             document.addEventListener('click', function(e) {
-                const btn = e.target.closest('[data-bs-target="#paymentModal"][data-id]');
-                if (!btn || !paymentModal) return;
-                const hoaDonId = btn.getAttribute('data-id');
-                const amount = btn.getAttribute('data-amount');
-                if (confirmBtn && hoaDonId) confirmBtn.setAttribute('data-id', hoaDonId);
-                if (paymentAmount && amount) {
-                    paymentAmount.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
-                }
-                // Reset fields
-                if (paymentMethodSelect) paymentMethodSelect.value = '';
-                const noteEl = document.getElementById('ghi_chu_thanh_toan');
-                if (noteEl) noteEl.value = '';
-                if (bankInfo) bankInfo.style.display = 'none';
-                // Cố gắng dùng Bootstrap nếu có, nếu không thì tự mở
-                try {
-                    const bsModal = bootstrap.Modal.getOrCreateInstance(paymentModal);
-                    bsModal.show();
-                } catch (_) {
-                    paymentModal.classList.add('show');
-                    paymentModal.style.display = 'block';
-                    paymentModal.removeAttribute('aria-hidden');
-                    paymentModal.setAttribute('aria-modal', 'true');
-                    // Thêm backdrop đơn giản
-                    if (!document.querySelector('.modal-backdrop')) {
-                        const backdrop = document.createElement('div');
-                        backdrop.className = 'modal-backdrop fade show';
-                        document.body.appendChild(backdrop);
+                const gearBtn = e.target.closest('.action-gear');
+                if (gearBtn) {
+                    e.preventDefault();
+                    const menu = gearBtn.closest('.room-actions')?.querySelector('.dropdown-menu');
+                    const isOpen = menu && menu.classList.contains('show');
+                    closeAllMenus();
+                    if (menu && !isOpen) {
+                        menu.classList.add('show');
                     }
-                    document.body.classList.add('modal-open');
+                    return;
+                }
+
+                let handledDropdownAction = false;
+                const paymentTrigger = e.target.closest('[data-bs-target="#paymentModal"][data-id]');
+                if (paymentTrigger && paymentModal) {
+                    handledDropdownAction = true;
+                    const hoaDonId = paymentTrigger.getAttribute('data-id');
+                    const amount = paymentTrigger.getAttribute('data-amount');
+                    if (confirmBtn && hoaDonId) confirmBtn.setAttribute('data-id', hoaDonId);
+                    if (paymentAmount && amount) {
+                        paymentAmount.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+                    }
+                    // Reset fields
+                    if (paymentMethodSelect) paymentMethodSelect.value = '';
+                    const noteEl = document.getElementById('ghi_chu_thanh_toan');
+                    if (noteEl) noteEl.value = '';
+                    if (bankInfo) bankInfo.style.display = 'none';
+                    // Cố gắng dùng Bootstrap nếu có, nếu không thì tự mở
+                    try {
+                        const bsModal = bootstrap.Modal.getOrCreateInstance(paymentModal);
+                        bsModal.show();
+                    } catch (_) {
+                        paymentModal.classList.add('show');
+                        paymentModal.style.display = 'block';
+                        paymentModal.removeAttribute('aria-hidden');
+                        paymentModal.setAttribute('aria-modal', 'true');
+                        // Thêm backdrop đơn giản
+                        if (!document.querySelector('.modal-backdrop')) {
+                            const backdrop = document.createElement('div');
+                            backdrop.className = 'modal-backdrop fade show';
+                            document.body.appendChild(backdrop);
+                        }
+                        document.body.classList.add('modal-open');
+                    }
+                }
+
+                if (handledDropdownAction || e.target.closest('.room-actions .dropdown-item')) {
+                    closeAllMenus();
+                } else if (!e.target.closest('.room-actions')) {
+                    closeAllMenus();
                 }
             });
 
