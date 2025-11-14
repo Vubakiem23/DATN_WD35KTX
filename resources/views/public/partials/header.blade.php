@@ -5,7 +5,7 @@
             <a class="navbar-brand d-flex align-items-center gap-3" href="{{ route('public.home') }}">
                 <img src="{{ asset('images/Gemini_Generated_Image_hxk4evhxk4evhxk4.png') }}" alt="Ký Túc Xá Vamos" style="height:44px;width:auto;">
                 <span class="d-flex flex-column lh-1">
-                    <span class="fw-bold fs-5 text-uppercase">Ký túc xá</span>
+                    <span class="fw-bold fs-5 text-uppercase">Ký túc xá VaMos</span>
                     <small class="opacity-75">Dormitory Management</small>
                 </span>
             </a>

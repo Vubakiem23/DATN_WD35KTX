@@ -16,7 +16,7 @@
                 <div class="footer-column">
                     <h5>Kết nối</h5>
                     <ul>
-                        <li><a href="#">Trường Đại học Tôn Đức Thắng</a></li>
+                        <li><a href="#">Trường Cao đẳng FPT POLYTECHNIC </a></li>
                         <li><a href="#"><i class="fab fa-facebook me-2"></i>Facebook</a></li>
                     </ul>
                 </div>
@@ -33,7 +33,7 @@
             </div>
         </div>
         <div class="footer-copyright">
-            <p class="mb-0">&copy; Copyright Ton Duc Thang University {{ date('Y') }}</p>
+            <p class="mb-0">&copy; Copyright FPT POLYTECHNIC {{ date('Y') }}</p>
         </div>
     </div>
 </footer>

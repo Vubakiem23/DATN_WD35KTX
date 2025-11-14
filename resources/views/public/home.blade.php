@@ -3,16 +3,141 @@
 @section('title', 'Trang chủ | KÝ TÚC XÁ')
 
 @section('hero')
-<div class="hero-section">
-    <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1920&h=500&fit=crop" alt="Ký túc xá TDTU" />
+@php
+    $heroSlides = [
+        [
+            'src' => asset('images/lovepik-different-male-college-students-in-the-dormitory-picture_501788393.jpg'),
+            'alt' => 'Sân trường FPT Polytechnic',
+            'title' => 'KÝ TÚC XÁ VaMos',
+            'subtitle' => 'Không gian sống năng động – An toàn – Tiện nghi cho sinh viên'
+        ],
+        [
+            'src' => asset('images/image-1024x682.jpg'),
+            'alt' => 'Sinh viên FPT Polytechnic',
+            'title' => 'CỘNG ĐỒNG SINH VIÊN NHIỆT HUYẾT',
+            'subtitle' => 'Gắn kết – Sẻ chia – Cùng nhau phát triển'
+        ],
+        [
+            'src' => asset('images/6y6ruPj73iy2ksxMA5q3A2eMmULZ9EvYEbTKdWwx.jpeg'),
+            'alt' => 'Cơ sở vật chất hiện đại',
+            'title' => 'CƠ SỞ VẬT CHẤT HIỆN ĐẠI',
+            'subtitle' => 'Đầy đủ tiện ích phục vụ học tập và sinh hoạt'
+        ],
+        [
+            'src' => asset('images/excel-2-2-e1713237797743.jpg'),
+            'alt' => 'Hoạt động ngoại khóa',
+            'title' => 'HOẠT ĐỘNG NGOẠI KHÓA SÔI NỔI',
+            'subtitle' => 'Nâng cao kỹ năng – Mở rộng trải nghiệm'
+        ],
+    ];
+@endphp
+<div class="hero-section hero-slider" data-autoplay="3500">
+    @foreach ($heroSlides as $index => $slide)
+        <div class="hero-slide {{ $loop->first ? 'is-active' : '' }}"
+            data-title="{{ $slide['title'] }}"
+            data-subtitle="{{ $slide['subtitle'] }}"
+            data-index="{{ $index }}">
+            <img src="{{ $slide['src'] }}" alt="{{ $slide['alt'] }}">
+        </div>
+    @endforeach
+
     <div class="hero-content">
         <div>
-            <div class="hero-title">TDTU KÝ TÚC XÁ</div>
-            <div class="hero-subtitle">Không gian sống năng động – An toàn – Tiện nghi cho sinh viên</div>
+            <div class="hero-title" id="heroTitle">{{ $heroSlides[0]['title'] }}</div>
+            <div class="hero-subtitle" id="heroSubtitle">{{ $heroSlides[0]['subtitle'] }}</div>
         </div>
+    </div>
+
+    <button class="hero-slider-nav prev" type="button" aria-label="Slide trước">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="hero-slider-nav next" type="button" aria-label="Slide tiếp theo">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+
+    <div class="hero-slider-controls">
+        @foreach ($heroSlides as $index => $slide)
+            <button class="hero-slider-dot {{ $loop->first ? 'is-active' : '' }}" type="button"
+                data-index="{{ $index }}" aria-label="Chuyển đến slide {{ $index + 1 }}"></button>
+        @endforeach
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const slider = document.querySelector('.hero-slider');
+        if (!slider) return;
+
+        const slides = slider.querySelectorAll('.hero-slide');
+        const dots = slider.querySelectorAll('.hero-slider-dot');
+        const prevBtn = slider.querySelector('.hero-slider-nav.prev');
+        const nextBtn = slider.querySelector('.hero-slider-nav.next');
+        const titleEl = document.getElementById('heroTitle');
+        const subtitleEl = document.getElementById('heroSubtitle');
+        const autoplayDelay = parseInt(slider.getAttribute('data-autoplay') || '6000', 10);
+
+        let currentIndex = 0;
+        let autoplayId;
+
+        const setSlide = (index) => {
+            if (!slides.length) return;
+            slides[currentIndex]?.classList.remove('is-active');
+            dots[currentIndex]?.classList.remove('is-active');
+
+            currentIndex = (index + slides.length) % slides.length;
+
+            const activeSlide = slides[currentIndex];
+            activeSlide.classList.add('is-active');
+            dots[currentIndex]?.classList.add('is-active');
+
+            titleEl.textContent = activeSlide.dataset.title || titleEl.textContent;
+            subtitleEl.textContent = activeSlide.dataset.subtitle || subtitleEl.textContent;
+        };
+
+        const nextSlide = () => setSlide(currentIndex + 1);
+        const prevSlide = () => setSlide(currentIndex - 1);
+
+        const startAutoplay = () => {
+            stopAutoplay();
+            autoplayId = setInterval(nextSlide, autoplayDelay);
+        };
+
+        const stopAutoplay = () => {
+            if (autoplayId) {
+                clearInterval(autoplayId);
+            }
+        };
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const targetIndex = Number(dot.dataset.index);
+                if (!Number.isNaN(targetIndex)) {
+                    setSlide(targetIndex);
+                    startAutoplay();
+                }
+            });
+        });
+
+        prevBtn?.addEventListener('click', () => {
+            prevSlide();
+            startAutoplay();
+        });
+
+        nextBtn?.addEventListener('click', () => {
+            nextSlide();
+            startAutoplay();
+        });
+
+        slider.addEventListener('mouseenter', stopAutoplay);
+        slider.addEventListener('mouseleave', startAutoplay);
+
+        setSlide(0);
+        startAutoplay();
+    });
+</script>
+@endpush
 
 @section('content')
 <div class="content-section">
@@ -136,8 +261,8 @@
                      class="intro-image">
                 <div class="intro-title">Giới thiệu chung</div>
                 <div class="intro-text">
-                    <p><strong>Trường Đại học Tôn Đức Thắng</strong></p>
-                    <p>Ton Duc Thang University 2005</p>
+                    <p><strong>Trường Cao đằng FPT POLYECHNIC</strong></p>
+                    <p></p>
                 </div>
                 <a href="#gioi-thieu" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>

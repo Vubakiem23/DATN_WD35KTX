@@ -214,6 +214,7 @@
                                                             class="dropdown-item d-flex align-items-center gap-2 text-info"
                                                             data-bs-toggle="modal" data-bs-target="#paymentModal"
                                                             data-id="{{ $hd->id }}"
+                                                            data-url="{{ route('hoadonsuco.thanhtoan', $hd->id) }}"
                                                             data-amount="{{ $hd->payment_amount }}">
                                                             <i class="fa fa-money"></i>
                                                             <span>Thanh toán</span>
@@ -580,8 +581,12 @@
                 if (paymentTrigger && paymentModal) {
                     handledDropdownAction = true;
                     const hoaDonId = paymentTrigger.getAttribute('data-id');
+                    const actionUrl = paymentTrigger.getAttribute('data-url');
                     const amount = paymentTrigger.getAttribute('data-amount');
-                    if (confirmBtn && hoaDonId) confirmBtn.setAttribute('data-id', hoaDonId);
+                    if (confirmBtn) {
+                        if (hoaDonId) confirmBtn.setAttribute('data-id', hoaDonId);
+                        if (actionUrl) confirmBtn.setAttribute('data-url', actionUrl);
+                    }
                     if (paymentAmount && amount) {
                         paymentAmount.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
                     }
@@ -650,10 +655,16 @@
                 paymentModal.addEventListener('show.bs.modal', function(event) {
                     const button = event.relatedTarget;
                     const hoaDonId = button?.getAttribute('data-id');
+                    const actionUrl = button?.getAttribute('data-url');
                     const amount = button?.getAttribute('data-amount');
 
-                    if (confirmBtn && hoaDonId) {
-                        confirmBtn.setAttribute('data-id', hoaDonId);
+                    if (confirmBtn) {
+                        if (hoaDonId) {
+                            confirmBtn.setAttribute('data-id', hoaDonId);
+                        }
+                        if (actionUrl) {
+                            confirmBtn.setAttribute('data-url', actionUrl);
+                        }
                     }
 
                     if (paymentAmount && amount) {
@@ -690,8 +701,14 @@
             if (confirmBtn) {
                 confirmBtn.addEventListener('click', function() {
                     const hoaDonId = this?.getAttribute('data-id');
+                    const targetUrl = this?.getAttribute('data-url') || (hoaDonId ? `/hoadonsuco/${hoaDonId}/thanh-toan` : '');
                     const hinhThuc = paymentMethodSelect?.value || '';
                     const ghiChu = document.getElementById('ghi_chu_thanh_toan')?.value || '';
+
+                    if (!targetUrl) {
+                        alert('❌ Không tìm thấy địa chỉ thanh toán! Vui lòng tải lại trang.');
+                        return;
+                    }
 
                     if (!hoaDonId || !hinhThuc) {
                         alert('⚠️ Vui lòng chọn hình thức thanh toán!');
@@ -707,7 +724,7 @@
                     this.disabled = true;
                     this.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang xử lý...';
 
-                    fetch(`/admin/hoadonsuco/${hoaDonId}/thanh-toan`, {
+                    fetch(targetUrl, {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')

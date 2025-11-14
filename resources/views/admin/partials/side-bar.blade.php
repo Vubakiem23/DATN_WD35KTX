@@ -156,14 +156,30 @@
                                     <i class="fa fa-bullhorn"></i> 
                                     Thông báo 
                                 </a>
+                            </li>
+                            <li>
                                 <a href="{{ route('thongbao_su_co.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
+                                      <i class="fa fa-bullhorn"></i> 
                                     Thông báo tình trạng sự cố
                                 </a>
-                                <a href="{{ route('thongbao_khu_phong') }}">Xem thông báo khu, phòng</a>
-                                <a href="{{ route('thongbao_sinh_vien.index') }}">Xem thông báo sinh viên</a>
-                                <a href="{{ route('tintuc.index') }}">Xem thông báo tin tức</a>
-                                <a href="{{ route('hashtags.index') }}">Quản lý thẻ Hashtag</a>
+                            </li>
+                            <li>
+                                <li>
+                                <a href="{{ route('thongbao_khu_phong') }}" class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}"><i class="fa fa-bullhorn"></i>
+                                    Xem thông báo khu, phòng
+                                </a>
+                                </li>
+                                <li>
+                                <a href="{{ route('thongbao_sinh_vien.index') }}"><i class="fa fa-bullhorn"></i> Xem thông báo sinh viên</a>
+                                
+                                </li>
+                                <li>
+                                <a href="{{ route('tintuc.index') }}"><i class="fa fa-bullhorn"></i> Xem thông báo tin tức</a>
+                                </li>
+                                <li>
+                                <a href="{{ route('hashtags.index') }}"><i class="fa fa-bullhorn"></i> Quản lý thẻ Hashtag</a>
+                                </li>
                                 <!-- <a href="{{ route('thongbao_phong_sv.index') }}">Quản lý thẻ Hashtag</a> -->
 
                             </li>

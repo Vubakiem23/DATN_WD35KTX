@@ -255,7 +255,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // ---------------- BÁO CÁO - THỐNG KÊ ----------------
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
-});
+
 Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
 // ====== SỰ CỐ: Mở cho admin + nhân viên (UI + hành động) ======

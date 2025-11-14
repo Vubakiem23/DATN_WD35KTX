@@ -198,12 +198,27 @@
             background-position: center;
             background-color: #1a1a2e;
             position: relative;
+            overflow: hidden;
         }
         
-        .hero-section img {
+        .hero-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(1.02);
+            transition: opacity 0.8s ease, transform 1.2s ease;
+        }
+        
+        .hero-slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        
+        .hero-slide.is-active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 0;
         }
         
         .hero-section::after {
@@ -211,6 +226,7 @@
             position: absolute;
             inset: 0;
             background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.55) 100%);
+            z-index: 1;
         }
         
         .hero-content {
@@ -222,7 +238,7 @@
             padding-bottom: 32px;
             text-align: center;
             color: #fff;
-            z-index: 1;
+            z-index: 2;
         }
         
         .hero-title {
@@ -237,6 +253,61 @@
             font-size: 16px;
             opacity: 0.95;
             margin-top: 8px;
+        }
+        
+        .hero-slider-controls {
+            position: absolute;
+            inset: auto 0 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 3;
+        }
+        
+        .hero-slider-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        
+        .hero-slider-dot.is-active {
+            background: #fff;
+            transform: scale(1.2);
+        }
+        
+        .hero-slider-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+            transition: background 0.2s ease;
+        }
+        
+        .hero-slider-nav:hover {
+            background: rgba(0, 0, 0, 0.55);
+        }
+        
+        .hero-slider-nav.prev {
+            left: 18px;
+        }
+        
+        .hero-slider-nav.next {
+            right: 18px;
         }
         
         .content-section {
