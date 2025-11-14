@@ -9,6 +9,7 @@ use App\Models\TaiSan;
 use App\Models\Slot;
 use App\Models\SinhVien;
 use App\Models\Khu;
+use App\Models\ThongBaoPhongSv;
 use Illuminate\Support\Facades\Schema;
 use App\Exceptions\PhongException;
 use Illuminate\Http\Request;
@@ -605,4 +606,21 @@ class PhongController extends Controller
             ], 500);
         }
     }
+    public function capNhatPhong(Request $request, $id)
+{
+    $sv = SinhVien::findOrFail($id);
+
+    // Cập nhật phòng
+    $sv->phong_id = $request->phong_id;
+    $sv->save();
+
+    // Tạo thông báo
+    ThongBaoPhongSv::create([
+        'sinh_vien_id' => $sv->id,
+        'phong_id' => $sv->phong_id,
+        'noi_dung' => "Sinh viên {$sv->ho_ten} đã được thêm vào phòng {$sv->phong->ten_phong}.",
+    ]);
+
+    return back()->with('success', 'Đã thêm sinh viên vào phòng và tạo thông báo.');
+}
 }

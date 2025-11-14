@@ -59,7 +59,7 @@
                 {{-- Nội dung --}}
                 <div class="col-md-12 mb-3">
                     <label class="form-label">Nội dung</label>
-                    <textarea name="noi_dung" class="form-control" rows="5" required>{{ old('noi_dung') }}</textarea>
+                    <textarea id="noi_dung" name="noi_dung" class="form-control" rows="5" >{{ old('noi_dung') }}</textarea>
                 </div>
 
                 {{-- Ngày đăng --}}
@@ -285,7 +285,70 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('❌ Lỗi khi xóa mức độ');
         });
     });
+     // Kích hoạt Select2 cho khu
+        $('#khu_id').select2({
+            placeholder: '🔍 Chọn khu',
+            allowClear: true,
+            width: '100%'
+        });
 
-});
+        // Kích hoạt Select2 cho phòng
+        $('#phong_id').select2({
+            placeholder: '🏠 Chọn phòng',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // ==================== AlertifyJS cấu hình ====================
+        alertify.set('notifier', 'position', 'top-right');
+        alertify.defaults.theme.ok = "btn btn-success";
+        alertify.defaults.theme.cancel = "btn btn-danger";
+        alertify.defaults.theme.input = "form-control";
+
+        // Thông báo khi chọn KHU
+        $('#khu_id').on('select2:select', function(e) {
+            var data = e.params.data;
+            alertify.success(`✅ Đã chọn khu: <b>${data.text}</b>`);
+        });
+
+        $('#khu_id').on('select2:unselect', function(e) {
+            var data = e.params.data;
+            alertify.message(`❎ Bỏ chọn khu: <b>${data.text}</b>`);
+        });
+
+        // Thông báo khi chọn PHÒNG
+        $('#phong_id').on('select2:select', function(e) {
+            var data = e.params.data;
+            alertify.success(`✅ Đã chọn phòng: <b>${data.text}</b>`);
+        });
+
+        $('#phong_id').on('select2:unselect', function(e) {
+            var data = e.params.data;
+            alertify.message(`❎ Bỏ chọn phòng: <b>${data.text}</b>`);
+        });
+
+    });
+</script>
+@endpush
+@push('styles')
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- AlertifyJS -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css" />
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css" />
+@endpush
+
+@push('scripts')
+<!-- Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- AlertifyJS -->
+<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+@endpush
+@push('scripts')
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+<script>
+    ClassicEditor
+        .create(document.querySelector('#noi_dung'))
+        .catch(error => console.error(error));
 </script>
 @endpush
