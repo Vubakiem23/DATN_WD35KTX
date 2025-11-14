@@ -44,6 +44,7 @@ use App\Models\Violation;
 
 // =================== 🌐 PUBLIC (Công khai) ===================
 Route::get('', [PublicController::class, 'home'])->name('public.home');
+Route::get('/gioi-thieu', [PublicController::class, 'about'])->name('public.about');
 // Đăng ký ký túc xá (Public)
 Route::get('/dang-ky-ky-tuc-xa', [PublicController::class, 'applyForm'])->name('public.apply');
 Route::post('/dang-ky-ky-tuc-xa', [PublicController::class, 'applyStore'])->name('public.apply.store');

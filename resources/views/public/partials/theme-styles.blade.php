@@ -1,19 +1,4 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    <title>@yield('title', 'Trang chủ | KÝ TÚC XÁ')</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <style>
+<style>
         :root {
             --primary-blue: #0066CC;
             --dark-blue: #003d7a;
@@ -193,7 +178,7 @@
         
         .hero-section {
             width: 100%;
-            height: 380px;
+            height: 420px;
             background-size: cover;
             background-position: center;
             background-color: #1a1a2e;
@@ -205,8 +190,8 @@
             position: absolute;
             inset: 0;
             opacity: 0;
-            transform: scale(1.05);
-            transition: opacity 1s ease, transform 1.5s ease;
+            transform: scale(1.02);
+            transition: opacity 0.8s ease, transform 1.2s ease;
         }
         
         .hero-slide img {
@@ -225,7 +210,7 @@
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.6) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.55) 100%);
             z-index: 1;
         }
         
@@ -233,56 +218,31 @@
             position: absolute;
             inset: 0;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
+            padding-bottom: 32px;
             text-align: center;
             color: #fff;
             z-index: 2;
-            padding: 30px 20px;
-        }
-        
-        .hero-content > div {
-            max-width: 700px;
-            animation: fadeInUp 0.8s ease;
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         
         .hero-title {
-            font-size: 36px;
+            font-size: 40px;
             font-weight: 900;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            margin-bottom: 12px;
-            line-height: 1.2;
-            transition: opacity 0.3s ease;
+            text-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
         }
         
         .hero-subtitle {
             font-size: 16px;
-            font-weight: 500;
             opacity: 0.95;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-            line-height: 1.5;
-            letter-spacing: 0.3px;
-            transition: opacity 0.3s ease;
+            margin-top: 8px;
         }
         
         .hero-slider-controls {
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            inset: auto 0 20px;
             display: flex;
             justify-content: center;
             gap: 10px;
@@ -290,107 +250,49 @@
         }
         
         .hero-slider-dot {
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.6);
-            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.15);
             cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 0;
-        }
-        
-        .hero-slider-dot:hover {
-            border-color: rgba(255, 255, 255, 0.9);
-            transform: scale(1.2);
+            transition: background 0.3s ease, transform 0.3s ease;
         }
         
         .hero-slider-dot.is-active {
             background: #fff;
-            border-color: #fff;
-            transform: scale(1.3);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: scale(1.2);
         }
         
         .hero-slider-nav {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            background: rgba(0, 0, 0, 0.35);
             color: #fff;
-            font-size: 16px;
+            font-size: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 3;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
+            transition: background 0.2s ease;
         }
         
         .hero-slider-nav:hover {
-            background: rgba(0, 0, 0, 0.6);
-            border-color: #fff;
-            transform: translateY(-50%) scale(1.1);
-        }
-        
-        .hero-slider-nav:active {
-            transform: translateY(-50%) scale(0.95);
+            background: rgba(0, 0, 0, 0.55);
         }
         
         .hero-slider-nav.prev {
-            left: 20px;
+            left: 18px;
         }
         
         .hero-slider-nav.next {
-            right: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .hero-section {
-                height: 300px;
-            }
-            
-            .hero-title {
-                font-size: 26px;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
-            }
-            
-            .hero-subtitle {
-                font-size: 14px;
-            }
-            
-            .hero-content {
-                padding: 20px 15px;
-            }
-            
-            .hero-slider-nav {
-                width: 36px;
-                height: 36px;
-                font-size: 14px;
-            }
-            
-            .hero-slider-nav.prev {
-                left: 12px;
-            }
-            
-            .hero-slider-nav.next {
-                right: 12px;
-            }
-            
-            .hero-slider-controls {
-                bottom: 15px;
-            }
-            
-            .hero-slider-dot {
-                width: 7px;
-                height: 7px;
-            }
+            right: 18px;
         }
         
         .content-section {
@@ -633,70 +535,3 @@
             color: rgba(255, 255, 255, 0.7);
         }
     </style>
-    
-    @stack('styles')
-</head>
-<body>
-    <!-- Top Banner -->
-    <div class="top-banner"></div>
-    
-    <!-- Header -->
-    @include('public.partials.header')
-    
-    <!-- Notifications -->
-    @if(session('success') || session('warning') || session('status') || $errors->any())
-        <div class="container mt-3">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if(session('warning'))
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    {{ session('warning') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if(session('status'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    {{ session('status') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <ul class="mb-0 ps-3">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-        </div>
-    @endif
-
-    <!-- Hero Image -->
-    @yield('hero')
-    
-    <!-- Main Content -->
-    <main>
-        @yield('content')
-    </main>
-    
-    <!-- Footer -->
-    @include('public.partials.footer')
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    
-    @stack('scripts')
-</body>
-</html>
-
