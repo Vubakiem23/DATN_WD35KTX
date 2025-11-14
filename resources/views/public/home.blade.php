@@ -31,7 +31,7 @@
         ],
     ];
 @endphp
-<div class="hero-section hero-slider" data-autoplay="3500">
+<div class="hero-section hero-slider" data-autoplay="4000">
     @foreach ($heroSlides as $index => $slide)
         <div class="hero-slide {{ $loop->first ? 'is-active' : '' }}"
             data-title="{{ $slide['title'] }}"
@@ -43,8 +43,8 @@
 
     <div class="hero-content">
         <div>
-            <div class="hero-title" id="heroTitle">{{ $heroSlides[0]['title'] }}</div>
-            <div class="hero-subtitle" id="heroSubtitle">{{ $heroSlides[0]['subtitle'] }}</div>
+            <h1 class="hero-title" id="heroTitle">{{ $heroSlides[0]['title'] }}</h1>
+            <p class="hero-subtitle" id="heroSubtitle">{{ $heroSlides[0]['subtitle'] }}</p>
         </div>
     </div>
 
@@ -83,17 +83,33 @@
 
         const setSlide = (index) => {
             if (!slides.length) return;
+            
+            // Remove active state
             slides[currentIndex]?.classList.remove('is-active');
             dots[currentIndex]?.classList.remove('is-active');
 
+            // Update index
             currentIndex = (index + slides.length) % slides.length;
 
-            const activeSlide = slides[currentIndex];
-            activeSlide.classList.add('is-active');
-            dots[currentIndex]?.classList.add('is-active');
+            // Add active state with slight delay for smooth transition
+            setTimeout(() => {
+                const activeSlide = slides[currentIndex];
+                activeSlide.classList.add('is-active');
+                dots[currentIndex]?.classList.add('is-active');
 
-            titleEl.textContent = activeSlide.dataset.title || titleEl.textContent;
-            subtitleEl.textContent = activeSlide.dataset.subtitle || subtitleEl.textContent;
+                // Update text with fade effect
+                if (titleEl && subtitleEl) {
+                    titleEl.style.opacity = '0';
+                    subtitleEl.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        titleEl.textContent = activeSlide.dataset.title || titleEl.textContent;
+                        subtitleEl.textContent = activeSlide.dataset.subtitle || subtitleEl.textContent;
+                        titleEl.style.opacity = '1';
+                        subtitleEl.style.opacity = '1';
+                    }, 200);
+                }
+            }, 50);
         };
 
         const nextSlide = () => setSlide(currentIndex + 1);
@@ -261,10 +277,10 @@
                      class="intro-image">
                 <div class="intro-title">Giới thiệu chung</div>
                 <div class="intro-text">
-                    <p><strong>Trường Cao đằng FPT POLYECHNIC</strong></p>
-                    <p></p>
+                    <p><strong>Ký túc xá VaMos – FPT Polytechnic</strong></p>
+                    <p>Không gian sống hiện đại, an toàn với đầy đủ tiện ích học tập, sinh hoạt và kết nối cộng đồng cho sinh viên toàn trường.</p>
                 </div>
-                <a href="#gioi-thieu" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                <a href="{{ route('public.about') }}" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
             
@@ -295,7 +311,7 @@
                     <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=200&fit=crop" 
                          alt="Hướng dẫn" 
                          class="guide-image">
-                    <a href="#huong-dan" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                    <a href="{{ route('public.about') }}#huong-dan" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
                 </div>
             </div>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ThongBao;
 use App\Models\SinhVien;
+use App\Models\Phong;
+use App\Models\Khu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -130,6 +132,97 @@ class PublicController extends Controller
         SinhVien::create($data);
 
         return redirect()->route('public.home')->with('success', 'Đã gửi hồ sơ. Vui lòng chờ duyệt.');
+    }
+
+    /**
+     * Trang giới thiệu chung ký túc xá
+     */
+    public function about()
+    {
+        $stats = [
+            'rooms' => Phong::count(),
+            'areas' => Khu::count(),
+            'students' => SinhVien::count(),
+            'activities' => 12,
+        ];
+
+        $history = [
+            [
+                'year' => '2018',
+                'title' => 'Khởi công xây dựng',
+                'description' => 'Ký túc xá VaMos được khởi công xây dựng với mục tiêu tạo không gian sống hiện đại, an toàn cho sinh viên FPT Polytechnic.'
+            ],
+            [
+                'year' => '2019',
+                'title' => 'Hoàn thành giai đoạn 1',
+                'description' => 'Khu A và Khu B được hoàn thành và đưa vào sử dụng, đón nhận hơn 500 sinh viên đầu tiên.'
+            ],
+            [
+                'year' => '2020',
+                'title' => 'Mở rộng quy mô',
+                'description' => 'Hoàn thành Khu C và Khu D, nâng tổng số phòng lên hơn 1.200 phòng, đáp ứng nhu cầu của hơn 2.400 sinh viên.'
+            ],
+            [
+                'year' => '2021',
+                'title' => 'Ứng dụng công nghệ',
+                'description' => 'Triển khai hệ thống quản lý thông minh, ứng dụng công nghệ vào quản lý và vận hành ký túc xá.'
+            ],
+            [
+                'year' => '2022 - Nay',
+                'title' => 'Phát triển bền vững',
+                'description' => 'Không ngừng cải thiện chất lượng dịch vụ, mở rộng hoạt động cộng đồng và nâng cao trải nghiệm sinh viên.'
+            ],
+        ];
+
+        $highlights = [
+            [
+                'icon' => 'fa-shield-alt',
+                'title' => 'An toàn & bảo mật',
+                'description' => 'Hệ thống kiểm soát ra vào thông minh, trực bảo vệ 24/7 và camera giám sát toàn khu vực đảm bảo an ninh tuyệt đối.'
+            ],
+            [
+                'icon' => 'fa-wifi',
+                'title' => 'Tiện ích đầy đủ',
+                'description' => 'Wifi tốc độ cao, phòng sinh hoạt chung, khu tự học, căn tin và các tiện ích hiện đại phục vụ nhu cầu học tập và sinh hoạt.'
+            ],
+            [
+                'icon' => 'fa-hands-helping',
+                'title' => 'Cộng đồng gắn kết',
+                'description' => 'Hơn 20 câu lạc bộ đa dạng, chương trình mentoring, hoạt động ngoại khóa và sự kiện cộng đồng mỗi tháng.'
+            ],
+            [
+                'icon' => 'fa-building',
+                'title' => 'Cơ sở vật chất hiện đại',
+                'description' => 'Phòng ở tiện nghi, không gian học tập rộng rãi, khu thể thao và các tiện ích công cộng được đầu tư bài bản.'
+            ],
+            [
+                'icon' => 'fa-users',
+                'title' => 'Đội ngũ chuyên nghiệp',
+                'description' => 'Ban quản lý tận tâm, đội ngũ hỗ trợ 24/7 luôn sẵn sàng giải đáp và hỗ trợ sinh viên mọi lúc, mọi nơi.'
+            ],
+            [
+                'icon' => 'fa-leaf',
+                'title' => 'Môi trường xanh',
+                'description' => 'Không gian xanh, sạch, đẹp với hệ thống xử lý rác thải thân thiện môi trường và văn hóa sống xanh.'
+            ],
+        ];
+
+        $values = [
+            'Kỷ luật – Văn minh – Sáng tạo',
+            'Sống xanh – Sống sạch – Sống trách nhiệm',
+            'Sẵn sàng hỗ trợ và sẻ chia cùng nhau',
+            'Tôn trọng sự đa dạng và bình đẳng',
+            'Phát triển toàn diện về học tập và kỹ năng sống',
+        ];
+
+        $guideSteps = [
+            'Đăng ký hồ sơ trực tuyến tại mục Đăng ký ký túc xá trên website.',
+            'Xác nhận email và bổ sung đầy đủ giấy tờ theo hướng dẫn của Ban quản lý.',
+            'Nhận kết quả xét duyệt qua email, hoàn tất phí nội trú và ký hợp đồng.',
+            'Nhận phòng, bàn giao tài sản và làm thẻ ra vào ký túc xá.',
+        ];
+
+        return view('public.about', compact('stats', 'history', 'highlights', 'values', 'guideSteps'));
     }
 }
 
