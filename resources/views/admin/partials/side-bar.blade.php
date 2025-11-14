@@ -154,7 +154,7 @@
                                 <a href="{{ route('thongbao.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
                                     <i class="fa fa-bullhorn"></i> 
-                                    Thông báo tin tức
+                                    Thông báo 
                                 </a>
                                 <a href="{{ route('thongbao_su_co.index') }}"
                                     class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
@@ -162,6 +162,10 @@
                                 </a>
                                 <a href="{{ route('thongbao_khu_phong') }}">Xem thông báo khu, phòng</a>
                                 <a href="{{ route('thongbao_sinh_vien.index') }}">Xem thông báo sinh viên</a>
+                                <a href="{{ route('tintuc.index') }}">Xem thông báo tin tức</a>
+                                <a href="{{ route('hashtags.index') }}">Quản lý thẻ Hashtag</a>
+                                <!-- <a href="{{ route('thongbao_phong_sv.index') }}">Quản lý thẻ Hashtag</a> -->
+
                             </li>
                         </ul>
                     </li>

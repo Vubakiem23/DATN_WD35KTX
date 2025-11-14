@@ -31,7 +31,6 @@
                         <th class="fit text-center">STT</th>
                         <th class="fit text-center">Sinh viên</th>
                         <th class="fit">Lớp</th>
-                        <th class="fit">Phòng</th>
                         <th class="fit">Nội dung</th>
                         <th class="fit">Trạng thái</th>
                         <th class="fit text-center">Ngày tạo</th>
@@ -62,7 +61,6 @@
                                 <small class="text-muted">{{ $sinhVien->ma_sinh_vien ?? '' }}</small>
                             </td>
                             <td>{{ $sinhVien->lop ?? '---' }}</td>
-                            <td>{{ $sinhVien->phong?->ten_phong ?? '---' }}</td>
                             <td>{{ \Illuminate\Support\Str::limit(strip_tags($noiDung), 60, '...') }}</td>
                             <td><span class="badge {{ $badgeClass }}">{{ $trangThai }}</span></td>
                             <td class="text-center">{{ $tb->created_at->format('d/m/Y H:i') }}</td>

@@ -63,8 +63,11 @@
             {{-- Nội dung --}}
             <div class="col-md-12 mb-3">
                 <label class="form-label">Nội dung</label>
-                <textarea name="noi_dung" class="form-control" rows="5" required>{{ old('noi_dung', $thongbao->noi_dung) }}</textarea>
+                <textarea id="noi_dung" name="noi_dung" class="form-control" rows="5" required>
+                {{ old('noi_dung', $thongbao->noi_dung) }}
+                </textarea>
             </div>
+
 
             {{-- Ngày đăng --}}
             <div class="col-md-6 mb-3">
@@ -85,7 +88,7 @@
 
             {{-- Khu --}}
             <div class="col-md-6 mb-3">
-                <label class="form-label">Chọn khu (có thể chọn nhiều)</label>
+                <label class="form-label">Chọn khu</label>
                 <select name="khu_id[]" id="khu_id" class="form-select" multiple>
                     @foreach($khus as $khu)
                     <option value="{{ $khu->id }}" {{ $thongbao->khus->contains($khu->id) ? 'selected' : '' }}>
@@ -93,12 +96,10 @@
                     </option>
                     @endforeach
                 </select>
-                <small class="text-muted">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều khu.</small>
             </div>
 
-            {{-- Phòng --}}
             <div class="col-md-6 mb-3">
-                <label class="form-label">Chọn phòng (có thể chọn nhiều)</label>
+                <label class="form-label">Chọn phòng</label>
                 <select name="phong_id[]" id="phong_id" class="form-select" multiple>
                     @foreach($phongs as $phong)
                     <option value="{{ $phong->id }}" {{ $thongbao->phongs->contains($phong->id) ? 'selected' : '' }}>
@@ -106,8 +107,8 @@
                     </option>
                     @endforeach
                 </select>
-                <small class="text-muted">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều phòng.</small>
             </div>
+
 
             {{-- Ảnh --}}
             <div class="col-md-6 mb-3">
@@ -139,168 +140,240 @@
         </div>
     </form>
 </div>
+
 @endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
 
-    // ----------------- TIÊU ĐỀ -----------------
-    const tieuDeSelect = document.getElementById('tieu_de_id');
-    const addTitleBtn = document.getElementById('add_title_btn');
-    const deleteTitleBtn = document.getElementById('delete_title_btn');
-    const inputTieuDe = document.getElementById('input_tieu_de');
-    const tieudeCreateUrl = "{{ route('tieude.ajaxCreate') }}";
-    const tieudeDeleteUrl = "{{ route('tieude.ajaxDelete') }}";
+        // ----------------- TIÊU ĐỀ -----------------
+        const tieuDeSelect = document.getElementById('tieu_de_id');
+        const addTitleBtn = document.getElementById('add_title_btn');
+        const deleteTitleBtn = document.getElementById('delete_title_btn');
+        const inputTieuDe = document.getElementById('input_tieu_de');
+        const tieudeCreateUrl = "{{ route('tieude.ajaxCreate') }}";
+        const tieudeDeleteUrl = "{{ route('tieude.ajaxDelete') }}";
 
-    addTitleBtn.addEventListener('click', () => {
-        inputTieuDe.style.display = 'block';
-        inputTieuDe.focus();
-    });
-
-    inputTieuDe.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const value = inputTieuDe.value.trim();
-            if (!value) return;
-
-            fetch(tieudeCreateUrl, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ ten_tieu_de: value })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const option = document.createElement('option');
-                    option.value = data.id;
-                    option.text = data.ten_tieu_de;
-                    option.selected = true;
-                    tieuDeSelect.appendChild(option);
-                    inputTieuDe.value = '';
-                    inputTieuDe.style.display = 'none';
-                    alert('✅ Thêm tiêu đề thành công');
-                } else {
-                    alert('❌ Không thể thêm tiêu đề');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('⚠️ Lỗi khi thêm tiêu đề');
-            });
-        }
-    });
-
-    deleteTitleBtn.addEventListener('click', () => {
-        const selected = tieuDeSelect.value;
-        if (!selected) return alert('Chọn tiêu đề để xóa');
-        if (!confirm('Bạn có chắc chắn muốn xóa không?')) return;
-
-        fetch(tieudeDeleteUrl, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ id: selected })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                tieuDeSelect.querySelector(`option[value="${selected}"]`).remove();
-                alert('🗑️ Xóa tiêu đề thành công');
-            } else {
-                alert('⚠️ Không thể xóa tiêu đề (đang được sử dụng)');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('❌ Lỗi khi xóa tiêu đề');
+        addTitleBtn.addEventListener('click', () => {
+            inputTieuDe.style.display = 'block';
+            inputTieuDe.focus();
         });
-    });
 
-    // ================== MỨC ĐỘ ƯU TIÊN ==================
-    const prioritySelect = document.getElementById('muc_do_id');
-    const addPriorityBtn = document.getElementById('add_priority_btn');
-    const deletePriorityBtn = document.getElementById('delete_priority_btn');
-    const inputPriority = document.getElementById('input_muc_do');
-    const mucdoCreateUrl = "{{ route('mucdo.ajaxCreate') }}";
-    const mucdoDeleteUrl = "{{ route('mucdo.ajaxDelete') }}";
+        inputTieuDe.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const value = inputTieuDe.value.trim();
+                if (!value) return;
 
-    addPriorityBtn.addEventListener('click', () => {
-        inputPriority.style.display = 'block';
-        inputPriority.focus();
-    });
-
-    inputPriority.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const value = inputPriority.value.trim();
-            if (!value) return;
-
-            fetch(mucdoCreateUrl, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ten_muc_do: value })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const option = document.createElement('option');
-                    option.value = data.id;
-                    option.text = data.ten_muc_do;
-                    option.selected = true;
-                    prioritySelect.appendChild(option);
-                    inputPriority.value = '';
-                    inputPriority.style.display = 'none';
-                    alert('✅ Thêm mức độ thành công');
-                } else {
-                    alert('❌ Không thể thêm mức độ');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('⚠️ Lỗi khi thêm mức độ');
-            });
-        }
-    });
-
-    deletePriorityBtn.addEventListener('click', () => {
-        const selected = prioritySelect.value;
-        if (!selected) return alert('Chọn mức độ để xóa');
-        if (!confirm('Bạn có chắc chắn muốn xóa không?')) return;
-
-        fetch(mucdoDeleteUrl, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id: selected })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                prioritySelect.querySelector(`option[value="${selected}"]`).remove();
-                alert('🗑️ Xóa mức độ thành công');
-            } else {
-                alert('⚠️ Không thể xóa mức độ (đang được sử dụng)');
+                fetch(tieudeCreateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            ten_tieu_de: value
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const option = document.createElement('option');
+                            option.value = data.id;
+                            option.text = data.ten_tieu_de;
+                            option.selected = true;
+                            tieuDeSelect.appendChild(option);
+                            inputTieuDe.value = '';
+                            inputTieuDe.style.display = 'none';
+                            alert('✅ Thêm tiêu đề thành công');
+                        } else {
+                            alert('❌ Không thể thêm tiêu đề');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('⚠️ Lỗi khi thêm tiêu đề');
+                    });
             }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('❌ Lỗi khi xóa mức độ');
         });
-    });
 
-});
+        deleteTitleBtn.addEventListener('click', () => {
+            const selected = tieuDeSelect.value;
+            if (!selected) return alert('Chọn tiêu đề để xóa');
+            if (!confirm('Bạn có chắc chắn muốn xóa không?')) return;
+
+            fetch(tieudeDeleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: selected
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        tieuDeSelect.querySelector(`option[value="${selected}"]`).remove();
+                        alert('🗑️ Xóa tiêu đề thành công');
+                    } else {
+                        alert('⚠️ Không thể xóa tiêu đề (đang được sử dụng)');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('❌ Lỗi khi xóa tiêu đề');
+                });
+        });
+
+        // ================== MỨC ĐỘ ƯU TIÊN ==================
+        const prioritySelect = document.getElementById('muc_do_id');
+        const addPriorityBtn = document.getElementById('add_priority_btn');
+        const deletePriorityBtn = document.getElementById('delete_priority_btn');
+        const inputPriority = document.getElementById('input_muc_do');
+        const mucdoCreateUrl = "{{ route('mucdo.ajaxCreate') }}";
+        const mucdoDeleteUrl = "{{ route('mucdo.ajaxDelete') }}";
+
+        addPriorityBtn.addEventListener('click', () => {
+            inputPriority.style.display = 'block';
+            inputPriority.focus();
+        });
+
+        inputPriority.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const value = inputPriority.value.trim();
+                if (!value) return;
+
+                fetch(mucdoCreateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            ten_muc_do: value
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const option = document.createElement('option');
+                            option.value = data.id;
+                            option.text = data.ten_muc_do;
+                            option.selected = true;
+                            prioritySelect.appendChild(option);
+                            inputPriority.value = '';
+                            inputPriority.style.display = 'none';
+                            alert('✅ Thêm mức độ thành công');
+                        } else {
+                            alert('❌ Không thể thêm mức độ');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('⚠️ Lỗi khi thêm mức độ');
+                    });
+            }
+        });
+
+        deletePriorityBtn.addEventListener('click', () => {
+            const selected = prioritySelect.value;
+            if (!selected) return alert('Chọn mức độ để xóa');
+            if (!confirm('Bạn có chắc chắn muốn xóa không?')) return;
+
+            fetch(mucdoDeleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: selected
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        prioritySelect.querySelector(`option[value="${selected}"]`).remove();
+                        alert('🗑️ Xóa mức độ thành công');
+                    } else {
+                        alert('⚠️ Không thể xóa mức độ (đang được sử dụng)');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('❌ Lỗi khi xóa mức độ');
+                });
+        });
+        // Kích hoạt Select2 cho khu
+        $('#khu_id').select2({
+            placeholder: '🔍 Chọn khu',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Kích hoạt Select2 cho phòng
+        $('#phong_id').select2({
+            placeholder: '🏠 Chọn phòng',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // ==================== AlertifyJS cấu hình ====================
+        alertify.set('notifier', 'position', 'top-right');
+        alertify.defaults.theme.ok = "btn btn-success";
+        alertify.defaults.theme.cancel = "btn btn-danger";
+        alertify.defaults.theme.input = "form-control";
+
+        // Thông báo khi chọn KHU
+        $('#khu_id').on('select2:select', function(e) {
+            var data = e.params.data;
+            alertify.success(`✅ Đã chọn khu: <b>${data.text}</b>`);
+        });
+
+        $('#khu_id').on('select2:unselect', function(e) {
+            var data = e.params.data;
+            alertify.message(`❎ Bỏ chọn khu: <b>${data.text}</b>`);
+        });
+
+        // Thông báo khi chọn PHÒNG
+        $('#phong_id').on('select2:select', function(e) {
+            var data = e.params.data;
+            alertify.success(`✅ Đã chọn phòng: <b>${data.text}</b>`);
+        });
+
+        $('#phong_id').on('select2:unselect', function(e) {
+            var data = e.params.data;
+            alertify.message(`❎ Bỏ chọn phòng: <b>${data.text}</b>`);
+        });
+
+    });
+</script>
+@endpush
+@push('styles')
+<!-- Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- AlertifyJS -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css" />
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/bootstrap.min.css" />
+@endpush
+
+@push('scripts')
+<!-- Select2 -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- AlertifyJS -->
+<script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+@endpush
+@push('scripts')
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+<script>
+    ClassicEditor
+        .create(document.querySelector('#noi_dung'))
+        .catch(error => console.error(error));
 </script>
 @endpush
