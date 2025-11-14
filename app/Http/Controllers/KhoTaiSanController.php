@@ -45,23 +45,47 @@ class KhoTaiSanController extends Controller
 
     /** 🔁 Hiển thị các tài sản cùng loại */
     public function related(Request $request, $loai_id)
-    {
-        $loai = LoaiTaiSan::findOrFail($loai_id);
+{
+    $loai = LoaiTaiSan::findOrFail($loai_id);
 
-        $query = KhoTaiSan::with(['phong', 'taiSans.phong'])->where('loai_id', $loai_id);
+    // Lấy query ban đầu
+    $query = KhoTaiSan::with(['phong', 'taiSans.phong'])
+        ->where('loai_id', $loai_id);
 
-        if ($request->filled('tinh_trang')) {
-            $query->where('tinh_trang', $request->tinh_trang);
-        }
-
-        if ($request->filled('ma_tai_san')) {
-            $query->where('ma_tai_san', 'like', '%' . $request->ma_tai_san . '%');
-        }
-
-        $taiSan = $query->orderBy('id', 'desc')->paginate(5)->withQueryString();
-
-        return view('kho.related', compact('loai', 'taiSan'));
+    // Lọc theo tình trạng nếu có
+    if ($request->filled('tinh_trang')) {
+        $query->where('tinh_trang', $request->tinh_trang);
     }
+
+    // Lọc theo mã tài sản nếu có
+    if ($request->filled('ma_tai_san')) {
+        $query->where('ma_tai_san', 'like', '%' . $request->ma_tai_san . '%');
+    }
+
+    // Lấy toàn bộ kết quả trước khi phân trang
+    $taiSanCollection = $query->orderBy('id', 'desc')->get();
+
+    // Sắp xếp: chưa gán phòng lên đầu, đã gán phòng xuống cuối
+    $taiSanCollection = $taiSanCollection->sortBy(function ($item) {
+        return $item->taiSans->whereNotNull('phong_id')->count() > 0 ? 1 : 0;
+    })->values();
+
+    // Phân trang thủ công
+    $perPage = 5;
+    $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+    $currentItems = $taiSanCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+    $taiSan = new \Illuminate\Pagination\LengthAwarePaginator(
+        $currentItems,
+        $taiSanCollection->count(),
+        $perPage,
+        $currentPage,
+        ['path' => request()->url(), 'query' => request()->query()]
+    );
+
+    return view('kho.related', compact('loai', 'taiSan'));
+}
+
     public function create($loai_id)
     {
         $loai = LoaiTaiSan::findOrFail($loai_id);
@@ -121,7 +145,7 @@ class KhoTaiSanController extends Controller
 
         $request->validate([
             'ten_tai_san' => 'required|string|max:255',
-            'so_luong' => 'required|integer|min:1',
+            'so_luong' => 'nullable|integer|min:0',
             'don_vi_tinh' => 'nullable|string|max:50',
             'tinh_trang' => 'nullable|in:Mới,Hỏng,Cũ,Bảo trì,Bình thường',
             'ghi_chu' => 'nullable|string',
@@ -141,7 +165,7 @@ class KhoTaiSanController extends Controller
 
         $taiSan->update([
             'ten_tai_san' => $request->ten_tai_san,
-            'so_luong' => $request->so_luong,
+            'so_luong' => $request->so_luong ?? 1,
             'don_vi_tinh' => $request->don_vi_tinh,
             'tinh_trang' => $request->tinh_trang,
             'ghi_chu' => $request->ghi_chu,

@@ -53,6 +53,8 @@ body { background:#f8fafc; }
   .asset-item__actions{justify-content:flex-start}
 }
 </style>
+
+
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -61,6 +63,7 @@ body { background:#f8fafc; }
     </div>
     <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary"><i class="fa fa-arrow-left me-1"></i> Quay lại</a>
         </div>
+
     @if ($errors->any())
     <div class="alert alert-danger rounded-3 shadow-sm">
       <ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
@@ -78,6 +81,7 @@ body { background:#f8fafc; }
       </button>
       <div id="selectedAssetsList" class="mt-2 small text-muted">Chưa chọn</div>
         </div>
+
     <div class="row g-3 mt-3">
             <div class="col-md-6">
                 <label class="form-label fw-semibold text-secondary">Phòng</label>
@@ -88,21 +92,17 @@ body { background:#f8fafc; }
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold text-secondary">Tình trạng khi gán</label>
-        <select name="tinh_trang" class="form-select form-control" required>
-                    <option value="Bình thường">Bình thường</option>
-                    <option value="Hỏng">Hỏng</option>
-                    <option value="Cần bảo trì">Cần bảo trì</option>
-                </select>
-            </div>
+
+            <!-- ❌ Loại bỏ dropdown tình trạng – hệ thống sẽ tự lấy từ kho -->
         </div>
+
         <div class="text-end mt-4">
       <button type="submit" class="btn btn-success px-4 py-2 shadow-sm"><i class="fa fa-save me-1"></i> Lưu tài sản</button>
         </div>
     </form>
 </div>
-{{-- 🧭 Modal chọn tài sản --}}
+
+{{-- Modal chọn tài sản (giữ nguyên toàn bộ) --}}
 <div class="modal fade" id="assetPickerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
@@ -120,18 +120,21 @@ body { background:#f8fafc; }
               @endforeach
             </div>
           </div>
+
           <div class="col-md-6">
             <h6 class="fw-semibold mb-2">Danh sách tài sản</h6>
             <div id="list_taisan" class="asset-list-scroll p-2 border">
               <p class="text-muted text-center mt-3">Chọn loại tài sản để hiển thị...</p>
             </div>
           </div>
+
           <div class="col-md-3">
             <h6 class="fw-semibold mb-2">Đã chọn (<span id="countSelected">0</span>)</h6>
             <div class="selected-preview border p-2" id="selectedPreview">
               <p class="text-muted small">Chưa chọn tài sản nào</p>
             </div>
           </div>
+
         </div>
       </div>
       <div class="modal-footer bg-light">
@@ -141,6 +144,9 @@ body { background:#f8fafc; }
     </div>
   </div>
 </div>
+
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 (function () {
@@ -351,19 +357,21 @@ body { background:#f8fafc; }
               const isSelected = selectedAssets.has(id);
               const img = item.hinh_anh || 'https://via.placeholder.com/96';
               const code = item.ma_tai_san || `TS-${item.id}`;
-              div.innerHTML = `
-                <div class="asset-item__info">
-                  <img src="${img}" alt="${item.ten_tai_san}" class="asset-item__thumb">
-                  <div>
-                    <div class="asset-item__name">${item.ten_tai_san}</div>
-                    <div class="asset-item__code">Mã: ${code}</div>
-                  </div>
-                </div>
-                <div class="asset-item__actions">
-                  <button type="button" class="asset-toggle" data-id="${id}">
-                    <span class="asset-toggle__label">${isSelected ? 'Bỏ chọn' : 'Chọn'}</span>
-                  </button>
-                </div>`;
+             div.innerHTML = `
+  <div class="asset-item__info">
+    <img src="${img}" alt="${item.ten_tai_san}" class="asset-item__thumb">
+    <div>
+      <div class="asset-item__name">${item.ten_tai_san}</div>
+      <div class="asset-item__code">Mã: ${code}</div>
+      <div class="asset-item__status small text-muted">Trạng thái: ${item.tinh_trang || 'Chưa có'}</div>
+    </div>
+  </div>
+  <div class="asset-item__actions">
+    <button type="button" class="asset-toggle" data-id="${id}">
+      <span class="asset-toggle__label">${isSelected ? 'Bỏ chọn' : 'Chọn'}</span>
+    </button>
+  </div>`;
+
               listTaiSan.appendChild(div);
               const toggleBtn = div.querySelector('.asset-toggle');
               if (toggleBtn) {

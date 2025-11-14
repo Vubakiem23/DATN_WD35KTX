@@ -28,7 +28,7 @@
 
         <div class="mb-3">
             <label class="form-label">Số lượng</label>
-            <input type="number" name="so_luong" class="form-control" value="{{ old('so_luong', $taiSan->so_luong) }}" min="1" required>
+            <input type="number" name="so_luong" class="form-control" readonly value="{{ old('so_luong', $taiSan->so_luong) }}" min="1" required>
         </div>
 
         <div class="mb-3">
