@@ -38,23 +38,18 @@
             <td>{{ number_format($hoaDon->don_gia_nuoc) }} VND</td>
         </tr>
         <tr>
-            <td>Tiền phòng</td>
-            <td>{{ number_format($hoaDon->phong->gia_phong) }} VND</td>
+            <td>Tiền phòng của bạn </td>
+            <td> {{ number_format($tienPhongMoiSV, 0, ',', '.') }} VNĐ</td>
         </tr>
         <tr>
-            <td>Tiền điện</td>
-            <td>{{ number_format(($hoaDon->so_dien_moi - $hoaDon->so_dien_cu) * $hoaDon->don_gia_dien) }} VND</td>
+            <td>Tiền điện nước của bạn</td>
+            <td>{{ number_format($tienDienNuocMoiSV, 0, ',', '.') }} VNĐ</td>
         </tr>
         <tr>
-            <td>Tiền nước</td>
-            <td>{{ number_format(($hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu) * $hoaDon->don_gia_nuoc) }} VND</td>
-        </tr>
-        <tr style="background-color: #ffeeba;">
-            <td><strong>Thành tiền</strong></td>
-            <td><strong>{{ number_format($hoaDon->thanh_tien) }} VND</strong></td>
+            <td><strong>Tổng tiền phải thanh toán</strong></td>
+            <td><strong>{{ number_format($tongTienMoiSV, 0, ',', '.') }} VNĐ</strong></td>  
         </tr>
     </tbody>
 </table>
-
 <p style="margin-top: 20px;">Vui lòng thanh toán trước ngày <strong>10 hàng tháng</strong>.</p>
 <p>Trân trọng!</p>
