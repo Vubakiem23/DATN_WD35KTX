@@ -48,13 +48,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.about') }}#huong-dan">
+                        <a class="nav-link {{ request()->routeIs('public.guide') ? 'active' : '' }}" href="{{ route('public.guide') }}">
                             <i class="fas fa-book"></i>
                             <span>Hướng dẫn</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.about') }}#noi-quy">
+                        <a class="nav-link {{ request()->routeIs('public.rules') ? 'active' : '' }}" href="{{ route('public.rules') }}">
                             <i class="fas fa-clipboard-list"></i>
                             <span>Nội quy</span>
                         </a>

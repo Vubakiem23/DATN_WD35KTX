@@ -34,7 +34,7 @@
                     <li><a href="{{ route('public.about') }}">Giới thiệu</a></li>
                     <li><a href="{{ route('public.home') }}#thong-bao">Thông báo</a></li>
                     <li><a href="{{ route('public.home') }}#tin-tuc">Tin tức</a></li>
-                    <li><a href="{{ route('public.about') }}#huong-dan">Hướng dẫn</a></li>
+                    <li><a href="{{ route('public.guide') }}#huong-dan">Hướng dẫn</a></li>
                     <li><a href="{{ route('public.about') }}#noi-quy">Nội quy</a></li>
                 </ul>
             </div>

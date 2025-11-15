@@ -224,5 +224,196 @@ class PublicController extends Controller
 
         return view('public.about', compact('stats', 'history', 'highlights', 'values', 'guideSteps'));
     }
+
+    /**
+     * Trang hướng dẫn thủ tục
+     */
+    public function guide()
+    {
+        $guideSteps = [
+            [
+                'number' => 1,
+                'title' => 'Đăng ký hồ sơ trực tuyến',
+                'description' => 'Truy cập mục "Đăng ký ký túc xá" trên website, điền đầy đủ thông tin cá nhân và tải lên các giấy tờ cần thiết.',
+                'icon' => 'fa-file-alt'
+            ],
+            [
+                'number' => 2,
+                'title' => 'Xác nhận và bổ sung giấy tờ',
+                'description' => 'Xác nhận email đăng ký và bổ sung đầy đủ giấy tờ theo hướng dẫn của Ban quản lý (CMND/CCCD, giấy khai sinh, ảnh thẻ...).',
+                'icon' => 'fa-check-circle'
+            ],
+            [
+                'number' => 3,
+                'title' => 'Nhận kết quả xét duyệt',
+                'description' => 'Nhận kết quả xét duyệt qua tài khoản hoặc nhận điện thoại xác nhận của tổng đài, hoàn tất phí nội trú và xác nhận theo hướng dẫn.',
+                'icon' => 'fa-envelope'
+            ],
+            [
+                'number' => 4,
+                'title' => 'Nhận phòng và làm thủ tục',
+                'description' => 'Nhận phòng, bàn giao tài sản và làm thẻ ra vào ký túc xá tại văn phòng quản lý.',
+                'icon' => 'fa-key'
+            ],
+        ];
+
+        $documents = [
+            'CMND/CCCD (bản sao có công chứng)',
+            'Giấy khai sinh (bản sao)',
+            'Ảnh thẻ 3x4 (2 tấm)',
+            'Giấy xác nhận học tập tại trường',
+            'Giấy khám sức khỏe (nếu có)',
+        ];
+
+        $fees = [
+            [
+                'title' => 'Phí đăng ký',
+                'amount' => 'Miễn phí',
+                'description' => 'Không mất phí khi đăng ký hồ sơ'
+            ],
+            [
+                'title' => 'Phí nội trú',
+                'amount' => 'Theo quy định',
+                'description' => 'Thanh toán sau khi được duyệt hồ sơ'
+            ],
+            [
+                'title' => 'Phí bảo hiểm',
+                'amount' => 'Theo quy định',
+                'description' => 'Bảo hiểm y tế và bảo hiểm tài sản'
+            ],
+        ];
+
+        return view('public.guide', compact('guideSteps', 'documents', 'fees'));
+    }
+
+    /**
+     * Trang nội quy ký túc xá
+     */
+    public function rules()
+    {
+        $generalRules = [
+            [
+                'title' => 'Giờ giấc',
+                'icon' => 'fa-clock',
+                'items' => [
+                    'Giờ tắt đèn: 22h30 hàng ngày (từ Chủ nhật đến Thứ 5)',
+                    'Giờ tắt đèn: 23h00 (Thứ 6 và Thứ 7)',
+                    'Giờ mở cửa: 5h30 sáng',
+                    'Giờ đóng cửa: 22h00 (từ Chủ nhật đến Thứ 5), 23h00 (Thứ 6, Thứ 7)',
+                    'Nghiêm cấm ra ngoài sau giờ đóng cửa nếu không có lý do chính đáng',
+                ]
+            ],
+            [
+                'title' => 'An ninh & An toàn',
+                'icon' => 'fa-shield-alt',
+                'items' => [
+                    'Luôn mang theo thẻ sinh viên khi ra vào ký túc xá',
+                    'Không được cho người lạ vào phòng, khu vực ký túc xá',
+                    'Báo ngay cho bảo vệ khi phát hiện người lạ hoặc hành vi đáng nghi',
+                    'Nghiêm cấm sử dụng vũ khí, chất nổ, chất dễ cháy nổ',
+                    'Không được tự ý thay đổi khóa cửa, lắp đặt thiết bị điện không được phép',
+                ]
+            ],
+            [
+                'title' => 'Vệ sinh & Môi trường',
+                'icon' => 'fa-broom',
+                'items' => [
+                    'Giữ gìn vệ sinh chung trong phòng và khu vực công cộng',
+                    'Phân loại rác thải đúng quy định (rác tái chế, rác thải thông thường)',
+                    'Không vứt rác bừa bãi, đổ rác đúng nơi quy định',
+                    'Vệ sinh phòng ở hàng tuần, tham gia vệ sinh khu vực chung theo lịch',
+                    'Nghiêm cấm nuôi động vật trong ký túc xá',
+                ]
+            ],
+            [
+                'title' => 'Sử dụng điện & Nước',
+                'icon' => 'fa-bolt',
+                'items' => [
+                    'Tiết kiệm điện, nước, tắt các thiết bị khi không sử dụng',
+                    'Không được tự ý lắp đặt, sửa chữa hệ thống điện, nước',
+                    'Báo ngay cho quản lý khi phát hiện sự cố về điện, nước',
+                    'Nghiêm cấm sử dụng bếp điện, bếp gas trong phòng',
+                    'Chỉ được sử dụng các thiết bị điện được phép (quạt, đèn, laptop...)',
+                ]
+            ],
+            [
+                'title' => 'Ứng xử & Văn hóa',
+                'icon' => 'fa-users',
+                'items' => [
+                    'Tôn trọng quyền riêng tư của người khác, không làm ồn sau 22h',
+                    'Không hút thuốc, uống rượu bia, sử dụng chất kích thích trong ký túc xá',
+                    'Không đánh nhau, gây gổ, có hành vi bạo lực',
+                    'Tôn trọng tài sản chung, không làm hư hỏng, phá hoại',
+                    'Tham gia tích cực các hoạt động cộng đồng, văn hóa do ký túc xá tổ chức',
+                ]
+            ],
+            [
+                'title' => 'Tài sản & Thiết bị',
+                'icon' => 'fa-couch',
+                'items' => [
+                    'Bảo quản tốt tài sản được cấp phát (giường, tủ, bàn ghế...)',
+                    'Báo ngay khi phát hiện tài sản bị hư hỏng, mất mát',
+                    'Không được tự ý di chuyển, thay đổi vị trí tài sản chung',
+                    'Chịu trách nhiệm bồi thường nếu làm hư hỏng, mất mát tài sản',
+                    'Khi chuyển phòng hoặc ra khỏi ký túc xá phải bàn giao đầy đủ tài sản',
+                ]
+            ],
+        ];
+
+        $violations = [
+            [
+                'level' => 'Cảnh cáo',
+                'color' => 'warning',
+                'items' => [
+                    'Vi phạm giờ giấc lần đầu',
+                    'Làm ồn sau giờ quy định',
+                    'Vệ sinh phòng không đạt yêu cầu',
+                    'Không tham gia vệ sinh khu vực chung',
+                ]
+            ],
+            [
+                'level' => 'Cảnh cáo & Phạt tiền',
+                'color' => 'danger',
+                'items' => [
+                    'Vi phạm giờ giấc nhiều lần',
+                    'Làm mất, hư hỏng tài sản',
+                    'Sử dụng thiết bị điện không được phép',
+                    'Cho người lạ vào phòng',
+                    'Hút thuốc, uống rượu bia trong ký túc xá',
+                ]
+            ],
+            [
+                'level' => 'Đình chỉ ở & Buộc ra khỏi KTX',
+                'color' => 'critical',
+                'items' => [
+                    'Đánh nhau, gây gổ, có hành vi bạo lực',
+                    'Sử dụng chất kích thích, ma túy',
+                    'Trộm cắp tài sản',
+                    'Vi phạm nghiêm trọng nhiều lần sau khi đã được cảnh cáo',
+                    'Có hành vi vi phạm pháp luật',
+                ]
+            ],
+        ];
+
+        $rights = [
+            'Được cung cấp chỗ ở an toàn, sạch sẽ',
+            'Được sử dụng các tiện ích công cộng (wifi, phòng sinh hoạt, khu thể thao...)',
+            'Được tham gia các hoạt động văn hóa, thể thao do ký túc xá tổ chức',
+            'Được bảo vệ quyền lợi và an toàn cá nhân',
+            'Được khiếu nại, đề xuất ý kiến với Ban quản lý',
+            'Được thông báo về các quy định, thay đổi liên quan đến ký túc xá',
+        ];
+
+        $responsibilities = [
+            'Tuân thủ nghiêm chỉnh nội quy ký túc xá',
+            'Tham gia đầy đủ các buổi họp, hoạt động bắt buộc',
+            'Thanh toán đầy đủ, đúng hạn các khoản phí',
+            'Báo cáo kịp thời các sự cố, vấn đề phát sinh',
+            'Tôn trọng và hợp tác với Ban quản lý, bảo vệ',
+            'Giữ gìn hình ảnh tốt đẹp của ký túc xá và sinh viên',
+        ];
+
+        return view('public.rules', compact('generalRules', 'violations', 'rights', 'responsibilities'));
+    }
 }
 

@@ -21,9 +21,6 @@
     <!-- Header -->
     @include('client.partials.header')
     
-    <!-- Navigation -->
-    @include('client.partials.navigation')
-    
     <!-- Main Content -->
     <main class="main-content">
         <div class="container-fluid py-4">
