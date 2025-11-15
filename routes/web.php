@@ -211,6 +211,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
         Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
         Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+        Route::post('/admin/hoadon/{id}/quickupdate', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
+
+
     });
 
     Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
@@ -233,6 +236,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/sendemailphong/{phong_id}', [HoaDonController::class, 'guiEmailTheoPhong']);
     Route::get('/hoadon/timkiem', [HoaDonController::class, 'timKiem'])->name('hoadon.timkiem');
     Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+    Route::post('/admin/hoadon/{id}/quickupdate', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
+
 
     // ====== VI PHẠM (violations) ======
     Route::resource('vipham', ViolationController::class);

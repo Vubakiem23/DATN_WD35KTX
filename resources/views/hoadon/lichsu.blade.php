@@ -1,8 +1,19 @@
 @extends('admin.layouts.admin')
 
+
 @section('content')
 <div class="container py-4">
   <h3>📜 Lịch sử hóa đơn đã thanh toán</h3>
+  <form method="GET" action="{{ route('hoadon.lichsu') }}" class="row g-3 mb-4">
+  <div class="col-md-3">
+    <label for="ngay" class="form-label">Ngày</label>
+    <input type="date" name="ngay" id="ngay" class="form-control" value="{{ request('ngay') }}">
+  </div>
+  
+  <div class="col-md-3 d-flex align-items-end">
+    <button type="submit" class="btn btn-primary">🔍 Lọc</button>
+  </div>
+</form>
 
   {{-- Thông báo thành công --}}
   @if(session('success'))
@@ -12,10 +23,6 @@
     </div>
   @endif
 
-    <form action="{{ route('hoadon.timkiem') }}" method="GET" style="margin-bottom: 20px;">
-    <input type="text" name="keyword" placeholder="Tìm theo tháng, phòng, khu..." style="padding: 6px; width: 300px;">
-    <button type="submit" style="padding: 6px 12px;">Tìm kiếm</button>
-</form>
 
   {{-- Kiểm tra danh sách hóa đơn --}}
   @if($hoaDons->isEmpty())

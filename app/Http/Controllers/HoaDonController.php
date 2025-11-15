@@ -45,7 +45,7 @@ class HoaDonController extends Controller
     $hoaDons = HoaDon::with(['phong.khu'])
         ->when($khu, function ($query) use ($khu) {
             $query->whereHas('phong.khu', function ($q) use ($khu) {
-                $q->where('ten_khu', $khu); // hoặc where('id', $khu) nếu lọc theo ID
+                $q->where('ten_khu', $khu);
             });
         })
         ->when($phongId, function ($query) use ($phongId) {
@@ -76,28 +76,9 @@ class HoaDonController extends Controller
             return $hoaDon;
         });
 
-    // ✅ Tính toán thống kê
-    $tongHoaDon = $hoaDons->count();
-    $tongTien = $hoaDons->sum('thanh_tien');
-
-    $daThanhToan = $hoaDons->where('da_thanh_toan', true);
-    $chuaThanhToan = $hoaDons->where('da_thanh_toan', false);
-
-    $tongDaThanhToan = $daThanhToan->count();
-    $tienDaThanhToan = $daThanhToan->sum('thanh_tien');
-
-    $tongChuaThanhToan = $chuaThanhToan->count();
-    $tienChuaThanhToan = $chuaThanhToan->sum('thanh_tien');
-
     $dsPhongs = Phong::all();
 
-    // ✅ Truyền dữ liệu sang view
-    return view('hoadon.index', compact(
-        'hoaDons', 'dsPhongs',
-        'tongHoaDon', 'tongTien',
-        'tongDaThanhToan', 'tienDaThanhToan',
-        'tongChuaThanhToan', 'tienChuaThanhToan'
-    ));
+    return view('hoadon.index', compact('hoaDons', 'dsPhongs'));
 }
 
 
@@ -171,11 +152,38 @@ class HoaDonController extends Controller
 
         return view('hoadon.show', compact('hoaDon'));
     }
-    public function edit($id)
-    {
-        $hoaDon = HoaDon::with('phong')->findOrFail($id);
-        return view('hoadon.edit', compact('hoaDon'));
+    public function quickUpdate(Request $request, $id)
+{
+    try {
+        $hoaDon = HoaDon::findOrFail($id);
+
+        // Cập nhật đơn giá
+        $hoaDon->don_gia_dien = $request->don_gia_dien;
+        $hoaDon->don_gia_nuoc = $request->don_gia_nuoc;
+
+        // Tính lại tiền
+        $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
+        $so_nuoc = $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu;
+        $gia_phong = optional($hoaDon->phong)->gia_phong ?? 0;
+
+        $hoaDon->thanh_tien = ($so_dien * $hoaDon->don_gia_dien)
+                            + ($so_nuoc * $hoaDon->don_gia_nuoc)
+                            + $gia_phong;
+
+        $hoaDon->save();
+
+        return response()->json(['success' => true], 200);
+    } catch (\Exception $e) {
+        \Log::error('Lỗi cập nhật nhanh: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Đã xảy ra lỗi khi cập nhật hóa đơn.'
+        ], 500);
     }
+}
+
+
+
     public function update(Request $request, $id)
 {
     $hoaDon = HoaDon::findOrFail($id);
@@ -196,16 +204,22 @@ $hoaDon->thanh_tien = ($so_dien * $hoaDon->don_gia_dien) + ($so_nuoc * $hoaDon->
     return redirect()->route('hoadon.index')->with('success', 'Hóa đơn đã được cập nhật!');
 }
 
-    public function lichSu()
-    {
-        // Lấy danh sách hóa đơn đã thanh toán, kèm thông tin phòng
-        $hoaDons = HoaDon::with('phong')
-            ->where('da_thanh_toan', true)
-            ->orderByDesc('ngay_thanh_toan')
-            ->paginate(10); // 👉 dùng phân trang để khớp với view
+   public function lichSu(Request $request)
+{
+    // Chỉ lấy hóa đơn đã thanh toán
+    $query = HoaDon::with('phong')->where('da_thanh_toan', true);
 
-        return view('hoadon.lichsu', compact('hoaDons'));
+    // 👉 Lọc theo ngày cụ thể nếu có
+    if ($request->filled('ngay')) {
+        $query->whereDate('ngay_thanh_toan', $request->ngay);
     }
+
+    // 👉 Sắp xếp mới nhất lên đầu và phân trang
+    $hoaDons = $query->orderByDesc('ngay_thanh_toan')->paginate(10);
+
+    return view('hoadon.lichsu', compact('hoaDons'));
+}
+
     public function xemBienLai($id)
 {
     $hoaDon = HoaDon::with('phong')->findOrFail($id);

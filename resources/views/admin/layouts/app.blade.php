@@ -57,7 +57,9 @@
                 Ký Túc Xá VaMos - Admin
              </div>
              <div class="clearfix"></div>
-
+             </footer>
+      </div>
+   </div>
   <!-- JS: Bootstrap + dependencies -->
     <script src="{{ asset('assets/admin/vendors/jquery/dist/jquery.min.js') }}"></script>
     <!-- Bootstrap -->
