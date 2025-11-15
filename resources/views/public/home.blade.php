@@ -272,7 +272,7 @@
             <!-- Giới thiệu - Cột trái -->
             <div class="col-md-6">
                 <div class="panel">
-                <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=300&fit=crop" 
+                <img src="{{ asset('images/photo-1-159188526439782241575.jpg') }}" 
                      alt="Ký túc xá" 
                      class="intro-image">
                 <div class="intro-title">Giới thiệu chung</div>
@@ -308,10 +308,10 @@
                 
                 <div class="guide-section" id="huong-dan">
                     <div class="intro-title">HƯỚNG DẪN THỦ TỤC</div>
-                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=200&fit=crop" 
+                    <img src="{{ asset('images/huongdan.jpg') }}" 
                          alt="Hướng dẫn" 
                          class="guide-image">
-                    <a href="{{ route('public.about') }}#huong-dan" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                    <a href="{{ route('public.guide') }}#huong-dan" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
                 </div>
             </div>

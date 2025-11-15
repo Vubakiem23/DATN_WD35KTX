@@ -116,6 +116,7 @@ class ClientController extends Controller
 
         // Bổ sung dữ liệu hiển thị: số người, tài sản phòng, tài sản cá nhân đã bàn giao
         $soNguoiTrongPhong = null;
+        $danhSachSinhVien = collect([]);
         $taiSanPhong = collect([]);
         $taiSanCaNhan = collect([]);
         $slotSinhVien = null;
@@ -124,11 +125,37 @@ class ClientController extends Controller
             // Số người đang ở (đếm slots có sinh_vien_id)
             $soNguoiTrongPhong = $phong->usedSlots();
 
-            // Tài sản của phòng
-            $taiSanPhong = TaiSan::with('khoTaiSan')
+            // Danh sách sinh viên trong phòng (từ slots có sinh_vien_id)
+            $danhSachSinhVien = Slot::with('sinhVien')
+                ->where('phong_id', $phong->id)
+                ->whereNotNull('sinh_vien_id')
+                ->get()
+                ->map(function($slot) {
+                    return $slot->sinhVien;
+                })
+                ->filter()
+                ->values();
+
+            // Tài sản chung của phòng (logic giống admin: chỉ lấy tài sản có available_quantity > 0)
+            $roomAssets = TaiSan::with(['khoTaiSan', 'slots'])
                 ->where('phong_id', $phong->id)
                 ->orderBy('ten_tai_san')
                 ->get();
+
+            $taiSanPhong = $roomAssets->map(function ($asset) {
+                $assignedQuantity = $asset->slots->sum(function ($slotItem) {
+                    return (int) ($slotItem->pivot->so_luong ?? 0);
+                });
+                $availableQuantity = max(0, (int) ($asset->so_luong ?? 0) - $assignedQuantity);
+                
+                $asset->setAttribute('assigned_slot_quantity', $assignedQuantity);
+                $asset->setAttribute('available_quantity', $availableQuantity);
+                
+                return $asset;
+            })->filter(function ($asset) {
+                // Chỉ lấy tài sản chung (available_quantity > 0)
+                return (int) $asset->available_quantity > 0;
+            })->values();
 
             // Slot của sinh viên và tài sản đã bàn giao riêng
             $slotSinhVien = Slot::with(['taiSans.khoTaiSan'])
@@ -143,6 +170,7 @@ class ClientController extends Controller
             'sinhVien',
             'phong',
             'soNguoiTrongPhong',
+            'danhSachSinhVien',
             'taiSanPhong',
             'taiSanCaNhan',
             'slotSinhVien'

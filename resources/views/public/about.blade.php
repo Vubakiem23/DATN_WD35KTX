@@ -12,6 +12,7 @@
         height: 400px;
         position: relative;
         overflow: hidden;
+        border-radius: 24px;
     }
 
     .hero-section.hero-static img {
@@ -53,7 +54,7 @@
 
     .stats-card {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 32px 24px;
         text-align: center;
         border: 1px solid var(--border);
@@ -103,8 +104,83 @@
         width: 100%;
         height: 400px;
         object-fit: cover;
-        border-radius: 16px;
+        border-radius: 24px;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .intro-image:hover {
+        transform: scale(1.02);
+    }
+
+    /* Intro Gallery */
+    .intro-gallery .intro-main-image .intro-image {
+        height: 500px;
+    }
+
+    .intro-gallery .intro-side-image .intro-image {
+        height: 240px;
+    }
+
+    .intro-gallery .intro-side-image:last-child .intro-image {
+        height: 240px;
+    }
+
+    /* Intro Content Section */
+    .intro-content-section .intro-content-image .intro-image {
+        height: 350px;
+    }
+
+    /* Intro Image Grid */
+    .intro-image-grid {
+        margin-top: 60px;
+    }
+
+    .intro-grid-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .intro-grid-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .intro-grid-item .intro-image {
+        height: 280px;
+        width: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .intro-grid-item:hover .intro-image {
+        transform: scale(1.1);
+    }
+
+    .intro-grid-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
+        padding: 24px;
+        color: white;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .intro-grid-item:hover .intro-grid-overlay {
+        transform: translateY(0);
+    }
+
+    .intro-grid-overlay span {
+        font-size: 18px;
+        font-weight: 700;
+        display: block;
     }
 
     .intro-badge {
@@ -211,11 +287,12 @@
 
     .timeline-card {
         background: white;
-        border-radius: 12px;
+        border-radius: 20px;
         padding: 24px;
         border: 1px solid var(--border);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
         transition: all 0.3s ease;
+        overflow: hidden;
     }
 
     .timeline-card:hover {
@@ -235,7 +312,7 @@
     .value-list li {
         padding: 20px 24px;
         background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-        border-radius: 12px;
+        border-radius: 16px;
         border-left: 4px solid var(--primary-blue);
         font-size: 15px;
         font-weight: 600;
@@ -263,7 +340,7 @@
 
     .highlight-card {
         background: white;
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 32px 28px;
         text-align: center;
         border: 1px solid var(--border);
@@ -345,12 +422,13 @@
 
     .guide-step {
         background: white;
-        border-radius: 12px;
+        border-radius: 20px;
         padding: 28px 24px;
         border: 1px solid var(--border);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
         transition: all 0.3s ease;
         position: relative;
+        overflow: hidden;
     }
 
     .guide-step:hover {
@@ -389,10 +467,11 @@
 
     .rule-card {
         background: white;
-        border-radius: 12px;
+        border-radius: 20px;
         padding: 24px;
         border: 1px solid var(--border);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
     }
 
     .rule-card h5 {
@@ -435,10 +514,12 @@
     /* Contact Section */
     .contact-section {
         background: linear-gradient(135deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
-        border-radius: 16px;
+        border-radius: 24px;
         padding: 48px;
         color: white;
         margin-top: 40px;
+        overflow: hidden;
+        position: relative;
     }
 
     .contact-section h3 {
@@ -495,6 +576,31 @@
         font-weight: 600;
     }
 
+    .view-more-link {
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .view-more-link:hover {
+        color: var(--dark-blue);
+        gap: 12px;
+    }
+
+    .view-more-link i {
+        transition: transform 0.3s ease;
+    }
+
+    .view-more-link:hover i {
+        transform: translateX(4px);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .hero-title {
@@ -535,6 +641,30 @@
         .contact-section {
             padding: 32px 24px;
         }
+
+        .intro-gallery .intro-main-image .intro-image {
+            height: 300px;
+        }
+
+        .intro-gallery .intro-side-image .intro-image {
+            height: 180px;
+        }
+
+        .intro-content-section .intro-content-image .intro-image {
+            height: 250px;
+        }
+
+        .intro-grid-item .intro-image {
+            height: 220px;
+        }
+
+        .intro-header h2 {
+            font-size: 28px;
+        }
+
+        .intro-content h3 {
+            font-size: 24px;
+        }
     }
 </style>
 @endpush
@@ -545,19 +675,122 @@
     <div class="container">
         <!-- Introduction Section -->
         <section id="gioi-thieu" class="intro-section">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6">
-                    <img src="{{ asset('images/lovepik-different-male-college-students-in-the-dormitory-picture_501788393.jpg') }}" 
-                         alt="Khuôn viên ký túc xá" 
-                         class="intro-image">
+            <div class="intro-header text-center mb-5">
+                <span class="intro-badge">Ký túc xá VaMos</span>
+                <h2 class="mt-3 mb-4">Ngôi nhà thứ hai của sinh viên FPT Polytechnic</h2>
+                <p class="lead mx-auto" style="max-width: 800px; font-size: 18px; color: var(--text-700);">
+                    Ký túc xá VaMos được thiết kế như một khu phức hợp hiện đại với 4 khu nhà, hơn 1.200 giường nội trú, hệ thống tiện ích đa dạng giúp sinh viên phát triển toàn diện về học tập lẫn kỹ năng sống.
+                </p>
+            </div>
+
+            <!-- Main Image Gallery -->
+            <div class="intro-gallery mb-5">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="intro-main-image">
+                            <img src="{{ asset('images/lovepik-different-male-college-students-in-the-dormitory-picture_501788393.jpg') }}" 
+                                 alt="Phòng ở ký túc xá" 
+                                 class="intro-image">
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="intro-side-images">
+                            <div class="intro-side-image mb-3">
+                                <img src="{{ asset('images/image-1024x682.jpg') }}" 
+                                     alt="Khuôn viên ký túc xá" 
+                                     class="intro-image">
+                            </div>
+                            <div class="intro-side-image">
+                                <img src="{{ asset('images/Gemini_Generated_Image_hxk4evhxk4evhxk4.png') }}" 
+                                     alt="Không gian sinh hoạt" 
+                                     class="intro-image">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="intro-content">
-                        <span class="intro-badge">Ký túc xá VaMos</span>
-                        <h2>Ngôi nhà thứ hai của sinh viên FPT Polytechnic</h2>
-                        <p>Ký túc xá VaMos được thiết kế như một khu phức hợp hiện đại với 4 khu nhà, hơn 1.200 giường nội trú, hệ thống tiện ích đa dạng giúp sinh viên phát triển toàn diện về học tập lẫn kỹ năng sống.</p>
-                        <p>Chúng tôi đặt trọng tâm vào sự an toàn, tính cộng đồng và trải nghiệm sống thông minh. Mọi hoạt động vận hành đều ứng dụng công nghệ quản lý, giúp sinh viên và phụ huynh yên tâm theo dõi thông tin mọi lúc, mọi nơi.</p>
-                        <p>Với môi trường sống năng động, cơ sở vật chất hiện đại và đội ngũ quản lý chuyên nghiệp, VaMos không chỉ là nơi ở mà còn là nơi nuôi dưỡng tài năng, kết nối cộng đồng và tạo nên những kỷ niệm đáng nhớ trong hành trình đại học của bạn.</p>
+            </div>
+
+            <!-- Content with Images -->
+            <div class="intro-content-section">
+                <div class="row g-5 align-items-center mb-5">
+                    <div class="col-lg-6">
+                        <div class="intro-content">
+                            <h3 class="mb-4" style="font-size: 28px; font-weight: 800; color: var(--text-900);">
+                                Môi trường sống hiện đại và an toàn
+                            </h3>
+                            <p style="font-size: 16px; line-height: 1.8; color: var(--text-700); margin-bottom: 20px;">
+                                Chúng tôi đặt trọng tâm vào sự an toàn, tính cộng đồng và trải nghiệm sống thông minh. Mọi hoạt động vận hành đều ứng dụng công nghệ quản lý, giúp sinh viên và phụ huynh yên tâm theo dõi thông tin mọi lúc, mọi nơi.
+                            </p>
+                            <p style="font-size: 16px; line-height: 1.8; color: var(--text-700);">
+                                Hệ thống an ninh 24/7 với camera giám sát, kiểm soát ra vào thông minh và đội ngũ bảo vệ chuyên nghiệp đảm bảo môi trường sống an toàn tuyệt đối cho mọi sinh viên.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="intro-content-image">
+                            <img src="{{ asset('images/excel-2-2-e1713237797743.jpg') }}" 
+                                 alt="Cơ sở vật chất hiện đại" 
+                                 class="intro-image">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-5 align-items-center">
+                    <div class="col-lg-6 order-lg-2">
+                        <div class="intro-content">
+                            <h3 class="mb-4" style="font-size: 28px; font-weight: 800; color: var(--text-900);">
+                                Cộng đồng gắn kết và phát triển
+                            </h3>
+                            <p style="font-size: 16px; line-height: 1.8; color: var(--text-700); margin-bottom: 20px;">
+                                Với môi trường sống năng động, cơ sở vật chất hiện đại và đội ngũ quản lý chuyên nghiệp, VaMos không chỉ là nơi ở mà còn là nơi nuôi dưỡng tài năng, kết nối cộng đồng và tạo nên những kỷ niệm đáng nhớ trong hành trình đại học của bạn.
+                            </p>
+                            <p style="font-size: 16px; line-height: 1.8; color: var(--text-700);">
+                                Hơn 20 câu lạc bộ đa dạng từ thể thao, nghệ thuật đến học thuật, cùng các chương trình mentoring và hoạt động ngoại khóa thường xuyên giúp sinh viên phát triển toàn diện cả về học tập và kỹ năng sống.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 order-lg-1">
+                        <div class="intro-content-image">
+                            <img src="{{ asset('images/6y6ruPj73iy2ksxMA5q3A2eMmULZ9EvYEbTKdWwx.jpeg') }}" 
+                                 alt="Hoạt động cộng đồng" 
+                                 class="intro-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Grid -->
+            <div class="intro-image-grid mt-5">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="intro-grid-item">
+                            <img src="{{ asset('images/lovepik-different-male-college-students-in-the-dormitory-picture_501788393.jpg') }}" 
+                                 alt="Phòng ở" 
+                                 class="intro-image">
+                            <div class="intro-grid-overlay">
+                                <span>Phòng ở tiện nghi</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="intro-grid-item">
+                            <img src="{{ asset('images/image-1024x682.jpg') }}" 
+                                 alt="Khuôn viên" 
+                                 class="intro-image">
+                            <div class="intro-grid-overlay">
+                                <span>Khuôn viên xanh</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="intro-grid-item">
+                            <img src="{{ asset('images/Gemini_Generated_Image_hxk4evhxk4evhxk4.png') }}" 
+                                 alt="Không gian chung" 
+                                 class="intro-image">
+                            <div class="intro-grid-overlay">
+                                <span>Không gian sinh hoạt</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -626,97 +859,13 @@
             </div>
         </section>
 
-        <!-- Guide Section -->
-        <section id="huong-dan" class="panel mb-5">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="section-title mb-0">Hướng dẫn tiếp nhận nội trú</h3>
-                <a href="{{ route('public.apply') }}" class="view-more-link">Đăng ký ngay <i class="fas fa-arrow-right ms-1"></i></a>
-            </div>
-            <div class="guide-timeline">
-                @foreach ($guideSteps as $index => $step)
-                    <div class="guide-step">
-                        <div class="guide-step-number">{{ $index + 1 }}</div>
-                        <p>{{ $step }}</p>
-                    </div>
-                @endforeach
-            </div>
-        </section>
-
-        <!-- Rules Section -->
-        <section id="noi-quy" class="panel mb-5">
-            <h3 class="section-title mb-4">Nội quy & văn hóa sống</h3>
-            <div class="rules-grid">
-                <div class="rule-card">
-                    <h5>Thời gian sinh hoạt</h5>
-                    <ul>
-                        <li>Mở cổng từ 5h00 đến 23h00 hàng ngày. Sau 23h cần đăng ký trực bảo vệ.</li>
-                        <li>Giờ yên tĩnh từ 22h00 đến 6h00 nhằm đảm bảo môi trường học tập.</li>
-                        <li>Hoạt động thể thao, sinh hoạt CLB diễn ra tại khu vực được chỉ định.</li>
-                    </ul>
-                </div>
-                <div class="rule-card">
-                    <h5>Quy định tài sản</h5>
-                    <ul>
-                        <li>Không tự ý hoán đổi phòng, thay đổi kết cấu nội thất khi chưa có phép.</li>
-                        <li>Thiết bị điện công suất lớn cần đăng ký để được kiểm tra an toàn.</li>
-                        <li>Kiểm tra định kỳ hàng tháng; bồi thường theo quy định nếu làm hỏng.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section class="contact-section">
-            <div class="row align-items-center">
-                <div class="col-lg-8">
-                    <h3 class="section-title">Liên hệ Ban quản lý</h3>
-                    <div class="contact-info">
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Địa chỉ</strong>
-                                <span>Khu A, Trường Cao đẳng FPT Polytechnic</span>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Hotline</strong>
-                                <span>0909 000 888</span>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Email</strong>
-                                <span>ktvamos@fpt.edu.vn</span>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-icon">
-                                <i class="fab fa-facebook"></i>
-                            </div>
-                            <div class="contact-text">
-                                <strong>Fanpage</strong>
-                                <span>fb.com/ktxVamos</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 text-center text-lg-end">
-                    <a href="{{ route('public.apply') }}" class="register-button">
-                        <i class="fas fa-file-signature"></i>
-                        Đăng ký ở nội trú
-                    </a>
-                </div>
-            </div>
-        </section>
+        <!-- View More Link -->
+        <div class="text-center mt-5">
+            <a href="{{ route('public.guide') }}" class="view-more-link">
+                Xem thêm hướng dẫn thủ tục
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
     </div>
 </div>
 @endsection
