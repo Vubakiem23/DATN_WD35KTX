@@ -57,6 +57,9 @@
         .form-floating .form-control:not(:placeholder-shown) ~ label { opacity:.9; transform: translateY(-0.65rem) scale(.85); }
         .form-control { border-radius:999px; background:#eaf3ff; border:1px solid #cfe0ff; }
         .form-control:focus { border-color:#0ea5e9; box-shadow:0 0 0 .2rem rgba(14,165,233,.18); background:#fff; }
+        .form-control.is-invalid { border-color:#dc3545; }
+        .form-control.is-invalid:focus { border-color:#dc3545; box-shadow:0 0 0 .2rem rgba(220,53,69,.25); }
+        .invalid-feedback.d-block { display:block !important; margin-top:0.25rem; font-size:0.875rem; color:#dc3545; }
 
         /* Buttons */
         .btn-sky { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; border:none; border-radius:999px; font-weight:800; padding:.9rem 1rem; background:linear-gradient(90deg,#38bdf8,#0369a1); color:#fff; box-shadow:0 10px 28px rgba(3,105,161,.25); }
@@ -105,37 +108,47 @@
                     <div class="mb-3 form-floating">
                         <input
                             type="text"
-                            class="form-control"
+                            class="form-control @error('name') is-invalid @enderror"
                             id="name"
                             name="name"
                             placeholder="Họ và tên"
+                            value="{{ old('name') }}"
                             required
                             autocomplete="name"
                         />
                         <label for="name">Họ và tên</label>
-                        <div class="invalid-feedback">Vui lòng nhập họ và tên của bạn.</div>
+                        @error('name')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @else
+                            <div class="invalid-feedback">Vui lòng nhập họ và tên của bạn.</div>
+                        @enderror
                     </div>
 
                     <!-- Email -->
                     <div class="mb-3 form-floating">
                         <input
                             type="email"
-                            class="form-control"
+                            class="form-control @error('email') is-invalid @enderror"
                             id="email"
                             name="email"
                             placeholder="name@example.com"
+                            value="{{ old('email') }}"
                             required
                             autocomplete="email"
                         />
                         <label for="email">Địa chỉ Email</label>
-                        <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
+                        @error('email')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @else
+                            <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
+                        @enderror
                     </div>
 
                     <!-- Mật khẩu + nút hiển thị -->
                     <div class="mb-3 position-relative form-floating">
                         <input
                             type="password"
-                            class="form-control"
+                            class="form-control @error('password') is-invalid @enderror"
                             id="password"
                             name="password"
                             placeholder="Mật khẩu"
@@ -153,30 +166,42 @@
                         >
                             Hiện
                         </button>
-                        <div class="invalid-feedback">Mật khẩu phải có ít nhất 6 ký tự.</div>
+                        @error('password')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @else
+                            <div class="invalid-feedback">Mật khẩu phải có ít nhất 6 ký tự.</div>
+                        @enderror
                     </div>
 
                     <!-- Xác nhận mật khẩu -->
                     <div class="mb-3 form-floating">
                         <input
                             type="password"
-                            class="form-control"
+                            class="form-control @error('password_confirm') is-invalid @enderror"
                             id="password_confirm"
                             name="password_confirm"
                             placeholder="Xác nhận mật khẩu"
                             required
                         />
                         <label for="password_confirm">Xác nhận mật khẩu</label>
-                        <div class="invalid-feedback">Mật khẩu xác nhận không khớp.</div>
+                        @error('password_confirm')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @else
+                            <div class="invalid-feedback">Mật khẩu xác nhận không khớp.</div>
+                        @enderror
                     </div>
 
                     <!-- Điều khoản -->
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="terms" name="terms" required />
+                        <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" id="terms" name="terms" required />
                         <label class="form-check-label small" for="terms">
                             Tôi đồng ý với <a href="#" class="link-primary">Điều khoản dịch vụ</a> và <a href="#" class="link-primary">Chính sách bảo mật</a>.
                         </label>
-                        <div class="invalid-feedback">Bạn cần đồng ý trước khi đăng ký.</div>
+                        @error('terms')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @else
+                            <div class="invalid-feedback">Bạn cần đồng ý trước khi đăng ký.</div>
+                        @enderror
                     </div>
 
                     <!-- Nút Đăng ký -->

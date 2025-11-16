@@ -38,7 +38,15 @@ class UserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:6',
-            'role_id'  => 'required|exists:roles,id'
+        ], [
+            'name.required'     => 'Vui lòng nhập tên người dùng.',
+            'name.string'       => 'Tên người dùng không hợp lệ.',
+            'name.max'          => 'Tên người dùng không được vượt quá 255 ký tự.',
+            'email.required'    => 'Vui lòng nhập địa chỉ email.',
+            'email.email'       => 'Địa chỉ email không hợp lệ.',
+            'email.unique'      => 'Email này đã được sử dụng. Vui lòng chọn email khác.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.min'      => 'Mật khẩu phải có ít nhất 6 ký tự.',
         ]);
 
         $user = User::create([
@@ -47,7 +55,11 @@ class UserController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        $user->roles()->sync([$request->role_id]);
+        // Mặc định gán role admin
+        $adminRole = Role::where('ten_quyen', 'admin')->first();
+        if ($adminRole) {
+            $user->roles()->sync([$adminRole->id]);
+        }
 
         return redirect()->route('users.index')
                          ->with('success', 'Thêm người dùng thành công');

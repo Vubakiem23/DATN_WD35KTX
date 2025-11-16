@@ -66,6 +66,16 @@ class AuthController extends Controller
             'password_confirm' => 'required|same:password',
             'terms' => 'accepted',
         ], [
+            'name.required' => 'Vui lòng nhập họ và tên.',
+            'name.string' => 'Họ và tên không hợp lệ.',
+            'name.max' => 'Họ và tên không được vượt quá 255 ký tự.',
+            'email.required' => 'Vui lòng nhập địa chỉ email.',
+            'email.email' => 'Địa chỉ email không hợp lệ.',
+            'email.unique' => 'Email này đã được sử dụng. Vui lòng chọn email khác.',
+            'password.required' => 'Vui lòng nhập mật khẩu.',
+            'password.string' => 'Mật khẩu không hợp lệ.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password_confirm.required' => 'Vui lòng xác nhận mật khẩu.',
             'password_confirm.same' => 'Xác nhận mật khẩu không khớp.',
             'terms.accepted' => 'Bạn cần đồng ý điều khoản trước khi đăng ký.',
         ]);

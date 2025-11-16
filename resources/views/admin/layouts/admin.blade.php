@@ -404,6 +404,17 @@
         .card.shadow-sm .card-body {
             padding: 1rem 1.25rem;
         }
+
+        /* Sửa footer không bị thụt vào trong sidebar */
+        .nav-md footer {
+            margin-left: 230px;
+        }
+
+        @media (max-width: 991px) {
+            .nav-md footer {
+                margin-left: 0;
+            }
+        }
     </style>
 
 

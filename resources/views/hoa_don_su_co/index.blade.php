@@ -1,124 +1,348 @@
 @extends('admin.layouts.admin')
 
+@section('title', 'Danh sách hóa đơn sự cố')
+
 @section('content')
-    <div class="x_panel">
-        <div class="x_title d-flex justify-content-between align-items-center flex-wrap">
-            <h2><i class="fa fa-file-text-o text-primary"></i> Danh sách hóa đơn sự cố</h2>
-            <div class="d-flex gap-2 align-items-center">
-                <a href="{{ route('suco.index') }}" class="btn btn-sm btn-outline-secondary mt-2 mt-sm-0">
-                    <i class="fa fa-arrow-left"></i> Quay lại sự cố
-                </a>
+<div class="container mt-4" style="padding-bottom: 3rem;">
+    @push('styles')
+    <style>
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title i {
+            color: #4e54c8;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-dergin {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .35rem;
+            padding: .5rem 1.2rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: .85rem;
+            border: none;
+            color: #fff;
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+            transition: transform .2s ease, box-shadow .2s ease;
+            text-decoration: none;
+        }
+
+        .btn-dergin:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+            color: #fff;
+        }
+
+        .btn-dergin i {
+            font-size: .8rem;
+        }
+
+        .btn-dergin--info {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            box-shadow: 0 6px 16px rgba(14, 165, 233, .22);
+        }
+
+        .btn-dergin--info:hover {
+            box-shadow: 0 10px 22px rgba(14, 165, 233, .32);
+        }
+
+        .btn-dergin--muted {
+            background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+            box-shadow: 0 6px 16px rgba(107, 114, 128, .22);
+        }
+
+        .btn-dergin--muted:hover {
+            box-shadow: 0 10px 22px rgba(107, 114, 128, .32);
+        }
+
+        .btn-dergin--success {
+            background: linear-gradient(135deg, #10b981 0%, #22c55e 100%);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, .22);
+        }
+
+        .btn-dergin--success:hover {
+            box-shadow: 0 10px 22px rgba(16, 185, 129, .32);
+        }
+
+        .btn-dergin--warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, .22);
+        }
+
+        .btn-dergin--warning:hover {
+            box-shadow: 0 10px 22px rgba(245, 158, 11, .32);
+        }
+
+        .btn-dergin.btn-sm {
+            padding: .35rem .8rem;
+            font-size: .75rem;
+        }
+
+        .stats-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.1);
+        }
+
+        .stats-card h5 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stats-card h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-card .text-primary {
+            color: #4e54c8 !important;
+        }
+
+        .stats-card .text-info {
+            color: #0ea5e9 !important;
+        }
+
+        .stats-card .text-success {
+            color: #10b981 !important;
+        }
+
+        .stats-card .text-warning {
+            color: #f59e0b !important;
+        }
+
+        .stats-card small {
+            font-size: 0.85rem;
+            color: #6b7280;
+            display: block;
+            margin-top: 0.25rem;
+        }
+
+        .filter-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .filter-card:hover {
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        .filter-card label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            padding: 0.65rem 1rem;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #4e54c8;
+            box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.1);
+            outline: none;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .pagination {
+            margin-top: 1.5rem;
+        }
+
+        .pagination .page-link {
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            color: #4e54c8;
+            margin: 0 4px;
+            padding: 0.5rem 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: #4e54c8;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(78, 84, 200, 0.2);
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            border-color: #4e54c8;
+            box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
+        }
+    </style>
+    @endpush
+
+
+        <div>
+            <h4 class="page-title">
+                <i class="fa fa-file-text-o"></i>
+                Danh sách hóa đơn sự cố
+            </h4>
+            <p class="page-subtitle">Quản lý và theo dõi tất cả hóa đơn sự cố trong hệ thống</p>
+      
+        <a href="{{ route('suco.index') }}" class="btn-dergin btn-dergin--muted">
+            <i class="fa fa-arrow-left"></i> Quay lại sự cố
+        </a>
+    </div>
+
+    {{-- 📊 Thống kê --}}
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <h5>Tổng hóa đơn</h5>
+                <h3 class="text-primary">{{ number_format($tong_hoa_don, 0, ',', '.') }}</h3>
             </div>
         </div>
-
-        <div class="x_content">
-            {{-- 📊 Thống kê --}}
-            <div class="row mb-4">
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body text-center">
-                            <h5 class="text-muted mb-2">Tổng hóa đơn</h5>
-                            <h3 class="mb-0 text-primary">{{ number_format($tong_hoa_don, 0, ',', '.') }}</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body text-center">
-                            <h5 class="text-muted mb-2">Tổng tiền</h5>
-                            <h3 class="mb-0 text-info">{{ number_format($tong_tien, 0, ',', '.') }} ₫</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body text-center">
-                            <h5 class="text-muted mb-2">Đã thanh toán</h5>
-                            <h3 class="mb-0 text-success">{{ number_format($da_thanh_toan, 0, ',', '.') }}</h3>
-                            <small class="text-muted">{{ number_format($tong_tien_da_thu, 0, ',', '.') }} ₫</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body text-center">
-                            <h5 class="text-muted mb-2">Chưa thanh toán</h5>
-                            <h3 class="mb-0 text-warning">{{ number_format($chua_thanh_toan, 0, ',', '.') }}</h3>
-                            <small class="text-muted">{{ number_format($tong_tien_chua_thu, 0, ',', '.') }} ₫</small>
-                        </div>
-                    </div>
-                </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <h5>Tổng tiền</h5>
+                <h3 class="text-info">{{ number_format($tong_tien, 0, ',', '.') }} ₫</h3>
             </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <h5>Đã thanh toán</h5>
+                <h3 class="text-success">{{ number_format($da_thanh_toan, 0, ',', '.') }}</h3>
+                <small>{{ number_format($tong_tien_da_thu, 0, ',', '.') }} ₫</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stats-card">
+                <h5>Chưa thanh toán</h5>
+                <h3 class="text-warning">{{ number_format($chua_thanh_toan, 0, ',', '.') }}</h3>
+                <small>{{ number_format($tong_tien_chua_thu, 0, ',', '.') }} ₫</small>
+            </div>
+        </div>
+    </div>
 
-            {{-- 🔍 Tìm kiếm và lọc --}}
-            <form method="GET" action="{{ route('hoadonsuco.index') }}" class="mb-3">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label small">Tìm kiếm</label>
-                        <input type="text" name="search" value="{{ request('search') ?? '' }}"
-                            class="form-control form-control-sm" placeholder="MSSV hoặc Họ tên">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">Trạng thái thanh toán</label>
-                        <select name="trang_thai_thanh_toan" class="form-control form-control-sm">
-                            <option value="">Tất cả</option>
-                            <option value="da_thanh_toan"
-                                {{ request('trang_thai_thanh_toan') == 'da_thanh_toan' ? 'selected' : '' }}>Đã thanh toán
-                            </option>
-                            <option value="chua_thanh_toan"
-                                {{ request('trang_thai_thanh_toan') == 'chua_thanh_toan' ? 'selected' : '' }}>Chưa thanh
-                                toán</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">Từ ngày</label>
-                        <input type="date" name="date_from" value="{{ request('date_from') ?? '' }}"
-                            class="form-control form-control-sm">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small">Đến ngày</label>
-                        <input type="date" name="date_to" value="{{ request('date_to') ?? '' }}"
-                            class="form-control form-control-sm">
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-sm btn-primary">
-                            <i class="fa fa-search"></i> Tìm kiếm
-                        </button>
-                        @if (request('search') || request('trang_thai_thanh_toan') || request('date_from') || request('date_to'))
-                            <a href="{{ route('hoadonsuco.index') }}" class="btn btn-sm btn-light">
-                                <i class="fa fa-times"></i> Xóa lọc
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </form>
+    {{-- 🔍 Tìm kiếm và lọc --}}
+    <form method="GET" action="{{ route('hoadonsuco.index') }}" class="filter-card">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" name="search" value="{{ request('search') ?? '' }}"
+                    class="form-control" placeholder="MSSV hoặc Họ tên">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Trạng thái thanh toán</label>
+                <select name="trang_thai_thanh_toan" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="da_thanh_toan"
+                        {{ request('trang_thai_thanh_toan') == 'da_thanh_toan' ? 'selected' : '' }}>Đã thanh toán
+                    </option>
+                    <option value="chua_thanh_toan"
+                        {{ request('trang_thai_thanh_toan') == 'chua_thanh_toan' ? 'selected' : '' }}>Chưa thanh toán</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" name="date_from" value="{{ request('date_from') ?? '' }}"
+                    class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" name="date_to" value="{{ request('date_to') ?? '' }}"
+                    class="form-control">
+            </div>
+            <div class="col-md-3 d-flex gap-2 justify-content-end">
+                <button type="submit" class="btn-dergin btn-dergin--info">
+                    <i class="fa fa-search"></i> Tìm kiếm
+                </button>
+                @if (request('search') || request('trang_thai_thanh_toan') || request('date_from') || request('date_to'))
+                    <a href="{{ route('hoadonsuco.index') }}" class="btn-dergin btn-dergin--muted">
+                        <i class="fa fa-times"></i> Xóa lọc
+                    </a>
+                @endif
+            </div>
+        </div>
+    </form>
 
-            {{-- 🟢 Thông báo --}}
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show">
-                    <i class="fa fa-check-circle"></i> {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+    {{-- 🟢 Thông báo --}}
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-            @if (session('info'))
-                <div class="alert alert-info alert-dismissible fade show">
-                    <i class="fa fa-info-circle"></i> {{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+    @if (session('info'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fa fa-info-circle"></i> {{ session('info') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-            {{-- 📋 Bảng danh sách --}}
-            {{-- 📋 Bảng danh sách (đồng bộ giao diện sinh viên) --}}
-            {{-- 📋 Bảng danh sách (đồng bộ UI, giữ nguyên chức năng gốc) --}}
-            <div class="room-table-wrapper">
+    {{-- 📋 Bảng danh sách --}}
+    <div class="room-table-wrapper">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0 room-table text-center align-middle">
                         <thead>
@@ -267,190 +491,174 @@
                 </div>
             </div>
 
-            {{-- CSS đồng bộ + fix form trong flex --}}
-            @push('styles')
-                <style>
-                    .room-table-wrapper {
-                        background: #fff;
-                        border-radius: 14px;
-                        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-                        padding: 1.25rem;
-                    }
+    @push('styles')
+    <style>
+        .room-table-wrapper {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            transition: box-shadow 0.2s ease;
+        }
 
-                    .room-table {
-                        margin-bottom: 0;
-                        border-collapse: separate;
-                        border-spacing: 0 12px;
-                    }
+        .room-table-wrapper:hover {
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        }
 
-                    .room-table thead th {
-                        font-size: .78rem;
-                        text-transform: uppercase;
-                        letter-spacing: .05em;
-                        color: #6c757d;
-                        border: none;
-                        padding-bottom: .75rem;
-                    }
+        .room-table {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
 
-                    .room-table tbody tr {
-                        background: #f9fafc;
-                        border-radius: 16px;
-                        transition: transform .2s ease, box-shadow .2s ease;
-                    }
+        .room-table thead th {
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #6b7280;
+            border: none;
+            padding: 1rem 1rem;
+            font-weight: 600;
+            background: transparent;
+        }
 
-                    .room-table tbody tr:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-                    }
+        .room-table tbody tr {
+            background: #f9fafb;
+            border-radius: 12px;
+            transition: all .2s ease;
+            border: 1px solid transparent;
+        }
 
-                    .room-table tbody td {
-                        border: none;
-                        vertical-align: middle;
-                        padding: 1rem .95rem;
-                    }
+        .room-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.1);
+            background: #fff;
+            border-color: #e5e7eb;
+        }
 
-                    .room-table tbody tr td:first-child {
-                        border-top-left-radius: 16px;
-                        border-bottom-left-radius: 16px;
-                    }
+        .room-table tbody td {
+            border: none;
+            vertical-align: middle;
+            padding: 1.1rem 1rem;
+            color: #374151;
+        }
 
-                    .room-table tbody tr td:last-child {
-                        border-top-right-radius: 16px;
-                        border-bottom-right-radius: 16px;
-                    }
+        .room-table tbody tr td:first-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
 
-                    .room-actions {
-                        display: flex;
-                        justify-content: center;
-                    }
+        .room-table tbody tr td:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
 
-                    .room-actions.dropdown {
-                        position: relative;
-                    }
+        .room-actions {
+            display: flex;
+            justify-content: center;
+        }
 
-                    .room-actions .action-gear {
-                        min-width: 40px;
-                        padding: .45rem .7rem;
-                        border-radius: 999px;
-                    }
+        .room-actions.dropdown {
+            position: relative;
+        }
 
-                    .room-actions .dropdown-menu {
-                        position: absolute;
-                        top: 50% !important;
-                        right: 110%;
-                        left: auto;
-                        bottom: auto;
-                        transform: translateY(-50%);
-                        z-index: 1050;
-                        min-width: 190px;
-                        border-radius: 16px;
-                        padding: .4rem 0;
-                        margin: 0;
-                        border: 1px solid #e5e7eb;
-                        box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
-                        font-size: .82rem;
-                        background: #fff;
-                    }
+        .room-actions .action-gear {
+            min-width: 40px;
+            padding: .45rem .7rem;
+            border-radius: 999px;
+        }
 
-                    .room-actions .dropdown-item {
-                        display: flex;
-                        align-items: center;
-                        gap: .55rem;
-                        padding: .42rem .9rem;
-                        color: #4b5563;
-                    }
+        .room-actions .dropdown-menu {
+            position: absolute;
+            top: 50% !important;
+            right: 110%;
+            left: auto;
+            bottom: auto;
+            transform: translateY(-50%);
+            z-index: 1050;
+            min-width: 190px;
+            border-radius: 16px;
+            padding: .4rem 0;
+            margin: 0;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+            font-size: .82rem;
+            background: #fff;
+        }
 
-                    .room-actions .dropdown-item i {
-                        width: 16px;
-                        text-align: center;
-                    }
+        .room-actions .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            padding: .42rem .9rem;
+            color: #4b5563;
+        }
 
-                    .room-actions .dropdown-item:hover {
-                        background: #eef2ff;
-                        color: #111827;
-                    }
+        .room-actions .dropdown-item i {
+            width: 16px;
+            text-align: center;
+        }
 
-                    .room-actions form {
-                        display: contents !important;
-                    }
+        .room-actions .dropdown-item:hover {
+            background: #eef2ff;
+            color: #111827;
+        }
 
-                    @media (max-width: 768px) {
-                        .room-actions .dropdown-menu {
-                            top: calc(100% + 12px) !important;
-                            right: auto;
-                            left: 50%;
-                            transform: translate(-50%, 0);
-                            min-width: min(240px, calc(100vw - 32px));
-                        }
-                    }
+        .room-actions form {
+            display: contents !important;
+        }
 
-                    .btn-dergin {
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: .35rem;
-                        padding: .4rem .9rem;
-                        border-radius: 999px;
-                        font-weight: 600;
-                        font-size: .72rem;
-                        border: none;
-                        color: #fff;
-                        background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
-                        box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
-                        transition: transform .2s ease, box-shadow .2s ease;
-                    }
+        @media (max-width: 768px) {
+            .room-actions .dropdown-menu {
+                top: calc(100% + 12px) !important;
+                right: auto;
+                left: 50%;
+                transform: translate(-50%, 0);
+                min-width: min(240px, calc(100vw - 32px));
+            }
+        }
 
-                    .btn-dergin:hover {
-                        transform: translateY(-1px);
-                        box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
-                        color: #fff;
-                    }
+        .badge-soft-success {
+            background: rgba(34, 197, 94, .15);
+            color: #16a34a;
+            padding: 0.35rem 0.7rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
 
-                    .btn-dergin--muted {
-                        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
-                    }
+        .badge-soft-warning {
+            background: rgba(251, 191, 36, .15);
+            color: #ca8a04;
+            padding: 0.35rem 0.7rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
 
-                    .btn-dergin--info {
-                        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
-                    }
+        .badge-soft-secondary {
+            background: rgba(107, 114, 128, .15);
+            color: #374151;
+            padding: 0.35rem 0.7rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
 
-                    .btn-dergin--success {
-                        background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%)
-                    }
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+        }
+    </style>
+    @endpush
 
-                    .btn-dergin--danger {
-                        background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
-                    }
-
-                    .badge-soft-success {
-                        background: rgba(34, 197, 94, .15);
-                        color: #16a34a;
-                    }
-
-                    .badge-soft-warning {
-                        background: rgba(251, 191, 36, .15);
-                        color: #ca8a04;
-                    }
-
-                    .badge-soft-secondary {
-                        background: rgba(107, 114, 128, .15);
-                        color: #374151;
-                    }
-
-                    .text-truncate {
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        display: block;
-                    }
-                </style>
-            @endpush
-
-            <div class="d-flex justify-content-center mt-3">
-                {{ $hoa_dons->onEachSide(1)->links('pagination::bootstrap-4') }}
-            </div>
-        </div>
+    <div class="d-flex justify-content-center mt-3">
+        {{ $hoa_dons->onEachSide(1)->links('pagination::bootstrap-4') }}
     </div>
+</div>
 
     {{-- Modal thanh toán --}}
     <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
@@ -824,43 +1032,4 @@
             }
         });
     </script>
-
-    <style>
-        .table th,
-        .table td {
-            vertical-align: middle !important;
-            font-size: 13px;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-        }
-
-        .desc-truncate {
-            max-width: 220px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: normal;
-            word-break: break-word;
-            line-height: 1.3;
-            color: #333;
-        }
-
-        .text-truncate {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            display: block;
-        }
-
-        .card {
-            border-radius: 8px;
-        }
-
-        .card-body h3 {
-            font-weight: 600;
-        }
-    </style>
 @endsection
