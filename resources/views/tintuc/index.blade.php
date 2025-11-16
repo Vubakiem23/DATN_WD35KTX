@@ -9,7 +9,7 @@
     {{-- Tiêu đề & mô tả --}}
     <div class="mb-4">
         <h3 class="room-page__title mb-2">📰 Danh sách tin tức</h3>
-        <p class="text-muted fs-6 mb-0">Theo dõi toàn bộ tin tức, hashtags và ngày đăng.</p>
+        <p class="text-muted fs-6 mb-0">Theo dõi toàn bộ tin tức, hashtags, ngày đăng và hình ảnh.</p>
     </div>
 
     {{-- Ô tìm kiếm --}}
@@ -50,6 +50,7 @@
                 <thead>
                     <tr>
                         <th class="fit text-center">STT</th>
+                        <th class="fit">Hình ảnh</th>
                         <th class="fit">Tiêu đề</th>
                         <th class="fit">Nội dung</th>
                         <th class="fit">Ngày tạo</th>
@@ -64,6 +65,16 @@
                     @endphp
                     <tr>
                         <td class="text-center">{{ $stt }}</td>
+
+                        {{-- Cột hình ảnh --}}
+                        <td class="fit text-center">
+                            @if($tintuc->hinh_anh && file_exists(public_path($tintuc->hinh_anh)))
+                                <img src="{{ asset($tintuc->hinh_anh) }}" alt="Ảnh tin tức" style="width:80px; height:60px; object-fit:cover; border-radius:6px;">
+                            @else
+                                <img src="https://dummyimage.com/80x60/eff3f9/9aa8b8&text=No+Image" alt="No Image" style="border-radius:6px;">
+                            @endif
+                        </td>
+
                         <td class="fw-semibold">{{ $tintuc->tieu_de }}</td>
                         <td>
                             {{ \Illuminate\Support\Str::limit(strip_tags($tintuc->noi_dung ?? ''), 50, '...') }}
@@ -107,7 +118,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="7" class="text-center text-muted py-4">
                             <img src="https://dummyimage.com/120x80/eff3f9/9aa8b8&text=No+data" class="mb-2" alt="">
                             <div>Chưa có tin tức nào</div>
                         </td>
@@ -123,7 +134,6 @@
         {{ $tintucs->onEachSide(1)->links() }}
     </div>
 </div>
-
 @push('styles')
 <style>
     html {
@@ -369,4 +379,4 @@
             menus.forEach(m => m.classList.remove('show'));
         }
     });
-</script>
+</script> 

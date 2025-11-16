@@ -33,6 +33,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\TinTucController;
+use App\Http\Controllers\ThongBaoPhongSvController;
 use App\Models\Violation;
 /*
 |--------------------------------------------------------------------------
@@ -196,6 +197,43 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('phong/{phong}/taisanphong', [TaiSanController::class, 'byPhong'])->name('taisan.byPhong');
     // Quản lý Khu
     Route::resource('khu', KhuController::class)->except(['edit', 'update', 'destroy']);
+
+    // ---------------- THÔNG BÁO ----------------
+Route::resource('thongbao', ThongBaoController::class);
+
+Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
+Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
+Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])->name('thongbao_sinh_vien.index');
+
+
+
+Route::get('/thong-bao-phong-sv', [ThongBaoPhongSvController::class, 'index'])
+    ->name('thongbao_phong_sv.index');
+
+
+
+
+// ---------------- TIN TỨC ----------------
+Route::prefix('tin-tuc')->group(function () {
+    Route::get('/', [TinTucController::class, 'index'])->name('tintuc.index');
+    Route::get('/tao', [TinTucController::class, 'create'])->name('tintuc.create');
+    Route::post('/', [TinTucController::class, 'store'])->name('tintuc.store');
+    Route::get('/{id}', [TinTucController::class, 'show'])->name('tintuc.show');
+    Route::get('/{id}/edit', [TinTucController::class, 'edit'])->name('tintuc.edit');
+    Route::put('/{id}', [TinTucController::class, 'update'])->name('tintuc.update');
+    Route::delete('/{id}', [TinTucController::class, 'destroy'])->name('tintuc.destroy');
+});
+
+
+
+Route::prefix('hashtags')->group(function () {
+    Route::get('/', [HashtagController::class, 'index'])->name('hashtags.index');
+    Route::get('/create', [HashtagController::class, 'create'])->name('hashtags.create');
+    Route::post('/', [HashtagController::class, 'store'])->name('hashtags.store');
+    Route::get('/{id}/edit', [HashtagController::class, 'edit'])->name('hashtags.edit');
+    Route::put('/{id}', [HashtagController::class, 'update'])->name('hashtags.update');
+    Route::delete('/{id}', [HashtagController::class, 'destroy'])->name('hashtags.destroy');
+});
     // ---------------- HÓA ĐƠN ----------------
     Route::prefix('hoadon')->group(function () {
 
@@ -304,42 +342,7 @@ Route::prefix('manager')->middleware(['auth', 'manager'])->group(function () {
 });
 
 
-// ---------------- THÔNG BÁO ----------------
-Route::resource('thongbao', ThongBaoController::class);
 
-Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
-Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
-Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])->name('thongbao_sinh_vien.index');
-
-use App\Http\Controllers\ThongBaoPhongSvController;
-
-Route::get('/thong-bao-phong-sv', [ThongBaoPhongSvController::class, 'index'])
-    ->name('thongbao_phong_sv.index');
-
-
-
-
-// ---------------- TIN TỨC ----------------
-Route::prefix('tin-tuc')->group(function () {
-    Route::get('/', [TinTucController::class, 'index'])->name('tintuc.index');
-    Route::get('/tao', [TinTucController::class, 'create'])->name('tintuc.create');
-    Route::post('/', [TinTucController::class, 'store'])->name('tintuc.store');
-    Route::get('/{id}', [TinTucController::class, 'show'])->name('tintuc.show');
-    Route::get('/{id}/edit', [TinTucController::class, 'edit'])->name('tintuc.edit');
-    Route::put('/{id}', [TinTucController::class, 'update'])->name('tintuc.update');
-    Route::delete('/{id}', [TinTucController::class, 'destroy'])->name('tintuc.destroy');
-});
-
-
-
-Route::prefix('hashtags')->group(function () {
-    Route::get('/', [HashtagController::class, 'index'])->name('hashtags.index');
-    Route::get('/create', [HashtagController::class, 'create'])->name('hashtags.create');
-    Route::post('/', [HashtagController::class, 'store'])->name('hashtags.store');
-    Route::get('/{id}/edit', [HashtagController::class, 'edit'])->name('hashtags.edit');
-    Route::put('/{id}', [HashtagController::class, 'update'])->name('hashtags.update');
-    Route::delete('/{id}', [HashtagController::class, 'destroy'])->name('hashtags.destroy');
-});
 
 
 // ---------------- SỰ CỐ ----------------
