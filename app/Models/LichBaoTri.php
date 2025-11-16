@@ -14,6 +14,8 @@ class LichBaoTri extends Model
     protected $fillable = [
         'tai_san_id',
         'kho_tai_san_id',
+        'location_type',
+        'location_id',
         'ngay_bao_tri',
         'ngay_hoan_thanh',
         'trang_thai',

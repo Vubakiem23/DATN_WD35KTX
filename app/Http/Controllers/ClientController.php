@@ -225,6 +225,33 @@ if ($slotSinhVien) {
             return back()->with('error', 'Bạn chưa ở trong phòng nào.');
         }
 
+        // Lấy thông tin tài sản
+        $taiSan = TaiSan::find($request->tai_san_id);
+        if (!$taiSan) {
+            return back()->with('error', 'Không tìm thấy tài sản.');
+        }
+
+        // Kiểm tra bảo mật: tài sản phải thuộc phòng của sinh viên
+        if ($taiSan->phong_id != $phongId) {
+            return back()->with('error', 'Tài sản này không thuộc phòng của bạn.');
+        }
+
+        // Kiểm tra trạng thái tài sản: nếu đang bảo trì hoặc đã báo hỏng thì không cho báo hỏng lại
+        if ($taiSan->tinh_trang_hien_tai === 'Đang bảo trì' || $taiSan->tinh_trang_hien_tai === 'Đã báo hỏng') {
+            return back()->with('error', 'Tài sản này đang trong quá trình xử lý. Vui lòng chờ hoàn thành trước khi báo hỏng mới.');
+        }
+
+        // Kiểm tra trùng lặp: tài sản đang có bảo trì chưa hoàn thành
+        // (ngay_hoan_thanh null nghĩa là chưa hoàn thành)
+        $existingBaoTri = LichBaoTri::where('tai_san_id', $request->tai_san_id)
+            ->whereNull('ngay_hoan_thanh')
+            ->where('trang_thai', '!=', 'Hoàn thành')
+            ->exists();
+        
+        if ($existingBaoTri) {
+            return back()->with('error', 'Tài sản này đang có bảo trì chưa hoàn thành. Vui lòng chờ hoàn thành bảo trì trước khi báo hỏng mới.');
+        }
+
         if ($request->hasFile('hinh_anh_truoc')) {
             $file = $request->file('hinh_anh_truoc');
             $filename = time() . '_' . $file->getClientOriginalName();
@@ -237,16 +264,21 @@ if ($slotSinhVien) {
             $imagePath = null;
         }
 
-
-
-
+        // Tạo lịch bảo trì với trạng thái "Đang lên lịch" (chờ admin tiếp nhận)
         LichBaoTri::create([
-            'tai_san_id'   => $request->tai_san_id,
-            'phong_id'     => $phongId,
-            'mo_ta'        => $request->mo_ta,
-            'hinh_anh_truoc'     => $imagePath,
-            'ngay_bao_tri' => now()->toDateString(),
-            'trang_thai'   => 'Đang bảo trì'
+            'tai_san_id'      => $request->tai_san_id,
+            'kho_tai_san_id'  => $taiSan->kho_tai_san_id,
+            'location_type'   => 'phong',
+            'location_id'     => $phongId,
+            'mo_ta'           => $request->mo_ta,
+            'hinh_anh_truoc'  => $imagePath,
+            'ngay_bao_tri'    => now()->toDateString(),
+            'trang_thai'      => 'Đang lên lịch' // Chờ admin tiếp nhận
+        ]);
+
+        // Cập nhật trạng thái tài sản thành "Đã báo hỏng" (chờ xử lý)
+        $taiSan->update([
+            'tinh_trang_hien_tai' => 'Đã báo hỏng'
         ]);
 
         return back()->with('success', 'Đã gửi báo hỏng thành công!');
@@ -325,6 +357,88 @@ if ($slotSinhVien) {
 
     return redirect()->route('client.suco.index')->with('success', 'Báo sự cố thành công!');
 }
+
+    /**
+     * Xem lịch bảo trì tài sản của phòng sinh viên
+     */
+    public function lichBaoTriIndex(Request $request)
+    {
+        $user = Auth::user();
+        $sinhVien = $this->getSinhVien();
+
+        // Nếu chưa có sinh viên
+        if (!$sinhVien) {
+            return view('client.lichbaotri', compact('user', 'sinhVien'))
+                ->with('phong', null)
+                ->with('dangXuLy', collect())
+                ->with('daHoanThanh', collect());
+        }
+
+        // Lấy phòng của sinh viên
+        $sinhVien->load('phong.khu');
+        $phong = $sinhVien->phong;
+
+        // Nếu chưa có phong_id nhưng đã gán slot -> lấy phòng từ slot
+        if (!$phong) {
+            $slot = Slot::with('phong.khu')->where('sinh_vien_id', $sinhVien->id)->first();
+            $phong = $slot?->phong;
+        }
+
+        // Nếu chưa có phòng
+        if (!$phong) {
+            return view('client.lichbaotri', compact('user', 'sinhVien', 'phong'))
+                ->with('dangXuLy', collect())
+                ->with('daHoanThanh', collect());
+        }
+
+        // Lấy lịch bảo trì của phòng (location_type = 'phong' và location_id = phong_id)
+        $baseQuery = LichBaoTri::with(['taiSan.khoTaiSan', 'taiSan.phong', 'khoTaiSan'])
+            ->where('location_type', 'phong')
+            ->where('location_id', $phong->id);
+
+        // Tính tổng số cho cả 2 tab (để hiển thị badge)
+        $dangXuLyCount = (clone $baseQuery)
+            ->where('trang_thai', '!=', 'Hoàn thành')
+            ->count();
+        $daHoanThanhCount = (clone $baseQuery)
+            ->where('trang_thai', 'Hoàn thành')
+            ->count();
+
+        // Lọc theo tab
+        $tab = $request->get('tab', 'dang-xu-ly');
+        
+        if ($tab === 'da-hoan-thanh') {
+            // Tab "Đã hoàn thành": chỉ lấy các bảo trì đã hoàn thành
+            $daHoanThanh = (clone $baseQuery)
+                ->where('trang_thai', 'Hoàn thành')
+                ->orderBy('ngay_hoan_thanh', 'desc')
+                ->paginate(10, ['*'], 'page')
+                ->appends($request->query());
+            
+            $dangXuLy = null;
+        } else {
+            // Tab "Đang xử lý": lấy các trạng thái chưa hoàn thành
+            $dangXuLy = (clone $baseQuery)
+                ->where('trang_thai', '!=', 'Hoàn thành')
+                ->orderBy('ngay_bao_tri', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10, ['*'], 'page')
+                ->appends($request->query());
+            
+            $daHoanThanh = null;
+        }
+
+        return view('client.lichbaotri', compact(
+            'user',
+            'sinhVien',
+            'phong',
+            'dangXuLy',
+            'daHoanThanh',
+            'tab',
+            'dangXuLyCount',
+            'daHoanThanhCount'
+        ));
+    }
 
 
 

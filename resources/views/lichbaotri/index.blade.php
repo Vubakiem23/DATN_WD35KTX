@@ -248,6 +248,7 @@
         <label class="form-label"><i class="fa fa-circle-check text-primary"></i> Trạng thái</label>
         <select name="trang_thai" class="form-select form-control">
           <option value="">-- Tất cả --</option>
+          <option value="Đang lên lịch" {{ request('trang_thai') == 'Đang lên lịch' ? 'selected' : '' }}>Đang lên lịch</option>
           <option value="Chờ bảo trì" {{ request('trang_thai') == 'Chờ bảo trì' ? 'selected' : '' }}>Chờ bảo trì</option>
           <option value="Đang bảo trì" {{ request('trang_thai') == 'Đang bảo trì' ? 'selected' : '' }}>Đang bảo trì</option>
           <option value="Hoàn thành" {{ request('trang_thai') == 'Hoàn thành' ? 'selected' : '' }}>Hoàn thành</option>
@@ -279,7 +280,22 @@
     </form>
   </div>
   <div class="row mb-4">
-    <div class="col-md-3">
+    <div class="col-md-2">
+      <div class="card shadow-sm border-start border-info border-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-1">Đang lên lịch</h6>
+              <h3 class="mb-0 text-info">{{ $thongKe['dang_len_lich'] ?? 0 }}</h3>
+            </div>
+            <div class="text-info" style="font-size: 2rem;">
+              <i class="fa fa-calendar-plus"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
       <div class="card shadow-sm border-start border-warning border-4">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
@@ -294,7 +310,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="card shadow-sm border-start border-danger border-4">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
@@ -309,7 +325,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="card shadow-sm border-start border-success border-4">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
@@ -324,7 +340,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
       <div class="card shadow-sm border-start border-primary border-4">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
@@ -397,6 +413,7 @@
               <span class="badge 
                 @if($l->trang_thai == 'Hoàn thành') bg-success
                 @elseif($l->trang_thai == 'Đang bảo trì') bg-warning text-dark
+                @elseif($l->trang_thai == 'Đang lên lịch') bg-info text-white
                 @else bg-secondary @endif">
                 {{ $l->trang_thai }}
               </span>
@@ -430,6 +447,17 @@
                       <span>Xem</span>
                     </button>
                   </li>
+                  @if($l->trang_thai == 'Đang lên lịch')
+                  <li>
+                    <form action="{{ route('lichbaotri.tiepnhan', $l->id) }}" method="POST" class="d-inline">
+                      @csrf
+                      <button type="submit" class="dropdown-item text-primary" onclick="return confirm('Bạn có chắc muốn tiếp nhận báo hỏng này?')">
+                        <i class="fa fa-hand-paper"></i>
+                        <span>Tiếp nhận</span>
+                      </button>
+                    </form>
+                  </li>
+                  @endif
                   <li>
                     <a href="{{ route('lichbaotri.edit', $l->id) }}" class="dropdown-item">
                       <i class="fa fa-pencil text-primary"></i>
