@@ -184,13 +184,17 @@
     </div>
 </div>
 </div>
-</div>
-
 
 {{-- CSS tuỳ chỉnh --}}     
 
 @push('styles')
 <style>
+/* Đảm bảo container có khoảng cách với footer */
+.container.py-4 {
+    padding-bottom: 3rem !important;
+    margin-bottom: 2rem;
+}
+
 /* Tiêu đề */
 .page-title{font-size:1.5rem;font-weight:700;color:#1f2937}
 

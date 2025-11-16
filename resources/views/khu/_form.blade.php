@@ -1,38 +1,45 @@
 @csrf
 
-@if($errors->any())
-  <div class="alert alert-danger">
-    <ul class="mb-0">
-      @foreach($errors->all() as $error)
-        <li>{{ $error }}</li>
-      @endforeach
-    </ul>
-  </div>
-@endif
-
 <div class="mb-3">
-  <label class="form-label">Tên khu <span class="text-danger">*</span></label>
-  <input type="text" name="ten_khu" value="{{ old('ten_khu', $khu->ten_khu ?? '') }}" class="form-control" required>
-  <small class="text-muted">Ví dụ: A, B, C... hoặc Ký túc xá 1</small>
-  </div>
-
-<div class="mb-3">
-  <label class="form-label">Giới tính <span class="text-danger">*</span></label>
-  <select name="gioi_tinh" class="form-control" required>
-    <option value="">--Chọn--</option>
-    <option value="Nam" {{ old('gioi_tinh', $khu->gioi_tinh ?? '')=='Nam'?'selected':'' }}>Nam</option>
-    <option value="Nữ" {{ old('gioi_tinh', $khu->gioi_tinh ?? '')=='Nữ'?'selected':'' }}>Nữ</option>
-  </select>
+    <label for="ten_khu" class="form-label">Tên khu <span class="text-danger">*</span></label>
+    <input type="text" name="ten_khu" id="ten_khu" value="{{ old('ten_khu', $khu->ten_khu ?? '') }}" 
+           class="form-control @error('ten_khu') is-invalid @enderror" 
+           placeholder="Ví dụ: A, B, C... hoặc Ký túc xá 1" required>
+    @error('ten_khu')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+    <small class="text-muted">Ví dụ: A, B, C... hoặc Ký túc xá 1</small>
 </div>
 
 <div class="mb-3">
-  <label class="form-label">Mô tả</label>
-  <input type="text" name="mo_ta" value="{{ old('mo_ta', $khu->mo_ta ?? '') }}" class="form-control">
+    <label for="gioi_tinh" class="form-label">Giới tính <span class="text-danger">*</span></label>
+    <select name="gioi_tinh" id="gioi_tinh" class="form-select @error('gioi_tinh') is-invalid @enderror" required>
+        <option value="">--Chọn--</option>
+        <option value="Nam" {{ old('gioi_tinh', $khu->gioi_tinh ?? '')=='Nam'?'selected':'' }}>Nam</option>
+        <option value="Nữ" {{ old('gioi_tinh', $khu->gioi_tinh ?? '')=='Nữ'?'selected':'' }}>Nữ</option>
+    </select>
+    @error('gioi_tinh')
+        <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
 </div>
 
 <div class="mb-3">
-  <button class="btn btn-success" type="submit">Lưu</button>
-  <a href="{{ route('khu.index') }}" class="btn btn-secondary">Hủy</a>
+    <label for="mo_ta" class="form-label">Mô tả</label>
+    <textarea name="mo_ta" id="mo_ta" rows="3" 
+              class="form-control @error('mo_ta') is-invalid @enderror" 
+              placeholder="Nhập mô tả về khu...">{{ old('mo_ta', $khu->mo_ta ?? '') }}</textarea>
+    @error('mo_ta')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn-dergin btn-dergin--success">
+        <i class="fa fa-plus"></i> Thêm mới
+    </button>
+    <a href="{{ route('khu.index') }}" class="btn-dergin btn-dergin--muted">
+        <i class="fa fa-arrow-left"></i> Quay lại
+    </a>
 </div>
 
 

@@ -1,58 +1,333 @@
 @extends('admin.layouts.admin')
 
+@section('title', 'Danh sách người dùng')
+
 @section('content')
-<div class="x_panel">
-    <div class="x_title">
-        <h2><i class="fa fa-users text-primary"></i> Danh sách người dùng</h2>
-        <ul class="nav navbar-right panel_toolbox">
-            <li>
-                <a href="{{ route('users.create') }}" class="btn btn-success btn-sm">
+<div class="container mt-4">
+
+    @push('styles')
+    <style>
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+         display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title i {
+            color: #4e54c8;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-dergin {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .35rem;
+            padding: .5rem 1.2rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: .85rem;
+            border: none;
+            color: #fff;
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+            transition: transform .2s ease, box-shadow .2s ease;
+            text-decoration: none;
+        }
+
+        .btn-dergin:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+            color: #fff;
+        }
+
+        .btn-dergin i {
+            font-size: .8rem;
+        }
+
+        .btn-dergin--info {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            box-shadow: 0 6px 16px rgba(14, 165, 233, .22);
+        }
+
+        .btn-dergin--info:hover {
+            box-shadow: 0 10px 22px rgba(14, 165, 233, .32);
+        }
+
+        .btn-dergin--muted {
+            background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+            box-shadow: 0 6px 16px rgba(107, 114, 128, .22);
+        }
+
+        .btn-dergin--muted:hover {
+            box-shadow: 0 10px 22px rgba(107, 114, 128, .32);
+        }
+
+        .btn-dergin--success {
+            background: linear-gradient(135deg, #10b981 0%, #22c55e 100%);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, .22);
+        }
+
+        .btn-dergin--success:hover {
+            box-shadow: 0 10px 22px rgba(16, 185, 129, .32);
+        }
+
+        .btn-dergin--warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, .22);
+        }
+
+        .btn-dergin--warning:hover {
+            box-shadow: 0 10px 22px rgba(245, 158, 11, .32);
+        }
+
+        .btn-dergin.btn-sm {
+            padding: .35rem .8rem;
+            font-size: .75rem;
+        }
+
+        .user-table-wrapper {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .user-table-wrapper:hover {
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        .user-table {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .user-table thead th {
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #6b7280;
+            border: none;
+            padding: 1rem 1rem;
+            font-weight: 600;
+            background: transparent;
+        }
+
+        .user-table tbody tr {
+            background: #f9fafb;
+            border-radius: 12px;
+            transition: all .2s ease;
+            border: 1px solid transparent;
+        }
+
+        .user-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(15, 23, 42, 0.1);
+            background: #fff;
+            border-color: #e5e7eb;
+        }
+
+        .user-table tbody td {
+            border: none;
+            vertical-align: middle;
+            padding: 1.1rem 1rem;
+            color: #374151;
+        }
+
+        .user-table tbody tr td:first-child {
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .user-table tbody tr td:last-child {
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .font-weight-600 {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .filter-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .filter-card:hover {
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        .filter-card label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            padding: 0.65rem 1rem;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            border-color: #4e54c8;
+            box-shadow: 0 0 0 3px rgba(78, 84, 200, 0.1);
+            outline: none;
+        }
+
+        .input-group-text {
+            border-radius: 10px 0 0 10px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            border-right: none;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .input-group .form-control:focus {
+            border-left: none;
+        }
+
+        .badge {
+            font-size: .75rem;
+            padding: .4rem .75rem;
+            font-weight: 600;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .badge-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .pagination {
+            margin-top: 1.5rem;
+        }
+
+        .pagination .page-link {
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            color: #4e54c8;
+            margin: 0 4px;
+            padding: 0.5rem 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: #4e54c8;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(78, 84, 200, 0.2);
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            border-color: #4e54c8;
+            box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
+        }
+    </style>
+    @endpush
+
+    <h4 class="page-title">
+        <i class="fa fa-users"></i>
+        Danh sách người dùng
+    </h4>
+    <p class="page-subtitle">Quản lý và theo dõi tất cả người dùng trong hệ thống</p>
+
+    {{-- 🔔 Thông báo --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            <i class="fa fa-check-circle"></i> {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+    </div>
+    @endif
+
+    {{-- ✅ Form lọc tìm kiếm --}}
+    <form method="GET" class="filter-card">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                    <input type="text" name="search" value="{{ request('search') ?? '' }}" 
+                           class="form-control" placeholder="Tìm kiếm theo tên, email...">
+                </div>
+            </div>
+            <div class="col-md-7 d-flex gap-2 justify-content-end">
+                <button type="submit" class="btn-dergin btn-dergin--info">
+                    <i class="fa fa-filter"></i> Lọc
+                </button>
+            @if(request('search'))
+                    <a href="{{ route('users.index') }}" class="btn-dergin btn-dergin--muted">
+                        <i class="fa fa-rotate-left"></i> Xóa lọc
+                    </a>
+            @endif
+                <a href="{{ route('users.create') }}" class="btn-dergin btn-dergin--success">
                     <i class="fa fa-plus"></i> Thêm người dùng
                 </a>
-            </li>
-        </ul>
-        <div class="clearfix"></div>
-    </div>
-
-    <div class="x_content">
-
-        {{-- 🔍 Tìm kiếm --}}
-        <form method="GET" class="form-inline mb-3">
-            <div class="form-group">
-                <input type="text" name="search" value="{{ request('search') ?? '' }}" class="form-control input-sm" placeholder="Tìm kiếm theo tên, email, quyền">
             </div>
-            <button type="submit" class="btn btn-primary btn-sm ml-2">Tìm</button>
-            @if(request('search'))
-                <a href="{{ route('users.index') }}" class="btn btn-light btn-sm ml-2">Xóa lọc</a>
-            @endif
-        </form>
+        </div>
+    </form>
 
-        {{-- 🟢 Thông báo --}}
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fa fa-check-circle"></i> {{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
-        @endif
-
-        {{-- 📋 Bảng danh sách --}}
+    {{-- 🧾 Bảng danh sách --}}
+    <div class="user-table-wrapper">
         <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="bg-light text-center">
+            <table class="table align-middle user-table">
+                <thead>
                     <tr>
-                        <th width="40">ID</th>
+                        <th width="60">ID</th>
                         <th>Tên</th>
                         <th>Email</th>
                         <th>Quyền</th>
                         <th width="140">Ngày tạo</th>
-                        <th width="120">Hành động</th>
+                        <th class="text-end" style="width: 120px;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($users as $user)
                     <tr>
                         <td class="text-center">{{ $user->id }}</td>
-                        <td>{{ $user->name }}</td>
+                        <td class="font-weight-600">{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td class="text-center">
                             @if($user->roles->isNotEmpty())
@@ -66,49 +341,27 @@
                         <td class="text-center">
                             {{ $user->created_at ? $user->created_at->format('d/m/Y H:i') : '-' }}
                         </td>
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center gap-1">
-                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm" title="Sửa">
+                        <td class="text-end">
+                            <a href="{{ route('users.edit', $user->id) }}" 
+                               class="btn btn-dergin btn-dergin--warning btn-sm" 
+                               title="Sửa">
                                     <i class="fa fa-edit"></i>
                                 </a>
-                                <!-- <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Xác nhận xóa người dùng này?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" title="Xóa">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </form> -->
-                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted">Chưa có người dùng nào.</td>
+                        <td colspan="6" class="text-center text-muted py-4">Chưa có người dùng nào.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
-        {{-- 📑 Phân trang --}}
-        <div class="d-flex justify-content-center mt-3">
-            {{ $users->onEachSide(1)->links('pagination::bootstrap-4') }}
         </div>
+
+    {{-- ✅ Phân trang --}}
+        <div class="d-flex justify-content-center mt-3">
+        {{ $users->onEachSide(1)->links('pagination::bootstrap-5') }}
     </div>
 </div>
-
-{{-- 🎨 CSS --}}
-<style>
-    .table th, .table td {
-        vertical-align: middle !important;
-    }
-
-    .badge {
-        font-size: 90%;
-    }
-
-    .d-flex.gap-1 > form {
-        margin: 0;
-    }
-</style>
 @endsection
