@@ -121,6 +121,15 @@ class SlotController extends Controller
                 'hinh_anh'     => $imagePath,
             ]);
 
+            // Đồng bộ phong_id trong bảng sinh_vien nếu có gán sinh viên
+            if (!empty($slot->sinh_vien_id)) {
+                $sinhVien = SinhVien::find($slot->sinh_vien_id);
+                if ($sinhVien && $sinhVien->phong_id != $phongModel->id) {
+                    $sinhVien->phong_id = $phongModel->id;
+                    $sinhVien->save();
+                }
+            }
+
             // Cập nhật loại phòng theo tổng slots và trạng thái
             if (method_exists($phongModel, 'updateLoaiPhongFromSlots')) {
                 $phongModel->updateLoaiPhongFromSlots();
@@ -260,7 +269,46 @@ class SlotController extends Controller
 
             $slot->save();
 
-            if ($previousStudentId && empty($slot->sinh_vien_id)) {
+            // Đồng bộ phong_id trong bảng sinh_vien
+            if (!empty($slot->sinh_vien_id)) {
+                // Gán sinh viên vào slot: cập nhật phong_id
+                $sinhVien = SinhVien::findOrFail($slot->sinh_vien_id);
+                if ($slot->phong && $sinhVien->phong_id != $slot->phong->id) {
+                    $sinhVien->phong_id = $slot->phong->id;
+                    $sinhVien->save();
+                }
+            } elseif ($previousStudentId) {
+                // Bỏ gán sinh viên khỏi slot: kiểm tra xem còn slot nào khác trong phòng không
+                $sinhVien = SinhVien::find($previousStudentId);
+                if ($sinhVien && $slot->phong) {
+                    // Kiểm tra sinh viên còn slot nào khác trong cùng phòng không
+                    $otherSlotInSameRoom = Slot::where('sinh_vien_id', $previousStudentId)
+                        ->where('phong_id', $slot->phong->id)
+                        ->where('id', '<>', $slot->id)
+                        ->exists();
+                    
+                    // Nếu không còn slot nào trong phòng này, kiểm tra xem có phòng khác không
+                    if (!$otherSlotInSameRoom) {
+                        $hasAnyOtherSlot = Slot::where('sinh_vien_id', $previousStudentId)
+                            ->exists();
+                        
+                        // Nếu không còn slot nào, set phong_id = null
+                        if (!$hasAnyOtherSlot) {
+                            $sinhVien->phong_id = null;
+                            $sinhVien->save();
+                        } else {
+                            // Nếu còn slot ở phòng khác, cập nhật phong_id theo phòng đó
+                            $otherSlot = Slot::where('sinh_vien_id', $previousStudentId)
+                                ->with('phong')
+                                ->first();
+                            if ($otherSlot && $otherSlot->phong) {
+                                $sinhVien->phong_id = $otherSlot->phong->id;
+                                $sinhVien->save();
+                            }
+                        }
+                    }
+                }
+                
                 $this->returnAllSlotAssetsToWarehouse($slot);
             }
 
