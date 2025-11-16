@@ -64,11 +64,8 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('/profile', [ClientController::class, 'profile'])->name('client.profile');
 
     // Sự cố (sẽ làm sau)
-    Route::prefix('suco')->group(function () {
-        Route::get('/', function () {
-            return view('client.suco.index');
-        })->name('client.suco.index');
-    });
+    Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');
+    Route::post('/suco', [ClientController::class, 'suCoStore'])->name('client.suco.store');
 
     // Hóa đơn (sẽ làm sau)
     Route::prefix('hoadon')->group(function () {

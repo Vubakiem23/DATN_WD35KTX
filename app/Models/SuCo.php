@@ -70,5 +70,12 @@ class SuCo extends Model
     {
         return $this->belongsTo(\App\Models\SinhVien::class, 'sinh_vien_id');
     }
+    
+    public function getDisplayAnhAttribute()
+{
+    return $this->anh_sau 
+        ? asset($this->anh_sau) 
+        : ($this->anh ? asset($this->anh) : 'https://dummyimage.com/150x150/eff3f9/9aa8b8&text=IMG');
+}
 
 }

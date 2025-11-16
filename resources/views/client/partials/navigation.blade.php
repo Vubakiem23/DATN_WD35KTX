@@ -32,6 +32,7 @@
                     <a class="nav-link {{ request()->routeIs('client.hoadon*') ? 'active' : '' }}" 
                        href="{{ route('client.hoadon.index') }}">
                         <i class="fas fa-file-invoice me-1"></i> Hóa đơn
+                        
                     </a>
                 </li>
                 <li class="nav-item">
