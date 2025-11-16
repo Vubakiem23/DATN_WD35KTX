@@ -188,4 +188,85 @@ class ClientController extends Controller
         // Nếu chưa có sinh viên, vẫn cho vào giao diện
         return view('client.profile', compact('user', 'sinhVien'));
     }
+
+
+            // Sự cố của sinh viên 
+            
+
+        public function suCoIndex()
+{
+    $sinhVien = $this->getSinhVien();
+    $phong = $sinhVien?->phong ?? $sinhVien?->slot?->phong ?? null;
+
+    $dsSuCo = $sinhVien
+        ? SuCo::where('sinh_vien_id', $sinhVien->id)
+            ->orderBy('ngay_gui', 'desc')
+            ->paginate(10)
+        : collect();
+
+    // Thêm xử lý URL ảnh ngay trong controller
+    $dsSuCo->transform(function($sc) {
+        // Ảnh sinh viên upload lúc báo sự cố
+        $sc->anh_url = ($sc->anh && file_exists(storage_path('app/public/' . $sc->anh)))
+            ? asset('storage/' . $sc->anh)
+            : null;
+
+        // Ảnh admin upload sau xử lý
+        $sc->anh_sau_url = ($sc->anh_sau && file_exists(storage_path('app/public/' . $sc->anh_sau)))
+            ? asset('storage/' . $sc->anh_sau)
+            : null;
+
+        // Nếu cả 2 đều null → fallback ảnh dummy
+        $sc->display_anh = $sc->anh_sau_url ?? $sc->anh_url ?? 'https://dummyimage.com/150x150/eff3f9/9aa8b8&text=IMG';
+
+        return $sc;
+    });
+
+    return view('client.suco', compact('sinhVien', 'phong', 'dsSuCo'));
+    }
+
+
+       public function suCoStore(Request $request)
+{
+    $sinhVien = $this->getSinhVien();
+    $phong = $sinhVien?->phong ?? $sinhVien?->slot?->phong ?? null;
+
+    if (!$sinhVien || !$phong) {
+        return back()->withErrors(['error' => 'Không tìm thấy thông tin phòng để báo sự cố']);
+    }
+
+    // Validate dữ liệu
+    $request->validate([
+        'mo_ta' => 'required|string|max:1000',
+        'anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+    ]);
+
+    $suCo = new SuCo();
+    $suCo->sinh_vien_id = $sinhVien->id;
+    $suCo->phong_id = $phong->id;
+    $suCo->mo_ta = $request->mo_ta;
+
+    // Upload ảnh giống admin
+    if ($request->hasFile('anh')) {
+        $uploadPath = public_path('uploads/suco');
+        if (!\File::exists($uploadPath)) {
+            \File::makeDirectory($uploadPath, 0755, true);
+        }
+        $file = $request->file('anh');
+        $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+        $file->move($uploadPath, $fileName);
+        $suCo->anh = 'uploads/suco/' . $fileName; // Lưu đường dẫn giống admin
+    }
+
+    $suCo->trang_thai = 'Tiếp nhận';
+    $suCo->ngay_gui = now();
+    $suCo->nguoi_tao = 'sinh_vien'; // đánh dấu người tạo
+    $suCo->save();
+
+    return redirect()->route('client.suco.index')->with('success', 'Báo sự cố thành công!');
+}
+
+
+
+
 }
