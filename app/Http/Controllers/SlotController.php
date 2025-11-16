@@ -566,6 +566,7 @@ class SlotController extends Controller
 
             $warehouseAssets = KhoTaiSan::query()
                 ->where('so_luong', '>', 0)
+                ->whereNotNull('ten_tai_san') // Đảm bảo tài sản còn hợp lệ
                 ->orderBy('ten_tai_san')
                 ->get()
                 ->map(function ($asset) use ($placeholder) {
