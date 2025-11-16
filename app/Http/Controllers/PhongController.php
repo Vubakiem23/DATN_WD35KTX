@@ -74,7 +74,10 @@ class PhongController extends Controller
     public function create()
     {
         try {
-            $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)->orderBy('ten_tai_san')->get();
+            $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)
+                ->whereNotNull('ten_tai_san') // Đảm bảo tài sản còn hợp lệ
+                ->orderBy('ten_tai_san')
+                ->get();
             $khus = Schema::hasTable('khu') ? Khu::orderBy('ten_khu')->get() : collect();
             return view('phong.create', compact('khoTaiSans', 'khus'));
         } catch (Exception $e) {
@@ -238,7 +241,10 @@ class PhongController extends Controller
         try {
             $khus = Schema::hasTable('khu') ? Khu::orderBy('ten_khu')->get() : collect();
             // Hiển thị bảng chọn tài sản giống như tạo mới
-            $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)->orderBy('ten_tai_san')->get();
+            $khoTaiSans = KhoTaiSan::where('so_luong', '>', 0)
+                ->whereNotNull('ten_tai_san') // Đảm bảo tài sản còn hợp lệ
+                ->orderBy('ten_tai_san')
+                ->get();
             return view('phong.edit', compact('phong', 'khus', 'khoTaiSans'));
         } catch (Exception $e) {
             Log::error('Lỗi khi load form sửa phòng: ' . $e->getMessage());

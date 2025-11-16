@@ -293,6 +293,9 @@ class TaiSanController extends Controller
 
         $warehouseAssets = KhoTaiSan::query()
             ->where('so_luong', '>', 0)
+            ->whereNotNull('ten_tai_san') // Đảm bảo tài sản còn hợp lệ
+            ->whereNotNull('loai_id') // Đảm bảo có loại tài sản
+            ->where('ten_tai_san', '!=', '') // Đảm bảo tên tài sản không rỗng
             ->when($assignedWarehouseAssetIds->isNotEmpty(), function ($query) use ($assignedWarehouseAssetIds) {
                 $query->whereNotIn('id', $assignedWarehouseAssetIds);
             })

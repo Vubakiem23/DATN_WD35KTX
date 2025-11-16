@@ -6,6 +6,8 @@ use App\Models\LoaiTaiSan;
 use App\Models\KhoTaiSan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class KhoTaiSanController extends Controller
 
@@ -179,25 +181,39 @@ class KhoTaiSanController extends Controller
     /** 🗑️ Xóa tài sản khỏi kho */
     public function destroy($id)
     {
-        $taiSan = KhoTaiSan::findOrFail($id);
+        DB::beginTransaction();
+        try {
+            $taiSan = KhoTaiSan::findOrFail($id);
 
-        $loai_id = $taiSan->loai_id;
+            $loai_id = $taiSan->loai_id;
+            $hinhAnh = $taiSan->hinh_anh; // Lưu lại đường dẫn ảnh trước khi xóa
 
-        // 🔹 Kiểm tra xem ảnh này còn được dùng ở nơi khác không
-        $anhDangDung = KhoTaiSan::where('hinh_anh', $taiSan->hinh_anh)
-            ->where('id', '!=', $taiSan->id)
-            ->exists();
+            // 🔹 Kiểm tra xem ảnh này còn được dùng ở nơi khác không
+            $anhDangDung = KhoTaiSan::where('hinh_anh', $hinhAnh)
+                ->where('id', '!=', $taiSan->id)
+                ->exists();
 
-        if (!$anhDangDung && $taiSan->hinh_anh && Storage::disk('public')->exists($taiSan->hinh_anh)) {
-            // Chỉ xóa file nếu không ai khác đang dùng nó
-            Storage::disk('public')->delete($taiSan->hinh_anh);
+            // Xóa bản ghi
+            $taiSan->delete();
+
+            // Xóa file ảnh sau khi đã xóa bản ghi thành công
+            if (!$anhDangDung && $hinhAnh && Storage::disk('public')->exists($hinhAnh)) {
+                // Chỉ xóa file nếu không ai khác đang dùng nó
+                Storage::disk('public')->delete($hinhAnh);
+            }
+
+            DB::commit();
+
+            return redirect()->route('kho.related', $loai_id)
+                ->with('success', 'Đã xóa tài sản khỏi kho!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Lỗi khi xóa tài sản khỏi kho: ' . $e->getMessage(), [
+                'tai_san_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Có lỗi xảy ra khi xóa tài sản khỏi kho!');
         }
-
-        // Xóa bản ghi
-        $taiSan->delete();
-
-        return redirect()->route('kho.related', $loai_id)
-            ->with('success', 'Đã xóa tài sản khỏi kho!');
     }
 
 
