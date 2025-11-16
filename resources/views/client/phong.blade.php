@@ -237,13 +237,19 @@
                                                             {{ $trangThai }}
                                                         </span>
                                                     </p>
-                                                    <button class="btn btn-sm btn-danger mt-2 btn-bao-hong "
+                                                    @php
+                                                    $isBaoTri = in_array($trangThai, ['Đang bảo trì', 'Chờ bảo trì']);
+                                                    @endphp
+
+                                                    @if(!$isBaoTri)
+                                                    <button class="btn btn-sm btn-danger mt-2 btn-bao-hong"
                                                         data-id="{{ $ts->id }}"
                                                         data-ten="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san }}"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#modalBaoHong">
                                                         <i class="fas fa-exclamation-triangle"></i> Báo hỏng
                                                     </button>
+                                                    @endif
 
                                                 </div>
                                             </div>
@@ -293,7 +299,7 @@
                                                     <p class="mb-1 small text-muted">
                                                         <strong>Mã tài sản:</strong> {{ $maTaiSan }}
                                                     </p>
-                                                    
+
                                                     <p class="mb-0 small">
                                                         <strong>Trạng thái:</strong>
                                                         <span class="badge bg-{{ $trangThai == 'Bình thường' ? 'success' :
@@ -303,13 +309,20 @@
                                                             {{ $trangThai }}
                                                         </span>
                                                     </p>
-                                                    <button class=" btn btn-sm btn-danger mt-2 btn-bao-hong"
+                                                    @php
+                                                    $isBaoTri = in_array($trangThai, ['Đang bảo trì', 'Chờ bảo trì']);
+                                                    @endphp
+
+                                                    @if(!$isBaoTri)
+                                                    <button class="btn btn-sm btn-danger mt-2 btn-bao-hong"
                                                         data-id="{{ $ts->id }}"
                                                         data-ten="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san }}"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#modalBaoHong">
                                                         <i class="fas fa-exclamation-triangle"></i> Báo hỏng
                                                     </button>
+                                                    @endif
+
                                                 </div>
                                             </div>
                                         </div>
@@ -812,78 +825,6 @@
         transform: translateX(3px);
     }
 
-    /* Nút Báo hỏng */
-    .btn-bao-hong {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 10px 20px !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-        color: white !important;
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        letter-spacing: 0.3px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-bao-hong::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s ease;
-    }
-
-    .btn-bao-hong:hover {
-        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4) !important;
-    }
-
-    .btn-bao-hong:hover::before {
-        left: 100%;
-    }
-
-    .btn-bao-hong:active {
-        transform: translateY(0) !important;
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
-    }
-
-    .btn-bao-hong i {
-        margin-right: 6px;
-        font-size: 13px;
-    }
-
-    /* Nút Gửi báo hỏng trong Modal */
-    .btn-bao-hong-modal {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 12px 30px !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
-        color: white !important;
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        letter-spacing: 0.3px;
-    }
-
-    .btn-bao-hong-modal:hover {
-        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4) !important;
-    }
-
-    .btn-bao-hong-modal:active {
-        transform: translateY(0) !important;
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3) !important;
-    }
-
     .collapse .card-body {
         max-height: 300px;
         overflow-y: auto;
@@ -1377,9 +1318,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger btn-bao-hong-modal">
-                        <i class="fas fa-paper-plane me-2"></i> Gửi báo hỏng
-                    </button>
+                    <button type="submit" class="btn btn-danger">Gửi báo hỏng</button>
                 </div>
             </div>
         </form>
