@@ -16,21 +16,26 @@ class LichBaoTriController extends Controller
         $today = now()->toDateString();
 
         // ✅ Tự động cập nhật trạng thái lịch bảo trì
+        // Hoàn thành: nếu đã có ngày hoàn thành
         DB::table('lich_bao_tri')
             ->whereNotNull('ngay_hoan_thanh')
             ->where('trang_thai', '!=', 'Hoàn thành')
             ->update(['trang_thai' => 'Hoàn thành', 'updated_at' => now()]);
 
+        // Chờ bảo trì: nếu ngày bảo trì > hôm nay (chỉ áp dụng cho các trạng thái đã được tiếp nhận)
         DB::table('lich_bao_tri')
             ->whereNull('ngay_hoan_thanh')
             ->whereDate('ngay_bao_tri', '>', $today)
             ->where('trang_thai', '!=', 'Chờ bảo trì')
+            ->where('trang_thai', '!=', 'Đang lên lịch') // Không tự động chuyển "Đang lên lịch"
             ->update(['trang_thai' => 'Chờ bảo trì', 'updated_at' => now()]);
 
+        // Đang bảo trì: nếu ngày bảo trì <= hôm nay (chỉ áp dụng cho các trạng thái đã được tiếp nhận)
         DB::table('lich_bao_tri')
             ->whereNull('ngay_hoan_thanh')
             ->whereDate('ngay_bao_tri', '<=', $today)
             ->where('trang_thai', '!=', 'Đang bảo trì')
+            ->where('trang_thai', '!=', 'Đang lên lịch') // Không tự động chuyển "Đang lên lịch" - phải admin tiếp nhận
             ->update(['trang_thai' => 'Đang bảo trì', 'updated_at' => now()]);
 
         // 🧩 Bộ lọc
@@ -64,6 +69,7 @@ class LichBaoTriController extends Controller
 
         // 📊 Thống kê số tài sản cần bảo trì
         $thongKe = [
+            'dang_len_lich' => LichBaoTri::where('trang_thai', 'Đang lên lịch')->count(),
             'cho_bao_tri' => LichBaoTri::where('trang_thai', 'Chờ bảo trì')->count(),
             'dang_bao_tri' => LichBaoTri::where('trang_thai', 'Đang bảo trì')->count(),
             'hoan_thanh' => LichBaoTri::where('trang_thai', 'Hoàn thành')->count(),
@@ -74,18 +80,21 @@ class LichBaoTriController extends Controller
         if ($request->filled('month') && $request->filled('year')) {
             $thongKeQuery = LichBaoTri::whereYear('ngay_bao_tri', $request->year)
                 ->whereMonth('ngay_bao_tri', $request->month);
+            $thongKe['dang_len_lich'] = (clone $thongKeQuery)->where('trang_thai', 'Đang lên lịch')->count();
             $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
             $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
             $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
             $thongKe['tong_tai_san'] = $thongKeQuery->count();
         } elseif ($request->filled('year')) {
             $thongKeQuery = LichBaoTri::whereYear('ngay_bao_tri', $request->year);
+            $thongKe['dang_len_lich'] = (clone $thongKeQuery)->where('trang_thai', 'Đang lên lịch')->count();
             $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
             $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
             $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
             $thongKe['tong_tai_san'] = $thongKeQuery->count();
         } elseif ($request->filled('month')) {
             $thongKeQuery = LichBaoTri::whereMonth('ngay_bao_tri', $request->month);
+            $thongKe['dang_len_lich'] = (clone $thongKeQuery)->where('trang_thai', 'Đang lên lịch')->count();
             $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
             $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
             $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
@@ -94,6 +103,7 @@ class LichBaoTriController extends Controller
 
         $lich = $query->orderByRaw("
                 CASE 
+                    WHEN trang_thai = 'Đang lên lịch' THEN 0  -- Ưu tiên cao nhất: cần admin tiếp nhận
                     WHEN trang_thai = 'Chờ bảo trì' THEN 1
                     WHEN trang_thai = 'Đang bảo trì' THEN 2
                     WHEN trang_thai = 'Hoàn thành' THEN 3
@@ -288,6 +298,7 @@ public function hoanthanhSubmit(Request $request, $id)
     public function update(Request $request, $id)
     {
         $lich = LichBaoTri::findOrFail($id);
+        $trangThaiCu = $lich->trang_thai; // Lưu trạng thái cũ
 
         $lich->ngay_bao_tri = $request->ngay_bao_tri;
         $lich->ngay_hoan_thanh = $request->ngay_hoan_thanh;
@@ -309,6 +320,23 @@ public function hoanthanhSubmit(Request $request, $id)
         }
 
         $lich->save();
+
+        // 🔄 Khi admin tiếp nhận và chuyển sang "Đang bảo trì", cập nhật trạng thái tài sản
+        if ($trangThaiCu !== 'Đang bảo trì' && $request->trang_thai === 'Đang bảo trì') {
+            $lich->loadMissing(['taiSan', 'khoTaiSan']);
+            
+            if ($lich->taiSan) {
+                $lich->taiSan->update([
+                    'tinh_trang_hien_tai' => 'Đang bảo trì'
+                ]);
+            }
+            
+            if ($lich->khoTaiSan) {
+                $lich->khoTaiSan->update([
+                    'tinh_trang' => 'Đang bảo trì'
+                ]);
+            }
+        }
 
         return redirect()->route('lichbaotri.index')->with('success', 'Cập nhật lịch bảo trì thành công!');
     }
@@ -377,6 +405,51 @@ public function hoanthanhSubmit(Request $request, $id)
             });
 
         return response()->json($taiSans);
+    }
+
+    /** ✅ Tiếp nhận báo hỏng - chuyển từ "Đang lên lịch" sang "Chờ bảo trì" hoặc "Đang bảo trì" */
+    public function tiepNhan($id)
+    {
+        $lich = LichBaoTri::findOrFail($id);
+
+        // Chỉ tiếp nhận khi trạng thái là "Đang lên lịch"
+        if ($lich->trang_thai !== 'Đang lên lịch') {
+            return redirect()->route('lichbaotri.index')
+                ->with('error', 'Chỉ có thể tiếp nhận các yêu cầu đang ở trạng thái "Đang lên lịch".');
+        }
+
+        $today = now()->toDateString();
+        
+        // Xác định trạng thái mới dựa trên ngày bảo trì
+        if ($lich->ngay_bao_tri > $today) {
+            $trangThaiMoi = 'Chờ bảo trì';
+        } else {
+            $trangThaiMoi = 'Đang bảo trì';
+        }
+
+        // Cập nhật trạng thái lịch bảo trì
+        $lich->trang_thai = $trangThaiMoi;
+        $lich->save();
+
+        // Cập nhật trạng thái tài sản (chỉ khi đang bảo trì, không phải chờ bảo trì)
+        $lich->loadMissing(['taiSan', 'khoTaiSan']);
+        
+        if ($trangThaiMoi === 'Đang bảo trì') {
+            if ($lich->taiSan) {
+                $lich->taiSan->update([
+                    'tinh_trang_hien_tai' => 'Đang bảo trì'
+                ]);
+            }
+            
+            if ($lich->khoTaiSan) {
+                $lich->khoTaiSan->update([
+                    'tinh_trang' => 'Đang bảo trì'
+                ]);
+            }
+        }
+
+        return redirect()->route('lichbaotri.index')
+            ->with('success', "Đã tiếp nhận báo hỏng và chuyển sang trạng thái '{$trangThaiMoi}'.");
     }
 }
 

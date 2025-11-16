@@ -42,6 +42,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('client.lichbaotri*') ? 'active' : '' }}" href="{{ route('client.lichbaotri.index') }}">
+                            <i class="fas fa-wrench"></i>
+                            <span>Bảo trì</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('client.hoadon*') ? 'active' : '' }}" href="{{ route('client.hoadon.index') }}">
                             <i class="fas fa-file-invoice"></i>
                             <span>Hóa đơn</span>
@@ -88,6 +94,9 @@
                                         </a></li>
                                         <li><a class="dropdown-item" href="{{ route('client.suco.index') }}">
                                             <i class="fas fa-exclamation-triangle"></i> Sự cố
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.lichbaotri.index') }}">
+                                            <i class="fas fa-wrench"></i> Bảo trì
                                         </a></li>
                                         <li><a class="dropdown-item" href="{{ route('client.hoadon.index') }}">
                                             <i class="fas fa-receipt"></i> Hóa đơn

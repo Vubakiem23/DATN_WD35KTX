@@ -69,6 +69,9 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');
     Route::post('/suco', [ClientController::class, 'suCoStore'])->name('client.suco.store');
 
+    // Lịch bảo trì
+    Route::get('/lichbaotri', [ClientController::class, 'lichBaoTriIndex'])->name('client.lichbaotri.index');
+
     // Hóa đơn (sẽ làm sau)
     Route::prefix('hoadon')->group(function () {
         Route::get('/', function () {
@@ -151,6 +154,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhForm'])->name('lichbaotri.hoanthanh.form');
         Route::post('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanhSubmit'])->name('lichbaotri.hoanthanh.submit');
         Route::patch('/hoanthanh/{id}', [LichBaoTriController::class, 'hoanThanh'])->name('lichbaotri.hoanthanh');
+
+        // ✅ Tiếp nhận báo hỏng
+        Route::post('/tiep-nhan/{id}', [LichBaoTriController::class, 'tiepNhan'])->name('lichbaotri.tiepnhan');
 
         Route::get('/get-loai-tai-san', [LichBaoTriController::class, 'getLoaiTaiSan']);
         Route::get('/get-tai-san-kho/{loaiId}', [LichBaoTriController::class, 'getTaiSanKho']);
