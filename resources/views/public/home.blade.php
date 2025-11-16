@@ -168,13 +168,15 @@
                 @if(isset($tinTuc) && $tinTuc->count() > 0)
                     @foreach($tinTuc->take(3) as $tin)
                     <div class="news-item">
-                        <img src="{{ $tin->anh ? asset('storage/' . $tin->anh) : 'https://via.placeholder.com/120x80' }}" 
+                        <!-- <img src="{{ $tin->anh ? asset('storage/' . $tin->anh) :'https://via.placeholder.com/120x80' }}" 
                              alt="{{ $tin->tieuDe->ten_tieu_de ?? 'Tin tức' }}" 
-                             class="news-thumbnail">
+                             class="news-thumbnail"> -->
+
+                             <img src="{{ asset($tin->hinh_anh) }}" class="news-thumbnail" alt="{{ $tin->tieu_de }}">
                         <div class="news-content">
-                            <h6>{{ $tin->tieuDe->ten_tieu_de ?? 'Tin tức' }}</h6>
-                            <p>{{ Str::limit($tin->noi_dung, 100) }}</p>
-                            <span class="news-date">{{ $tin->ngay_dang ? \Carbon\Carbon::parse($tin->ngay_dang)->format('d/m/Y') : '' }}</span>
+                            <h6>{{ $tin->tieu_de ?? 'Tin tức' }}</h6>
+                            <p>{!! Str::limit($tin->noi_dung, 100) !!}</p>
+                            <span class="news-date">{{ $tin->ngay_tao ? \Carbon\Carbon::parse($tin->ngay_tao)->format('d/m/Y') : '' }}</span>
                         </div>
                     </div>
                     @endforeach

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ThongBao;
+use App\Models\TinTuc;
 use App\Models\SinhVien;
 use App\Models\Phong;
 use App\Models\Khu;
@@ -15,47 +16,53 @@ class PublicController extends Controller
      * Trang chủ công khai
      */
     public function home()
-    {
-        // Cho phép truy cập trang công khai kể cả khi đã đăng nhập
-        try {
-            // Lấy thông báo mới nhất (5 thông báo)
-            $thongBaos = ThongBao::with('tieuDe')
-                ->orderBy('ngay_dang', 'desc')
-                ->limit(5)
-                ->get();
-            
-            // Lấy tin tức (tạm thời sử dụng ThongBao làm placeholder cho tin tức)
-            $tinTuc = ThongBao::with('tieuDe')
-                ->orderBy('ngay_dang', 'desc')
-                ->limit(3)
-                ->get();
-            // Quyền hiển thị nút đăng ký
-            $canRegister = true;
-            $registerMessage = null;
-            $hideRegisterButton = false;
-            if (Auth::check()) {
-                $existing = SinhVien::where('user_id', Auth::id())->first();
-                if ($existing) {
-                    $canRegister = false;
-                    $isApproved = $existing->trang_thai_ho_so === 'Đã duyệt';
-                    $registerMessage = $isApproved
-                        ? 'Hồ sơ đã được duyệt. Bạn không thể đăng ký thêm.'
-                        : 'Bạn đã gửi hồ sơ. Vui lòng chờ duyệt.';
-                    // Nếu đã duyệt thì ẩn hoàn toàn nút
-                    $hideRegisterButton = $isApproved;
-                }
+{
+    try {
+        // Lấy 5 thông báo mới nhất
+        $thongBaos = ThongBao::orderBy('ngay_dang', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Lấy 3 tin tức mới nhất
+        $tinTuc = TinTuc::with('hashtags')
+            ->orderBy('ngay_tao', 'desc')
+            ->limit(3)
+            ->get();
+
+        // Quyền hiển thị nút đăng ký
+        $canRegister = true;
+        $registerMessage = null;
+        $hideRegisterButton = false;
+
+        if (Auth::check()) {
+            $existing = SinhVien::where('user_id', Auth::id())->first();
+            if ($existing) {
+                $canRegister = false;
+                $isApproved = $existing->trang_thai_ho_so === 'Đã duyệt';
+                $registerMessage = $isApproved
+                    ? 'Hồ sơ đã được duyệt. Bạn không thể đăng ký thêm.'
+                    : 'Bạn đã gửi hồ sơ. Vui lòng chờ duyệt.';
+                $hideRegisterButton = $isApproved;
             }
-        } catch (\Exception $e) {
-            // Nếu có lỗi (ví dụ: chưa có dữ liệu), trả về collection rỗng
-            $thongBaos = collect([]);
-            $tinTuc = collect([]);
-            $canRegister = true;
-            $registerMessage = null;
-            $hideRegisterButton = false;
         }
-        
-        return view('public.home', compact('thongBaos', 'tinTuc', 'canRegister', 'registerMessage', 'hideRegisterButton'));
+    } catch (\Exception $e) {
+        // Nếu có lỗi (ví dụ: chưa có dữ liệu), trả về collection rỗng
+        $thongBaos = collect([]);
+        $tinTuc = collect([]);
+        $canRegister = true;
+        $registerMessage = null;
+        $hideRegisterButton = false;
     }
+
+    return view('public.home', compact(
+        'thongBaos',
+        'tinTuc',
+        'canRegister',
+        'registerMessage',
+        'hideRegisterButton'
+    ));
+}
+
 
     /**
      * Form đăng ký ký túc xá (Public)
