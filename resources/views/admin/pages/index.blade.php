@@ -4,9 +4,9 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
 <style>
-    .dashboard-container {
+    /* .dashboard-container {
         padding: 20px 0;
-    }
+    } */
     
     .month-selector {
         background: white;
