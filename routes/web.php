@@ -278,7 +278,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
 
 // // TÀI SẢN
-// ======================
+Route::post('/client/bao-hong', [ClientController::class, 'baoHong'])->name('client.baoHong');
 
 // ======================
 // NGƯỜI DÙNG

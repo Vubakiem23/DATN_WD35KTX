@@ -8,6 +8,7 @@ use App\Models\SinhVien;
 use App\Models\Phong;
 use App\Models\SuCo;
 use App\Models\HoaDon;
+use App\Models\LichBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
 
@@ -19,12 +20,12 @@ class ClientController extends Controller
     protected function getSinhVien()
     {
         $user = Auth::user();
-        
+
         // Thử lấy qua quan hệ user->sinhVien trước (nếu có user_id)
         if ($user->sinhVien) {
             return $user->sinhVien;
         }
-        
+
         // Fallback: Tìm theo email (nếu có)
         return SinhVien::where('email', $user->email)->first();
     }
@@ -36,7 +37,7 @@ class ClientController extends Controller
     {
         $user = Auth::user();
         $sinhVien = $this->getSinhVien();
-        
+
         // Nếu chưa có sinh viên, vẫn cho vào giao diện nhưng hiển thị thông báo
         if (!$sinhVien) {
             $stats = [
@@ -46,7 +47,7 @@ class ClientController extends Controller
                 'hoa_don_chua_thanh_toan' => 0,
             ];
             $suCoGanDay = collect([]);
-            
+
             return view('client.dashboard', compact('user', 'sinhVien', 'stats', 'suCoGanDay'));
         }
 
@@ -63,7 +64,7 @@ class ClientController extends Controller
                 $sinhVien->setRelation('phong', $slot->phong);
             }
         }
-        
+
         // Thống kê cơ bản
         $stats = [
             'phong' => $sinhVien->phong ?? null,
@@ -73,9 +74,9 @@ class ClientController extends Controller
                 ->whereIn('trang_thai', ['Tiếp nhận', 'Đang xử lý'])
                 ->count(),
             'hoa_don_chua_thanh_toan' => $phongId ? HoaDon::where('phong_id', $phongId)
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->where('da_thanh_toan', false)
-                      ->orWhereNull('da_thanh_toan');
+                        ->orWhereNull('da_thanh_toan');
                 })
                 ->count() : 0,
         ];
@@ -97,7 +98,7 @@ class ClientController extends Controller
     {
         $user = Auth::user();
         $sinhVien = $this->getSinhVien();
-        
+
         // Nếu chưa có sinh viên, vẫn cho vào giao diện
         if (!$sinhVien) {
             $phong = null;
@@ -130,7 +131,7 @@ class ClientController extends Controller
                 ->where('phong_id', $phong->id)
                 ->whereNotNull('sinh_vien_id')
                 ->get()
-                ->map(function($slot) {
+                ->map(function ($slot) {
                     return $slot->sinhVien;
                 })
                 ->filter()
@@ -138,19 +139,25 @@ class ClientController extends Controller
 
             // Tài sản chung của phòng (logic giống admin: chỉ lấy tài sản có available_quantity > 0)
             $roomAssets = TaiSan::with(['khoTaiSan', 'slots'])
-                ->where('phong_id', $phong->id)
+                ->leftJoin('lich_bao_tri', function ($join) {
+                    $join->on('tai_san.id', '=', 'lich_bao_tri.tai_san_id')
+                        ->whereNull('lich_bao_tri.ngay_hoan_thanh'); // hoặc where trang_thai != 'Hoàn thành'
+                })
+                ->where('tai_san.phong_id', $phong->id)
+                ->select('tai_san.*', 'lich_bao_tri.trang_thai as trang_thai_bao_tri')
                 ->orderBy('ten_tai_san')
                 ->get();
+
 
             $taiSanPhong = $roomAssets->map(function ($asset) {
                 $assignedQuantity = $asset->slots->sum(function ($slotItem) {
                     return (int) ($slotItem->pivot->so_luong ?? 0);
                 });
                 $availableQuantity = max(0, (int) ($asset->so_luong ?? 0) - $assignedQuantity);
-                
+
                 $asset->setAttribute('assigned_slot_quantity', $assignedQuantity);
                 $asset->setAttribute('available_quantity', $availableQuantity);
-                
+
                 return $asset;
             })->filter(function ($asset) {
                 // Chỉ lấy tài sản chung (available_quantity > 0)
@@ -162,9 +169,20 @@ class ClientController extends Controller
                 ->where('phong_id', $phong->id)
                 ->where('sinh_vien_id', $sinhVien->id)
                 ->first();
-            $taiSanCaNhan = $slotSinhVien?->taiSans ?? collect([]);
+$taiSanCaNhan = collect([]);
+
+if ($slotSinhVien) {
+    $taiSanCaNhan = TaiSan::with('khoTaiSan')
+        ->leftJoin('lich_bao_tri', function ($join) {
+            $join->on('tai_san.id', '=', 'lich_bao_tri.tai_san_id')
+                 ->whereNull('lich_bao_tri.ngay_hoan_thanh'); // chỉ lấy đang bảo trì
+        })
+        ->whereIn('tai_san.id', $slotSinhVien->taiSans->pluck('id'))
+        ->select('tai_san.*', 'lich_bao_tri.trang_thai as trang_thai_bao_tri')
+        ->get();
+}
         }
-        
+
         return view('client.phong', compact(
             'user',
             'sinhVien',
@@ -184,8 +202,52 @@ class ClientController extends Controller
     {
         $user = Auth::user();
         $sinhVien = $this->getSinhVien();
-        
+
         // Nếu chưa có sinh viên, vẫn cho vào giao diện
         return view('client.profile', compact('user', 'sinhVien'));
+    }
+    public function baoHong(Request $request)
+    {
+        $request->validate([
+            'tai_san_id' => 'required|exists:tai_san,id',
+            'mo_ta' => 'required|string',
+            'hinh_anh_truoc' => 'nullable|image|max:4096'
+        ]);
+
+        $sinhVien = $this->getSinhVien();
+        if (!$sinhVien) {
+            return back()->with('error', 'Không tìm thấy thông tin sinh viên.');
+        }
+
+        $phongId = $sinhVien->phong_id ?? Slot::where('sinh_vien_id', $sinhVien->id)->value('phong_id');
+        if (!$phongId) {
+            return back()->with('error', 'Bạn chưa ở trong phòng nào.');
+        }
+
+        if ($request->hasFile('hinh_anh_truoc')) {
+            $file = $request->file('hinh_anh_truoc');
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $file->move(public_path('uploads/lichbaotri'), $filename);
+
+            // Lưu giống admin
+            $imagePath = $filename;
+        } else {
+            $imagePath = null;
+        }
+
+
+
+
+        LichBaoTri::create([
+            'tai_san_id'   => $request->tai_san_id,
+            'phong_id'     => $phongId,
+            'mo_ta'        => $request->mo_ta,
+            'hinh_anh_truoc'     => $imagePath,
+            'ngay_bao_tri' => now()->toDateString(),
+            'trang_thai'   => 'Đang bảo trì'
+        ]);
+
+        return back()->with('success', 'Đã gửi báo hỏng thành công!');
     }
 }

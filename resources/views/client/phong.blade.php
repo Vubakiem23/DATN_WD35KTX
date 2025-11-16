@@ -44,36 +44,36 @@
             </div>
             <div class="card-body">
                 @php
-                    $gioiTinh = strtolower($phong->gioi_tinh ?? '');
-                    $gioiTinhClass = match($gioiTinh) {
-                        'nam' => 'nam',
-                        'nữ' => 'nu',
-                        'cả hai' => 'cả-hai',
-                        default => ''
-                    };
-                    // Tính giá tiền chia slots
-                    $totalSlots = $phong->totalSlots() ?? 0;
-                    $giaTienTong = $phong->gia_phong ?? null;
-                    $giaTienSlot = null;
-                    if ($giaTienTong && $totalSlots > 0) {
-                        $giaTienSlot = (int) round($giaTienTong / $totalSlots);
-                    }
-                    // Ảnh phòng
-                    $anhPhong = $phong->hinh_anh ?? null;
-                    $imageUrl = $anhPhong ? asset('storage/' . $anhPhong) : asset('uploads/default.png');
+                $gioiTinh = strtolower($phong->gioi_tinh ?? '');
+                $gioiTinhClass = match($gioiTinh) {
+                'nam' => 'nam',
+                'nữ' => 'nu',
+                'cả hai' => 'cả-hai',
+                default => ''
+                };
+                // Tính giá tiền chia slots
+                $totalSlots = $phong->totalSlots() ?? 0;
+                $giaTienTong = $phong->gia_phong ?? null;
+                $giaTienSlot = null;
+                if ($giaTienTong && $totalSlots > 0) {
+                $giaTienSlot = (int) round($giaTienTong / $totalSlots);
+                }
+                // Ảnh phòng
+                $anhPhong = $phong->hinh_anh ?? null;
+                $imageUrl = $anhPhong ? asset('storage/' . $anhPhong) : asset('uploads/default.png');
                 @endphp
-                
+
                 <!-- Ảnh phòng -->
                 @if($anhPhong)
                 <div class="text-center mb-4 room-image-wrapper">
-                    <img src="{{ $imageUrl }}" 
-                         alt="{{ $phong->ten_phong }}" 
-                         class="img-fluid room-image" 
-                         style="max-height: 350px; width: auto; object-fit: cover;">
+                    <img src="{{ $imageUrl }}"
+                        alt="{{ $phong->ten_phong }}"
+                        class="img-fluid room-image"
+                        style="max-height: 350px; width: auto; object-fit: cover;">
                 </div>
                 <hr class="my-4 room-divider">
                 @endif
-                
+
                 <div class="info-item mb-3">
                     <p class="mb-1 info-label"><i class="fas fa-tag me-2"></i>Loại phòng:</p>
                     <p class="ms-4 mb-0">
@@ -97,11 +97,11 @@
                 <div class="info-item mb-3">
                     <p class="mb-1 info-label"><i class="fas fa-users me-2"></i>Số người đang ở:</p>
                     <p class="ms-4 mb-0 info-value">
-                            {{ isset($soNguoiTrongPhong) ? $soNguoiTrongPhong : 'N/A' }} người
+                        {{ isset($soNguoiTrongPhong) ? $soNguoiTrongPhong : 'N/A' }} người
                         @if(isset($danhSachSinhVien) && $danhSachSinhVien->count() > 0)
-                            <button class="btn btn-sm btn-link p-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#danhSachSinhVienCollapse" aria-expanded="false" aria-controls="danhSachSinhVienCollapse">
-                                <i class="fas fa-chevron-down"></i> Xem danh sách
-                            </button>
+                        <button class="btn btn-sm btn-link p-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#danhSachSinhVienCollapse" aria-expanded="false" aria-controls="danhSachSinhVienCollapse">
+                            <i class="fas fa-chevron-down"></i> Xem danh sách
+                        </button>
                         @endif
                     </p>
                 </div>
@@ -113,8 +113,8 @@
                             <li class="student-item">
                                 <div class="student-avatar">
                                     @php
-                                        $anhSV = $sv->anh_sinh_vien ?? null;
-                                        $avatarUrl = $anhSV ? asset('storage/' . $anhSV) : asset('uploads/default.png');
+                                    $anhSV = $sv->anh_sinh_vien ?? null;
+                                    $avatarUrl = $anhSV ? asset('storage/' . $anhSV) : asset('uploads/default.png');
                                     @endphp
                                     <img src="{{ $avatarUrl }}" alt="{{ $sv->ho_ten ?? 'Sinh viên' }}" class="student-avatar-img">
                                 </div>
@@ -132,11 +132,11 @@
                     <p class="mb-1 info-label"><i class="fas fa-check-circle me-2"></i>Trạng thái:</p>
                     <p class="ms-4 mb-0">
                         <span class="badge badge-status bg-{{ $phong->trang_thai == 'Đang sử dụng' ? 'success' : 'secondary' }}">
-                                {{ $phong->trang_thai ?? 'N/A' }}
-                            </span>
-                        </p>
-                    </div>
-                
+                            {{ $phong->trang_thai ?? 'N/A' }}
+                        </span>
+                    </p>
+                </div>
+
                 <!-- Giá tiền - Highlight section -->
                 @if($giaTienTong || $giaTienSlot)
                 <div class="price-section mb-4">
@@ -157,7 +157,7 @@
                         </div>
                         @endif
                         @if($giaTienSlot)
-                    <div class="col-md-6">
+                        <div class="col-md-6">
                             <div class="price-card price-card-slot">
                                 <div class="price-icon">
                                     <i class="fas fa-coins"></i>
@@ -175,7 +175,7 @@
                     </div>
                 </div>
                 @endif
-                
+
                 <hr class="my-4 room-divider">
                 <div class="info-item">
                     <p class="mb-2 info-label"><i class="fas fa-file-alt me-2"></i>Mô tả phòng:</p>
@@ -208,7 +208,7 @@
                             </button>
                         </div>
                         <div class="collapse show" id="taiSanPhongCollapse">
-                        @if(isset($taiSanPhong) && $taiSanPhong->count())
+                            @if(isset($taiSanPhong) && $taiSanPhong->count())
                             <div class="row g-3">
                                 @foreach($taiSanPhong as $ts)
                                 <div class="col-12">
@@ -216,24 +216,35 @@
                                         <div class="card-body p-3">
                                             <div class="d-flex align-items-start">
                                                 @php
-                                                    $hinhAnh = $ts->hinh_anh ?? ($ts->khoTaiSan->hinh_anh ?? null);
-                                                    $imageUrl = $hinhAnh ? asset('storage/' . $hinhAnh) : asset('uploads/default.png');
-                                                    $maTaiSan = $ts->khoTaiSan->ma_tai_san ?? 'N/A';
-                                                    $trangThai = $ts->tinh_trang_hien_tai ?? $ts->tinh_trang ?? 'N/A';
+                                                $hinhAnh = $ts->hinh_anh ?? ($ts->khoTaiSan->hinh_anh ?? null);
+                                                $imageUrl = $hinhAnh ? asset('storage/' . $hinhAnh) : asset('uploads/default.png');
+                                                $maTaiSan = $ts->khoTaiSan->ma_tai_san ?? 'N/A';
+                                                $trangThai =
+                                                $ts->trang_thai_bao_tri
+                                                ? $ts->trang_thai_bao_tri
+                                                : ($ts->tinh_trang_hien_tai ?? $ts->tinh_trang ?? 'N/A');
                                                 @endphp
-                                                <img src="{{ $imageUrl }}" alt="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}" 
-                                                     class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                                <img src="{{ $imageUrl }}" alt="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}"
+                                                    class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
                                                 <div class="flex-grow-1">
                                                     <h6 class="mb-1">{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}</h6>
                                                     <p class="mb-1 small text-muted">
                                                         <strong>Mã tài sản:</strong> {{ $maTaiSan }}
                                                     </p>
                                                     <p class="mb-0 small">
-                                                        <strong>Trạng thái:</strong> 
-                                                        <span class="badge bg-{{ $trangThai == 'Tốt' ? 'success' : ($trangThai == 'Hỏng' ? 'danger' : ($trangThai == 'Mới' ? 'info' : 'warning')) }}">
+                                                        <strong>Trạng thái:</strong>
+                                                        <span class="badge bg-{{ $trangThai == 'Bình thường' ? 'success' : ($trangThai == 'Chờ bảo trì' ? 'info' : ($trangThai == 'Đang bảo trì' ? 'warning' : 'warning')) }}">
                                                             {{ $trangThai }}
-                                        </span>
+                                                        </span>
                                                     </p>
+                                                    <button class="btn btn-sm btn-danger mt-2 btn-bao-hong "
+                                                        data-id="{{ $ts->id }}"
+                                                        data-ten="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san }}"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalBaoHong">
+                                                        <i class="fas fa-exclamation-triangle"></i> Báo hỏng
+                                                    </button>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -241,12 +252,12 @@
                                 </div>
                                 @endforeach
                             </div>
-                        @else
+                            @else
                             <p class="text-muted fst-italic">Chưa có tài sản phòng.</p>
-                        @endif
+                            @endif
                         </div>
                     </div>
-                    
+
                     <!-- Cột phải: Tài sản riêng của bạn -->
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
@@ -259,7 +270,7 @@
                             </button>
                         </div>
                         <div class="collapse show" id="taiSanCaNhanCollapse">
-                        @if(isset($taiSanCaNhan) && $taiSanCaNhan->count())
+                            @if(isset($taiSanCaNhan) && $taiSanCaNhan->count())
                             <div class="row g-3">
                                 @foreach($taiSanCaNhan as $ts)
                                 <div class="col-12">
@@ -267,24 +278,38 @@
                                         <div class="card-body p-3">
                                             <div class="d-flex align-items-start">
                                                 @php
-                                                    $hinhAnh = $ts->hinh_anh ?? ($ts->khoTaiSan->hinh_anh ?? null);
-                                                    $imageUrl = $hinhAnh ? asset('storage/' . $hinhAnh) : asset('uploads/default.png');
-                                                    $maTaiSan = $ts->khoTaiSan->ma_tai_san ?? 'N/A';
-                                                    $trangThai = $ts->tinh_trang_hien_tai ?? $ts->tinh_trang ?? 'N/A';
+                                                $hinhAnh = $ts->hinh_anh ?? ($ts->khoTaiSan->hinh_anh ?? null);
+                                                $imageUrl = $hinhAnh ? asset('storage/' . $hinhAnh) : asset('uploads/default.png');
+                                                $maTaiSan = $ts->khoTaiSan->ma_tai_san ?? 'N/A';
+                                                $trangThai =
+                                                $ts->trang_thai_bao_tri
+                                                ? $ts->trang_thai_bao_tri
+                                                : ($ts->tinh_trang_hien_tai ?? $ts->tinh_trang ?? 'N/A');
                                                 @endphp
-                                                <img src="{{ $imageUrl }}" alt="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}" 
-                                                     class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                                <img src="{{ $imageUrl }}" alt="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}"
+                                                    class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
                                                 <div class="flex-grow-1">
                                                     <h6 class="mb-1">{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}</h6>
                                                     <p class="mb-1 small text-muted">
                                                         <strong>Mã tài sản:</strong> {{ $maTaiSan }}
                                                     </p>
+                                                    
                                                     <p class="mb-0 small">
-                                                        <strong>Trạng thái:</strong> 
-                                                        <span class="badge bg-{{ $trangThai == 'Tốt' ? 'success' : ($trangThai == 'Hỏng' ? 'danger' : ($trangThai == 'Mới' ? 'info' : 'warning')) }}">
+                                                        <strong>Trạng thái:</strong>
+                                                        <span class="badge bg-{{ $trangThai == 'Bình thường' ? 'success' :
+                                                            ($trangThai == 'Chờ bảo trì' ? 'info' :
+                                                            ($trangThai == 'Đang bảo trì' ? 'warning' :
+                                                            'secondary')) }}">
                                                             {{ $trangThai }}
-                                        </span>
+                                                        </span>
                                                     </p>
+                                                    <button class=" btn btn-sm btn-danger mt-2 btn-bao-hong"
+                                                        data-id="{{ $ts->id }}"
+                                                        data-ten="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san }}"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalBaoHong">
+                                                        <i class="fas fa-exclamation-triangle"></i> Báo hỏng
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -292,16 +317,16 @@
                                 </div>
                                 @endforeach
                             </div>
-                        @else
+                            @else
                             <p class="text-muted fst-italic">Chưa có tài sản được bàn giao.</p>
-                        @endif
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <!-- Bên phải: Thông tin sinh viên -->
     <div class="col-lg-4 col-md-12 order-lg-2">
         <div class="card shadow-sm h-100">
@@ -316,13 +341,13 @@
                 <div class="text-center mb-4 student-profile-header">
                     <div class="student-avatar-wrapper">
                         @php
-                            $anhSinhVien = $sinhVien->anh_sinh_vien ?? null;
-                            $imageUrl = $anhSinhVien ? asset('storage/' . $anhSinhVien) : asset('uploads/default.png');
+                        $anhSinhVien = $sinhVien->anh_sinh_vien ?? null;
+                        $imageUrl = $anhSinhVien ? asset('storage/' . $anhSinhVien) : asset('uploads/default.png');
                         @endphp
                         <div class="avatar-ring">
-                            <img src="{{ $imageUrl }}" 
-                                 alt="{{ $sinhVien->ho_ten ?? 'Sinh viên' }}" 
-                                 class="student-main-avatar">
+                            <img src="{{ $imageUrl }}"
+                                alt="{{ $sinhVien->ho_ten ?? 'Sinh viên' }}"
+                                class="student-main-avatar">
                         </div>
                         <div class="avatar-badge">
                             <i class="fas fa-check-circle"></i>
@@ -332,7 +357,7 @@
                     <p class="student-id-title">{{ $sinhVien->ma_sinh_vien ?? 'N/A' }}</p>
                 </div>
                 <hr class="my-4">
-                
+
                 <div class="row g-4">
                     <!-- Cột 1: Thông tin cơ bản -->
                     <div class="col-12">
@@ -372,7 +397,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Cột 2: Thông tin học tập & Liên hệ -->
                     <div class="col-12">
                         <div class="info-section-header" data-bs-toggle="collapse" data-bs-target="#thongTinHocTap" aria-expanded="true">
@@ -419,7 +444,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Cột 3: CCCD & Người liên hệ -->
                     <div class="col-12">
                         <div class="info-section-header" data-bs-toggle="collapse" data-bs-target="#canCuocCongDan" aria-expanded="true">
@@ -882,9 +907,12 @@
     }
 
     @keyframes pulse {
-        0%, 100% {
+
+        0%,
+        100% {
             transform: scale(1);
         }
+
         50% {
             transform: scale(1.1);
         }
@@ -1059,6 +1087,7 @@
             opacity: 0;
             transform: translateY(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -1173,13 +1202,13 @@
         // Tài sản của phòng
         const taiSanPhongCollapse = document.getElementById('taiSanPhongCollapse');
         const taiSanPhongChevron = document.getElementById('taiSanPhongChevron');
-        
+
         if (taiSanPhongCollapse && taiSanPhongChevron) {
             taiSanPhongCollapse.addEventListener('show.bs.collapse', function() {
                 taiSanPhongChevron.classList.remove('fa-chevron-down');
                 taiSanPhongChevron.classList.add('fa-chevron-up');
             });
-            
+
             taiSanPhongCollapse.addEventListener('hide.bs.collapse', function() {
                 taiSanPhongChevron.classList.remove('fa-chevron-up');
                 taiSanPhongChevron.classList.add('fa-chevron-down');
@@ -1189,13 +1218,13 @@
         // Tài sản riêng của bạn
         const taiSanCaNhanCollapse = document.getElementById('taiSanCaNhanCollapse');
         const taiSanCaNhanChevron = document.getElementById('taiSanCaNhanChevron');
-        
+
         if (taiSanCaNhanCollapse && taiSanCaNhanChevron) {
             taiSanCaNhanCollapse.addEventListener('show.bs.collapse', function() {
                 taiSanCaNhanChevron.classList.remove('fa-chevron-down');
                 taiSanCaNhanChevron.classList.add('fa-chevron-up');
             });
-            
+
             taiSanCaNhanCollapse.addEventListener('hide.bs.collapse', function() {
                 taiSanCaNhanChevron.classList.remove('fa-chevron-up');
                 taiSanCaNhanChevron.classList.add('fa-chevron-down');
@@ -1203,24 +1232,38 @@
         }
 
         // Toggle icon cho các section thông tin cá nhân
-        const infoSections = [
-            { id: 'thongTinCoBan', header: document.querySelector('[data-bs-target="#thongTinCoBan"]') },
-            { id: 'thongTinHocTap', header: document.querySelector('[data-bs-target="#thongTinHocTap"]') },
-            { id: 'lienHe', header: document.querySelector('[data-bs-target="#lienHe"]') },
-            { id: 'canCuocCongDan', header: document.querySelector('[data-bs-target="#canCuocCongDan"]') },
-            { id: 'nguoiLienHe', header: document.querySelector('[data-bs-target="#nguoiLienHe"]') }
+        const infoSections = [{
+                id: 'thongTinCoBan',
+                header: document.querySelector('[data-bs-target="#thongTinCoBan"]')
+            },
+            {
+                id: 'thongTinHocTap',
+                header: document.querySelector('[data-bs-target="#thongTinHocTap"]')
+            },
+            {
+                id: 'lienHe',
+                header: document.querySelector('[data-bs-target="#lienHe"]')
+            },
+            {
+                id: 'canCuocCongDan',
+                header: document.querySelector('[data-bs-target="#canCuocCongDan"]')
+            },
+            {
+                id: 'nguoiLienHe',
+                header: document.querySelector('[data-bs-target="#nguoiLienHe"]')
+            }
         ];
 
         infoSections.forEach(section => {
             if (section.header) {
                 const collapse = document.getElementById(section.id);
                 const toggleIcon = section.header.querySelector('.toggle-icon');
-                
+
                 if (collapse && toggleIcon) {
                     collapse.addEventListener('show.bs.collapse', function() {
                         section.header.setAttribute('aria-expanded', 'true');
                     });
-                    
+
                     collapse.addEventListener('hide.bs.collapse', function() {
                         section.header.setAttribute('aria-expanded', 'false');
                     });
@@ -1228,6 +1271,45 @@
             }
         });
     });
+    document.querySelectorAll('.btn-bao-hong').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('modal_tai_san_id').value = this.dataset.id;
+            document.getElementById('modal_tai_san_ten').innerText = this.dataset.ten;
+        });
+    });
 </script>
 @endpush
+<!-- Modal Báo Hỏng -->
+<div class="modal fade" id="modalBaoHong" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="formBaoHong" method="POST" enctype="multipart/form-data" action="{{ route('client.baoHong') }}">
+            @csrf
+            <input type="hidden" name="tai_san_id" id="modal_tai_san_id">
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Báo hỏng tài sản: <span id="modal_tai_san_ten"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Mô tả sự cố</label>
+                        <textarea name="mo_ta" class="form-control" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Hình ảnh minh chứng</label>
+                        <input type="file" name="hinh_anh_truoc" class="form-control" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger">Gửi báo hỏng</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
