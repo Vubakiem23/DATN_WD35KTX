@@ -2,7 +2,24 @@
 
 @section('content')
 <div class="container py-4 ">
-  <h3 class="mb-1">📄 Chi tiết hóa đơn phòng {{ $hoaDon->phong->ten_phong }}</h3>
+  @php
+    $viewMode = request()->get('view');
+    $isDienNuocOnly = $viewMode === 'dien-nuoc';
+    $isPhongOnly = $viewMode === 'phong';
+    $soDien = max(0, ($hoaDon->so_dien_moi ?? 0) - ($hoaDon->so_dien_cu ?? 0));
+    $soNuoc = max(0, ($hoaDon->so_nuoc_moi ?? 0) - ($hoaDon->so_nuoc_cu ?? 0));
+    $tongDienNuoc = ($hoaDon->tien_dien ?? 0) + ($hoaDon->tien_nuoc ?? 0);
+  @endphp
+  <h3 class="mb-1">
+    📄
+    @if($isDienNuocOnly)
+      Chi tiết hóa đơn điện · nước phòng {{ $hoaDon->phong->ten_phong }}
+    @elseif($isPhongOnly)
+      Chi tiết hóa đơn tiền phòng {{ $hoaDon->phong->ten_phong }}
+    @else
+      Chi tiết hóa đơn phòng {{ $hoaDon->phong->ten_phong }}
+    @endif
+  </h3>
   <div class="text-muted mb-3">Kiểm tra kĩ thông tin trước khi thanh toán</div>
 
   <style>
@@ -33,34 +50,156 @@
     @endif
   </div>
 
-  <div class="card shadow-sm">
+  <div class="card shadow-sm mb-4">
     <div class="card-body">
-      <table class="table table-bordered text-start table-invoice mb-0">
-      <tr><th>Khu</th><td>{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td></tr>
-      <tr><th>Tên Phòng</th><td>{{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}</td></tr>
-      <tr><th>Tháng</th><td>{{ \Carbon\Carbon::parse($hoaDon->created_at)->format('m/Y') }}</td></tr>
-      <tr><th>Loại Phòng</th><td>{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td></tr>
-      <tr><th>Điện đã dùng</th><td>{{ $hoaDon->so_dien_moi - $hoaDon->so_dien_cu }}</td></tr>
-      <tr><th>Tiền điện</th><td>{{ number_format($hoaDon->tien_dien, 0, ',', '.') }} VND</td></tr>
-      <tr><th>Nước đã dùng</th><td>{{ $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu }}</td></tr>
-      <tr><th>Tiền nước</th><td>{{ number_format($hoaDon->tien_nuoc, 0, ',', '.') }} VND</td></tr>
-      <tr><th>Giá phòng</th><td>{{ number_format($hoaDon->phong->gia_phong, 0, ',', '.') }} VND</td></tr>
-        <tr class="total-row"><th>Thành tiền</th><td><strong>{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }} VND</strong></td></tr>
-      <tr><th>Tính từ ngày</th><td>{{ $hoaDon->created_at ? $hoaDon->created_at->format('d/m/Y') : '-' }}</td></tr>
-      <tr><th>Ngày chốt</th><td>{{ $hoaDon->created_at->format('d/m/Y H:i') }}</td></tr>
-      <tr><th>Ngày thanh toán</th><td>{{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}</td></tr>
-        <tr>
-          <th>Trạng thái</th>
-          <td>
-            @if(($hoaDon->trang_thai ?? '') === 'Đã thanh toán')
-              <span class="badge-soft-success">Đã thanh toán</span>
-            @else
-              <span class="badge-soft-danger">Chưa thanh toán</span>
-            @endif
-          </td>
-        </tr>
-    </table>
+      @if($isDienNuocOnly)
+        <table class="table table-bordered text-start table-invoice mb-0">
+          <tr><th>Khu</th><td>{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td></tr>
+          <tr><th>Tên Phòng</th><td>{{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}</td></tr>
+          <tr><th>Tháng</th><td>{{ \Carbon\Carbon::parse($hoaDon->created_at)->format('m/Y') }}</td></tr>
+          <tr><th>Loại Phòng</th><td>{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td></tr>
+          <tr><th>Điện cũ</th><td>{{ $hoaDon->so_dien_cu ?? 0 }}</td></tr>
+          <tr><th>Điện mới</th><td>{{ $hoaDon->so_dien_moi ?? 0 }}</td></tr>
+          <tr><th>Sản lượng điện</th><td>{{ $soDien }}</td></tr>
+          <tr><th>Đơn giá điện</th><td>{{ number_format($hoaDon->don_gia_dien ?? 0, 0, ',', '.') }} VND</td></tr>
+          <tr><th>Tiền điện</th><td>{{ number_format($hoaDon->tien_dien ?? 0, 0, ',', '.') }} VND</td></tr>
+          <tr><th>Nước cũ</th><td>{{ $hoaDon->so_nuoc_cu ?? 0 }}</td></tr>
+          <tr><th>Nước mới</th><td>{{ $hoaDon->so_nuoc_moi ?? 0 }}</td></tr>
+          <tr><th>Sản lượng nước</th><td>{{ $soNuoc }}</td></tr>
+          <tr><th>Đơn giá nước</th><td>{{ number_format($hoaDon->don_gia_nuoc ?? 0, 0, ',', '.') }} VND</td></tr>
+          <tr><th>Tiền nước</th><td>{{ number_format($hoaDon->tien_nuoc ?? 0, 0, ',', '.') }} VND</td></tr>
+          <tr><th>Ngày chốt</th><td>{{ $hoaDon->created_at->format('d/m/Y H:i') }}</td></tr>
+          <tr><th>Ngày thanh toán</th><td>{{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}</td></tr>
+          <tr class="total-row"><th>Tổng tiền điện · nước</th><td><strong>{{ number_format($tongDienNuoc, 0, ',', '.') }} VND</strong></td></tr>
+          <tr>
+            <th>Trạng thái</th>
+            <td>
+              @if(($hoaDon->trang_thai ?? '') === 'Đã thanh toán')
+                <span class="badge-soft-success">Đã thanh toán</span>
+              @else
+                <span class="badge-soft-danger">Chưa thanh toán</span>
+              @endif
+            </td>
+          </tr>
+        </table>
+      @else
+        <table class="table table-bordered text-start table-invoice mb-0">
+          <tr><th>Khu</th><td>{{ optional($hoaDon->phong->khu)->ten_khu ?? 'Không rõ khu' }}</td></tr>
+          <tr><th>Tên Phòng</th><td>{{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}</td></tr>
+          <tr><th>Tháng</th><td>{{ \Carbon\Carbon::parse($hoaDon->created_at)->format('m/Y') }}</td></tr>
+          <tr><th>Loại Phòng</th><td>{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td></tr>
+          <tr><th>Tính từ ngày</th><td>{{ $hoaDon->created_at ? $hoaDon->created_at->format('d/m/Y') : '-' }}</td></tr>
+          <tr><th>Ngày chốt</th><td>{{ $hoaDon->created_at->format('d/m/Y H:i') }}</td></tr>
+          <tr><th>Ngày thanh toán</th><td>{{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}</td></tr>
+          <tr class="total-row"><th>Thành tiền</th><td><strong>{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }} VND</strong></td></tr>
+          <tr>
+            <th>Trạng thái</th>
+            <td>
+              @if(($hoaDon->trang_thai ?? '') === 'Đã thanh toán')
+                <span class="badge-soft-success">Đã thanh toán</span>
+              @else
+                <span class="badge-soft-danger">Chưa thanh toán</span>
+              @endif
+            </td>
+          </tr>
+        </table>
+      @endif
     </div>
   </div>
+
+  @if(!$isDienNuocOnly)
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold text-uppercase">Chi tiết tiền phòng</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 border rounded bg-light">
+            <div class="text-muted text-uppercase small">Số slot tính phí</div>
+            <div class="fs-4 fw-semibold">{{ $hoaDon->slot_billing_count ?? 0 }}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 border rounded bg-light">
+            <div class="text-muted text-uppercase small">Đơn giá mỗi slot</div>
+            <div class="fs-4 fw-semibold">{{ number_format($hoaDon->slot_unit_price ?? 0, 0, ',', '.') }} VND</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 border rounded bg-light">
+            <div class="text-muted text-uppercase small">Tiền phòng</div>
+            <div class="fs-4 fw-semibold text-success">{{ number_format($hoaDon->tien_phong_slot ?? 0, 0, ',', '.') }} VND</div>
+          </div>
+        </div>
+      </div>
+
+      @if(!empty($hoaDon->slot_breakdowns))
+        <div class="table-responsive mt-4">
+          <table class="table table-striped text-center mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Slot</th>
+                <th>Sinh viên</th>
+                <th>Tiền phòng</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach($hoaDon->slot_breakdowns as $slot)
+                <tr>
+                  <td>{{ $slot['label'] }}</td>
+                  <td>{{ $slot['sinh_vien'] }}</td>
+                  <td class="fw-semibold">{{ number_format($slot['tien_phong'] ?? 0, 0, ',', '.') }} VND</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      @else
+        <p class="text-muted mt-3 mb-0">Chưa có phân bổ slot chi tiết cho tiền phòng.</p>
+      @endif
+    </div>
+  </div>
+  @endif
+
+  @if(!$isPhongOnly && !empty($hoaDon->slot_breakdowns_dien_nuoc ?? $hoaDon->slot_breakdowns))
+    <div class="card shadow-sm mb-4">
+      <div class="card-header fw-semibold text-uppercase">Chi tiết tiền điện · nước</div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped text-center mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Slot</th>
+                <th>Sinh viên</th>
+                <th>Tiền điện</th>
+                <th>Tiền nước</th>
+                <th>Tổng điện + nước</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach(($hoaDon->slot_breakdowns_dien_nuoc ?? $hoaDon->slot_breakdowns) as $slot)
+                <tr>
+                  <td>{{ $slot['label'] }}</td>
+                  <td>{{ $slot['sinh_vien'] }}</td>
+                  <td>{{ number_format($slot['tien_dien'] ?? 0, 0, ',', '.') }} VND</td>
+                  <td>{{ number_format($slot['tien_nuoc'] ?? 0, 0, ',', '.') }} VND</td>
+                  <td class="fw-semibold">
+                    {{ number_format(($slot['tien_dien'] ?? 0) + ($slot['tien_nuoc'] ?? 0), 0, ',', '.') }} VND
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+            <tfoot>
+              <tr class="fw-semibold">
+                <td colspan="2" class="text-end">Tổng cộng</td>
+                <td>{{ number_format($hoaDon->tien_dien ?? 0, 0, ',', '.') }} VND</td>
+                <td>{{ number_format($hoaDon->tien_nuoc ?? 0, 0, ',', '.') }} VND</td>
+                <td>{{ number_format(($hoaDon->tien_dien ?? 0) + ($hoaDon->tien_nuoc ?? 0), 0, ',', '.') }} VND</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  @endif
 </div>
 @endsection

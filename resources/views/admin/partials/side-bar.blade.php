@@ -107,11 +107,18 @@
                 <li>
                     <a><i class="fa fa-bar-chart-o"></i> Ban Kế Toán <span class="fa fa-chevron-down"></span></a>
                     <ul class="nav child_menu">
-                        <li><a href="{{ route('hoadon.index') }}"><i class="fa fa-file-text-o"></i> Quản lý thu phí & hóa đơn</a></li>
-
-
-
-
+                        <li>
+                            <a href="{{ route('hoadon.index') }}"
+                               class="{{ request()->routeIs('hoadon.index') ? 'active' : '' }}">
+                                <i class="fa fa-bed"></i> Quản lý tiền phòng
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('hoadon.diennuoc') }}"
+                               class="{{ request()->routeIs('hoadon.diennuoc') ? 'active' : '' }}">
+                                <i class="fa fa-bolt"></i> Quản lý điện & nước
+                            </a>
+                        </li>
                     </ul>
 
                 </li>

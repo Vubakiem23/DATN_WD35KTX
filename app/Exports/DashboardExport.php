@@ -35,13 +35,14 @@ class DashboardExport implements FromCollection, WithHeadings, WithStyles, WithT
             ->where('trang_thai', 'Hoàn thành')
             ->count();
         
-        $tongTienThuDuoc = HoaDon::whereBetween('created_at', [$startDate, $endDate])
+        $tongTienThuDuoc = HoaDon::with('phong.khu')
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->where('da_thanh_toan', true)
             ->get()
             ->sum(function ($hoaDon) {
                 $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
                 $so_nuoc = $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu;
-                $gia_phong = optional($hoaDon->phong)->gia_phong ?? 0;
+                $gia_phong = $hoaDon->phong ? $hoaDon->phong->tinhTienPhongTheoSlot() : 0;
                 $tien_dien = $so_dien * $hoaDon->don_gia_dien;
                 $tien_nuoc = $so_nuoc * $hoaDon->don_gia_nuoc;
                 return $tien_dien + $tien_nuoc + $gia_phong;

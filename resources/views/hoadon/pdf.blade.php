@@ -93,9 +93,46 @@
         HÓA ĐƠN ĐÃ THANH TOÁN
     </div>
 @endif
+    <h3 style="text-transform: uppercase; margin-top: 30px; color: #0d6efd;">Hóa đơn tiền phòng</h3>
+    <table>
+        <tbody>
+            <tr>
+                <th>Số slot tính phí</th>
+                <td style="text-align: right;">{{ $hoaDon->slot_billing_count ?? 0 }}</td>
+            </tr>
+            <tr>
+                <th>Đơn giá mỗi slot</th>
+                <td style="text-align: right;">{{ number_format($hoaDon->slot_unit_price ?? 0, 0, ',', '.') }} VND</td>
+            </tr>
+            <tr>
+                <th>Tiền phòng</th>
+                <td style="text-align: right; font-weight: bold;">{{ number_format($hoaDon->tien_phong_slot ?? 0, 0, ',', '.') }} VND</td>
+            </tr>
+        </tbody>
+    </table>
 
+    @if(!empty($hoaDon->slot_breakdowns))
+        <table>
+            <thead>
+                <tr>
+                    <th>Slot</th>
+                    <th>Sinh viên</th>
+                    <th>Tiền phòng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($hoaDon->slot_breakdowns as $slot)
+                    <tr>
+                        <td>{{ $slot['label'] }}</td>
+                        <td>{{ $slot['sinh_vien'] }}</td>
+                        <td><strong>{{ number_format($slot['tien_phong'] ?? 0, 0, ',', '.') }}</strong></td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 
-
+    <h3 style="text-transform: uppercase; margin-top: 30px; color: #0d6efd;">Hóa đơn điện · nước</h3>
     <table>
         <thead>
             <tr>
@@ -114,7 +151,7 @@
                 <td>{{ $hoaDon->so_dien_moi }}</td>
                 <td>{{ $hoaDon->so_dien_moi - $hoaDon->so_dien_cu }}</td>
                 <td>{{ number_format($hoaDon->don_gia_dien, 0, ',', '.') }}</td>
-                <td>{{ number_format(($hoaDon->so_dien_moi - $hoaDon->so_dien_cu) * $hoaDon->don_gia_dien, 0, ',', '.') }}</td>
+                <td>{{ number_format($hoaDon->tien_dien, 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <td>Nước</td>
@@ -122,11 +159,7 @@
                 <td>{{ $hoaDon->so_nuoc_moi }}</td>
                 <td>{{ $hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu }}</td>
                 <td>{{ number_format($hoaDon->don_gia_nuoc, 0, ',', '.') }}</td>
-                <td>{{ number_format(($hoaDon->so_nuoc_moi - $hoaDon->so_nuoc_cu) * $hoaDon->don_gia_nuoc, 0, ',', '.') }}</td>
-            </tr>
-            <tr>
-                <td colspan="5" style="text-align: right;"><strong>Tiền phòng</strong></td>
-                <td>{{ number_format($hoaDon->phong->gia_phong, 0, ',', '.') }}</td>
+                <td>{{ number_format($hoaDon->tien_nuoc, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>

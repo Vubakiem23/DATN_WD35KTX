@@ -262,6 +262,7 @@ Route::prefix('hashtags')->group(function () {
 
     Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
     Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
+    Route::get('/hoadon/dien-nuoc', [HoaDonController::class, 'dienNuoc'])->name('hoadon.diennuoc');
     Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
     Route::get('/hoadon/export', [HoaDonController::class, 'export'])->name('hoadon.export');
     Route::get('/hoadon/lichsu', [HoaDonController::class, 'lichSu'])->name('hoadon.lichsu');
