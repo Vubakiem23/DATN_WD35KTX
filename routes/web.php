@@ -202,7 +202,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // KHU (Khu vực KTX)
     Route::get('phong/{phong}/taisanphong', [TaiSanController::class, 'byPhong'])->name('taisan.byPhong');
     // Quản lý Khu
-    Route::resource('khu', KhuController::class)->except(['edit', 'update', 'destroy']);
+    // Cho phép sửa khu (edit/update), chỉ không cho xóa để tránh mất dữ liệu
+    Route::resource('khu', KhuController::class)->except(['destroy']);
 
     // ---------------- THÔNG BÁO ----------------
 Route::resource('thongbao', ThongBaoController::class);

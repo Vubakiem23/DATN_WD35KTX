@@ -323,6 +323,7 @@
             {{ (string)old('khu_id', $phong->khu_id ?? '') === (string)$khu->id ? 'selected' : '' }}
             data-gender="{{ $khu->gioi_tinh }}"
             data-name="{{ $khu->ten_khu }}"
+            data-price-per-slot="{{ (int)($khu->gia_moi_slot ?? 0) }}"
           >{{ $khu->ten_khu }} ({{ $khu->gioi_tinh }})</option>
       @endforeach
       @else
@@ -397,7 +398,10 @@
            step="1"
            placeholder="Nhập giá cho 1 sinh viên"
            data-prefilled="{{ $perPersonAutofilled ? '1' : '0' }}"
-           required>
+           required
+           readonly
+           tabindex="-1"
+           data-price-per-slot-input>
     @error('gia_moi_nguoi')
       <div class="invalid-feedback">{{ $message }}</div>
     @enderror
@@ -405,32 +409,7 @@
     <div class="form-text text-muted">Hệ thống sẽ nhân với sức chứa để ra giá phòng tổng.</div>
   </div>
 
-  <div class="col-lg-3 col-md-6 mb-3 form-price-col">
-    <label class="form-label">Giá phòng (VND/tháng) <span class="text-danger">*</span></label>
-    <input type="number"
-           name="gia_phong"
-           value="{{ old('gia_phong', $phong->gia_phong ?? 0) }}"
-           class="form-control @error('gia_phong') is-invalid @enderror"
-           min="0"
-           step="1"
-           required
-           readonly
-           tabindex="-1"
-           data-total-price-input
-           data-initial-total="{{ $totalPriceValue }}">
-    @error('gia_phong')
-      <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-    <div class="form-text text-muted" data-price-summary>
-      @if(!is_null($perPersonValue))
-        {{ $capacityValue }} × {{ number_format($perPersonValue, 0, ',', '.') }}
-        {{ $perPersonApprox ? '~' : '=' }}
-        {{ number_format($totalPriceValue, 0, ',', '.') }} VND/tháng
-      @else
-        Nhập giá mỗi sinh viên để tự động tính tổng.
-      @endif
-    </div>
-  </div>
+  
 
   <div class="col-lg-3 col-md-6 mb-3 form-price-col">
     <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
@@ -501,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const khuSelect = document.querySelector('select[name="khu_id"]');
   const genderHidden = document.querySelector('input[name="gioi_tinh"]');
   const genderDisplay = document.querySelector('input[name="gioi_tinh_display"]');
-  const perPersonInput = document.querySelector('input[name="gia_moi_nguoi"]');
+  const perPersonInput = document.querySelector('input[name="gia_moi_nguoi"][data-price-per-slot-input]');
   const totalPriceInput = document.querySelector('input[name="gia_phong"][data-total-price-input]');
   const priceSummary = document.querySelector('[data-price-summary]');
   const perPersonModeInput = document.querySelector('input[name="su_dung_gia_moi_nguoi"][data-per-person-flag]');
@@ -513,14 +492,8 @@ document.addEventListener('DOMContentLoaded', function(){
   let lockTotalUntilEdit = perPersonInput ? perPersonInput.dataset.prefilled === '1' : false;
 
   if (perPersonModeInput) {
-    const hasValue = perPersonInput && perPersonInput.value.trim() !== '';
-    if (lockTotalUntilEdit) {
-      perPersonModeInput.value = '0';
-    } else if (perPersonModeInput.value !== '1' && perPersonModeInput.value !== '0') {
-      perPersonModeInput.value = hasValue ? '1' : '0';
-    } else if (!lockTotalUntilEdit) {
-      perPersonModeInput.value = hasValue ? '1' : perPersonModeInput.value;
-    }
+    // Luôn dùng giá theo slot (theo khu), không cho tắt
+    perPersonModeInput.value = '1';
   }
 
   const sanitizeCapacity = () => {
@@ -572,32 +545,20 @@ document.addEventListener('DOMContentLoaded', function(){
 
     if (perPerson !== null) {
       const computedTotal = perPerson * cap;
-      if (lockTotalUntilEdit) {
-        totalPriceInput.value = initialTotal;
-        if (priceSummary) {
-          const indicator = computedTotal === initialTotal ? '=' : '~';
-          priceSummary.textContent = `${cap} × ${formatCurrency(perPerson)} ${indicator} ${formatCurrency(initialTotal)} VND/tháng`;
-        }
-        if (perPersonModeInput) {
-          // Giữ nguyên cờ hiện tại (thường là 0) cho đến khi người dùng sửa giá
-          perPersonModeInput.value = perPersonModeInput.value === '1' ? '1' : '0';
-        }
-      } else {
-        totalPriceInput.value = computedTotal;
-        if (priceSummary) {
-          priceSummary.textContent = `${cap} × ${formatCurrency(perPerson)} = ${formatCurrency(computedTotal)} VND/tháng`;
-        }
-        totalPriceInput.setAttribute('data-initial-total', totalPriceInput.value);
-        if (perPersonModeInput) {
-          perPersonModeInput.value = '1';
-        }
+      // Luôn tính tổng = giá mỗi slot × sức chứa
+      totalPriceInput.value = computedTotal;
+      if (priceSummary) {
+        priceSummary.textContent = `${cap} × ${formatCurrency(perPerson)} = ${formatCurrency(computedTotal)} VND/tháng`;
+      }
+      totalPriceInput.setAttribute('data-initial-total', totalPriceInput.value);
+      if (perPersonModeInput) {
+        perPersonModeInput.value = '1';
       }
     } else {
-      if (!lockTotalUntilEdit) {
-        totalPriceInput.value = '';
-        if (perPersonModeInput) {
-          perPersonModeInput.value = '0';
-        }
+      // Không có giá slot thì để trống
+      totalPriceInput.value = '';
+      if (perPersonModeInput) {
+        perPersonModeInput.value = '0';
       }
       if (priceSummary) {
         const fallbackTotal = parseInt(totalPriceInput.value || initialTotal || '0', 10);
@@ -656,48 +617,36 @@ document.addEventListener('DOMContentLoaded', function(){
     syncPriceSummary();
   });
 
-  if (perPersonInput) {
-    const markManualPrice = () => {
-      if (lockTotalUntilEdit) {
-        lockTotalUntilEdit = false;
-      }
-      if (perPersonModeInput) {
-        const hasValue = perPersonInput.value.trim() !== '';
-        perPersonModeInput.value = hasValue ? '1' : '0';
-      }
-      syncPriceSummary();
-    };
-    perPersonInput.addEventListener('input', markManualPrice);
-    perPersonInput.addEventListener('change', markManualPrice);
-  }
+  // Không cho người dùng sửa trực tiếp giá mỗi slot, chỉ cập nhật khi chọn khu
 
   const form = capacityInput.closest('form');
   if (form) {
     form.addEventListener('submit', () => {
-      if (lockTotalUntilEdit) {
-        if (perPersonInput) {
-          perPersonInput.value = '';
-        }
-        if (perPersonModeInput) {
-          perPersonModeInput.value = '0';
-        }
-      } else {
-        if (perPersonModeInput) {
-          const hasValue = perPersonInput && perPersonInput.value.trim() !== '';
-          perPersonModeInput.value = hasValue ? '1' : '0';
-        }
-        syncPriceSummary();
+      // Trước khi submit, luôn đồng bộ lại tổng tiền
+      if (perPersonModeInput) {
+        const hasValue = perPersonInput && perPersonInput.value.trim() !== '';
+        perPersonModeInput.value = hasValue ? '1' : '0';
       }
+      syncPriceSummary();
     });
   }
 
-  // Sync gender from selected Khu
+  // Sync gender & price per slot from selected Khu
   if (khuSelect && genderHidden && genderDisplay) {
     const syncGender = () => {
       const opt = khuSelect.options[khuSelect.selectedIndex];
       const g = opt ? (opt.getAttribute('data-gender') || '') : '';
       genderHidden.value = g;
       genderDisplay.value = g;
+      if (perPersonInput && opt) {
+        const pricePerSlot = parseInt(opt.getAttribute('data-price-per-slot') || '0', 10);
+        if (!isNaN(pricePerSlot) && pricePerSlot >= 0) {
+          perPersonInput.value = pricePerSlot;
+        } else {
+          perPersonInput.value = '';
+        }
+        syncPriceSummary();
+      }
     };
     syncGender();
     khuSelect.addEventListener('change', syncGender);
