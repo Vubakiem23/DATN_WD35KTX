@@ -39,6 +39,52 @@ class Phong extends Model
     }
 
     /**
+     * Số slot được tính phí (toàn bộ slot cấu hình hoặc slot đang có người ở)
+     */
+    public function billableSlotCount(bool $onlyOccupied = false): int
+    {
+        if ($onlyOccupied) {
+            if ($this->relationLoaded('slots')) {
+                return $this->slots->whereNotNull('sinh_vien_id')->count();
+            }
+
+            return (int) $this->slots()->whereNotNull('sinh_vien_id')->count();
+        }
+
+        if (!is_null($this->suc_chua)) {
+            return (int) $this->suc_chua;
+        }
+
+        if ($this->relationLoaded('slots')) {
+            return $this->slots->count();
+        }
+
+        return (int) $this->slots()->count();
+    }
+
+    /**
+     * Đơn giá mỗi slot dựa trên khu
+     */
+    public function giaSlot(): int
+    {
+        return (int) (optional($this->khu)->gia_moi_slot ?? 0);
+    }
+
+    /**
+     * Tính tiền phòng theo slot và khu
+     */
+    public function tinhTienPhongTheoSlot(bool $onlyOccupied = false): int
+    {
+        $slotPrice = $this->giaSlot();
+
+        if ($slotPrice <= 0) {
+            return 0;
+        }
+
+        return $this->billableSlotCount($onlyOccupied) * $slotPrice;
+    }
+
+    /**
      * Lấy số slot đã được sử dụng (có sinh viên)
      */
     public function usedSlots()
