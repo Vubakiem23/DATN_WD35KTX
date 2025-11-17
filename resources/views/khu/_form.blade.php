@@ -24,6 +24,25 @@
 </div>
 
 <div class="mb-3">
+    <label for="gia_moi_slot" class="form-label">
+        Giá mỗi slot (VND/tháng) <span class="text-danger">*</span>
+    </label>
+    <input type="number"
+           name="gia_moi_slot"
+           id="gia_moi_slot"
+           class="form-control @error('gia_moi_slot') is-invalid @enderror"
+           value="{{ old('gia_moi_slot', $khu->gia_moi_slot ?? 0) }}"
+           min="0"
+           step="1"
+           required
+           placeholder="Nhập đơn giá cho 1 slot (1 sinh viên) trong khu này">
+    @error('gia_moi_slot')
+        <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
+    <small class="text-muted">Dùng để tính tiền phòng: giá mỗi slot × số slot (sức chứa) của phòng.</small>
+</div>
+
+<div class="mb-3">
     <label for="mo_ta" class="form-label">Mô tả</label>
     <textarea name="mo_ta" id="mo_ta" rows="3" 
               class="form-control @error('mo_ta') is-invalid @enderror" 
@@ -35,7 +54,8 @@
 
 <div class="mt-4 d-flex gap-2">
     <button type="submit" class="btn-dergin btn-dergin--success">
-        <i class="fa fa-plus"></i> Thêm mới
+        <i class="{{ $submitIcon ?? 'fa fa-plus' }}"></i>
+        {{ $submitLabel ?? 'Thêm mới' }}
     </button>
     <a href="{{ route('khu.index') }}" class="btn-dergin btn-dergin--muted">
         <i class="fa fa-arrow-left"></i> Quay lại

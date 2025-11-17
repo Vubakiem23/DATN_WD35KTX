@@ -235,7 +235,6 @@
             <div class="room-info-card__value">{{ $phong->totalSlots() }} người</div>
           </div>
         </div>
-        @if(!is_null($phong->gia_phong))
         @php
           $computedPerPersonPrice = null;
           $totalSlots = $phong->totalSlots();
@@ -245,21 +244,20 @@
             $computedPerPersonPrice = (int) round($phong->gia_phong / $totalSlots);
           }
         @endphp
+        @if(!is_null($computedPerPersonPrice))
         <div class="room-info-card room-info-card--price">
           <div class="room-info-card__icon">
             <i class="fa fa-money"></i>
           </div>
           <div>
-            <div class="room-info-card__label">Giá phòng</div>
-            <div class="room-info-card__value">{{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng</div>
-            @if(!is_null($computedPerPersonPrice))
-              <div class="room-info-card__meta">
-                <span class="room-info-card__meta-badge">
-                  <i class="fa fa-user"></i>
-                  {{ number_format($computedPerPersonPrice, 0, ',', '.') }} VND/SV · {{ $totalSlots }} chỗ
-                </span>
-              </div>
-            @endif
+            <div class="room-info-card__label">Giá mỗi slot</div>
+            <div class="room-info-card__value">{{ number_format($computedPerPersonPrice, 0, ',', '.') }} VND/slot/tháng</div>
+            <div class="room-info-card__meta">
+              <span class="room-info-card__meta-badge">
+                <i class="fa fa-users"></i>
+                {{ $totalSlots }} slot trong phòng
+              </span>
+            </div>
           </div>
         </div>
         @endif

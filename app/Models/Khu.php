@@ -13,6 +13,7 @@ class Khu extends Model
         'ten_khu',
         'gioi_tinh',
         'mo_ta',
+        'gia_moi_slot',
     ];
     public function thongBaos()
     {

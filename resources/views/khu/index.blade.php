@@ -155,6 +155,7 @@
                                                 <th class="text-center">#</th>
                                                 <th>Tên khu</th>
                                                 <th>Giới tính</th>
+                                                <th>Gía Theo Sinh Viên/Tháng</th>
                                                 <th>Số phòng</th>
                                                 <th>Mô tả</th>
                                                 <th class="text-end">Hành động</th>
@@ -186,6 +187,16 @@
                                                     <td data-label="Giới tính">
                                                         <span class="badge khu-badge {{ $badgeClass }}">{{ $khu->gioi_tinh ?? 'Không xác định' }}</span>
                                                     </td>
+                                                    <td data-label="Giá mỗi slot">
+                                                        @php
+                                                            $pricePerSlot = $khu->gia_moi_slot ?? null;
+                                                        @endphp
+                                                        @if(!is_null($pricePerSlot))
+                                                            <span class="fw-semibold">{{ number_format((int)$pricePerSlot, 0, ',', '.') }}&nbsp;VND/tháng</span>
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
+                                                    </td>
                                                     <td data-label="Số phòng">
                                                         <strong>{{ $khu->phongs_count ?? 0 }}</strong>
                                                     </td>
@@ -196,6 +207,9 @@
                                                         <div class="khu-actions">
                                                             <a href="{{ route('khu.show', $khu) }}" class="btn btn-dergin btn-dergin--muted" title="Xem chi tiết">
                                                                 <i class="fa fa-eye"></i><span>Chi tiết</span>
+                                                            </a>
+                                                            <a href="{{ route('khu.edit', $khu) }}" class="btn btn-dergin btn-dergin--info" title="Sửa khu">
+                                                                <i class="fa fa-pencil"></i><span>Sửa</span>
                                                             </a>
                                                         </div>
                                                     </td>
