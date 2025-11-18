@@ -9,7 +9,7 @@ use App\Exceptions\PhongException;
 class Phong extends Model
 {
     protected $table = 'phong';
-    protected $fillable = ['ten_phong', 'khu', 'khu_id', 'loai_phong', 'gioi_tinh', 'suc_chua', 'gia_phong', 'trang_thai', 'ghi_chu', 'hinh_anh'];
+    protected $fillable = ['ten_phong', 'khu', 'khu_id', 'loai_phong', 'gioi_tinh', 'suc_chua', 'trang_thai', 'ghi_chu', 'hinh_anh'];
 
     protected $attributes = [
         'trang_thai' => 'Trống',

@@ -419,10 +419,6 @@ public function guiEmailTheoPhong($phong_id)
         $trangThai = $request->get('trang_thai');
         $fromDate = $request->get('from_date');
         $toDate = $request->get('to_date');
-
-        $giaPhongMin = $request->get('gia_phong_min');
-        $giaPhongMax = $request->get('gia_phong_max');
-
         $khu = $request->get('khu');
         $phongId = $request->get('phong_id');
 
@@ -437,8 +433,6 @@ public function guiEmailTheoPhong($phong_id)
             })
             ->when($trangThai === 'da_thanh_toan', fn($q) => $q->where('da_thanh_toan', true))
             ->when($trangThai === 'chua_thanh_toan', fn($q) => $q->where('da_thanh_toan', false))
-            ->when($giaPhongMin, fn($q) => $q->whereHas('phong', fn($q) => $q->where('gia_phong', '>=', $giaPhongMin)))
-            ->when($giaPhongMax, fn($q) => $q->whereHas('phong', fn($q) => $q->where('gia_phong', '<=', $giaPhongMax)))
             ->when($fromDate, fn($q) => $q->whereDate('created_at', '>=', $fromDate))
             ->when($toDate, fn($q) => $q->whereDate('created_at', '<=', $toDate))
             ->orderByDesc('created_at')

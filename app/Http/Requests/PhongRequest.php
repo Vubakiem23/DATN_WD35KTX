@@ -29,15 +29,7 @@ class PhongRequest extends FormRequest
             true
         );
 
-        if ($usePerPerson && $giaMoiNguoi !== null && $giaMoiNguoi !== '' && is_numeric($giaMoiNguoi)) {
-            $sucChua = (int) $this->input('suc_chua', 1);
-            if ($sucChua < 1) {
-                $sucChua = 1;
-            }
-            $this->merge([
-                'gia_phong' => (int) $giaMoiNguoi * $sucChua,
-            ]);
-        }
+        // Không còn tính và merge gia_phong, giá phòng được suy từ giá slot theo khu
     }
 
     /**
@@ -82,12 +74,6 @@ class PhongRequest extends FormRequest
                 'integer',
                 'min:1',
                 'max:8' // Giới hạn sức chứa tối đa 8 người
-            ],
-            'gia_phong' => [
-                'required',
-                'integer',
-                'min:0',
-                'max:1000000000'
             ],
             'gia_moi_nguoi' => [
                 'nullable',
@@ -154,13 +140,7 @@ class PhongRequest extends FormRequest
             // trang_thai
             'trang_thai.required' => 'Trạng thái phòng là bắt buộc',
             'trang_thai.in' => 'Trạng thái phòng không hợp lệ',
-
-            // gia_phong
-            'gia_phong.required' => 'Giá phòng là bắt buộc',
-            'gia_phong.integer' => 'Giá phòng phải là số nguyên (VND)',
-            'gia_phong.min' => 'Giá phòng không được âm',
-            'gia_phong.max' => 'Giá phòng quá lớn',
-
+            
             'gia_moi_nguoi.required_if' => 'Giá mỗi sinh viên là bắt buộc khi nhập theo đầu người',
             'gia_moi_nguoi.integer' => 'Giá mỗi sinh viên phải là số nguyên (VND)',
             'gia_moi_nguoi.min' => 'Giá mỗi sinh viên không được âm',
@@ -192,7 +172,6 @@ class PhongRequest extends FormRequest
             'gioi_tinh' => 'giới tính',
             'suc_chua' => 'sức chứa',
             'trang_thai' => 'trạng thái',
-            'gia_phong' => 'giá phòng',
             'gia_moi_nguoi' => 'giá mỗi sinh viên',
             'su_dung_gia_moi_nguoi' => 'chế độ giá theo đầu người',
             'ghi_chu' => 'ghi chú',
@@ -211,21 +190,7 @@ class PhongRequest extends FormRequest
             'ghi_chu' => $this->ghi_chu ? trim($this->ghi_chu) : null,
         ];
 
-        $giaMoiNguoi = $this->input('gia_moi_nguoi', null);
-        $usePerPerson = in_array(
-            strtolower((string) $this->input('su_dung_gia_moi_nguoi', '0')),
-            ['1', 'true', 'on'],
-            true
-        );
-
-        if ($usePerPerson && $giaMoiNguoi !== null && $giaMoiNguoi !== '' && is_numeric($giaMoiNguoi)) {
-            $sucChua = (int) $this->input('suc_chua', 1);
-            if ($sucChua < 1) {
-                $sucChua = 1;
-            }
-            $payload['gia_phong'] = (int) $giaMoiNguoi * $sucChua;
-        }
-
+        // Giá phòng không còn lưu trực tiếp, hệ thống dùng giá mỗi người/slot và giá khu
         $this->merge($payload);
     }
 }

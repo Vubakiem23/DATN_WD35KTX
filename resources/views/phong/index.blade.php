@@ -73,10 +73,10 @@
                     </select>
                 </div>
                 <div class="col-6 col-lg-2">
-                    <input type="number" min="0" step="1000" id="roomFilterPriceMin" class="form-control" placeholder="Giá từ">
+                    <input type="number" min="0" step="1000" id="roomFilterPriceMin" class="form-control" placeholder="Giá slot từ">
                 </div>
                 <div class="col-6 col-lg-2">
-                    <input type="number" min="0" step="1000" id="roomFilterPriceMax" class="form-control" placeholder="Giá đến">
+                    <input type="number" min="0" step="1000" id="roomFilterPriceMax" class="form-control" placeholder="Giá slot đến">
                 </div>
             </div>
         </div>
@@ -148,7 +148,7 @@
                                         <th>Giới tính</th>
                                         <th>Sức chứa</th>
                                         <th>Hiện tại</th>
-                                        <th>Giá phòng</th>
+                                        <th>Giá slot</th>
                                         <th>Ghi chú</th>
                                         <th>Trạng thái</th>
                                         <th class="text-end">Thao tác</th>
@@ -171,8 +171,12 @@
                                             $status === 'no-slot' => 'bg-secondary',
                                             default => 'bg-warning text-dark',
                                         };
+                                        $slotPrice = optional($p->khu)->gia_moi_slot;
+                                        if (is_null($slotPrice) || $slotPrice <= 0) {
+                                            $slotPrice = 0;
+                                        }
                                     @endphp
-                                    <tr class="room-row" data-name="{{ Str::lower($p->ten_phong) }}" data-status="{{ $status }}" data-price="{{ (int)($p->gia_phong ?? 0) }}">
+                                    <tr class="room-row" data-name="{{ Str::lower($p->ten_phong) }}" data-status="{{ $status }}" data-price="{{ (int) $slotPrice }}">
                                         <td data-label="Ảnh" class="text-center room-thumb-cell">
                                             <div class="room-thumb mx-auto">
                                     @if(!empty($p->hinh_anh))
@@ -198,11 +202,11 @@
                                         <td data-label="Giới tính">{{ $p->gioi_tinh ?? '-' }}</td>
                                         <td data-label="Sức chứa">{{ $totalSlots }} chỗ</td>
                                         <td data-label="Hiện tại">{{ $usedSlots }} / {{ $totalSlots }}</td>
-                                        <td data-label="Giá phòng">
-                                            @if(!is_null($p->gia_phong))
-                                                <span class="price-tag">{{ number_format($p->gia_phong, 0, ',', '.') }} VND</span>
+                                        <td data-label="Giá slot">
+                                            @if($slotPrice > 0)
+                                                <span class="price-tag">{{ number_format($slotPrice, 0, ',', '.') }} VND/slot</span>
                                             @else
-                                                —
+                                                <span class="text-muted small">Chưa cài giá slot</span>
                                             @endif
                                         </td>
                                         <td data-label="Ghi chú">{{ $p->ghi_chu ? Str::limit($p->ghi_chu, 80) : '—' }}</td>
