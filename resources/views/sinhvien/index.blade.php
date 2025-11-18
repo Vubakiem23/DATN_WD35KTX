@@ -70,7 +70,7 @@
                 }
 
                 .room-table tbody tr:hover {
-                    transform: translateY(-2px);
+                    /* transform: translateY(-2px); */
                     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
                 }
 
