@@ -156,5 +156,21 @@ class TinTucController extends Controller
 
         return $slug;
     }
+
+    
+ public function clientIndex()
+{
+    $tintucs = TinTuc::orderBy('created_at', 'desc')->paginate(6);
+    return view('public.tintuc.index', compact('tintucs')); // resources/views/public/tintuc/index.blade.php
+}
+
+public function clientShow($slug)
+{
+    $tinTuc = TinTuc::where('slug', $slug)->with('hashtags')->firstOrFail();
+    return view('public.tintuc.show', compact('tinTuc')); // resources/views/public/tintuc/show.blade.php
+}
+
+
+
     
 }

@@ -105,7 +105,7 @@ class ThongBaoController extends Controller
         if ($request->hasFile('file')) {
             $data['file'] = $request->file('file')->store('thongbao/file', 'public');
         }
-        
+
         //  Gắn người viết (user đang đăng nhập)
         $data['user_id'] = auth()->id();
 
@@ -182,7 +182,7 @@ class ThongBaoController extends Controller
             'khu_id.*' => 'exists:khu,id',
             'phong_id' => 'nullable|array',
             'phong_id.*' => 'exists:phong,id',
-            
+
         ]);
         $data['user_id'] = auth()->id();
 
@@ -236,5 +236,27 @@ class ThongBaoController extends Controller
         $thongbao->delete();
 
         return redirect()->route('thongbao.index')->with('success', 'Xóa thông báo thành công!');
+    }
+
+
+    // =========================
+    // CLIENT: Danh sách thông báo
+    // =========================
+    public function clientIndex()
+    {
+        $thongbaos = ThongBao::orderBy('ngay_dang', 'desc')->paginate(10);
+
+        return view('public.thongbao.index', compact('thongbaos'));
+    }
+
+    // =========================
+    // CLIENT: Chi tiết thông báo
+    // =========================
+    public function clientShow($id)
+    {
+        $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
+            ->findOrFail($id);
+
+        return view('public.thongbao.show', compact('thongbao'));
     }
 }

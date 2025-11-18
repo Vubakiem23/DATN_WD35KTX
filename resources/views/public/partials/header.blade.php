@@ -36,13 +36,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.home') }}#thong-bao">
+                        <a class="nav-link" href="{{ route('public.thongbao.index') }}">
                             <i class="fas fa-bullhorn"></i>
                             <span>Thông báo</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.home') }}#tin-tuc">
+                        <a class="nav-link" href="{{ route('public.tintuc.index') }}#tin-tuc">
                             <i class="fas fa-newspaper"></i>
                             <span>Tin tức</span>
                         </a>
