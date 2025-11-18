@@ -81,9 +81,18 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');
     Route::post('/suco', [ClientController::class, 'suCoStore'])->name('client.suco.store');
 
+
+    Route::post('/client/su_co/{id}/thanhtoan', [ClientController::class, 'su_co_thanhtoan'])
+    ->name('client.su_co.thanhtoan')
+    ->middleware('auth');
+
+
+
+
     // Thông báo
     Route::get('/thongbao', [ThongBaoController::class, 'clientIndex'])->name('client.thongbao.index');
     Route::get('/thongbao/{id}', [ThongBaoController::class, 'clientShow'])->name('client.thongbao.show');
+
 
     // Lịch bảo trì
     Route::get('/lichbaotri', [ClientController::class, 'lichBaoTriIndex'])->name('client.lichbaotri.index');

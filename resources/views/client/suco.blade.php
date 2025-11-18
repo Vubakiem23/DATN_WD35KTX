@@ -119,6 +119,7 @@
                                         <th>Mô tả</th>
                                         <th class="fit">Giá tiền</th>
                                         <th class="fit">Trạng thái</th>
+                                        <th class="fit">Thanh toán</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -140,6 +141,26 @@
                                                     {{ $sc->trang_thai }}
                                                 </span>
                                             </td>
+                                            <td>
+                                                @if($sc->payment_amount > 0)
+                                                    @if (!$sc->is_paid)
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-success"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#paymentModal"
+                                                            data-id="{{ $sc->id }}"
+                                                            data-url="{{ route('client.su_co.thanhtoan', $sc->id) }}"
+                                                            data-amount="{{ $sc->payment_amount }}">
+                                                            <i class="fa fa-money"></i> Thanh toán
+                                                        </button>
+                                                    @else
+                                                        <span class="badge bg-success"><i class="fa fa-check-circle"></i> Đã TT</span>
+                                                    @endif
+                                                @else
+                                                    <span class="badge bg-secondary"><i class="fa fa-clock"></i> Chưa có giá</span>
+                                                @endif
+                                            </td>
+
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -163,249 +184,126 @@
     </div>
 @endif
 
-@push('styles')
-<style>
-    /* Header */
-    .page-header-dark {
-        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-        border-radius: 15px;
-        box-shadow: 0 6px 20px rgba(26, 35, 126, 0.4);
-        margin-bottom: 30px;
-        overflow: hidden;
-    }
+{{-- Modal thanh toán --}}
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">💳 Thanh toán sự cố</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3">
+                    <strong>Số tiền:</strong> <span id="paymentAmount" class="text-danger fs-5">0 ₫</span>
+                </div>
+                <div class="mb-3">
+                    <label for="paymentMethod" class="form-label">Chọn hình thức</label>
+                    <select id="paymentMethod" class="form-select" required>
+                        <option value="">-- Chọn --</option>
+                        <option value="tien_mat">💵 Tiền mặt</option>
+                        <option value="chuyen_khoan">🏦 Chuyển khoản</option>
+                    </select>
+                </div>
+                <div id="bankInfo" style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h6 class="mb-3">Thông tin chuyển khoản:</h6>
+                    <div class="row">
+                        <div class="col-md-7">
+                            <p class="mb-2"><strong>Tên tài khoản:</strong> Nguyễn Quang Thắng</p>
+                            <p class="mb-2"><strong>Số tài khoản:</strong> T1209666</p>
+                            <p class="mb-0"><strong>Ngân hàng:</strong> Techcombank - Chi nhánh Hà Nội</p>
+                        </div>
+                        <div class="col-md-5 text-center">
+                            <img src="{{ asset('images/ma1qr.jpg') }}" alt="QR chuyển khoản"
+                                class="img-fluid rounded border" style="max-width: 120px;">
+                            <p class="mt-2 text-muted" style="font-size: 0.85rem;">Quét mã để chuyển khoản</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label for="ghi_chu_thanh_toan" class="form-label">Ghi chú</label>
+                    <textarea id="ghi_chu_thanh_toan" class="form-control" rows="3" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-success" id="confirmPaymentBtn"><i class="fa fa-check"></i> Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    .page-header-dark h4 {
-        font-size: 20px;
-        letter-spacing: 0.5px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentAmount = document.getElementById('paymentAmount');
+    const paymentMethodSelect = document.getElementById('paymentMethod');
+    const bankInfo = document.getElementById('bankInfo');
+    const ghiChuEl = document.getElementById('ghi_chu_thanh_toan');
+    const confirmBtn = document.getElementById('confirmPaymentBtn');
 
-    /* Card Styles */
-    .card {
-        border: none;
-        border-radius: 15px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
-    }
+    let actionUrl = '';
 
-    .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
-    }
+    // Khi mở modal
+    paymentModal.addEventListener('show.bs.modal', function(event) {
+        const btn = event.relatedTarget;
+        const amount = btn.getAttribute('data-amount');
+        actionUrl = btn.getAttribute('data-url');
 
-    .card-header.bg-warning {
-        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
-        border-radius: 15px 15px 0 0 !important;
-        padding: 20px 25px;
-        box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
-    }
+        paymentAmount.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        paymentMethodSelect.value = '';
+        ghiChuEl.value = '';
+        bankInfo.style.display = 'none';
+    });
 
-    .card-header.bg-secondary {
-        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
-        border-radius: 15px 15px 0 0 !important;
-        padding: 20px 25px;
-        box-shadow: 0 2px 10px rgba(108, 117, 125, 0.3);
-    }
+    // Hiển thị thông tin chuyển khoản
+    paymentMethodSelect.addEventListener('change', function() {
+        bankInfo.style.display = this.value === 'chuyen_khoan' ? 'block' : 'none';
+    });
 
-    .card-header h5 {
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 0.3px;
-    }
+    // Gửi yêu cầu thanh toán
+    confirmBtn.addEventListener('click', function() {
+        const hinhThuc = paymentMethodSelect.value;
+        const ghiChu = ghiChuEl.value.trim();
 
-    .card-body {
-        padding: 30px;
-        background: #ffffff;
-    }
+        if (!hinhThuc) return alert('Chọn hình thức thanh toán!');
+        if (!ghiChu) return alert('Nhập ghi chú thanh toán!');
 
-    /* Form Styles */
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 8px;
-        font-size: 0.95rem;
-    }
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang xử lý...';
 
-    .form-control {
-        border-radius: 10px;
-        border: 1px solid #dee2e6;
-        padding: 12px 15px;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus {
-        border-color: #ffc107;
-        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
-    }
-
-    .form-control.bg-light {
-        background-color: #f8f9fa !important;
-        cursor: not-allowed;
-    }
-
-    textarea.form-control {
-        resize: vertical;
-        min-height: 120px;
-    }
-
-    /* Button Styles */
-    .btn-warning {
-        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-        border: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-warning:hover {
-        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
-    }
-
-    /* Table Styles */
-    .table {
-        margin-bottom: 0;
-        border-radius: 0;
-    }
-
-    .table thead {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    }
-
-    .table th {
-        font-weight: 700;
-        font-size: 0.875rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #495057;
-        padding: 16px 12px;
-        border-bottom: 2px solid #dee2e6;
-    }
-
-    .table td {
-        font-size: 0.9rem;
-        vertical-align: middle;
-        padding: 16px 12px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .table tbody tr {
-        transition: all 0.3s ease;
-    }
-
-    .table tbody tr:hover {
-        background: linear-gradient(90deg, rgba(255, 193, 7, 0.05), transparent);
-        transform: translateX(3px);
-    }
-
-    .table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* Badge Styles */
-    .badge {
-        padding: 8px 16px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border-radius: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        letter-spacing: 0.3px;
-    }
-
-    .badge.bg-success {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
-    }
-
-    .badge.bg-warning {
-        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
-        color: #212529 !important;
-    }
-
-    /* Image Styles */
-    .table img {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .table img:hover {
-        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
-        transform: scale(1.05);
-    }
-
-    /* Empty State */
-    .text-center.py-5 {
-        padding: 60px 20px !important;
-    }
-
-    .text-center.py-5 i {
-        opacity: 0.3;
-        margin-bottom: 20px;
-        color: #6c757d;
-    }
-
-    .text-center.py-5 h4 {
-        color: #495057;
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .text-center.py-5 p {
-        color: #6c757d;
-        font-size: 0.95rem;
-    }
-
-    /* Alert Styles */
-    .alert {
-        border-radius: 10px;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        color: #721c24;
-    }
-
-    /* File Input */
-    .form-control[type="file"] {
-        padding: 8px 15px;
-    }
-
-    /* Responsive */
-    @media (max-width: 991px) {
-        .page-header-dark {
-            margin-bottom: 20px;
-            border-radius: 12px;
-        }
-
-        .page-header-dark h4 {
-            font-size: 16px;
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .card-header h5 {
-            font-size: 16px;
-        }
-
-        .table th,
-        .table td {
-            font-size: 0.8rem;
-            padding: 12px 8px;
-        }
-
-        .table th {
-            font-size: 0.75rem;
-        }
-
-        .badge {
-            padding: 6px 12px;
-            font-size: 0.75rem;
-        }
-    }
-</style>
+        fetch(actionUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                hinh_thuc_thanh_toan: hinhThuc,
+                ghi_chu_thanh_toan: ghiChu
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(paymentModal).hide();
+                window.location.reload();
+            } else {
+                alert(data.message || 'Có lỗi xảy ra!');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fa fa-check"></i> Xác nhận';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Không thể gửi yêu cầu!');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fa fa-check"></i> Xác nhận';
+        });
+    });
+});
+</script>
 @endpush
+
 @endsection

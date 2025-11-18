@@ -316,7 +316,7 @@
                 </div>
                 </div>
 
-            {{-- Thông tin thanh toán --}}
+            <!-- {{-- Thông tin thanh toán --}}
             <div class="form-section">
                 <div class="card-body">
                     <div class="section-title"><span class="dot"></span>Thông tin thanh toán</div>
@@ -342,7 +342,7 @@
                         </div>
                     </div>
                 </div>
-                </div>
+                </div> -->
 
             <div class="mt-4 d-flex gap-2">
                 <button type="submit" class="btn-dergin btn-dergin--warning">
