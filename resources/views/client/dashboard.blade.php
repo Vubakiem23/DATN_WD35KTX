@@ -558,10 +558,8 @@
 @php
     $phong = $stats['phong'];
     $totalSlots = $phong->totalSlots();
-    $giaMoiSlot = null;
-    if ($phong->gia_phong && $totalSlots > 0) {
-        $giaMoiSlot = (int) round($phong->gia_phong / $totalSlots);
-    }
+    // Giá slot cấu hình ở khu (không còn phụ thuộc gia_phong)
+    $giaMoiSlot = optional($phong->khu)->gia_moi_slot;
     $gioiTinh = strtolower($phong->gioi_tinh ?? '');
     $gioiTinhClass = match($gioiTinh) {
         'nam' => 'nam',
@@ -630,18 +628,11 @@
                 </div>
 
                 <!-- Thông tin giá -->
-                @if($phong->gia_phong)
+                @php
+                    $hasSlotPrice = !is_null($giaMoiSlot) && $giaMoiSlot > 0;
+                @endphp
+                @if($hasSlotPrice)
                 <div class="price-info">
-                    <div class="price-item">
-                        <span class="price-label">
-                            <i class="fas fa-money-bill-wave me-1"></i>
-                            Giá tổng tiền phòng
-                        </span>
-                        <span class="price-value">
-                            {{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng
-                        </span>
-                    </div>
-                    @if($giaMoiSlot)
                     <div class="price-item">
                         <span class="price-label">
                             <i class="fas fa-user me-1"></i>
@@ -651,7 +642,6 @@
                             {{ number_format($giaMoiSlot, 0, ',', '.') }} VND/tháng
                         </span>
                     </div>
-                    @endif
                 </div>
                 @endif
 

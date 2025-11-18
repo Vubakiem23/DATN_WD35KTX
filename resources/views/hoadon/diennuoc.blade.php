@@ -512,14 +512,6 @@ document.addEventListener('DOMContentLoaded', function () {
             <input type="date" name="to_date" id="to_date" class="form-control" value="{{ request('to_date') }}">
           </div>
           <div>
-            <label for="gia_phong_min" class="form-label">Giá phòng từ</label>
-            <input type="number" name="gia_phong_min" id="gia_phong_min" class="form-control" value="{{ request('gia_phong_min') }}" placeholder="VD: 1000000">
-          </div>
-          <div>
-            <label for="gia_phong_max" class="form-label">Giá phòng đến</label>
-            <input type="number" name="gia_phong_max" id="gia_phong_max" class="form-control" value="{{ request('gia_phong_max') }}" placeholder="VD: 2000000">
-          </div>
-          <div>
             <label for="khu" class="form-label">Khu</label>
             <select name="khu" id="khu" class="form-select">
               <option value="">-- Tất cả --</option>
