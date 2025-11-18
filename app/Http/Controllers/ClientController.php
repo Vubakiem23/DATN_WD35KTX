@@ -11,6 +11,8 @@ use App\Models\HoaDon;
 use App\Models\LichBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
+use Illuminate\Support\Facades\Validator;
+
 
 class ClientController extends Controller
 {
@@ -440,8 +442,57 @@ if ($slotSinhVien) {
         ));
     }
 
+     public function su_co_thanhtoan(Request $request, $id)
+    {
+        $sinhVien = Auth::user()?->sinhVien;
+        if (!$sinhVien) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sinh viên không tồn tại.'
+            ]);
+        }
 
+        $suCo = SuCo::where('id', $id)
+                    ->where('sinh_vien_id', $sinhVien->id)
+                    ->first();
 
+        if (!$suCo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sự cố không tồn tại hoặc không thuộc bạn.'
+            ]);
+        }
+
+        if ($suCo->is_paid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sự cố này đã được thanh toán.'
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'hinh_thuc_thanh_toan' => 'required|string|in:tien_mat,chuyen_khoan',
+            'ghi_chu_thanh_toan' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ]);
+        }
+
+        $suCo->payment_method = $request->hinh_thuc_thanh_toan;
+        $suCo->payment_note = $request->ghi_chu_thanh_toan;
+        $suCo->is_paid = 1;
+        $suCo->ngay_thanh_toan = now();
+        $suCo->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Thanh toán thành công!'
+        ]);
+    }
 
 
 }

@@ -677,7 +677,7 @@
     <div class="recent-issues-header">
         <h5>
             <i class="fas fa-tools"></i>
-                    Sự cố gần đây
+                    Sự cố bạn đã gửi gần đây
                 </h5>
         <a href="{{ route('client.suco.index') }}" class="view-all-btn">
             Xem tất cả

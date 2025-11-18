@@ -70,6 +70,13 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');
     Route::post('/suco', [ClientController::class, 'suCoStore'])->name('client.suco.store');
 
+    Route::post('/client/su_co/{id}/thanhtoan', [ClientController::class, 'su_co_thanhtoan'])
+    ->name('client.su_co.thanhtoan')
+    ->middleware('auth');
+
+
+
+
     // Lịch bảo trì
     Route::get('/lichbaotri', [ClientController::class, 'lichBaoTriIndex'])->name('client.lichbaotri.index');
 
