@@ -9,6 +9,11 @@ use Illuminate\Support\Str;
 
 class TinTucController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['auth', 'admin'])->except(['clientIndex', 'clientShow']);
+    }
+
     // Hiển thị danh sách tin tức với tìm kiếm
     public function index(Request $request)
     {
@@ -156,5 +161,27 @@ class TinTucController extends Controller
 
         return $slug;
     }
+
+    
+ public function clientIndex()
+{
+    $tintucs = TinTuc::orderBy('created_at', 'desc')->paginate(6);
+    return view('public.tintuc.index', compact('tintucs')); // resources/views/public/tintuc/index.blade.php
+}
+
+public function clientShow($slug)
+{
+    $tinTuc = TinTuc::where('slug', $slug)->with('hashtags')->firstOrFail();
+
+    $tinMoi = TinTuc::where('id', '!=', $tinTuc->id)
+        ->orderBy('ngay_tao', 'desc')
+        ->take(5)
+        ->get();
+
+    return view('public.tintuc.show', compact('tinTuc', 'tinMoi')); // resources/views/public/tintuc/show.blade.php
+}
+
+
+
     
 }

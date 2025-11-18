@@ -9,7 +9,7 @@ use App\Exceptions\PhongException;
 class Phong extends Model
 {
     protected $table = 'phong';
-    protected $fillable = ['ten_phong', 'khu', 'khu_id', 'loai_phong', 'gioi_tinh', 'suc_chua', 'gia_phong', 'trang_thai', 'ghi_chu', 'hinh_anh'];
+    protected $fillable = ['ten_phong', 'khu', 'khu_id', 'loai_phong', 'gioi_tinh', 'suc_chua', 'trang_thai', 'ghi_chu', 'hinh_anh'];
 
     protected $attributes = [
         'trang_thai' => 'Trống',
@@ -36,6 +36,52 @@ class Phong extends Model
     public function khu()
     {
         return $this->belongsTo(\App\Models\Khu::class, 'khu_id', 'id');
+    }
+
+    /**
+     * Số slot được tính phí (toàn bộ slot cấu hình hoặc slot đang có người ở)
+     */
+    public function billableSlotCount(bool $onlyOccupied = false): int
+    {
+        if ($onlyOccupied) {
+            if ($this->relationLoaded('slots')) {
+                return $this->slots->whereNotNull('sinh_vien_id')->count();
+            }
+
+            return (int) $this->slots()->whereNotNull('sinh_vien_id')->count();
+        }
+
+        if (!is_null($this->suc_chua)) {
+            return (int) $this->suc_chua;
+        }
+
+        if ($this->relationLoaded('slots')) {
+            return $this->slots->count();
+        }
+
+        return (int) $this->slots()->count();
+    }
+
+    /**
+     * Đơn giá mỗi slot dựa trên khu
+     */
+    public function giaSlot(): int
+    {
+        return (int) (optional($this->khu)->gia_moi_slot ?? 0);
+    }
+
+    /**
+     * Tính tiền phòng theo slot và khu
+     */
+    public function tinhTienPhongTheoSlot(bool $onlyOccupied = false): int
+    {
+        $slotPrice = $this->giaSlot();
+
+        if ($slotPrice <= 0) {
+            return 0;
+        }
+
+        return $this->billableSlotCount($onlyOccupied) * $slotPrice;
     }
 
     /**

@@ -5,14 +5,12 @@
 <!-- Bootstrap 5 JS Bundle (gồm Popper.js) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-
-
 @section('content')
 <div class="container py-4">
 
   <div>
-    <h3 class="page-title mb-0">Quản lý tiền phòng</h3>
-    <p class="text-muted mb-0">Theo dõi giá trị tiền phòng theo từng phòng và slot.</p>
+    <h3 class="page-title mb-0">Quản lý điện · nước</h3>
+    <p class="text-muted mb-0">Theo dõi chỉ số, đơn giá và chi phí điện nước cho từng phòng.</p>
   </div>
   <div class="row text-center mb-4">
     <style>
@@ -132,10 +130,16 @@
             <tr class="text-center" style="color: #1a1a1a;">
               <th>Khu</th>
               <th>Phòng</th>
-              <th>Loại phòng</th>
-              <th>Slot tính phí</th>
-              <th>Đơn giá/slot</th>
-              <th>Tiền phòng</th>
+              <th>Điện cũ</th>
+              <th>Điện mới</th>
+              <th>Tiêu thụ điện</th>
+              <th>Đơn giá điện</th>
+              <th>Tiền điện</th>
+              <th>Nước cũ</th>
+              <th>Nước mới</th>
+              <th>Tiêu thụ nước</th>
+              <th>Đơn giá nước</th>
+              <th>Tiền nước</th>
               <th>Trạng thái</th>
               <th>Thao Tác</th>
             </tr>
@@ -150,16 +154,34 @@
                 {{ optional($hoaDon->phong)->ten_phong ?? 'Không rõ' }}
               </td>
               <td style="color:#555555;">
-                {{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}
+                {{ $hoaDon->so_dien_cu ?? 0 }}
               </td>
               <td style="color:#555555;">
-                {{ $hoaDon->slot_billing_count ?? 0 }}
-              </td>
-              <td style="color:#555555;">
-                {{ number_format($hoaDon->slot_unit_price ?? 0, 0, ',', '.') }} VND
+                {{ $hoaDon->so_dien_moi ?? 0 }}
               </td>
               <td style="color:#555555;" class="fw-semibold">
-                {{ number_format($hoaDon->tien_phong_slot ?? 0, 0, ',', '.') }} VND
+                {{ $hoaDon->san_luong_dien ?? (($hoaDon->so_dien_moi ?? 0) - ($hoaDon->so_dien_cu ?? 0)) }}
+              </td>
+              <td style="color:#555555;">
+                {{ number_format($hoaDon->don_gia_dien ?? 0, 0, ',', '.') }} VND
+              </td>
+              <td style="color:#555555;" class="fw-semibold">
+                {{ number_format($hoaDon->tien_dien ?? 0, 0, ',', '.') }} VND
+              </td>
+              <td style="color:#555555;">
+                {{ $hoaDon->so_nuoc_cu ?? 0 }}
+              </td>
+              <td style="color:#555555;">
+                {{ $hoaDon->so_nuoc_moi ?? 0 }}
+              </td>
+              <td style="color:#555555;" class="fw-semibold">
+                {{ $hoaDon->san_luong_nuoc ?? (($hoaDon->so_nuoc_moi ?? 0) - ($hoaDon->so_nuoc_cu ?? 0)) }}
+              </td>
+              <td style="color:#555555;">
+                {{ number_format($hoaDon->don_gia_nuoc ?? 0, 0, ',', '.') }} VND
+              </td>
+              <td style="color:#555555;" class="fw-semibold">
+                {{ number_format($hoaDon->tien_nuoc ?? 0, 0, ',', '.') }} VND
               </td>
               <td>
                 @if($hoaDon->trang_thai === 'Đã thanh toán')
@@ -177,7 +199,7 @@
               <td class="text-center">
                 <div class="dropdown position-relative">
                   <button class="btn btn-circle bg-primary text-white" type="button"
-                    id="actionDropdown{{ $hoaDon->id }}"
+                    id="actionDropdownDienNuoc{{ $hoaDon->id }}"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                     title="Thao tác">
@@ -185,18 +207,25 @@
                   </button>
 
                   <ul class="dropdown-menu custom-dropdown"
-                    aria-labelledby="actionDropdown{{ $hoaDon->id }}">
-                    <li>
-                      <a class="dropdown-item d-flex align-items-center"
-                        href="{{ route('hoadon.show', ['id' => $hoaDon->id, 'view' => 'phong']) }}">
-                        🛏️ <span class="ms-2">Chi tiết tiền phòng</span>
-                      </a>
-                    </li>
+                    aria-labelledby="actionDropdownDienNuoc{{ $hoaDon->id }}">
                     <li>
                       <a class="dropdown-item d-flex align-items-center"
                         href="{{ route('hoadon.show', ['id' => $hoaDon->id, 'view' => 'dien-nuoc']) }}">
-                        ⚡ <span class="ms-2">Chi tiết điện · nước</span>
+                        👁️ <span class="ms-2">Xem chi tiết</span>
                       </a>
+                    </li>
+
+                    <li>
+                      <button type="button"
+                        class="dropdown-item d-flex align-items-center"
+                        data-bs-toggle="modal"
+                        data-bs-target="#quickUpdateModal"
+                        data-id="{{ $hoaDon->id }}"
+                        data-url="{{ route('hoadon.quickupdate', $hoaDon->id) }}"
+                        data-dien="{{ $hoaDon->don_gia_dien }}"
+                        data-nuoc="{{ $hoaDon->don_gia_nuoc }}">
+                        ✏️ <span class="ms-2">Sửa giá điện/nước</span>
+                      </button>
                     </li>
 
                     @if($hoaDon->trang_thai !== 'Đã thanh toán')
@@ -593,14 +622,6 @@
     });
   </script>
 
-
-
-
-
-
-
-
-
   @endsection
   <!-- CSRF token trong <head> -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -671,8 +692,6 @@
   </div>
 
 
-
-
 {{-- modal bộ lọc --}}
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -682,7 +701,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
       </div>
       <div class="modal-body">
-        <form method="GET" action="{{ route('hoadon.index') }}" class="d-flex flex-wrap gap-3 align-items-end">
+        <form method="GET" action="{{ route('hoadon.diennuoc') }}" class="d-flex flex-wrap gap-3 align-items-end">
           <div>
             <label for="from_date" class="form-label">Từ ngày</label>
             <input type="date" name="from_date" id="from_date" class="form-control" value="{{ request('from_date') }}">
@@ -722,7 +741,7 @@
             </div>
             <div class="mt-4">
               <button type="submit" class="btn btn-primary">Lọc</button>
-              <a href="{{ route('hoadon.index') }}" class="btn btn-secondary ms-2">Đặt lại</a>
+              <a href="{{ route('hoadon.diennuoc') }}" class="btn btn-secondary ms-2">Đặt lại</a>
             </div>
           </form>
         </div>

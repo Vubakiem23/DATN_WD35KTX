@@ -364,18 +364,16 @@
 
 @php
   $capacityValue = max(1, (int) old('suc_chua', $phong->suc_chua ?? 1));
-  $totalPriceValue = (int) old('gia_phong', $phong->gia_phong ?? 0);
+  // Sử dụng trực tiếp giá mỗi người, không còn tổng giá phòng
   $perPersonOld = old('gia_moi_nguoi', null);
   $perPersonValue = null;
-  $perPersonAutofilled = false;
   if ($perPersonOld !== null && $perPersonOld !== '') {
     $perPersonValue = (int) $perPersonOld;
-  } elseif ($totalPriceValue > 0) {
-    $perPersonValue = (int) round($totalPriceValue / max(1, $capacityValue));
-    $perPersonAutofilled = true;
+  } elseif (!is_null($phong->gia_moi_nguoi ?? null)) {
+    $perPersonValue = (int) $phong->gia_moi_nguoi;
   }
-  $perPersonApprox = !is_null($perPersonValue) && ($perPersonValue * $capacityValue) !== $totalPriceValue;
-  $usePerPersonInitial = old('su_dung_gia_moi_nguoi', (!is_null($perPersonValue) && !$perPersonAutofilled) ? '1' : '0');
+  $perPersonAutofilled = $perPersonOld === null || $perPersonOld === '';
+  $usePerPersonInitial = '1';
 @endphp
 
 <div class="row form-price-row">
@@ -406,7 +404,7 @@
       <div class="invalid-feedback">{{ $message }}</div>
     @enderror
     <input type="hidden" name="su_dung_gia_moi_nguoi" value="{{ $usePerPersonInitial }}" data-per-person-flag>
-    <div class="form-text text-muted">Hệ thống sẽ nhân với sức chứa để ra giá phòng tổng.</div>
+    <div class="form-text text-muted">Giá phòng được tính theo giá mỗi slot và giá theo khu.</div>
   </div>
 
   
@@ -481,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const genderHidden = document.querySelector('input[name="gioi_tinh"]');
   const genderDisplay = document.querySelector('input[name="gioi_tinh_display"]');
   const perPersonInput = document.querySelector('input[name="gia_moi_nguoi"][data-price-per-slot-input]');
-  const totalPriceInput = document.querySelector('input[name="gia_phong"][data-total-price-input]');
+  const totalPriceInput = null;
   const priceSummary = document.querySelector('[data-price-summary]');
   const perPersonModeInput = document.querySelector('input[name="su_dung_gia_moi_nguoi"][data-per-person-flag]');
   if(!capacityInput) return;

@@ -34,6 +34,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\TinTucController;
 use App\Http\Controllers\ThongBaoPhongSvController;
+use App\Http\Controllers\CKEditorUploadController;
 use App\Models\Violation;
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +61,16 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 // ======================
 Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/register', [AuthController::class, 'handle_register'])->name('auth.handle.register');
+// Public Tin tức
+Route::get('/tin-tuc', [TinTucController::class, 'clientIndex'])->name('public.tintuc.index');
+Route::get('/tin-tuc/{slug}', [TinTucController::class, 'clientShow'])->name('public.tintuc.show');
+// CLIENT Thông báo
+Route::get('/thong-bao', [ThongBaoController::class, 'clientIndex'])->name('public.thongbao.index');
+Route::get('/thong-bao/{id}', [ThongBaoController::class, 'clientShow'])->name('public.thongbao.show');
+
+
+
+
 // =================== 🧑‍🎓 CLIENT (SINH VIÊN) ===================
 Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('', [ClientController::class, 'dashboard'])->name('client.dashboard');
@@ -70,6 +81,7 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');
     Route::post('/suco', [ClientController::class, 'suCoStore'])->name('client.suco.store');
 
+
     Route::post('/client/su_co/{id}/thanhtoan', [ClientController::class, 'su_co_thanhtoan'])
     ->name('client.su_co.thanhtoan')
     ->middleware('auth');
@@ -77,8 +89,16 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
 
 
 
+    // Thông báo
+    Route::get('/thongbao', [ThongBaoController::class, 'clientIndex'])->name('client.thongbao.index');
+    Route::get('/thongbao/{id}', [ThongBaoController::class, 'clientShow'])->name('client.thongbao.show');
+
+
     // Lịch bảo trì
     Route::get('/lichbaotri', [ClientController::class, 'lichBaoTriIndex'])->name('client.lichbaotri.index');
+
+
+
 
     // Hóa đơn (sẽ làm sau)
     Route::prefix('hoadon')->group(function () {
@@ -87,12 +107,9 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         })->name('client.hoadon.index');
     });
 
-    // Thông báo (sẽ làm sau)
-    Route::prefix('thongbao')->group(function () {
-        Route::get('/', function () {
-            return view('client.thongbao.index');
-        })->name('client.thongbao.index');
-    });
+ 
+    
+
 });
 
 // =================== 🧑‍🎓 STUDENT (OLD - giữ để tương thích) ===================
@@ -109,6 +126,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // Trang chủ admin
     Route::get('', [AdminController::class, 'index'])->name('admin.index');
+
+    // CKEditor uploads
+    Route::post('ckeditor/upload', [CKEditorUploadController::class, 'store'])
+        ->name('admin.ckeditor.upload');
 
     // ---------------- PHÒNG & SLOT ----------------
     Route::resource('phong', PhongController::class);
@@ -269,6 +290,7 @@ Route::prefix('hashtags')->group(function () {
 
     Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
     Route::get('/hoadon', [HoaDonController::class, 'index'])->name('hoadon.index');
+    Route::get('/hoadon/dien-nuoc', [HoaDonController::class, 'dienNuoc'])->name('hoadon.diennuoc');
     Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
     Route::get('/hoadon/export', [HoaDonController::class, 'export'])->name('hoadon.export');
     Route::get('/hoadon/lichsu', [HoaDonController::class, 'lichSu'])->name('hoadon.lichsu');

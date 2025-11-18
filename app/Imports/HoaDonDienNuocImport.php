@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\HoaDon;
+use App\Models\Phong;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -25,8 +26,12 @@ class HoaDonDienNuocImport implements ToModel, WithHeadingRow
         $don_gia_dien = (int)$row['don_gia_dien'];
         $don_gia_nuoc = (int)$row['don_gia_nuoc'];
 
+        // Tiền phòng theo slot/khu
+        $phong = Phong::with('khu')->find($row['phong_id']);
+        $tienPhongSlot = $phong ? $phong->tinhTienPhongTheoSlot() : 0;
+
         // Thành tiền
-        $thanh_tien = ($so_dien * $don_gia_dien) + ($so_nuoc * $don_gia_nuoc);
+        $thanh_tien = ($so_dien * $don_gia_dien) + ($so_nuoc * $don_gia_nuoc) + $tienPhongSlot;
 
         // Tạo hóa đơn
         return new HoaDon([

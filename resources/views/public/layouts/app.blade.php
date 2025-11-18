@@ -450,6 +450,29 @@
             border-radius: 4px;
         }
         
+        .news-detail-content {
+            line-height: 1.8;
+            color: var(--text-700);
+            font-size: 16px;
+        }
+
+        .news-detail-content img,
+        .news-detail-content figure img {
+            width: 100%;
+            max-width: 900px;
+            height: auto;
+            border-radius: 12px;
+            margin: 0 auto 24px;
+            display: block;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+        }
+
+        .news-detail-content table {
+            width: 100%;
+            overflow-x: auto;
+            display: block;
+        }
+
         .news-content h6 {
             font-size: 15px;
             font-weight: 700;

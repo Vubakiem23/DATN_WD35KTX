@@ -21,7 +21,7 @@ class HoaDonExport implements FromCollection, WithHeadings, WithStyles, WithTitl
 
     public function collection()
     {
-        $hoaDons = HoaDon::with('phong')
+        $hoaDons = HoaDon::with('phong.khu')
             ->when($this->trangThai === 'da_thanh_toan', fn($q) => $q->where('da_thanh_toan', true))
             ->when($this->trangThai === 'chua_thanh_toan', fn($q) => $q->where('da_thanh_toan', false))
             ->get();
@@ -29,7 +29,7 @@ class HoaDonExport implements FromCollection, WithHeadings, WithStyles, WithTitl
         return $hoaDons->map(function ($hd) {
             $so_dien = $hd->so_dien_moi - $hd->so_dien_cu;
             $so_nuoc = $hd->so_nuoc_moi - $hd->so_nuoc_cu;
-            $gia_phong = $hd->phong->gia_phong ?? 0;
+            $gia_phong = $hd->phong ? $hd->phong->tinhTienPhongTheoSlot() : 0;
             $tien_dien = $so_dien * $hd->don_gia_dien;
             $tien_nuoc = $so_nuoc * $hd->don_gia_nuoc;
             $tong_tien = $tien_dien + $tien_nuoc + $gia_phong;

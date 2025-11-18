@@ -51,12 +51,14 @@
                 'cả hai' => 'cả-hai',
                 default => ''
                 };
-                // Tính giá tiền chia slots
+                // Tính giá tiền dựa trên giá slot (chỉ dùng giá slot theo khu)
                 $totalSlots = $phong->totalSlots() ?? 0;
-                $giaTienTong = $phong->gia_phong ?? null;
-                $giaTienSlot = null;
-                if ($giaTienTong && $totalSlots > 0) {
-                $giaTienSlot = (int) round($giaTienTong / $totalSlots);
+                // Giá mỗi slot cấu hình ở khu
+                $giaTienSlot = optional($phong->khu)->gia_moi_slot;
+                // Tổng tiền phòng = đơn giá slot * tổng số slot
+                $giaTienTong = null;
+                if (!is_null($giaTienSlot) && $giaTienSlot > 0 && $totalSlots > 0) {
+                    $giaTienTong = $giaTienSlot * $totalSlots;
                 }
                 // Ảnh phòng
                 $anhPhong = $phong->hinh_anh ?? null;
@@ -137,41 +139,24 @@
                     </p>
                 </div>
 
-                <!-- Giá tiền - Highlight section -->
-                @if($giaTienTong || $giaTienSlot)
+                <!-- Giá tiền - chỉ hiển thị giá theo slot -->
+                @if($giaTienSlot)
                 <div class="price-section mb-4">
                     <div class="row g-3">
-                        @if($giaTienTong)
-                        <div class="col-md-6">
-                            <div class="price-card price-card-total">
-                                <div class="price-icon">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                </div>
-                                <div class="price-content">
-                                    <p class="price-label">Giá tiền tổng</p>
-                                    <p class="price-value">
-                                        {{ number_format($giaTienTong, 0, ',', '.') }} <span class="price-unit">VND/tháng</span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
-                        @if($giaTienSlot)
-                        <div class="col-md-6">
+                        <div class="col-md-6 col-lg-5">
                             <div class="price-card price-card-slot">
                                 <div class="price-icon">
                                     <i class="fas fa-coins"></i>
                                 </div>
                                 <div class="price-content">
-                                    <p class="price-label">Giá tiền chia slots</p>
+                                    <p class="price-label">Giá tiền bạn phải trả</p>
                                     <p class="price-value">
-                                        {{ number_format($giaTienSlot, 0, ',', '.') }} <span class="price-unit">VND/tháng/slot</span>
+                                        {{ number_format($giaTienSlot, 0, ',', '.') }} <span class="price-unit">VND/tháng</span>
                                     </p>
-                                    <p class="price-note"><small>({{ $totalSlots }} slot)</small></p>
+                                    
                                 </div>
                             </div>
                         </div>
-                        @endif
                     </div>
                 </div>
                 @endif

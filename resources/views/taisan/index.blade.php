@@ -145,7 +145,7 @@
 
             {{-- Hành động --}}
             <td class="action-cell text-end">
-              <div class="action-menu dropdown position-relative">
+              <div class="action-menu  position-relative">
                 <button type="button" class="btn btn-dergin btn-dergin--muted action-gear">
                   <i class="fa fa-gear"></i>
                 </button>
@@ -304,7 +304,6 @@
   }
 
   .asset-table tbody tr:hover {
-    transform: translateY(-2px);
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08)
   }
 
@@ -348,8 +347,7 @@
 
   .action-cell {
     position: relative;
-    text-align: right;
-    white-space: nowrap;
+   
   }
 
   .action-menu {
@@ -367,23 +365,23 @@
     border-radius: 999px;
   }
 
-  .action-menu .dropdown-menu {
+ .action-menu .dropdown-menu {
     display: none;
     position: absolute;
-    top: 50% !important;
-    right: 110%;
+    top: 0 !important;         /* ✔ Không còn nằm giữa */
+    right: 45px !important;    /* ✔ Sát nút gear */
     left: auto;
-    transform: translateY(-50%);
-    z-index: 1050;
-    min-width: 190px;
+    transform: none !important;
+    z-index: 9999 !important;   
+    min-width: 180px;
     border-radius: 16px;
     padding: .4rem 0;
     margin: 0;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+    box-shadow: 0 16px 40px rgba(15,23,42,.18);
     font-size: .82rem;
     background: #fff;
-  }
+}
 
   .action-menu .dropdown-menu.show {
     display: block;
