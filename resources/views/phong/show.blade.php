@@ -240,8 +240,6 @@
           $totalSlots = $phong->totalSlots();
           if (!is_null($phong->gia_moi_nguoi)) {
             $computedPerPersonPrice = $phong->gia_moi_nguoi;
-          } elseif (!is_null($phong->gia_phong) && $totalSlots > 0) {
-            $computedPerPersonPrice = (int) round($phong->gia_phong / $totalSlots);
           }
         @endphp
         @if(!is_null($computedPerPersonPrice))

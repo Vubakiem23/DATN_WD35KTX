@@ -30,14 +30,10 @@ class AdminController extends Controller
             ->count();
         
         // 3. Tổng tiền thu được
-        // 3.1. Phí phòng: Tính từ các slot có sinh viên * giá phòng (phí phòng thu hàng tháng)
-        // Mỗi slot có sinh viên sẽ trả phí phòng của phòng đó
-        $tongTienPhong = DB::table('slots')
-            ->join('phong', 'slots.phong_id', '=', 'phong.id')
-            ->whereNotNull('slots.sinh_vien_id')
-            ->where('phong.gia_phong', '>', 0)
-            ->selectRaw('SUM(phong.gia_phong) as total')
-            ->value('total') ?? 0;
+        // 3.1. Phí phòng: tính theo tiền phòng trong hóa đơn đã thanh toán tháng hiện tại
+        $tongTienPhong = HoaDon::where('thang', $selectedMonth)
+            ->where('da_thanh_toan', true)
+            ->sum(DB::raw('COALESCE(tien_phong_slot,0)'));
         
         // Nếu muốn tính chính xác hơn, có thể join với bảng thanh toán phí phòng (nếu có)
         // Hiện tại tính dựa trên slot đang có sinh viên
@@ -156,14 +152,10 @@ class AdminController extends Controller
      */
     private function tinhTongTienThuTheoThang($thang)
     {
-        // Phí phòng: Tính từ các slot có sinh viên (phí phòng thu hàng tháng)
-        // Mỗi slot có sinh viên sẽ trả phí phòng của phòng đó
-        $tongTienPhong = DB::table('slots')
-            ->join('phong', 'slots.phong_id', '=', 'phong.id')
-            ->whereNotNull('slots.sinh_vien_id')
-            ->where('phong.gia_phong', '>', 0)
-            ->selectRaw('SUM(phong.gia_phong) as total')
-            ->value('total') ?? 0;
+        // Phí phòng: tính theo tiền phòng trong hóa đơn đã thanh toán tháng này
+        $tongTienPhong = HoaDon::where('thang', $thang)
+            ->where('da_thanh_toan', true)
+            ->sum(DB::raw('COALESCE(tien_phong_slot,0)'));
         
         // Tiền điện nước từ hóa đơn đã thanh toán trong tháng
         $tongTienDienNuoc = HoaDon::where('thang', $thang)
