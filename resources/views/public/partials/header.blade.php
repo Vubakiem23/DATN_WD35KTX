@@ -36,13 +36,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.thongbao.index') }}">
+                        <a class="nav-link {{ request()->routeIs('public.thongbao.*') ? 'active' : '' }}" href="{{ route('public.thongbao.index') }}">
                             <i class="fas fa-bullhorn"></i>
                             <span>Thông báo</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('public.tintuc.index') }}#tin-tuc">
+                        <a class="nav-link {{ request()->routeIs('public.tintuc.*') ? 'active' : '' }}" href="{{ route('public.tintuc.index') }}">
                             <i class="fas fa-newspaper"></i>
                             <span>Tin tức</span>
                         </a>

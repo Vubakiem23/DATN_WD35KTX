@@ -14,7 +14,7 @@ class ThongBaoController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware(['auth', 'admin'])->except(['clientIndex', 'clientShow']);
     }
 
 
@@ -257,6 +257,12 @@ class ThongBaoController extends Controller
         $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
             ->findOrFail($id);
 
-        return view('public.thongbao.show', compact('thongbao'));
+        $thongBaoMoi = ThongBao::with('tieuDe')
+            ->where('id', '!=', $thongbao->id)
+            ->orderBy('ngay_dang', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('public.thongbao.show', compact('thongbao', 'thongBaoMoi'));
     }
 }

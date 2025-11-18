@@ -159,104 +159,89 @@ $heroSlides = [
 <div class="content-section">
     <div class="container-fluid">
         <!-- Tin tức và Thông báo -->
-        <div class="row mb-5" id="tin-tuc">
+        <div class="row mb-5 g-4 align-items-stretch" id="tin-tuc">
             <!-- Tin tức - Cột trái -->
-            <div class="col-md-6" id="thong-bao">
-                <div class="panel">
+            <div class="col-12 col-lg-7 d-flex">
+                <div class="panel w-100 h-100">
                     <h2 class="section-title">TIN TỨC</h2>
 
-                    @if(isset($tinTuc) && $tinTuc->count() > 0)
-                    @foreach($tinTuc->take(4) as $tin)
-                    <div class="news-item">
-                        <a href="{{ route('public.tintuc.show', $tin->slug) }}"><img src="{{ asset($tin->hinh_anh) }}" class="news-thumbnail" alt="{{ $tin->tieu_de }}"></a>
-                        <div class="news-content" style="font-size:9px;">
-                            <h6>{{ $tin->tieu_de ?? 'Tin tức' }}</h6>
-                            <p>{!! Str::limit($tin->noi_dung, 100) !!}</p>
-                            <span class="news-date">{{ $tin->ngay_tao ? \Carbon\Carbon::parse($tin->ngay_tao)->format('d/m/Y') : '' }}</span>
+                    <div class="news-grid">
+                        @forelse(($tinTuc ?? collect())->take(4) as $tin)
+                        <article class="news-card">
+                            <a href="{{ route('public.tintuc.show', $tin->slug) }}" class="news-card-image">
+                                <img src="{{ asset($tin->hinh_anh) }}" alt="{{ $tin->tieu_de }}">
+                            </a>
+                            <div class="news-card-body">
+                                <p class="news-card-meta">KÝ TÚC XÁ <span>|
+                                        {{ $tin->ngay_tao ? \Carbon\Carbon::parse($tin->ngay_tao)->format('d/m/Y') : '' }}</span>
+                                </p>
+                                <h5 class="news-card-title">{{ $tin->tieu_de ?? 'Tin tức' }}</h5>
+                                <p class="news-card-desc">{!! Str::limit(strip_tags($tin->noi_dung), 160) !!}</p>
                         </div>
+                        </article>
+                        @empty
+                        <article class="news-card">
+                            <div class="news-card-image">
+                                <img src="https://via.placeholder.com/640x360" alt="Tin tức">
                     </div>
-                    @endforeach
-                    @else
-                    <!-- Placeholder news items -->
-                    <div class="news-item">
-                        <img src="https://via.placeholder.com/120x80" alt="News" class="news-thumbnail">
-                        <div class="news-content">
-                            <h6>Sức sống chào mừng Ngày Phụ nữ Việt Nam tại Ký túc xá</h6>
-                            <p>Chương trình văn nghệ đặc sắc với nhiều tiết mục hấp dẫn...</p>
-                            <span class="news-date">11/10/2025</span>
+                            <div class="news-card-body">
+                                <p class="news-card-meta">KÝ TÚC XÁ <span>| 11/10/2025</span></p>
+                                <h5 class="news-card-title">Sức sống chào mừng Ngày Phụ nữ Việt Nam tại Ký túc xá</h5>
+                                <p class="news-card-desc">Chương trình văn nghệ đặc sắc với nhiều tiết mục hấp dẫn...</p>
                         </div>
+                        </article>
+                        <article class="news-card">
+                            <div class="news-card-image">
+                                <img src="https://via.placeholder.com/640x360" alt="Tin tức">
                     </div>
-                    <div class="news-item">
-                        <img src="https://via.placeholder.com/120x80" alt="News" class="news-thumbnail">
-                        <div class="news-content">
-                            <h6>Lễ khai mạc Vòng loại khu vực phía Nam</h6>
-                            <p>Giải đấu thể thao sôi động với sự tham gia của nhiều sinh viên...</p>
-                            <span class="news-date">10/10/2025</span>
+                            <div class="news-card-body">
+                                <p class="news-card-meta">KÝ TÚC XÁ <span>| 10/10/2025</span></p>
+                                <h5 class="news-card-title">Lễ khai mạc Vòng loại khu vực phía Nam</h5>
+                                <p class="news-card-desc">Giải đấu thể thao sôi động với sự tham gia của nhiều sinh viên...</p>
                         </div>
+                        </article>
+                        @endforelse
                     </div>
-                    <div class="news-item">
-                        <img src="https://via.placeholder.com/120x80" alt="News" class="news-thumbnail">
-                        <div class="news-content">
-                            <h6>Hoạt động tình nguyện tại cộng đồng</h6>
-                            <p>Sinh viên ký túc xá tham gia các hoạt động tình nguyện ý nghĩa...</p>
-                            <span class="news-date">09/10/2025</span>
-                        </div>
-                    </div>
-                    @endif
 
-                    <div class="mt-3">
+                    <div class="mt-3 text-center text-lg-start">
                         <a href="{{ route('public.tintuc.index') }}" class="view-more-link">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
                     </div>
                 </div>
             </div>
 
             <!-- Thông báo - Cột phải -->
-            <div class="col-md-6">
-                <div class="panel">
+            <div class="col-12 col-lg-5 d-flex" id="thong-bao">
+                <div class="panel w-100 h-100">
                     <h2 class="section-title">THÔNG BÁO</h2>
 
-                    @if(isset($thongBaos) && $thongBaos->count() > 0)
-                    @foreach($thongBaos->take(5) as $tb)
+                    <div class="announcement-list">
+                        @forelse(($thongBaos ?? collect())->take(5) as $tb)
                     <div class="announcement-item">
-                        <a href="{{ route('public.thongbao.show', $tb->id) }}">
-                            <img src="{{ Storage::url($tb->anh) }}" class="news-thumbnail" alt="{{ $tb->tieu_de }}">
+                            <a href="{{ route('public.thongbao.show', $tb->id) }}" class="announcement-thumb">
+                                <img src="{{ Storage::url($tb->anh) }}" alt="{{ $tb->tieu_de }}">
                         </a>
                         <div class="announcement-content">
                             <h6>{{ $tb->tieuDe->ten_tieu_de ?? 'Thông báo' }}</h6>
                             <span class="announcement-date">{{ $tb->ngay_dang ? \Carbon\Carbon::parse($tb->ngay_dang)->format('d/m/Y') : '' }}</span>
                         </div>
                     </div>
-                    @endforeach
-                    @else
-                    <!-- Placeholder announcements -->
+                        @empty
                     <div class="announcement-item">
-                        <div class="announcement-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
+                            <div class="announcement-thumb empty"></div>
                         <div class="announcement-content">
                             <h6>Thông báo về việc hoàn trả phí chấm dứt hợp đồng</h6>
                             <span class="announcement-date">11/10/2025</span>
                         </div>
                     </div>
                     <div class="announcement-item">
-                        <div class="announcement-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
+                            <div class="announcement-thumb empty"></div>
                         <div class="announcement-content">
                             <h6>Thông báo lịch nghỉ lễ Quốc khánh</h6>
                             <span class="announcement-date">10/10/2025</span>
                         </div>
                     </div>
-                    <div class="announcement-item">
-                        <div class="announcement-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div class="announcement-content">
-                            <h6>Thông báo về việc bảo trì hệ thống điện nước</h6>
-                            <span class="announcement-date">09/10/2025</span>
-                        </div>
+                        @endforelse
                     </div>
-                    @endif
 
                     <div class="mt-3">
                         <a href="{{ route('public.thongbao.index') }}" class="view-more-link">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
@@ -319,18 +304,155 @@ $heroSlides = [
 @endsection
 @push('styles')
 <style>
+    /* Bố cục tin tức - thông báo */
+    #tin-tuc {
+        display: grid;
+        gap: 24px;
+    }
+
+    @media (min-width: 992px) {
+        #tin-tuc {
+            grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+            align-items: stretch;
+        }
+    }
+
+    #tin-tuc>div,
+    #tin-tuc .panel {
+        width: 100%;
+        height: 100%;
+    }
+
     /* Tin tức */
-    #tin-tuc .news-item,
-    #tin-tuc .news-content,
-    #tin-tuc .news-item * {
-        font-size: 18px !important;
+    .news-grid {
+        display: grid;
+        gap: 24px;
+    }
+
+    @media (min-width: 768px) {
+        .news-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    .news-card {
+        border: 1px solid #e6e9ef;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        transition: transform .2s ease, box-shadow .2s ease;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+    }
+
+    .news-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+    }
+
+    .news-card-image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16/9;
+        overflow: hidden;
+    }
+
+    .news-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .3s ease;
+    }
+
+    .news-card:hover .news-card-image img {
+        transform: scale(1.05);
+    }
+
+    .news-card-body {
+        padding: 20px 22px 24px;
+    }
+
+    .news-card-meta {
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #888fa1;
+        margin-bottom: 8px;
+    }
+
+    .news-card-meta span {
+        font-weight: 500;
+        color: #0f172a;
+    }
+
+    .news-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #0f172a;
+        line-height: 1.4;
+        margin-bottom: 10px;
+    }
+
+    .news-card-desc {
+        color: #4b5563;
+        font-size: 15px;
+        line-height: 1.5;
+        margin-bottom: 0;
     }
 
     /* Thông báo */
-    #thong-bao .announcement-item,
-    #thong-bao .announcement-content,
-    #thong-bao .announcement-item * {
-        font-size: 18px !important;
+    .announcement-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .announcement-item {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .announcement-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .announcement-thumb {
+        width: 72px;
+        height: 60px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #f1f5f9;
+        flex-shrink: 0;
+    }
+
+    .announcement-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .announcement-thumb.empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .announcement-content h6 {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+
+    .announcement-date {
+        font-size: 13px;
+        color: #6b7280;
     }
 </style>
 @endpush
