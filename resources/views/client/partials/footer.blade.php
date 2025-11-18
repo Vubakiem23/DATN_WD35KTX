@@ -30,10 +30,10 @@
             <div class="footer-col">
                 <h4 class="footer-title">Liên kết nhanh</h4>
                 <ul class="footer-links">
-                    <li><a href="{{ route('public.home') }}">Trang chủ</a></li>
+                    <li><a href="{{ route('public.home') }}" >Trang chủ</a></li>
                     <li><a href="{{ route('public.about') }}">Giới thiệu</a></li>
-                    <li><a href="{{ route('public.home') }}#thong-bao">Thông báo</a></li>
-                    <li><a href="{{ route('public.home') }}#tin-tuc">Tin tức</a></li>
+                    <li><a href="{{ route('public.thongbao.index')}}">Thông báo</a></li>
+                    <li><a href="{{ route('public.tintuc.index') }}">Tin tức</a></li>
                     <li><a href="{{ route('public.guide') }}#huong-dan">Hướng dẫn</a></li>
                     <li><a href="{{ route('public.about') }}#noi-quy">Nội quy</a></li>
                 </ul>
@@ -468,6 +468,10 @@
         .footer-hours .time {
             align-self: flex-end;
         }
+        * {
+    outline: 1px solid red !important;
+}
+
     }
 
     @media (max-width: 576px) {

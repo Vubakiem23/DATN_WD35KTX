@@ -4,41 +4,41 @@
 
 @section('hero')
 @php
-    $heroSlides = [
-        [
-            'src' => asset('images/lovepik-different-male-college-students-in-the-dormitory-picture_501788393.jpg'),
-            'alt' => 'Sân trường FPT Polytechnic',
-            'title' => 'KÝ TÚC XÁ VaMos',
-            'subtitle' => 'Không gian sống năng động – An toàn – Tiện nghi cho sinh viên'
-        ],
-        [
-            'src' => asset('images/image-1024x682.jpg'),
-            'alt' => 'Sinh viên FPT Polytechnic',
-            'title' => 'CỘNG ĐỒNG SINH VIÊN NHIỆT HUYẾT',
-            'subtitle' => 'Gắn kết – Sẻ chia – Cùng nhau phát triển'
-        ],
-        [
-            'src' => asset('images/6y6ruPj73iy2ksxMA5q3A2eMmULZ9EvYEbTKdWwx.jpeg'),
-            'alt' => 'Cơ sở vật chất hiện đại',
-            'title' => 'CƠ SỞ VẬT CHẤT HIỆN ĐẠI',
-            'subtitle' => 'Đầy đủ tiện ích phục vụ học tập và sinh hoạt'
-        ],
-        [
-            'src' => asset('images/excel-2-2-e1713237797743.jpg'),
-            'alt' => 'Hoạt động ngoại khóa',
-            'title' => 'HOẠT ĐỘNG NGOẠI KHÓA SÔI NỔI',
-            'subtitle' => 'Nâng cao kỹ năng – Mở rộng trải nghiệm'
-        ],
-    ];
+$heroSlides = [
+[
+'src' => asset('images/lovepik-different-male-college-students-in-the-dormitory-picture_501788393.jpg'),
+'alt' => 'Sân trường FPT Polytechnic',
+'title' => 'KÝ TÚC XÁ VaMos',
+'subtitle' => 'Không gian sống năng động – An toàn – Tiện nghi cho sinh viên'
+],
+[
+'src' => asset('images/image-1024x682.jpg'),
+'alt' => 'Sinh viên FPT Polytechnic',
+'title' => 'CỘNG ĐỒNG SINH VIÊN NHIỆT HUYẾT',
+'subtitle' => 'Gắn kết – Sẻ chia – Cùng nhau phát triển'
+],
+[
+'src' => asset('images/6y6ruPj73iy2ksxMA5q3A2eMmULZ9EvYEbTKdWwx.jpeg'),
+'alt' => 'Cơ sở vật chất hiện đại',
+'title' => 'CƠ SỞ VẬT CHẤT HIỆN ĐẠI',
+'subtitle' => 'Đầy đủ tiện ích phục vụ học tập và sinh hoạt'
+],
+[
+'src' => asset('images/excel-2-2-e1713237797743.jpg'),
+'alt' => 'Hoạt động ngoại khóa',
+'title' => 'HOẠT ĐỘNG NGOẠI KHÓA SÔI NỔI',
+'subtitle' => 'Nâng cao kỹ năng – Mở rộng trải nghiệm'
+],
+];
 @endphp
 <div class="hero-section hero-slider" data-autoplay="4000">
     @foreach ($heroSlides as $index => $slide)
-        <div class="hero-slide {{ $loop->first ? 'is-active' : '' }}"
-            data-title="{{ $slide['title'] }}"
-            data-subtitle="{{ $slide['subtitle'] }}"
-            data-index="{{ $index }}">
-            <img src="{{ $slide['src'] }}" alt="{{ $slide['alt'] }}">
-        </div>
+    <div class="hero-slide {{ $loop->first ? 'is-active' : '' }}"
+        data-title="{{ $slide['title'] }}"
+        data-subtitle="{{ $slide['subtitle'] }}"
+        data-index="{{ $index }}">
+        <img src="{{ $slide['src'] }}" alt="{{ $slide['alt'] }}">
+    </div>
     @endforeach
 
     <div class="hero-content">
@@ -57,8 +57,8 @@
 
     <div class="hero-slider-controls">
         @foreach ($heroSlides as $index => $slide)
-            <button class="hero-slider-dot {{ $loop->first ? 'is-active' : '' }}" type="button"
-                data-index="{{ $index }}" aria-label="Chuyển đến slide {{ $index + 1 }}"></button>
+        <button class="hero-slider-dot {{ $loop->first ? 'is-active' : '' }}" type="button"
+            data-index="{{ $index }}" aria-label="Chuyển đến slide {{ $index + 1 }}"></button>
         @endforeach
     </div>
 </div>
@@ -83,7 +83,7 @@
 
         const setSlide = (index) => {
             if (!slides.length) return;
-            
+
             // Remove active state
             slides[currentIndex]?.classList.remove('is-active');
             dots[currentIndex]?.classList.remove('is-active');
@@ -101,7 +101,7 @@
                 if (titleEl && subtitleEl) {
                     titleEl.style.opacity = '0';
                     subtitleEl.style.opacity = '0';
-                    
+
                     setTimeout(() => {
                         titleEl.textContent = activeSlide.dataset.title || titleEl.textContent;
                         subtitleEl.textContent = activeSlide.dataset.subtitle || subtitleEl.textContent;
@@ -163,24 +163,20 @@
             <!-- Tin tức - Cột trái -->
             <div class="col-md-6" id="thong-bao">
                 <div class="panel">
-                <h2 class="section-title">TIN TỨC</h2>
-                
-                @if(isset($tinTuc) && $tinTuc->count() > 0)
-                    @foreach($tinTuc->take(3) as $tin)
-                    <div class="news-item">
-                        <!-- <img src="{{ $tin->anh ? asset('storage/' . $tin->anh) :'https://via.placeholder.com/120x80' }}" 
-                             alt="{{ $tin->tieuDe->ten_tieu_de ?? 'Tin tức' }}" 
-                             class="news-thumbnail"> -->
+                    <h2 class="section-title">TIN TỨC</h2>
 
-                             <img src="{{ asset($tin->hinh_anh) }}" class="news-thumbnail" alt="{{ $tin->tieu_de }}">
-                        <div class="news-content">
+                    @if(isset($tinTuc) && $tinTuc->count() > 0)
+                    @foreach($tinTuc->take(4) as $tin)
+                    <div class="news-item">
+                        <a href="{{ route('public.tintuc.show', $tin->slug) }}"><img src="{{ asset($tin->hinh_anh) }}" class="news-thumbnail" alt="{{ $tin->tieu_de }}"></a>
+                        <div class="news-content" style="font-size:9px;">
                             <h6>{{ $tin->tieu_de ?? 'Tin tức' }}</h6>
                             <p>{!! Str::limit($tin->noi_dung, 100) !!}</p>
                             <span class="news-date">{{ $tin->ngay_tao ? \Carbon\Carbon::parse($tin->ngay_tao)->format('d/m/Y') : '' }}</span>
                         </div>
                     </div>
                     @endforeach
-                @else
+                    @else
                     <!-- Placeholder news items -->
                     <div class="news-item">
                         <img src="https://via.placeholder.com/120x80" alt="News" class="news-thumbnail">
@@ -206,32 +202,32 @@
                             <span class="news-date">09/10/2025</span>
                         </div>
                     </div>
-                @endif
-                
-                <div class="mt-3">
-                    <a href="#tin-tuc" class="view-more-link">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
+                    @endif
+
+                    <div class="mt-3">
+                        <a href="{{ route('public.tintuc.index') }}" class="view-more-link">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
                 </div>
             </div>
-            
+
             <!-- Thông báo - Cột phải -->
             <div class="col-md-6">
                 <div class="panel">
-                <h2 class="section-title">THÔNG BÁO</h2>
-                
-                @if(isset($thongBaos) && $thongBaos->count() > 0)
+                    <h2 class="section-title">THÔNG BÁO</h2>
+
+                    @if(isset($thongBaos) && $thongBaos->count() > 0)
                     @foreach($thongBaos->take(5) as $tb)
                     <div class="announcement-item">
-                        <div class="announcement-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
+                        <a href="{{ route('public.thongbao.show', $tb->id) }}">
+                            <img src="{{ Storage::url($tb->anh) }}" class="news-thumbnail" alt="{{ $tb->tieu_de }}">
+                        </a>
                         <div class="announcement-content">
                             <h6>{{ $tb->tieuDe->ten_tieu_de ?? 'Thông báo' }}</h6>
                             <span class="announcement-date">{{ $tb->ngay_dang ? \Carbon\Carbon::parse($tb->ngay_dang)->format('d/m/Y') : '' }}</span>
                         </div>
                     </div>
                     @endforeach
-                @else
+                    @else
                     <!-- Placeholder announcements -->
                     <div class="announcement-item">
                         <div class="announcement-icon">
@@ -260,65 +256,81 @@
                             <span class="announcement-date">09/10/2025</span>
                         </div>
                     </div>
-                @endif
-                
-                <div class="mt-3">
-                    <a href="#thong-bao" class="view-more-link">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
+                    @endif
+
+                    <div class="mt-3">
+                        <a href="{{ route('public.thongbao.index') }}" class="view-more-link">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Giới thiệu và Đăng ký -->
         <div class="row intro-section" id="gioi-thieu">
             <!-- Giới thiệu - Cột trái -->
             <div class="col-md-6">
                 <div class="panel">
-                <img src="{{ asset('images/photo-1-159188526439782241575.jpg') }}" 
-                     alt="Ký túc xá" 
-                     class="intro-image">
-                <div class="intro-title">Giới thiệu chung</div>
-                <div class="intro-text">
-                    <p><strong>Ký túc xá VaMos – FPT Polytechnic</strong></p>
-                    <p>Không gian sống hiện đại, an toàn với đầy đủ tiện ích học tập, sinh hoạt và kết nối cộng đồng cho sinh viên toàn trường.</p>
-                </div>
-                <a href="{{ route('public.about') }}" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                    <img src="{{ asset('images/photo-1-159188526439782241575.jpg') }}"
+                        alt="Ký túc xá"
+                        class="intro-image">
+                    <div class="intro-title">Giới thiệu chung</div>
+                    <div class="intro-text">
+                        <p><strong>Ký túc xá VaMos – FPT Polytechnic</strong></p>
+                        <p>Không gian sống hiện đại, an toàn với đầy đủ tiện ích học tập, sinh hoạt và kết nối cộng đồng cho sinh viên toàn trường.</p>
+                    </div>
+                    <a href="{{ route('public.about') }}" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
                 </div>
             </div>
-            
+
             <!-- Đăng ký và Hướng dẫn - Cột phải -->
             <div class="col-md-6">
                 <div class="panel">
-                <div class="text-center mb-4">
-                    @if(isset($hideRegisterButton) && $hideRegisterButton)
+                    <div class="text-center mb-4">
+                        @if(isset($hideRegisterButton) && $hideRegisterButton)
                         {{-- Nút ẩn hoàn toàn khi hồ sơ đã duyệt --}}
-                    @elseif(!isset($canRegister) || $canRegister)
+                        @elseif(!isset($canRegister) || $canRegister)
                         <a href="{{ route('public.apply') }}" class="register-button">
                             <i class="fas fa-file-alt"></i>
                             ĐĂNG KÝ KÝ TÚC XÁ
                         </a>
-                    @else
+                        @else
                         <button class="register-button" disabled title="{{ $registerMessage }}">
                             <i class="fas fa-file-alt"></i>
                             ĐĂNG KÝ KÝ TÚC XÁ
                         </button>
                         @if(!empty($registerMessage))
-                            <div class="mt-2 text-muted small">{{ $registerMessage }}</div>
+                        <div class="mt-2 text-muted small">{{ $registerMessage }}</div>
                         @endif
-                    @endif
-                </div>
-                
-                <div class="guide-section" id="huong-dan">
-                    <div class="intro-title">HƯỚNG DẪN THỦ TỤC</div>
-                    <img src="{{ asset('images/huongdan.jpg') }}" 
-                         alt="Hướng dẫn" 
-                         class="guide-image">
-                    <a href="{{ route('public.guide') }}#huong-dan" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
-                </div>
+                        @endif
+                    </div>
+
+                    <div class="guide-section" id="huong-dan">
+                        <div class="intro-title">HƯỚNG DẪN THỦ TỤC</div>
+                        <img src="{{ asset('images/huongdan.jpg') }}"
+                            alt="Hướng dẫn"
+                            class="guide-image">
+                        <a href="{{ route('public.guide') }}#huong-dan" class="view-more-link">Xem thêm <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+@push('styles')
+<style>
+    /* Tin tức */
+    #tin-tuc .news-item,
+    #tin-tuc .news-content,
+    #tin-tuc .news-item * {
+        font-size: 18px !important;
+    }
 
+    /* Thông báo */
+    #thong-bao .announcement-item,
+    #thong-bao .announcement-content,
+    #thong-bao .announcement-item * {
+        font-size: 18px !important;
+    }
+</style>
+@endpush

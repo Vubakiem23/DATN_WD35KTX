@@ -60,6 +60,16 @@ Route::get('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 // ======================
 Route::get('/register', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/register', [AuthController::class, 'handle_register'])->name('auth.handle.register');
+// Public Tin tức
+Route::get('/tin-tuc', [TinTucController::class, 'clientIndex'])->name('public.tintuc.index');
+Route::get('/tin-tuc/{slug}', [TinTucController::class, 'clientShow'])->name('public.tintuc.show');
+// CLIENT Thông báo
+Route::get('/thong-bao', [ThongBaoController::class, 'clientIndex'])->name('public.thongbao.index');
+Route::get('/thong-bao/{id}', [ThongBaoController::class, 'clientShow'])->name('public.thongbao.show');
+
+
+
+
 // =================== 🧑‍🎓 CLIENT (SINH VIÊN) ===================
 Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('', [ClientController::class, 'dashboard'])->name('client.dashboard');
@@ -73,6 +83,9 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     // Lịch bảo trì
     Route::get('/lichbaotri', [ClientController::class, 'lichBaoTriIndex'])->name('client.lichbaotri.index');
 
+
+
+
     // Hóa đơn (sẽ làm sau)
     Route::prefix('hoadon')->group(function () {
         Route::get('/', function () {
@@ -80,12 +93,9 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         })->name('client.hoadon.index');
     });
 
-    // Thông báo (sẽ làm sau)
-    Route::prefix('thongbao')->group(function () {
-        Route::get('/', function () {
-            return view('client.thongbao.index');
-        })->name('client.thongbao.index');
-    });
+ 
+    
+
 });
 
 // =================== 🧑‍🎓 STUDENT (OLD - giữ để tương thích) ===================

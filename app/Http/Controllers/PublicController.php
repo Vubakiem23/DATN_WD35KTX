@@ -26,7 +26,7 @@ class PublicController extends Controller
         // Lấy 3 tin tức mới nhất
         $tinTuc = TinTuc::with('hashtags')
             ->orderBy('ngay_tao', 'desc')
-            ->limit(3)
+            ->limit(10)
             ->get();
 
         // Quyền hiển thị nút đăng ký
