@@ -3,46 +3,57 @@
     @section('title', 'Thêm thông báo')
 
     @section('content')
-    <div class="container mt-4" style="max-width: 900px; background:#f9f9f9; padding:30px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
-        <h3 class="mb-3 text-primary"> Thêm thông báo mới</h3>
-        <hr>
+<div class="notification-form-wrapper">
+<div class="mb-4">
+    <div class="mb-5">
+        <h3 class="room-page__title mb-2">Thêm Thông Báo</h3>
+        <p class="text-muted mb-0">Theo dõi toàn bộ thông báo, mức độ, phòng/khu và người viết.</p>
+    </div>
 
-        @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
+    @if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
 
-        <form action="{{ route('thongbao.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('thongbao.store') }}" method="POST" enctype="multipart/form-data" id="thongbao-form" class="notification-form-card">
             @csrf
-            <div class="row">
+        <div class="nf-section">
+            <div class="nf-section-header">
+                <div>
+                    <p class="nf-section-eyebrow">Thông tin chính</p>
+                    <h5 class="nf-section-title">Nội dung & phạm vi hiển thị</h5>
+                </div>
+                <span class="nf-chip nf-chip--subtle">Bắt buộc</span>
+            </div>
 
+            <div class="row g-4">
                 {{-- Tiêu đề --}}
-                <div class="col-md-12 mb-3">
+                <div class="col-12">
                     <label class="form-label">Tiêu đề</label>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <select name="tieu_de_id" id="tieu_de_id" class="form-select" style="flex:1 1 auto;">
+                    <div class="nf-inline-controls flex-wrap gap-2">
+                        <select name="tieu_de_id" id="tieu_de_id" class="form-select flex-grow-1">
                             <option value="">-- Chọn tiêu đề --</option>
                             @foreach($tieuDes as $td)
                             <option value="{{ $td->id }}">{{ $td->ten_tieu_de }}</option>
                             @endforeach
                         </select>
-                        <button type="button" id="add_title_btn" class="btn btn-primary">+ Thêm</button>
-                        <button type="button" id="delete_title_btn" class="btn btn-danger">Xóa</button>
+                        <button type="button" id="add_title_btn" class="btn btn-outline-primary">+ Thêm</button>
+                        <button type="button" id="delete_title_btn" class="btn btn-outline-danger">Xóa</button>
                     </div>
                     <input type="text" id="input_tieu_de" class="form-control mt-2" style="display:none;" placeholder="Nhập tiêu đề mới và Enter để lưu">
                 </div>
 
                 {{-- Mức độ --}}
-                <div class="col-md-12 mb-3">
+                <div class="col-12">
                     <label class="form-label">Mức độ (tùy chọn)</label>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <select name="muc_do_id" id="muc_do_id" class="form-select" style="flex:1 1 auto;">
+                    <div class="nf-inline-controls flex-wrap gap-2">
+                        <select name="muc_do_id" id="muc_do_id" class="form-select flex-grow-1">
                             <option value="">-- Không chọn mức độ --</option>
                             @foreach($mucDos as $md)
                             <option value="{{ $md->id }}" {{ old('muc_do_id') == $md->id ? 'selected' : '' }}>
@@ -50,26 +61,38 @@
                             </option>
                             @endforeach
                         </select>
-                        <button type="button" id="add_priority_btn" class="btn btn-success">+ Thêm</button>
-                        <button type="button" id="delete_priority_btn" class="btn btn-danger">Xóa</button>
+                        <button type="button" id="add_priority_btn" class="btn btn-outline-success">+ Thêm</button>
+                        <button type="button" id="delete_priority_btn" class="btn btn-outline-danger">Xóa</button>
                     </div>
                     <input type="text" id="input_muc_do" class="form-control mt-2" style="display:none;" placeholder="Nhập mức độ mới và Enter để lưu">
                 </div>
 
                 {{-- Nội dung --}}
-                <div class="col-md-12 mb-3">
+                <div class="col-12">
                     <label class="form-label">Nội dung</label>
-                    <textarea id="noi_dung" name="noi_dung" class="form-control" rows="5" >{{ old('noi_dung') }}</textarea>
+                    <textarea id="noi_dung" name="noi_dung" class="form-control" rows="6">{{ old('noi_dung') }}</textarea>
+                    <small class="nf-hint-text">Bạn có thể chèn hình ảnh, liên kết hoặc định dạng văn bản trực tiếp trong trình soạn thảo.</small>
                 </div>
+            </div>
+        </div>
 
+        <div class="nf-section">
+            <div class="nf-section-header">
+                <div>
+                    <p class="nf-section-eyebrow">Lịch & đối tượng nhận</p>
+                    <h5 class="nf-section-title">Gửi đến đúng người, đúng thời điểm</h5>
+                </div>
+            </div>
+
+            <div class="row g-4">
                 {{-- Ngày đăng --}}
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6">
                     <label class="form-label">Ngày đăng</label>
                     <input type="date" name="ngay_dang" class="form-control" value="{{ old('ngay_dang') }}" required>
                 </div>
 
                 {{-- Đối tượng --}}
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6">
                     <label class="form-label">Đối tượng</label>
                     <select name="doi_tuong" class="form-select" required>
                         <option value="">-- Chọn đối tượng --</option>
@@ -80,7 +103,7 @@
                 </div>
 
                 {{-- Khu --}}
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6">
                     <label class="form-label">Chọn khu (có thể chọn nhiều)</label>
                     <select name="khu_id[]" id="khu_id" class="form-select" multiple>
                         @foreach($khus as $khu)
@@ -89,11 +112,11 @@
                         </option>
                         @endforeach
                     </select>
-                    <small class="text-muted">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều khu.</small>
+                    <small class="nf-hint-text">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều khu.</small>
                 </div>
 
                 {{-- Phòng --}}
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6">
                     <label class="form-label">Chọn phòng (có thể chọn nhiều)</label>
                     <select name="phong_id[]" id="phong_id" class="form-select" multiple>
                         @foreach($phongs as $phong)
@@ -102,29 +125,45 @@
                         </option>
                         @endforeach
                     </select>
-                    <small class="text-muted">Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều phòng.</small>
+                    <small class="nf-hint-text">Chỉ chọn khi cần gửi chính xác đến từng phòng cụ thể.</small>
                 </div>
+            </div>
+        </div>
 
+        <div class="nf-section">
+            <div class="nf-section-header">
+                <div>
+                    <p class="nf-section-eyebrow">Tệp đính kèm</p>
+                    <h5 class="nf-section-title">Hình ảnh & tài liệu liên quan</h5>
+                </div>
+            </div>
+            <div class="row g-4">
                 {{-- Ảnh --}}
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6">
                     <label class="form-label">Ảnh thông báo</label>
-                    <input type="file" name="anh" class="form-control" accept="image/*">
+                    <div class="nf-attachment-box">
+                        <input type="file" name="anh" class="form-control" accept="image/*">
+                        <small class="nf-hint-text">PNG, JPG hoặc WEBP, tối đa 3MB.</small>
+                    </div>
                 </div>
 
                 {{-- File đính kèm --}}
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6">
                     <label class="form-label">File đính kèm</label>
-                    <input type="file" name="file" class="form-control" accept=".doc,.docx,.pdf,.xls,.xlsx">
+                    <div class="nf-attachment-box">
+                        <input type="file" name="file" class="form-control" accept=".doc,.docx,.pdf,.xls,.xlsx">
+                        <small class="nf-hint-text">Cho phép chia sẻ biểu mẫu, kế hoạch, thông báo chính thức.</small>
+                    </div>
                 </div>
-
             </div>
+        </div>
 
-            <div class="mt-3">
-                <button type="submit" class="btn btn-success">Lưu thông báo</button>
-                <a href="{{ route('thongbao.index') }}" class="btn btn-secondary">Hủy</a>
-            </div>
-        </form>
-    </div>
+        <div class="nf-form-actions">
+            <a href="{{ route('thongbao.index') }}" class="btn btn-outline-secondary">Hủy</a>
+            <button type="submit" class="btn btn-success px-4">Lưu thông báo</button>
+        </div>
+    </form>
+</div>
     @endsection
 @push('scripts')
 <script>
@@ -331,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @push('styles')
+@include('thongbao.partials.form-styles')
 <!-- Select2 -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <!-- AlertifyJS -->
@@ -344,11 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- AlertifyJS -->
 <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
 @endpush
-@push('scripts')
-<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
-<script>
-    ClassicEditor
-        .create(document.querySelector('#noi_dung'))
-        .catch(error => console.error(error));
-</script>
-@endpush
+@include('components.ckeditor', [
+    'selector' => '#noi_dung',
+    'form' => '#thongbao-form',
+    'editorVar' => 'thongBaoEditor',
+])

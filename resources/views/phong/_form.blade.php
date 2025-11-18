@@ -372,6 +372,7 @@
   } elseif (!is_null($phong->gia_moi_nguoi ?? null)) {
     $perPersonValue = (int) $phong->gia_moi_nguoi;
   }
+  $perPersonAutofilled = $perPersonOld === null || $perPersonOld === '';
   $usePerPersonInitial = '1';
 @endphp
 

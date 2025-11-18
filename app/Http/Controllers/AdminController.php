@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\SuCo;
 use App\Models\HoaDon;
@@ -10,7 +9,7 @@ use App\Models\Slot;
 use App\Models\LichBaoTri;
 use App\Models\SinhVien;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+
 
 class AdminController extends Controller
 {
@@ -30,18 +29,13 @@ class AdminController extends Controller
             ->count();
         
         // 3. Tổng tiền thu được
-        // 3.1. Phí phòng: tính theo tiền phòng trong hóa đơn đã thanh toán tháng hiện tại
-        $tongTienPhong = HoaDon::where('thang', $selectedMonth)
-            ->where('da_thanh_toan', true)
-            ->sum(DB::raw('COALESCE(tien_phong_slot,0)'));
-        
-        // Nếu muốn tính chính xác hơn, có thể join với bảng thanh toán phí phòng (nếu có)
-        // Hiện tại tính dựa trên slot đang có sinh viên
+        $hoaDonsDaThanhToan = $this->layHoaDonsDaThanhToanTheoThang($selectedMonth);
+
+        // 3.1. Phí phòng: tính từ cấu hình slot & khu của từng phòng
+        $tongTienPhong = $this->tinhTongTienPhongTuHoaDons($hoaDonsDaThanhToan);
         
         // 3.2. Tiền điện + nước từ hóa đơn đã thanh toán trong tháng
-        $tongTienDienNuoc = HoaDon::where('thang', $selectedMonth)
-            ->where('da_thanh_toan', true)
-            ->sum('thanh_tien') ?? 0;
+        $tongTienDienNuoc = $hoaDonsDaThanhToan->sum('thanh_tien') ?? 0;
         
         $tongTienThuDuoc = $tongTienPhong + $tongTienDienNuoc;
         
@@ -152,16 +146,40 @@ class AdminController extends Controller
      */
     private function tinhTongTienThuTheoThang($thang)
     {
+        $hoaDons = $this->layHoaDonsDaThanhToanTheoThang($thang);
+
         // Phí phòng: tính theo tiền phòng trong hóa đơn đã thanh toán tháng này
-        $tongTienPhong = HoaDon::where('thang', $thang)
-            ->where('da_thanh_toan', true)
-            ->sum(DB::raw('COALESCE(tien_phong_slot,0)'));
+        $tongTienPhong = $this->tinhTongTienPhongTuHoaDons($hoaDons);
         
         // Tiền điện nước từ hóa đơn đã thanh toán trong tháng
-        $tongTienDienNuoc = HoaDon::where('thang', $thang)
-            ->where('da_thanh_toan', true)
-            ->sum('thanh_tien') ?? 0;
+        $tongTienDienNuoc = $hoaDons->sum('thanh_tien') ?? 0;
         
         return $tongTienPhong + $tongTienDienNuoc;
+    }
+
+    /**
+     * Lấy danh sách hóa đơn đã thanh toán trong tháng kèm dữ liệu phòng liên quan.
+     */
+    private function layHoaDonsDaThanhToanTheoThang(string $thang)
+    {
+        return HoaDon::with(['phong.khu', 'phong.slots'])
+            ->where('thang', $thang)
+            ->where('da_thanh_toan', true)
+            ->get();
+    }
+
+    /**
+     * Tính tổng tiền phòng dựa trên thông tin slot/khu của từng hóa đơn.
+     */
+    private function tinhTongTienPhongTuHoaDons($hoaDons): int
+    {
+        return (int) $hoaDons->sum(function ($hoaDon) {
+            $phong = $hoaDon->phong;
+            if (!$phong) {
+                return 0;
+            }
+
+            return (int) $phong->tinhTienPhongTheoSlot(true);
+        });
     }
 }

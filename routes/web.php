@@ -34,6 +34,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\TinTucController;
 use App\Http\Controllers\ThongBaoPhongSvController;
+use App\Http\Controllers\CKEditorUploadController;
 use App\Models\Violation;
 /*
 |--------------------------------------------------------------------------
@@ -80,6 +81,10 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');
     Route::post('/suco', [ClientController::class, 'suCoStore'])->name('client.suco.store');
 
+    // Thông báo
+    Route::get('/thongbao', [ThongBaoController::class, 'clientIndex'])->name('client.thongbao.index');
+    Route::get('/thongbao/{id}', [ThongBaoController::class, 'clientShow'])->name('client.thongbao.show');
+
     // Lịch bảo trì
     Route::get('/lichbaotri', [ClientController::class, 'lichBaoTriIndex'])->name('client.lichbaotri.index');
 
@@ -112,6 +117,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // Trang chủ admin
     Route::get('', [AdminController::class, 'index'])->name('admin.index');
+
+    // CKEditor uploads
+    Route::post('ckeditor/upload', [CKEditorUploadController::class, 'store'])
+        ->name('admin.ckeditor.upload');
 
     // ---------------- PHÒNG & SLOT ----------------
     Route::resource('phong', PhongController::class);
