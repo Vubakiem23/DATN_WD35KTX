@@ -343,6 +343,16 @@ class SuCoController extends Controller
     }
 
 
+    public function dangXuLy($id) {
+    $suco = SuCo::findOrFail($id);
+    if ($suco->trang_thai === 'Tiếp nhận') {
+        $suco->trang_thai = 'Đang xử lý';
+        $suco->save();
+        return redirect()->back()->with('success', 'Sự cố đã chuyển sang trạng thái "Đang xử lý".');
+    }
+    return redirect()->back()->with('info', 'Sự cố không thể chuyển trạng thái.');
+}
+
 
 
 }
