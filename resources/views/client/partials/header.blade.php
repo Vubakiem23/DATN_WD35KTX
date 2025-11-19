@@ -47,11 +47,27 @@
                             <span>Bảo trì</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('client.hoadon*') ? 'active' : '' }}" href="{{ route('client.hoadon.index') }}">
-                            <i class="fas fa-file-invoice"></i>
-                            <span>Hóa đơn</span>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('client.hoadon*') ? 'active' : '' }}"
+                        href="javascript:void(0)" id="hoadonDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-file-invoice me-1"></i> Hóa Đơn
                         </a>
+
+                        <ul class="dropdown-menu" aria-labelledby="hoadonDropdown">
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('client.hoadon.tienphong') ? 'active' : '' }}"
+                                href="{{ route('client.hoadon.tienphong') }}">
+                                <i class="fa fa-bed me-1"></i> Tiền phòng
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ request()->routeIs('client.hoadon.index') ? 'active' : '' }}"
+                                href="{{ route('client.hoadon.diennuoc') }}">
+                                <i class="fa fa-bolt me-1"></i> Điện & nước
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('client.thongbao*') ? 'active' : '' }}" href="{{ route('client.thongbao.index') }}">

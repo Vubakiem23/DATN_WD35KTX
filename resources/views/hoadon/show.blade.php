@@ -107,27 +107,51 @@
     </div>
   </div>
 
+  @php
+    $slotPaymentsMap = [];
+    if ($hoaDon->relationLoaded('slotPayments')) {
+      foreach ($hoaDon->slotPayments as $payment) {
+        $slotPaymentsMap[$payment->slot_label] = $payment;
+      }
+    }
+  @endphp
+
   @if(!$isDienNuocOnly)
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold text-uppercase">Chi tiết tiền phòng</div>
     <div class="card-body">
       <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="p-3 border rounded bg-light">
             <div class="text-muted text-uppercase small">Số slot tính phí</div>
             <div class="fs-4 fw-semibold">{{ $hoaDon->slot_billing_count ?? 0 }}</div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="p-3 border rounded bg-light">
             <div class="text-muted text-uppercase small">Đơn giá mỗi slot</div>
             <div class="fs-4 fw-semibold">{{ number_format($hoaDon->slot_unit_price ?? 0, 0, ',', '.') }} VND</div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="p-3 border rounded bg-light">
             <div class="text-muted text-uppercase small">Tiền phòng</div>
             <div class="fs-4 fw-semibold text-success">{{ number_format($hoaDon->tien_phong_slot ?? 0, 0, ',', '.') }} VND</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 border rounded bg-light">
+            <div class="text-muted text-uppercase small">Trạng thái thanh toán</div>
+            @php
+              $paidSlots = $hoaDon->slotPayments ? $hoaDon->slotPayments->where('da_thanh_toan', true)->count() : 0;
+              $totalSlots = $hoaDon->slotPayments ? $hoaDon->slotPayments->count() : ($hoaDon->slot_billing_count ?? 0);
+            @endphp
+            <div class="fs-4 fw-semibold {{ $paidSlots >= $totalSlots && $totalSlots > 0 ? 'text-success' : 'text-warning' }}">
+              {{ $paidSlots }}/{{ $totalSlots }} người đã thanh toán
+            </div>
+            @if($paidSlots >= $totalSlots && $totalSlots > 0)
+              <div class="small text-success mt-1"><i class="fa fa-check-circle"></i> Hoàn thành</div>
+            @endif
           </div>
         </div>
       </div>
@@ -140,14 +164,77 @@
                 <th>Slot</th>
                 <th>Sinh viên</th>
                 <th>Tiền phòng</th>
+                <th>Trạng thái thanh toán</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               @foreach($hoaDon->slot_breakdowns as $slot)
+                @php
+                  $slotPayment = $slotPaymentsMap[$slot['label']] ?? null;
+                  $slotStatus = $slotPayment
+                    ? ($slotPayment->trang_thai ?? ($slotPayment->da_thanh_toan ? 'da_thanh_toan' : 'chua_thanh_toan'))
+                    : 'chua_thanh_toan';
+                  $statusMeta = match($slotStatus) {
+                    'da_thanh_toan' => ['class' => 'badge bg-success', 'text' => 'Đã thanh toán', 'icon' => 'fa-check-circle'],
+                    'cho_xac_nhan' => ['class' => 'badge bg-info text-dark', 'text' => 'Chờ xác nhận', 'icon' => 'fa-hourglass-half'],
+                    default => ['class' => 'badge bg-warning text-dark', 'text' => 'Chưa thanh toán', 'icon' => 'fa-clock'],
+                  };
+                @endphp
                 <tr>
                   <td>{{ $slot['label'] }}</td>
                   <td>{{ $slot['sinh_vien'] }}</td>
                   <td class="fw-semibold">{{ number_format($slot['tien_phong'] ?? 0, 0, ',', '.') }} VND</td>
+                  <td>
+                    <span class="{{ $statusMeta['class'] }}">
+                      <i class="fa {{ $statusMeta['icon'] }}"></i> {{ $statusMeta['text'] }}
+                    </span>
+                    @if($slotPayment && $slotPayment->client_requested_at && $slotStatus === 'cho_xac_nhan')
+                      <div class="small text-muted mt-1">
+                        SV gửi lúc {{ \Carbon\Carbon::parse($slotPayment->client_requested_at)->format('d/m/Y H:i') }}
+                      </div>
+                    @endif
+                    @if($slotPayment && $slotPayment->ngay_thanh_toan && $slotStatus === 'da_thanh_toan')
+                      <div class="small text-muted mt-1">
+                        Xác nhận lúc {{ \Carbon\Carbon::parse($slotPayment->ngay_thanh_toan)->format('d/m/Y H:i') }}
+                      </div>
+                    @endif
+                    @if($slotPayment && $slotPayment->client_ghi_chu)
+                      <div class="small text-muted mt-1">Ghi chú SV: {{ $slotPayment->client_ghi_chu }}</div>
+                    @endif
+                    @if($slotPayment && $slotPayment->ghi_chu)
+                      <div class="small text-muted">Ghi chú BQL: {{ $slotPayment->ghi_chu }}</div>
+                    @endif
+                  </td>
+                  <td>
+                    @if($slotPayment && $slotStatus === 'cho_xac_nhan')
+                      <button type="button"
+                        class="btn btn-sm btn-success slot-direct-confirm-btn"
+                        data-slot-payment-id="{{ $slotPayment->id }}"
+                        data-slot-url="{{ route('hoadon.thanhtoanslot', ['hoaDonId' => $hoaDon->id, 'slotPaymentId' => $slotPayment->id]) }}"
+                        data-slot-label="{{ $slot['label'] }}"
+                        data-sinh-vien="{{ $slot['sinh_vien'] }}"
+                        data-slot-payment-method="{{ $slotPayment->hinh_thuc_thanh_toan ?? 'chuyen_khoan' }}">
+                        <i class="fa fa-check"></i> Xác nhận
+                      </button>
+                    @elseif($slotPayment && $slotStatus !== 'da_thanh_toan')
+                      <button type="button" 
+                        class="btn btn-sm btn-primary" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#slotPaymentModal"
+                        data-toggle="modal"
+                        data-target="#slotPaymentModal"
+                        data-slot-payment-id="{{ $slotPayment->id }}"
+                        data-slot-url="{{ route('hoadon.thanhtoanslot', ['hoaDonId' => $hoaDon->id, 'slotPaymentId' => $slotPayment->id]) }}"
+                        data-slot-label="{{ $slot['label'] }}"
+                        data-sinh-vien="{{ $slot['sinh_vien'] }}"
+                        data-action="admin_confirm">
+                        <i class="fa fa-money"></i> Thanh toán
+                      </button>
+                    @elseif($slotPayment && $slotStatus === 'da_thanh_toan')
+                      <span class="text-muted small">Đã hoàn tất</span>
+                    @endif
+                  </td>
                 </tr>
               @endforeach
             </tbody>
@@ -165,6 +252,11 @@
       <div class="card-header fw-semibold text-uppercase">Chi tiết tiền điện · nước</div>
       <div class="card-body">
         <div class="table-responsive">
+          @php
+            $utilitiesStatusMeta = $hoaDon->da_thanh_toan_dien_nuoc
+              ? ['class' => 'badge bg-success', 'text' => 'Đã thanh toán', 'icon' => 'fa-check-circle']
+              : ['class' => 'badge bg-warning text-dark', 'text' => 'Chưa thanh toán', 'icon' => 'fa-clock'];
+          @endphp
           <table class="table table-striped text-center mb-0">
             <thead class="table-light">
               <tr>
@@ -173,6 +265,7 @@
                 <th>Tiền điện</th>
                 <th>Tiền nước</th>
                 <th>Tổng điện + nước</th>
+                <th>Trạng thái thanh toán</th>
               </tr>
             </thead>
             <tbody>
@@ -184,6 +277,21 @@
                   <td>{{ number_format($slot['tien_nuoc'] ?? 0, 0, ',', '.') }} VND</td>
                   <td class="fw-semibold">
                     {{ number_format(($slot['tien_dien'] ?? 0) + ($slot['tien_nuoc'] ?? 0), 0, ',', '.') }} VND
+                  </td>
+                  <td>
+                    <span class="{{ $utilitiesStatusMeta['class'] }}">
+                      <i class="fa {{ $utilitiesStatusMeta['icon'] }}"></i> {{ $utilitiesStatusMeta['text'] }}
+                    </span>
+                    @if($hoaDon->da_thanh_toan_dien_nuoc && $hoaDon->ngay_thanh_toan_dien_nuoc)
+                      <div class="small text-muted mt-1">
+                        Xác nhận lúc {{ \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan_dien_nuoc)->format('d/m/Y H:i') }}
+                      </div>
+                    @elseif(!$hoaDon->da_thanh_toan_dien_nuoc && $hoaDon->sent_dien_nuoc_to_client)
+                      <div class="small text-muted mt-1">Đang chờ thanh toán điện · nước</div>
+                    @endif
+                    @if($hoaDon->ghi_chu_thanh_toan_dien_nuoc)
+                      <div class="small text-muted">Ghi chú: {{ $hoaDon->ghi_chu_thanh_toan_dien_nuoc }}</div>
+                    @endif
                   </td>
                 </tr>
               @endforeach
@@ -202,4 +310,233 @@
     </div>
   @endif
 </div>
+
+<!-- Modal thanh toán slot -->
+<div class="modal fade" id="slotPaymentModal" tabindex="-1" aria-labelledby="slotPaymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="slotPaymentModalLabel">Thanh toán slot</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <strong>Slot:</strong> <span id="modalSlotLabel"></span><br>
+          <strong>Sinh viên:</strong> <span id="modalSinhVien"></span>
+        </div>
+        <div class="mb-3">
+          <label for="slotPaymentMethod" class="form-label">Hình thức thanh toán</label>
+          <select id="slotPaymentMethod" class="form-select" required>
+            <option value="">-- Chọn hình thức --</option>
+            <option value="tien_mat">Tiền mặt</option>
+            <option value="chuyen_khoan">Chuyển khoản</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="slotPaymentNote" class="form-label">Ghi chú</label>
+          <textarea id="slotPaymentNote" class="form-control" rows="3" placeholder="Ghi chú thanh toán (tùy chọn)"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-success" id="confirmSlotPaymentBtn">Xác nhận thanh toán</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const slotPaymentModal = document.getElementById('slotPaymentModal');
+  const confirmSlotPaymentBtn = document.getElementById('confirmSlotPaymentBtn');
+  const slotPaymentMethodSelect = document.getElementById('slotPaymentMethod');
+  const slotPaymentNoteInput = document.getElementById('slotPaymentNote');
+  const slotDirectConfirmButtons = document.querySelectorAll('.slot-direct-confirm-btn');
+  let currentSlotPaymentId = null;
+  let currentSlotPaymentAction = 'admin_confirm';
+  let currentSlotPaymentUrl = null;
+  const slotPaymentDebugLabel = '[SlotPaymentModal][Admin]';
+  const hoaDonId = {{ $hoaDon->id }};
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '{{ csrf_token() }}';
+
+  const handleModalShow = (event) => {
+    const button = event.relatedTarget || event.target;
+    if (!button) {
+      console.warn(slotPaymentDebugLabel, 'Missing trigger button on show event');
+      return;
+    }
+
+    currentSlotPaymentId = button.getAttribute('data-slot-payment-id');
+    currentSlotPaymentUrl = button.getAttribute('data-slot-url');
+    const slotLabel = button.getAttribute('data-slot-label');
+    const sinhVien = button.getAttribute('data-sinh-vien');
+    currentSlotPaymentAction = button.getAttribute('data-action') || 'admin_confirm';
+
+    console.debug(slotPaymentDebugLabel, 'Open modal', {
+      slotPaymentId: currentSlotPaymentId,
+      targetUrl: currentSlotPaymentUrl,
+      action: currentSlotPaymentAction,
+      slotLabel,
+      sinhVien,
+    });
+
+    document.getElementById('modalSlotLabel').textContent = slotLabel || 'Không xác định';
+    document.getElementById('modalSinhVien').textContent = sinhVien || 'Không xác định';
+    
+    // Reset form
+    if (slotPaymentMethodSelect) slotPaymentMethodSelect.value = '';
+    if (slotPaymentNoteInput) slotPaymentNoteInput.value = '';
+  };
+
+  const hideModal = () => {
+    try {
+      if (window.bootstrap?.Modal?.getInstance) {
+        const instance = window.bootstrap.Modal.getInstance(slotPaymentModal) || new window.bootstrap.Modal(slotPaymentModal);
+        instance.hide();
+        return;
+      }
+    } catch (err) {
+      console.warn(slotPaymentDebugLabel, 'Bootstrap 5 modal hide failed', err);
+    }
+
+    if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+      window.jQuery(slotPaymentModal).modal('hide');
+      return;
+    }
+
+    slotPaymentModal?.classList.remove('show');
+  };
+
+  const submitSlotPayment = ({
+    slotPaymentId,
+    targetUrl,
+    paymentMethod,
+    note = '',
+    action = 'admin_confirm',
+    successMessage = '✅ Đã cập nhật trạng thái slot!',
+    onSuccess,
+  }) => {
+    if (!paymentMethod) {
+      alert('⚠️ Vui lòng chọn hình thức thanh toán!');
+      return;
+    }
+
+    if (!slotPaymentId) {
+      alert('⚠️ Lỗi: Không xác định được slot thanh toán!');
+      return;
+    }
+
+    const resolvedUrl = targetUrl || `/admin/hoadon/${hoaDonId}/slot-payment/${slotPaymentId}`;
+
+    console.debug(slotPaymentDebugLabel, 'Submit request', {
+      targetUrl: resolvedUrl,
+      slotPaymentId,
+      action,
+      paymentMethod,
+    });
+
+    fetch(resolvedUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        action,
+        hinh_thuc_thanh_toan: paymentMethod,
+        ghi_chu: note
+      })
+    })
+    .then(async res => {
+      const rawText = await res.text();
+      let data = null;
+
+      if (rawText) {
+        try {
+          data = JSON.parse(rawText);
+        } catch (parseErr) {
+          console.error(slotPaymentDebugLabel, 'Response is not JSON', rawText);
+        }
+      }
+
+      if (!res.ok || !data || !data.success) {
+        const message = data?.message || rawText || `HTTP ${res.status}`;
+        throw new Error(message);
+      }
+
+      return data;
+    })
+    .then(data => {
+      console.debug(slotPaymentDebugLabel, 'Success', data);
+      if (typeof onSuccess === 'function') {
+        onSuccess(data);
+      }
+      alert(successMessage);
+      setTimeout(() => location.reload(), 500);
+    })
+    .catch(err => {
+      console.error(slotPaymentDebugLabel, 'Slot payment failed', err);
+      alert('❌ Không thể gửi yêu cầu: ' + (err?.message || 'Không xác định'));
+    });
+  };
+
+  // Khi mở modal, lấy thông tin slot
+  if (slotPaymentModal) {
+    slotPaymentModal.addEventListener?.('show.bs.modal', handleModalShow);
+
+    if (window.jQuery) {
+      window.jQuery(slotPaymentModal).on('show.bs.modal', function(e) {
+        handleModalShow(e);
+      });
+    }
+  }
+
+  // Xử lý thanh toán slot bằng modal
+  if (confirmSlotPaymentBtn) {
+    confirmSlotPaymentBtn.addEventListener('click', function() {
+      const paymentMethod = slotPaymentMethodSelect ? slotPaymentMethodSelect.value : '';
+      const note = slotPaymentNoteInput ? slotPaymentNoteInput.value : '';
+
+      submitSlotPayment({
+        slotPaymentId: currentSlotPaymentId,
+        targetUrl: currentSlotPaymentUrl,
+        paymentMethod,
+        note,
+        action: currentSlotPaymentAction,
+        onSuccess: hideModal,
+      });
+    });
+  }
+
+  // Xử lý nút xác nhận nhanh (không mở modal)
+  if (slotDirectConfirmButtons?.length) {
+    slotDirectConfirmButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const slotPaymentId = button.getAttribute('data-slot-payment-id');
+        const targetUrl = button.getAttribute('data-slot-url');
+        const slotLabel = button.getAttribute('data-slot-label') || 'Không xác định';
+        const sinhVien = button.getAttribute('data-sinh-vien') || 'Không rõ';
+        const paymentMethod = button.getAttribute('data-slot-payment-method') || 'chuyen_khoan';
+
+        const confirmMessage = `Xác nhận đã nhận tiền slot ${slotLabel} (${sinhVien})?`;
+        if (!window.confirm(confirmMessage)) {
+          return;
+        }
+
+        submitSlotPayment({
+          slotPaymentId,
+          targetUrl,
+          paymentMethod,
+          note: 'Xác nhận nhanh bởi BQL',
+          action: 'admin_confirm',
+          successMessage: '✅ Đã xác nhận slot!',
+        });
+      });
+    });
+  }
+});
+</script>
 @endsection

@@ -80,6 +80,10 @@
     <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if(session('error'))
+    <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
     <div class="d-flex flex-wrap align-items-center gap-3">
       {{-- Nhập từ Excel --}}
       <form action="{{ route('hoadon.import') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
@@ -184,17 +188,23 @@
                 {{ number_format($hoaDon->tien_nuoc ?? 0, 0, ',', '.') }} VND
               </td>
               <td>
-                @if($hoaDon->trang_thai === 'Đã thanh toán')
+                <div class="text-uppercase small text-muted fw-semibold mb-1">Điện · nước</div>
                 <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill"
-                  style="background-color:#d4edda; color:#2e7d32;">
-                  <i class="fa fa-check-circle me-2"></i> Đã thanh toán
+                  style="background-color: {{ $hoaDon->da_thanh_toan_dien_nuoc ? '#d4edda' : '#fff3cd' }}; color: {{ $hoaDon->da_thanh_toan_dien_nuoc ? '#2e7d32' : '#d32f2f' }};">
+                  <i class="fa {{ $hoaDon->da_thanh_toan_dien_nuoc ? 'fa-check-circle me-2' : 'fa-clock me-2' }}"></i>
+                  {{ $hoaDon->da_thanh_toan_dien_nuoc ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                 </div>
-                @else
-                <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill"
-                  style="background-color:#fff3cd; color:#d32f2f;">
-                  <i class="fa fa-clock me-2"></i> Chưa thanh toán
+                <div class="mt-2">
+                  @if($hoaDon->sent_dien_nuoc_to_client)
+                  <span class="badge bg-success-subtle text-success border border-success-subtle">
+                    <i class="fa fa-paper-plane me-1"></i> Đã gửi sinh viên
+                  </span>
+                  @else
+                  <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                    <i class="fa fa-hourglass-half me-1"></i> Chưa gửi sinh viên
+                  </span>
+                  @endif
                 </div>
-                @endif
               </td>
               <td class="text-center">
                 <div class="dropdown position-relative">
@@ -216,6 +226,24 @@
                     </li>
 
                     <li>
+                      @if(!$hoaDon->sent_dien_nuoc_to_client)
+                      <form method="POST"
+                        action="{{ route('hoadon.sendToClient', $hoaDon->id) }}"
+                        onsubmit="return confirm('Gửi hóa đơn ĐIỆN · NƯỚC tới sinh viên phòng {{ optional($hoaDon->phong)->ten_phong }}?')">
+                        @csrf
+                        <input type="hidden" name="type" value="dien-nuoc">
+                        <button class="dropdown-item d-flex align-items-center" type="submit">
+                          ⚡ <span class="ms-2">Gửi điện · nước</span>
+                        </button>
+                      </form>
+                      @else
+                      <span class="dropdown-item text-success d-flex align-items-center">
+                        ✅ <span class="ms-2">Đã gửi điện · nước</span>
+                      </span>
+                      @endif
+                    </li>
+
+                    <li>
                       <button type="button"
                         class="dropdown-item d-flex align-items-center"
                         data-bs-toggle="modal"
@@ -228,13 +256,14 @@
                       </button>
                     </li>
 
-                    @if($hoaDon->trang_thai !== 'Đã thanh toán')
+                    @if(!$hoaDon->da_thanh_toan_dien_nuoc)
                     <li>
                       <button type="button"
                         class="dropdown-item d-flex align-items-center"
                         data-bs-toggle="modal"
                         data-bs-target="#paymentModal"
-                        data-id="{{ $hoaDon->id }}">
+                        data-id="{{ $hoaDon->id }}"
+                        data-invoice-type="dien-nuoc">
                         📄 <span class="ms-2">Thanh toán</span>
                       </button>
                     </li>
@@ -462,6 +491,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const paymentMethodSelect = document.getElementById('paymentMethod');
+      const invoiceTypeSelect = document.getElementById('invoiceType');
       const bankInfo = document.getElementById('bankInfo');
       const confirmBtn = document.getElementById('confirmPaymentBtn');
       const paymentModal = document.getElementById('paymentModal');
@@ -486,8 +516,12 @@
         paymentModal.addEventListener('show.bs.modal', function(event) {
           const button = event.relatedTarget;
           const hoaDonId = button?.getAttribute('data-id');
+          const invoiceType = button?.getAttribute('data-invoice-type') || 'tien-phong';
           if (confirmBtn && hoaDonId) {
             confirmBtn.setAttribute('data-id', hoaDonId);
+          }
+          if (invoiceTypeSelect) {
+            invoiceTypeSelect.value = invoiceType;
           }
         });
       }
@@ -513,11 +547,12 @@
       if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
           const hoaDonId = this?.getAttribute('data-id');
+          const invoiceType = invoiceTypeSelect?.value || '';
           const hinhThuc = paymentMethodSelect?.value || '';
           const ghiChu = document.querySelector('textarea[name="ghi_chu_thanh_toan"]')?.value || '';
 
-          if (!hoaDonId || !hinhThuc) {
-            alert('⚠️ Vui lòng chọn hình thức thanh toán!');
+          if (!hoaDonId || !hinhThuc || !invoiceType) {
+            alert('⚠️ Vui lòng chọn loại hóa đơn và hình thức thanh toán!');
             return;
           }
 
@@ -528,6 +563,7 @@
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
+                type: invoiceType,
                 hinh_thuc_thanh_toan: hinhThuc,
                 ghi_chu_thanh_toan: ghiChu
               })
@@ -635,6 +671,13 @@
           <button type="button" class="btn btn-light border-0 fs-5" data-bs-dismiss="modal" aria-label="Đóng">❌</button>
         </div>
         <div class="modal-body">
+          <div class="mb-3">
+            <label for="invoiceType" class="form-label">Loại hóa đơn</label>
+            <select id="invoiceType" class="form-select">
+              <option value="tien-phong">Tiền phòng</option>
+              <option value="dien-nuoc">Điện · nước</option>
+            </select>
+          </div>
           <select id="paymentMethod" class="form-select">
             <option value="">-- Chọn hình thức --</option>
             <option value="tien_mat">Tiền mặt</option>
