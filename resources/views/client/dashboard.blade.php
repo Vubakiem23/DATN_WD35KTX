@@ -558,8 +558,10 @@
 @php
     $phong = $stats['phong'];
     $totalSlots = $phong->totalSlots();
-    // Giá slot cấu hình ở khu (không còn phụ thuộc gia_phong)
-    $giaMoiSlot = optional($phong->khu)->gia_moi_slot;
+    $giaMoiSlot = null;
+    if ($phong->gia_phong && $totalSlots > 0) {
+        $giaMoiSlot = (int) round($phong->gia_phong / $totalSlots);
+    }
     $gioiTinh = strtolower($phong->gioi_tinh ?? '');
     $gioiTinhClass = match($gioiTinh) {
         'nam' => 'nam',
@@ -628,11 +630,18 @@
                 </div>
 
                 <!-- Thông tin giá -->
-                @php
-                    $hasSlotPrice = !is_null($giaMoiSlot) && $giaMoiSlot > 0;
-                @endphp
-                @if($hasSlotPrice)
+                @if($phong->gia_phong)
                 <div class="price-info">
+                    <div class="price-item">
+                        <span class="price-label">
+                            <i class="fas fa-money-bill-wave me-1"></i>
+                            Giá tổng tiền phòng
+                        </span>
+                        <span class="price-value">
+                            {{ number_format($phong->gia_phong, 0, ',', '.') }} VND/tháng
+                        </span>
+                    </div>
+                    @if($giaMoiSlot)
                     <div class="price-item">
                         <span class="price-label">
                             <i class="fas fa-user me-1"></i>
@@ -642,6 +651,7 @@
                             {{ number_format($giaMoiSlot, 0, ',', '.') }} VND/tháng
                         </span>
                     </div>
+                    @endif
                 </div>
                 @endif
 
@@ -667,7 +677,7 @@
     <div class="recent-issues-header">
         <h5>
             <i class="fas fa-tools"></i>
-                    Sự cố bạn đã gửi gần đây
+                    Sự cố bạn gửi gần đây
                 </h5>
         <a href="{{ route('client.suco.index') }}" class="view-all-btn">
             Xem tất cả

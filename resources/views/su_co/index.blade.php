@@ -18,7 +18,7 @@
         <div class="input-group">
             <input type="text" name="search" value="{{ request('search') ?? '' }}" class="form-control"
                 placeholder="Tìm kiếm MSSV, họ tên hoặc mô tả sự cố">
-            <select name="trang_thai" class="form-select" style="max-width:160px;">
+            <select name="trang_thai" class="form-select form-control" style="max-width:160px;">
                 <option value="">Tất cả</option>
                 <option value="Tiếp nhận" @selected(request('trang_thai')=='Tiếp nhận' )>Tiếp nhận</option>
                 <option value="Đang xử lý" @selected(request('trang_thai')=='Đang xử lý' )>Đang xử lý</option>
@@ -155,6 +155,18 @@
                                             <span>Sửa</span>
                                         </a>
                                     </li>
+                                    @if ($sc->trang_thai == 'Tiếp nhận')
+                                        <li>
+                                            <form action="{{ route('suco.dangXuLy', $sc->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item text-warning">
+                                                    <i class="fa fa-spinner"></i>
+                                                    <span>Đang xử lý</span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                        @endif
+
                                     @if ($sc->trang_thai != 'Hoàn thành')
                                     <li>
                                         <button type="button"
@@ -261,232 +273,212 @@
 
 @push('styles')
 <style>
-    .room-page__title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #1f2937
-    }
+                html {
+                    scroll-behavior: auto !important
+                }
 
-    .room-table-wrapper {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-        padding: 1.25rem;
-        overflow: visible
-    }
 
-    .room-table {
-        margin-bottom: 0;
-        border-collapse: separate;
-        border-spacing: 0 12px
-    }
+                .room-page__title {
+                    font-size: 1.75rem;
+                    font-weight: 700;
+                    color: #1f2937;
+                }
 
-    .room-table thead th {
-        font-size: .78rem;
-        text-transform: uppercase;
-        letter-spacing: .05em;
-        color: #6c757d;
-        border: none;
-        padding-bottom: .75rem
-    }
+                .room-table-wrapper {
+    overflow-x: auto;
+}
 
-    .room-table tbody tr {
-        background: #f9fafc;
-        border-radius: 16px;
-        transition: transform .2s ease, box-shadow .2s ease
-    }
+                .room-table {
+                    margin-bottom: 0;
+                    border-collapse: separate;
+                    border-spacing: 0 12px;
+                }
 
-    .room-table tbody tr:hover {
-        /* transform: translateY(-2px); */
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08)
-    }
+                .room-table thead th {
+                    font-size: .78rem;
+                    text-transform: uppercase;
+                    letter-spacing: .05em;
+                    color: #6c757d;
+                    border: none;
+                    padding-bottom: .75rem;
+                }
 
-    .room-table tbody td {
-        border: none;
-        vertical-align: middle;
-        padding: 1rem .95rem
-    }
+                .room-table tbody tr {
+                    background: #f9fafc;
+                    border-radius: 16px;
+                    transition: transform .2s ease, box-shadow .2s ease;
+                }
 
-    .room-table tbody tr td:first-child {
-        border-top-left-radius: 16px;
-        border-bottom-left-radius: 16px
-    }
+                .room-table tbody tr:hover {
+                    /* transform: translateY(-2px); */
+                    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+                }
 
-    .room-table tbody tr td:last-child {
-        border-top-right-radius: 16px;
-        border-bottom-right-radius: 16px
-    }
+                .room-table tbody td {
+                    border: none;
+                    vertical-align: middle;
+                    padding: 1rem .95rem;
+                }
 
-    .btn-dergin {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: .35rem;
-        padding: .4rem .9rem;
-        border-radius: 999px;
-        font-weight: 600;
-        font-size: .72rem;
-        border: none;
-        color: #fff;
-        background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
-        box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
-        transition: transform .2s ease, box-shadow .2s ease
-    }
+                .room-table tbody tr td:first-child {
+                    border-top-left-radius: 16px;
+                    border-bottom-left-radius: 16px;
+                }
 
-    .btn-dergin:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
-        color: #fff
-    }
+                .room-table tbody tr td:last-child {
+                    border-top-right-radius: 16px;
+                    border-bottom-right-radius: 16px;
+                }
 
-    .btn-dergin i {
-        font-size: .8rem
-    }
+                .room-table .fit {
+                    white-space: nowrap;
+                    width: 1%;
+                }
 
-    .btn-dergin--muted {
-        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)
-    }
+                .room-table th.text-center,
+                .room-table td.text-center {
+                    text-align: center;
+                }
 
-    .btn-dergin--info {
-        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)
-    }
+                .room-actions {
+                    display: flex;
+                    justify-content: center;
+                }
 
-    .btn-dergin--danger {
-        background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
-    }
+                .room-actions.dropdown {
+                    position: relative;
+                }
 
-    .table-responsive {
-        position: relative;
-        overflow: visible
-    }
+                /* Nút răng cưa gọn, nằm giữa cột */
+                .room-actions .action-gear {
+                    min-width: 40px;
+                    padding: .45rem .7rem;
+                    border-radius: 999px;
+                }
 
-    .room-table thead th:last-child,
-    .room-table tbody td:last-child {
-        position: sticky;
-        right: 0;
-        background: #f9fafc;
-        z-index: 5;
-        box-shadow: -6px 0 16px rgba(15, 23, 42, 0.06);
-        padding-right: 1.2rem;
-    }
+                /* MENU: bay ngang sang trái, canh giữa ô, không tràn xuống dòng dưới */
+                .room-actions .dropdown-menu {
+                    position: absolute;
+                    top: 50% !important;
+                    /* lấy mốc giữa ô Thao tác */
+                    right: 110%;
+                    /* bật ngang sang trái của nút răng cưa */
+                    left: auto;
+                    transform: translateY(-50%);
+                    /* canh giữa theo chiều dọc */
+                    z-index: 1050;
 
-    .room-table tbody tr {
-        position: relative;
-        overflow: visible
-    }
+                    min-width: 190px;
+                    border-radius: 16px;
+                    padding: .4rem 0;
+                    margin: 0;
+                    border: 1px solid #e5e7eb;
+                    box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+                    font-size: .82rem;
+                    background: #fff;
+                }
 
-    .action-cell {
-        position: relative;
-        overflow: visible
-    }
+                /* Item trong dropdown: icon + chữ đẹp, hover nhẹ */
+                .room-actions .dropdown-item {
+                    display: flex;
+                    align-items: center;
+                    gap: .55rem;
+                    padding: .42rem .9rem;
+                    color: #4b5563;
+                }
 
-    .room-actions {
-        display: flex;
-        justify-content: center
-    }
+                .room-actions .dropdown-item i {
+                    width: 16px;
+                    text-align: center;
+                }
 
-    .room-actions.dropdown {
-        position: relative
-    }
+                .room-actions .dropdown-item:hover {
+                    background: #eef2ff;
+                    color: #111827;
+                }
 
-    .room-actions .action-gear {
-        min-width: 40px;
-        padding: .45rem .7rem;
-        border-radius: 999px
-    }
+                /* Riêng nút Xóa giữ màu đỏ */
+                .room-actions .dropdown-item.text-danger,
+                .room-actions .dropdown-item.text-danger:hover {
+                    color: #dc2626;
+                    font-weight: 500;
+                }
 
-    .room-actions .dropdown-menu {
-        position: absolute;
-        top: 50% !important;
-        right: 110%;
-        left: auto;
-        bottom: auto;
-        transform: translateY(-50%);
-        z-index: 1050;
-        min-width: 190px;
-        border-radius: 16px;
-        padding: .4rem 0;
-        margin: 0;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
-        font-size: .82rem;
-        background: #fff
-    }
 
-    @media (max-width:768px) {
-        .room-actions .dropdown-menu {
-            top: calc(100% + 12px) !important;
-            right: auto;
-            left: 50%;
-            transform: translate(-50%, 0);
-            min-width: min(220px, calc(100vw - 32px))
-        }
-    }
+                .btn-dergin {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: .35rem;
+                    padding: .4rem .9rem;
+                    border-radius: 999px;
+                    font-weight: 600;
+                    font-size: .72rem;
+                    border: none;
+                    color: #fff;
+                    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+                    box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+                    transition: transform .2s ease, box-shadow .2s ease;
+                }
 
-    .room-actions .dropdown-item {
-        display: flex;
-        align-items: center;
-        gap: .55rem;
-        padding: .42rem .9rem;
-        color: #4b5563
-    }
+                .btn-dergin:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+                    color: #fff;
+                }
 
-    .room-actions .dropdown-item i {
-        width: 16px;
-        text-align: center
-    }
+                .btn-dergin i {
+                    font-size: .8rem;
+                }
 
-    .room-actions .dropdown-item:hover {
-        background: #eef2ff;
-        color: #111827
-    }
+                .btn-dergin--muted {
+                    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+                }
 
-    .room-actions .dropdown-item.text-danger,
-    .room-actions .dropdown-item.text-danger:hover {
-        color: #dc2626;
-        font-weight: 500
-    }
+                .btn-dergin--info {
+                    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+                }
 
-    @media (max-width:1400px) {
-        .room-actions .action-gear {
-            min-width: 44px;
-            padding: .35rem .55rem
-        }
-    }
+                .btn-dergin--danger {
+                    background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%);
+                }
 
-    @media (max-width:992px) {
-        .room-table thead {
-            display: none
-        }
+                .avatar-56 {
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 12px;
+                    /* bo góc, không tròn nữa */
+                    object-fit: cover;
+                    border: 2px solid #e5e7eb;
+                    /* viền nhạt */
+                    background: #fff;
+                }
 
-        .room-table tbody {
-            display: block
-        }
 
-        .room-table tbody tr {
-            display: flex;
-            flex-direction: column;
-            padding: 1rem
-        }
 
-        .room-table tbody td {
-            display: flex;
-            justify-content: space-between;
-            padding: .35rem 0
-        }
+                @media (max-width: 992px) {
+                    .room-table thead {
+                        display: none;
+                    }
 
-        .action-cell {
-            justify-content: flex-end
-        }
-    }
+                    .room-table tbody {
+                        display: block;
+                    }
 
-    .avatar-56 {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        object-fit: cover
-    }
-</style>
+                    .room-table tbody tr {
+                        display: flex;
+                        flex-direction: column;
+                        padding: 1rem;
+                    }
+
+                    .room-table tbody td {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: .35rem 0;
+                    }
+                }
+                
+            </style>
 @endpush
 
 @push('scripts')

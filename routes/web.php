@@ -81,6 +81,8 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');
     Route::post('/suco', [ClientController::class, 'suCoStore'])->name('client.suco.store');
 
+    Route::get('suco/{id}', [SuCoController::class, 'show'])->name('suco.show');
+
 
     Route::post('/client/su_co/{id}/thanhtoan', [ClientController::class, 'su_co_thanhtoan'])
     ->name('client.su_co.thanhtoan')
@@ -346,6 +348,9 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('suco/{id}/tao-hoa-don', [SuCoController::class, 'taoHoaDon'])->name('suco.taohoadon');
     Route::post('suco/{id}/danh-gia', [SuCoController::class, 'danhGia'])->name('suco.danhgia');
 });
+Route::post('/suco/{id}/dang-xu-ly', [App\Http\Controllers\SuCoController::class, 'dangXuLy'])->name('suco.dangXuLy');
+
+
 
 
 // // TÀI SẢN
