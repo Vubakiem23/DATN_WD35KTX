@@ -102,11 +102,19 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
 
 
 
-    // Hóa đơn (sẽ làm sau)
+    // Hóa đơn
     Route::prefix('hoadon')->group(function () {
-        Route::get('/', function () {
-            return view('client.hoadon.index');
-        })->name('client.hoadon.index');
+        Route::get('/', [ClientController::class, 'hoaDonIndex'])
+            ->name('client.hoadon.index');
+        Route::get('/dien-nuoc', [ClientController::class, 'hoaDonIndex'])
+            ->name('client.hoadon.diennuoc')
+            ->defaults('tab', 'dien-nuoc');
+        Route::get('/tien-phong', [ClientController::class, 'hoaDonIndex'])
+            ->name('client.hoadon.tienphong')
+            ->defaults('tab', 'tien-phong');
+        // Thanh toán slot (sinh viên gửi yêu cầu)
+        Route::post('/{hoaDonId}/slot-payment/{slotPaymentId}', [HoaDonController::class, 'thanhToanSlot'])
+            ->name('client.hoadon.slotpayment');
     });
 
  
@@ -303,7 +311,11 @@ Route::prefix('hashtags')->group(function () {
     Route::post('/hoadon/{id}/quick-update', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
     Route::get('/hoadon/{id}/pdf', [HoaDonController::class, 'exportPDF'])->name('hoadon.export_pdf');
     Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
-     Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+    Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+    Route::post('/hoadon/{hoaDonId}/slot-payment/{slotPaymentId}', [HoaDonController::class, 'thanhToanSlot'])->name('hoadon.thanhtoanslot');
+    Route::post('/hoadon/{id}/send-to-client', [HoaDonController::class, 'sendToClient'])
+        ->name('hoadon.sendToClient')
+        ->middleware(['auth', 'admin']);
 });
 
     Route::post('/hoadon/gui-email-hang-loat', [HoaDonController::class, 'guiEmailHangLoat'])->name('hoadon.guiemailhangloat');

@@ -7,9 +7,12 @@ use App\Models\HoaDon;
 use App\Exports\HoaDonExport;
 use App\Models\Phong;
 use App\Models\SinhVien;
+use App\Models\HoaDonSlotPayment;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\HoaDonDienNuocImport;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
+use App\Traits\HoaDonCalculations;
 
 use Illuminate\Http\Request;
 
@@ -18,16 +21,33 @@ use Illuminate\Http\Request;
 
 class HoaDonController extends Controller
 {
+    use HoaDonCalculations;
 
     public function importHoaDon(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
-        ]);
+        try {
+            $request->validate([
+                'file' => 'required|mimes:xlsx,xls'
+            ]);
 
-        Excel::import(new HoaDonDienNuocImport, $request->file('file'));
+            Excel::import(new HoaDonDienNuocImport, $request->file('file'));
 
-        return back()->with('success', 'Nhập hóa đơn thành công!');
+            return back()->with('success', 'Nhập hóa đơn thành công!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = "Dòng {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            return back()->with('error', 'Lỗi nhập dữ liệu: ' . implode(' | ', $errors));
+        } catch (\Exception $e) {
+            \Log::error('Lỗi import hóa đơn: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Lỗi khi nhập hóa đơn: ' . $e->getMessage());
+        }
     }
 
     public function index(Request $request)
@@ -85,27 +105,64 @@ class HoaDonController extends Controller
 
     public function thanhToan($id, Request $request)
     {
+        $data = $request->validate([
+            'type' => 'required|in:tien-phong,dien-nuoc',
+            'hinh_thuc_thanh_toan' => 'required|in:tien_mat,chuyen_khoan',
+            'ghi_chu_thanh_toan' => 'required|string|max:255',
+        ]);
+
         $hoaDon = HoaDon::findOrFail($id);
+        $type = $data['type'];
+
+        if ($type === 'dien-nuoc') {
+            if ($hoaDon->da_thanh_toan_dien_nuoc) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Hóa đơn điện · nước đã được xác nhận trước đó.',
+                    'type' => $type,
+                ]);
+            }
+
+            $hoaDon->da_thanh_toan_dien_nuoc = true;
+            $hoaDon->ngay_thanh_toan_dien_nuoc = now();
+            $hoaDon->hinh_thuc_thanh_toan_dien_nuoc = $data['hinh_thuc_thanh_toan'];
+            $hoaDon->ghi_chu_thanh_toan_dien_nuoc = $data['ghi_chu_thanh_toan'];
+            $hoaDon->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã cập nhật thanh toán điện · nước.',
+                'type' => $type,
+            ]);
+        }
+
+        if ($hoaDon->da_thanh_toan) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Hóa đơn tiền phòng đã được xác nhận trước đó.',
+                'type' => $type,
+            ]);
+        }
+
         $hoaDon->trang_thai = 'Đã thanh toán';
         $hoaDon->da_thanh_toan = true;
         $hoaDon->ngay_thanh_toan = now();
-        $hoaDon->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
-        $request->validate(['ghi_chu_thanh_toan' => 'required|string|max:255',]);
-        $hoaDon->ghi_chu_thanh_toan = $request->ghi_chu_thanh_toan;
-
+        $hoaDon->hinh_thuc_thanh_toan = $data['hinh_thuc_thanh_toan'];
+        $hoaDon->ghi_chu_thanh_toan = $data['ghi_chu_thanh_toan'];
         $hoaDon->save();
 
         $bienLaiHtml = $this->hienThiBienLai($hoaDon);
 
-    return response()->json([
-        'success' => true,
-        'bien_lai' => $bienLaiHtml,
-    ]);
+        return response()->json([
+            'success' => true,
+            'bien_lai' => $bienLaiHtml,
+            'type' => $type,
+        ]);
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $hoaDon = HoaDon::with('phong.khu', 'phong.slots.sinhVien')->findOrFail($id);
+        $hoaDon = HoaDon::with('phong.khu', 'phong.slots.sinhVien', 'slotPayments')->findOrFail($id);
 
         // Tính toán lại nếu cần
         $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
@@ -114,8 +171,23 @@ class HoaDonController extends Controller
         $hoaDon->tien_dien = $so_dien * $hoaDon->don_gia_dien;
         $hoaDon->tien_nuoc = $so_nuoc * $hoaDon->don_gia_nuoc;
         $this->enrichHoaDonWithPhongPricing($hoaDon);
-        $hoaDon->thanh_tien = $hoaDon->tien_dien + $hoaDon->tien_nuoc + $hoaDon->tien_phong_slot;
+        
+        // Tính thành tiền theo view mode
+        $viewMode = $request->get('view');
+        if ($viewMode === 'phong') {
+            // Chỉ tính tiền phòng
+            $hoaDon->thanh_tien = $hoaDon->tien_phong_slot ?? 0;
+        } elseif ($viewMode === 'dien-nuoc') {
+            // Chỉ tính điện nước
+            $hoaDon->thanh_tien = ($hoaDon->tien_dien ?? 0) + ($hoaDon->tien_nuoc ?? 0);
+        } else {
+            // Mặc định: tính tất cả
+            $hoaDon->thanh_tien = ($hoaDon->tien_dien ?? 0) + ($hoaDon->tien_nuoc ?? 0) + ($hoaDon->tien_phong_slot ?? 0);
+        }
+        
         $this->attachSlotBreakdown($hoaDon);
+        // Khởi tạo slot payments nếu chưa có
+        $this->initializeSlotPayments($hoaDon);
 
         return view('hoadon.show', compact('hoaDon'));
     }
@@ -292,123 +364,133 @@ public function guiEmailTheoPhong($phong_id)
 }
 
     /**
-     * Lấy thông tin đơn giá/slot và tiền phòng của phòng
+     * Thanh toán cho một slot cụ thể
      */
-    protected function getPhongPricing(?Phong $phong): array
+    public function thanhToanSlot(Request $request, $hoaDonId, $slotPaymentId)
     {
-        if (!$phong) {
-            return [
-                'slot_unit_price' => 0,
-                'slot_count' => 0,
-                'tien_phong' => 0,
-            ];
+        $request->validate([
+            'hinh_thuc_thanh_toan' => 'required|in:tien_mat,chuyen_khoan',
+            'ghi_chu' => 'nullable|string|max:500',
+            'action' => 'nullable|in:student_submit,admin_confirm',
+        ]);
+
+        $action = $request->input('action', 'student_submit');
+
+        $hoaDon = HoaDon::findOrFail($hoaDonId);
+        $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDonId)
+            ->findOrFail($slotPaymentId);
+
+        if ($action === 'admin_confirm') {
+            if ($slotPayment->da_thanh_toan) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Slot đã được xác nhận trước đó.',
+                ]);
+            }
+
+            $slotPayment->da_thanh_toan = true;
+            $slotPayment->trang_thai = HoaDonSlotPayment::TRANG_THAI_DA_THANH_TOAN;
+            $slotPayment->ngay_thanh_toan = now();
+            $slotPayment->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
+            $slotPayment->ghi_chu = $request->ghi_chu;
+            $slotPayment->xac_nhan_boi = Auth::id();
+            $slotPayment->save();
+        } else {
+            if ($slotPayment->da_thanh_toan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Slot đã được thanh toán.',
+                ], 409);
+            }
+
+            if ($slotPayment->trang_thai === HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Slot đang chờ xác nhận từ ban quản lý.',
+                ], 409);
+            }
+
+            $slotPayment->trang_thai = HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN;
+            $slotPayment->client_requested_at = now();
+            $slotPayment->client_ghi_chu = $request->ghi_chu;
+            $slotPayment->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
+            $slotPayment->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã gửi yêu cầu thanh toán, vui lòng chờ xác nhận.',
+                'status' => $slotPayment->trang_thai,
+            ]);
         }
 
-        $slotUnitPrice = $phong->giaSlot();
-        $occupiedSlotCount = $phong->billableSlotCount(true);
+        // Kiểm tra xem tất cả slot đã thanh toán chưa
+        $totalSlots = $hoaDon->slotPayments()->count();
+        $paidSlots = $hoaDon->slotPayments()->where('da_thanh_toan', true)->count();
 
-        return [
-            'slot_unit_price' => $slotUnitPrice,
-            'slot_count' => $occupiedSlotCount,
-            'tien_phong' => $slotUnitPrice * $occupiedSlotCount,
-        ];
+        // Nếu tất cả slot đã thanh toán, cập nhật trạng thái hóa đơn
+        if ($paidSlots >= $totalSlots && $totalSlots > 0) {
+            $hoaDon->trang_thai = 'Đã thanh toán';
+            $hoaDon->da_thanh_toan = true;
+            if (!$hoaDon->ngay_thanh_toan) {
+                $hoaDon->ngay_thanh_toan = now();
+            }
+            $hoaDon->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xác nhận thanh toán slot thành công!',
+            'paid_slots' => $paidSlots,
+            'total_slots' => $totalSlots,
+            'is_completed' => $paidSlots >= $totalSlots,
+            'status' => $slotPayment->trang_thai,
+        ]);
     }
 
     /**
-     * Gắn thông tin tiền phòng slot vào đối tượng hóa đơn
+     * Đánh dấu hóa đơn đã gửi cho sinh viên (hiển thị ở client)
      */
-    protected function enrichHoaDonWithPhongPricing(HoaDon $hoaDon): HoaDon
+    public function sendToClient(Request $request, $id)
     {
-        $pricing = $this->getPhongPricing($hoaDon->phong);
+        $hoaDon = HoaDon::with(['phong.slots.sinhVien', 'slotPayments'])->findOrFail($id);
 
-        $hoaDon->tien_phong_slot = $pricing['tien_phong'];
-        $hoaDon->slot_unit_price = $pricing['slot_unit_price'];
-        $hoaDon->slot_billing_count = $pricing['slot_count'];
-
-        return $hoaDon;
-    }
-
-    /**
-     * Gắn thông tin phân bổ chi phí theo slot vào hóa đơn
-     */
-    protected function attachSlotBreakdown(HoaDon $hoaDon): HoaDon
-    {
-        if (!$hoaDon->relationLoaded('phong')) {
-            $hoaDon->load('phong');
+        if (!$hoaDon->phong) {
+            return back()->with('error', 'Không thể gửi vì chưa xác định phòng.');
         }
 
-        if ($hoaDon->phong) {
-            $hoaDon->phong->loadMissing('slots.sinhVien');
+        $type = $request->input('type', 'tien-phong');
+
+        if ($type === 'dien-nuoc') {
+            if ($hoaDon->sent_dien_nuoc_to_client) {
+                return back()->with('info', 'Hóa đơn điện · nước đã được gửi trước đó.');
+            }
+
+            $hoaDon->sent_dien_nuoc_to_client = true;
+            $hoaDon->sent_dien_nuoc_at = now();
+            $hoaDon->save();
+
+            return back()->with('success', 'Đã gửi hóa đơn điện · nước đến sinh viên.');
         }
 
-        $hoaDon->slot_breakdowns = $this->buildSlotBreakdown($hoaDon);
-
-        return $hoaDon;
-    }
-
-    /**
-     * Tạo dữ liệu phân bổ chi phí điện/nước/phòng cho từng slot
-     */
-    protected function buildSlotBreakdown(HoaDon $hoaDon): array
-    {
-        $phong = $hoaDon->phong;
-        if (!$phong) {
-            return [];
+        if ($hoaDon->sent_to_client) {
+            return back()->with('info', 'Hóa đơn tiền phòng đã được gửi cho sinh viên.');
         }
 
-        $slots = $phong->slots
-            ->filter(function ($slot) {
-                return !is_null($slot->sinh_vien_id) || $slot->sinhVien;
-            })
-            ->sortBy(function ($slot) {
-                return $slot->ma_slot ?? $slot->id;
-            })
-            ->values();
+        $this->enrichHoaDonWithPhongPricing($hoaDon);
+        $this->attachSlotBreakdown($hoaDon);
+        $this->initializeSlotPayments($hoaDon);
 
-        $slotCount = (int) ($hoaDon->slot_billing_count ?? $slots->count());
-        if ($slotCount <= 0) {
-            return [];
+        $hoaDon->sent_to_client = true;
+        $hoaDon->sent_to_client_at = now();
+
+        // Chỉ là dữ liệu tính toán tạm thời, không lưu vào DB
+        if (isset($hoaDon->slot_breakdowns)) {
+            unset($hoaDon->slot_breakdowns);
         }
 
-        $dienShares = $this->splitAmountAcrossSlots($slotCount, (int) round($hoaDon->tien_dien ?? 0));
-        $nuocShares = $this->splitAmountAcrossSlots($slotCount, (int) round($hoaDon->tien_nuoc ?? 0));
-        $phongShares = $this->splitAmountAcrossSlots($slotCount, (int) round($hoaDon->tien_phong_slot ?? 0));
+        $hoaDon->save();
 
-        $breakdowns = [];
-        for ($i = 0; $i < $slotCount; $i++) {
-            $slot = $slots->get($i);
-            $label = $slot ? ($slot->ma_slot ?? 'Slot ' . ($i + 1)) : 'Slot ' . ($i + 1);
-
-            $breakdowns[] = [
-                'label' => $label,
-                'sinh_vien' => optional($slot?->sinhVien)->ho_ten ?? 'Chưa có sinh viên',
-                'tien_dien' => $dienShares[$i] ?? 0,
-                'tien_nuoc' => $nuocShares[$i] ?? 0,
-                'tien_phong' => $phongShares[$i] ?? 0,
-            ];
-        }
-
-        return $breakdowns;
-    }
-
-    /**
-     * Chia đều số tiền cho từng slot và xử lý phần dư để đảm bảo tổng chính xác
-     */
-    protected function splitAmountAcrossSlots(int $slotCount, int $total): array
-    {
-        if ($slotCount <= 0) {
-            return [];
-        }
-
-        $base = intdiv($total, $slotCount);
-        $remainder = $total - ($base * $slotCount);
-
-        $shares = array_fill(0, $slotCount, $base);
-        for ($i = 0; $i < $remainder; $i++) {
-            $shares[$i] += 1;
-        }
-
-        return $shares;
+        return back()->with('success', 'Đã gửi hóa đơn tiền phòng đến sinh viên.');
     }
 
     /**
@@ -421,6 +503,7 @@ public function guiEmailTheoPhong($phong_id)
         $toDate = $request->get('to_date');
         $khu = $request->get('khu');
         $phongId = $request->get('phong_id');
+        $isUtilitiesView = $request->routeIs('hoadon.diennuoc');
 
         $hoaDons = HoaDon::with(['phong.khu'])
             ->when($khu, function ($query) use ($khu) {
@@ -431,8 +514,16 @@ public function guiEmailTheoPhong($phong_id)
             ->when($phongId, function ($query) use ($phongId) {
                 $query->where('phong_id', $phongId);
             })
-            ->when($trangThai === 'da_thanh_toan', fn($q) => $q->where('da_thanh_toan', true))
-            ->when($trangThai === 'chua_thanh_toan', fn($q) => $q->where('da_thanh_toan', false))
+            ->when($trangThai === 'da_thanh_toan', function ($query) use ($isUtilitiesView) {
+                return $isUtilitiesView
+                    ? $query->where('da_thanh_toan_dien_nuoc', true)
+                    : $query->where('da_thanh_toan', true);
+            })
+            ->when($trangThai === 'chua_thanh_toan', function ($query) use ($isUtilitiesView) {
+                return $isUtilitiesView
+                    ? $query->where('da_thanh_toan_dien_nuoc', false)
+                    : $query->where('da_thanh_toan', false);
+            })
             ->when($fromDate, fn($q) => $q->whereDate('created_at', '>=', $fromDate))
             ->when($toDate, fn($q) => $q->whereDate('created_at', '<=', $toDate))
             ->orderByDesc('created_at')

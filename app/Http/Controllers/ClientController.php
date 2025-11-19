@@ -12,10 +12,12 @@ use App\Models\LichBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
 use Illuminate\Support\Facades\Validator;
+use App\Traits\HoaDonCalculations;
 
 
 class ClientController extends Controller
 {
+    use HoaDonCalculations;
     /**
      * Lấy thông tin sinh viên từ user đang đăng nhập (nếu có)
      */
@@ -194,6 +196,102 @@ if ($slotSinhVien) {
             'taiSanPhong',
             'taiSanCaNhan',
             'slotSinhVien'
+        ));
+    }
+
+    /**
+     * Hóa đơn điện nước & tiền phòng cho sinh viên
+     */
+    public function hoaDonIndex(Request $request)
+    {
+        $user = Auth::user();
+        $sinhVien = $this->getSinhVien();
+        $tab = $request->get('tab');
+
+        if ($request->routeIs('client.hoadon.tienphong')) {
+            $tab = 'tien-phong';
+        } elseif ($request->routeIs('client.hoadon.diennuoc')) {
+            $tab = 'dien-nuoc';
+        }
+
+        if (!in_array($tab, ['tien-phong', 'dien-nuoc'])) {
+            $tab = 'dien-nuoc';
+        }
+
+        if (!$sinhVien) {
+            return view('client.hoadon.index', compact('user', 'sinhVien'))
+                ->with('phong', null)
+                ->with('hoaDons', collect())
+                ->with('selectedHoaDon', null)
+                ->with('tab', $tab);
+        }
+
+        $sinhVien->load('phong.khu');
+        $phong = $sinhVien->phong;
+
+        if (!$phong) {
+            $slot = Slot::with('phong.khu')->where('sinh_vien_id', $sinhVien->id)->first();
+            $phong = $slot?->phong;
+        }
+
+        if (!$phong) {
+            return view('client.hoadon.index', compact('user', 'sinhVien'))
+                ->with('phong', null)
+                ->with('hoaDons', collect())
+                ->with('selectedHoaDon', null)
+                ->with('tab', $tab)
+                ->with('message', 'Bạn chưa được gán vào phòng nên không có hóa đơn.');
+        }
+
+        $hoaDons = HoaDon::with(['phong.khu', 'slotPayments'])
+            ->where('phong_id', $phong->id)
+            ->where(function ($query) {
+                $query->where('sent_to_client', true)
+                    ->orWhere('sent_dien_nuoc_to_client', true);
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        $hoaDons->each(function ($hoaDon) use ($sinhVien) {
+            $so_dien = max(0, ($hoaDon->so_dien_moi ?? 0) - ($hoaDon->so_dien_cu ?? 0));
+            $so_nuoc = max(0, ($hoaDon->so_nuoc_moi ?? 0) - ($hoaDon->so_nuoc_cu ?? 0));
+
+            $hoaDon->san_luong_dien = $so_dien;
+            $hoaDon->san_luong_nuoc = $so_nuoc;
+            $hoaDon->tien_dien = $so_dien * ($hoaDon->don_gia_dien ?? 0);
+            $hoaDon->tien_nuoc = $so_nuoc * ($hoaDon->don_gia_nuoc ?? 0);
+
+            $this->enrichHoaDonWithPhongPricing($hoaDon);
+            $this->attachSlotBreakdown($hoaDon);
+            $this->initializeSlotPayments($hoaDon);
+
+            $hoaDon->slotPaymentsMap = $hoaDon->slotPayments->keyBy('slot_label');
+
+            $studentPayment = $hoaDon->slotPayments->firstWhere('sinh_vien_id', $sinhVien->id);
+            if ($studentPayment) {
+                $matchingBreakdown = collect($hoaDon->slot_breakdowns ?? [])
+                    ->firstWhere('label', $studentPayment->slot_label);
+                $hoaDon->student_payment = $studentPayment;
+                $hoaDon->student_breakdown = $matchingBreakdown;
+            }
+        });
+
+        $hoaDons = $hoaDons->filter(function ($hoaDon) use ($tab) {
+            return $tab === 'tien-phong'
+                ? $hoaDon->sent_to_client
+                : $hoaDon->sent_dien_nuoc_to_client;
+        })->values();
+
+        $selectedHoaDonId = $request->get('hoa_don_id');
+        $selectedHoaDon = $hoaDons->firstWhere('id', $selectedHoaDonId) ?? $hoaDons->first();
+
+        return view('client.hoadon.index', compact(
+            'user',
+            'sinhVien',
+            'phong',
+            'hoaDons',
+            'selectedHoaDon',
+            'tab'
         ));
     }
 

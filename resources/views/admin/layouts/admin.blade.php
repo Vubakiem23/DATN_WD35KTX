@@ -10,6 +10,7 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon" />
 
     <title>Admin Ký Túc Xá Vamos</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Bootstrap -->
     <link href="{{ asset('assets/admin/vendors/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet">
