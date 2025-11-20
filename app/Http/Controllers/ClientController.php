@@ -8,6 +8,8 @@ use App\Models\SinhVien;
 use App\Models\Phong;
 use App\Models\SuCo;
 use App\Models\HoaDon;
+use App\Models\HoaDonSlotPayment;
+use App\Models\HoaDonUtilitiesPayment;
 use App\Models\LichBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
@@ -70,6 +72,62 @@ class ClientController extends Controller
         }
 
         // Thống kê cơ bản
+        // Đếm hóa đơn chưa thanh toán của sinh viên
+        $hoaDonChuaThanhToan = 0;
+        if ($phongId) {
+            // Lấy tất cả hóa đơn của phòng
+            $hoaDons = HoaDon::where('phong_id', $phongId)->get();
+            
+            foreach ($hoaDons as $hoaDon) {
+                $hasUnpaidPayment = false;
+                
+                // Kiểm tra xem hóa đơn này có slot payment hoặc utilities payment không
+                $hasSlotPayments = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)->exists();
+                $hasUtilitiesPayments = HoaDonUtilitiesPayment::where('hoa_don_id', $hoaDon->id)->exists();
+                
+                if ($hasSlotPayments || $hasUtilitiesPayments) {
+                    // Hệ thống mới: kiểm tra từng loại payment của sinh viên
+                    
+                    // Kiểm tra slot payment của sinh viên
+                    $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                        ->where('sinh_vien_id', $sinhVien->id)
+                        ->first();
+                    
+                    if ($slotPayment) {
+                        // Chỉ đếm là chưa thanh toán nếu: chưa thanh toán VÀ không phải đang chờ xác nhận
+                        if ((!$slotPayment->da_thanh_toan || is_null($slotPayment->da_thanh_toan)) 
+                            && $slotPayment->trang_thai !== HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN
+                            && $slotPayment->trang_thai !== HoaDonSlotPayment::TRANG_THAI_DA_THANH_TOAN) {
+                            $hasUnpaidPayment = true;
+                        }
+                    }
+                    
+                    // Kiểm tra utilities payment của sinh viên
+                    $utilitiesPayment = HoaDonUtilitiesPayment::where('hoa_don_id', $hoaDon->id)
+                        ->where('sinh_vien_id', $sinhVien->id)
+                        ->first();
+                    
+                    if ($utilitiesPayment) {
+                        // Chỉ đếm là chưa thanh toán nếu: chưa thanh toán VÀ không phải đang chờ xác nhận
+                        if ((!$utilitiesPayment->da_thanh_toan || is_null($utilitiesPayment->da_thanh_toan))
+                            && $utilitiesPayment->trang_thai !== HoaDonUtilitiesPayment::TRANG_THAI_CHO_XAC_NHAN
+                            && $utilitiesPayment->trang_thai !== HoaDonUtilitiesPayment::TRANG_THAI_DA_THANH_TOAN) {
+                            $hasUnpaidPayment = true;
+                        }
+                    }
+                } else {
+                    // Hệ thống cũ: kiểm tra da_thanh_toan của hóa đơn
+                    if (!$hoaDon->da_thanh_toan || is_null($hoaDon->da_thanh_toan)) {
+                        $hasUnpaidPayment = true;
+                    }
+                }
+                
+                if ($hasUnpaidPayment) {
+                    $hoaDonChuaThanhToan++;
+                }
+            }
+        }
+        
         $stats = [
             'phong' => $sinhVien->phong ?? null,
             'so_su_co' => SuCo::where('sinh_vien_id', $sinhVien->id)->count(),
@@ -77,12 +135,7 @@ class ClientController extends Controller
                 // Đếm các sự cố chưa hoàn thành: Tiếp nhận hoặc Đang xử lý
                 ->whereIn('trang_thai', ['Tiếp nhận', 'Đang xử lý'])
                 ->count(),
-            'hoa_don_chua_thanh_toan' => $phongId ? HoaDon::where('phong_id', $phongId)
-                ->where(function ($q) {
-                    $q->where('da_thanh_toan', false)
-                        ->orWhereNull('da_thanh_toan');
-                })
-                ->count() : 0,
+            'hoa_don_chua_thanh_toan' => $hoaDonChuaThanhToan,
         ];
 
         // Sự cố gần đây
