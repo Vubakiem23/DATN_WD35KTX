@@ -113,6 +113,8 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         // Thanh toán slot (sinh viên gửi yêu cầu)
         Route::post('/{hoaDonId}/slot-payment/{slotPaymentId}', [HoaDonController::class, 'thanhToanSlot'])
             ->name('client.hoadon.slotpayment');
+        Route::post('/{hoaDonId}/utilities-payment/{utilitiesPaymentId}', [HoaDonController::class, 'thanhToanUtilities'])
+            ->name('client.hoadon.utilitiespayment');
     });
 
  
@@ -311,6 +313,7 @@ Route::prefix('hashtags')->group(function () {
     Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
     Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
     Route::post('/hoadon/{hoaDonId}/slot-payment/{slotPaymentId}', [HoaDonController::class, 'thanhToanSlot'])->name('hoadon.thanhtoanslot');
+    Route::post('/hoadon/{hoaDonId}/utilities-payment/{utilitiesPaymentId}', [HoaDonController::class, 'thanhToanUtilities'])->name('hoadon.thanhtoandiennuoc');
     Route::post('/hoadon/{id}/send-to-client', [HoaDonController::class, 'sendToClient'])
         ->name('hoadon.sendToClient')
         ->middleware(['auth', 'admin']);

@@ -78,6 +78,7 @@ class HoaDonDienNuocImport implements ToModel, WithHeadingRow, WithValidation, S
         // Tạo hóa đơn
         return new HoaDon([
             'phong_id'      => $row['phong_id'],
+            'invoice_type'  => HoaDon::LOAI_DIEN_NUOC,
             'so_dien_cu'    => $so_dien_cu,
             'so_dien_moi'   => $so_dien_moi,
             'so_nuoc_cu'    => $so_nuoc_cu,

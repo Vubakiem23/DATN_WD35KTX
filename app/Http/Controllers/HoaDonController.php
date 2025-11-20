@@ -8,10 +8,13 @@ use App\Exports\HoaDonExport;
 use App\Models\Phong;
 use App\Models\SinhVien;
 use App\Models\HoaDonSlotPayment;
+use App\Models\HoaDonUtilitiesPayment;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\HoaDonDienNuocImport;
+use App\Imports\HoaDonTienPhongImport;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Traits\HoaDonCalculations;
 
 use Illuminate\Http\Request;
@@ -26,11 +29,16 @@ class HoaDonController extends Controller
     public function importHoaDon(Request $request)
     {
         try {
-            $request->validate([
-                'file' => 'required|mimes:xlsx,xls'
+            $data = $request->validate([
+                'file' => 'required|mimes:xlsx,xls',
+                'invoice_type' => 'required|in:' . HoaDon::LOAI_TIEN_PHONG . ',' . HoaDon::LOAI_DIEN_NUOC,
             ]);
 
-            Excel::import(new HoaDonDienNuocImport, $request->file('file'));
+            $importer = $data['invoice_type'] === HoaDon::LOAI_DIEN_NUOC
+                ? new HoaDonDienNuocImport
+                : new HoaDonTienPhongImport;
+
+            Excel::import($importer, $data['file']);
 
             return back()->with('success', 'Nhập hóa đơn thành công!');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
@@ -129,6 +137,15 @@ class HoaDonController extends Controller
             $hoaDon->ghi_chu_thanh_toan_dien_nuoc = $data['ghi_chu_thanh_toan'];
             $hoaDon->save();
 
+            $hoaDon->utilitiesPayments()->update([
+                'da_thanh_toan' => true,
+                'trang_thai' => HoaDonUtilitiesPayment::TRANG_THAI_DA_THANH_TOAN,
+                'ngay_thanh_toan' => now(),
+                'hinh_thuc_thanh_toan' => $data['hinh_thuc_thanh_toan'],
+                'ghi_chu' => $data['ghi_chu_thanh_toan'],
+                'xac_nhan_boi' => Auth::id(),
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Đã cập nhật thanh toán điện · nước.',
@@ -162,7 +179,7 @@ class HoaDonController extends Controller
 
     public function show($id, Request $request)
     {
-        $hoaDon = HoaDon::with('phong.khu', 'phong.slots.sinhVien', 'slotPayments')->findOrFail($id);
+        $hoaDon = HoaDon::with('phong.khu', 'phong.slots.sinhVien', 'slotPayments', 'utilitiesPayments')->findOrFail($id);
 
         // Tính toán lại nếu cần
         $so_dien = $hoaDon->so_dien_moi - $hoaDon->so_dien_cu;
@@ -186,8 +203,10 @@ class HoaDonController extends Controller
         }
         
         $this->attachSlotBreakdown($hoaDon);
-        // Khởi tạo slot payments nếu chưa có
+        // Khởi tạo slot payments & utilities payments nếu chưa có
         $this->initializeSlotPayments($hoaDon);
+        $this->initializeUtilitiesPayments($hoaDon);
+        $hoaDon->load('utilitiesPayments');
 
         return view('hoadon.show', compact('hoaDon'));
     }
@@ -371,6 +390,7 @@ public function guiEmailTheoPhong($phong_id)
         $request->validate([
             'hinh_thuc_thanh_toan' => 'required|in:tien_mat,chuyen_khoan',
             'ghi_chu' => 'nullable|string|max:500',
+            'anh_chuyen_khoan' => 'nullable|image|max:4096',
             'action' => 'nullable|in:student_submit,admin_confirm',
         ]);
 
@@ -414,6 +434,10 @@ public function guiEmailTheoPhong($phong_id)
             $slotPayment->client_requested_at = now();
             $slotPayment->client_ghi_chu = $request->ghi_chu;
             $slotPayment->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
+            if ($request->hasFile('anh_chuyen_khoan')) {
+                $storedPath = $request->file('anh_chuyen_khoan')->store('slot-payments', 'public');
+                $slotPayment->client_transfer_image_path = $storedPath;
+            }
             $slotPayment->save();
 
             return response()->json([
@@ -448,6 +472,94 @@ public function guiEmailTheoPhong($phong_id)
     }
 
     /**
+     * Thanh toán điện nước theo slot
+     */
+    public function thanhToanUtilities(Request $request, $hoaDonId, $utilitiesPaymentId)
+    {
+        $request->validate([
+            'hinh_thuc_thanh_toan' => 'required|in:tien_mat,chuyen_khoan',
+            'ghi_chu' => 'nullable|string|max:500',
+            'anh_chuyen_khoan' => 'nullable|image|max:4096',
+            'action' => 'nullable|in:student_submit,admin_confirm',
+        ]);
+
+        $action = $request->input('action', 'student_submit');
+
+        $hoaDon = HoaDon::findOrFail($hoaDonId);
+        $utilitiesPayment = HoaDonUtilitiesPayment::where('hoa_don_id', $hoaDonId)
+            ->findOrFail($utilitiesPaymentId);
+
+        if ($action === 'admin_confirm') {
+            if ($utilitiesPayment->da_thanh_toan) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Khoản điện · nước này đã được xác nhận trước đó.',
+                ]);
+            }
+
+            $utilitiesPayment->da_thanh_toan = true;
+            $utilitiesPayment->trang_thai = HoaDonUtilitiesPayment::TRANG_THAI_DA_THANH_TOAN;
+            $utilitiesPayment->ngay_thanh_toan = now();
+            $utilitiesPayment->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
+            $utilitiesPayment->ghi_chu = $request->ghi_chu;
+            $utilitiesPayment->xac_nhan_boi = Auth::id();
+            $utilitiesPayment->save();
+        } else {
+            if ($utilitiesPayment->da_thanh_toan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Khoản điện · nước này đã được thanh toán.',
+                ], 409);
+            }
+
+            if ($utilitiesPayment->trang_thai === HoaDonUtilitiesPayment::TRANG_THAI_CHO_XAC_NHAN) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Khoản điện · nước đang chờ xác nhận từ ban quản lý.',
+                ], 409);
+            }
+
+            $utilitiesPayment->trang_thai = HoaDonUtilitiesPayment::TRANG_THAI_CHO_XAC_NHAN;
+            $utilitiesPayment->client_requested_at = now();
+            $utilitiesPayment->client_ghi_chu = $request->ghi_chu;
+            $utilitiesPayment->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
+            if ($request->hasFile('anh_chuyen_khoan')) {
+                $storedPath = $request->file('anh_chuyen_khoan')->store('utilities-payments', 'public');
+                $utilitiesPayment->client_transfer_image_path = $storedPath;
+            }
+            $utilitiesPayment->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã gửi yêu cầu thanh toán điện · nước, vui lòng chờ xác nhận.',
+                'status' => $utilitiesPayment->trang_thai,
+            ]);
+        }
+
+        $totalUtilities = $hoaDon->utilitiesPayments()->count();
+        $paidUtilities = $hoaDon->utilitiesPayments()->where('da_thanh_toan', true)->count();
+
+        if ($paidUtilities >= $totalUtilities && $totalUtilities > 0) {
+            $hoaDon->da_thanh_toan_dien_nuoc = true;
+            if (!$hoaDon->ngay_thanh_toan_dien_nuoc) {
+                $hoaDon->ngay_thanh_toan_dien_nuoc = now();
+            }
+            $hoaDon->hinh_thuc_thanh_toan_dien_nuoc = $request->hinh_thuc_thanh_toan;
+            $hoaDon->ghi_chu_thanh_toan_dien_nuoc = $request->ghi_chu;
+            $hoaDon->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xác nhận thanh toán điện · nước thành công!',
+            'paid_slots' => $paidUtilities,
+            'total_slots' => $totalUtilities,
+            'is_completed' => $paidUtilities >= $totalUtilities,
+            'status' => $utilitiesPayment->trang_thai,
+        ]);
+    }
+
+    /**
      * Đánh dấu hóa đơn đã gửi cho sinh viên (hiển thị ở client)
      */
     public function sendToClient(Request $request, $id)
@@ -465,8 +577,15 @@ public function guiEmailTheoPhong($phong_id)
                 return back()->with('info', 'Hóa đơn điện · nước đã được gửi trước đó.');
             }
 
+            $this->enrichHoaDonWithPhongPricing($hoaDon);
+            $this->attachSlotBreakdown($hoaDon);
+            $this->initializeUtilitiesPayments($hoaDon);
+
             $hoaDon->sent_dien_nuoc_to_client = true;
             $hoaDon->sent_dien_nuoc_at = now();
+            if (isset($hoaDon->slot_breakdowns)) {
+                unset($hoaDon->slot_breakdowns);
+            }
             $hoaDon->save();
 
             return back()->with('success', 'Đã gửi hóa đơn điện · nước đến sinh viên.');
@@ -506,6 +625,14 @@ public function guiEmailTheoPhong($phong_id)
         $isUtilitiesView = $request->routeIs('hoadon.diennuoc');
 
         $hoaDons = HoaDon::with(['phong.khu'])
+            ->when($isUtilitiesView, function ($query) {
+                $query->where('invoice_type', HoaDon::LOAI_DIEN_NUOC);
+            }, function ($query) {
+                $query->where(function ($subQuery) {
+                    $subQuery->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
+                        ->orWhereNull('invoice_type');
+                });
+            })
             ->when($khu, function ($query) use ($khu) {
                 $query->whereHas('phong.khu', function ($q) use ($khu) {
                     $q->where('ten_khu', $khu);

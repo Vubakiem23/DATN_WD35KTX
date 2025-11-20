@@ -8,6 +8,7 @@
 
 
 @section('content')
+
 <div class="container py-4">
 
   <div>
@@ -90,6 +91,7 @@
       {{-- Nhập từ Excel --}}
       <form action="{{ route('hoadon.import') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
         @csrf
+        <input type="hidden" name="invoice_type" value="{{ \App\Models\HoaDon::LOAI_TIEN_PHONG }}">
         <input type="file" name="file" class="form-control" required style="width: auto;">
         <button type="submit" class="btn btn-dergin btn-dergin--info" title="Nhập Excel">
           <i class="fa fa-download"></i><span>Nhập Excel</span>
@@ -167,10 +169,19 @@
               </td>
               <td>
                 <div class="text-uppercase small text-muted fw-semibold mb-1">Tiền phòng</div>
+                @php
+                  $soSlotDaThanhToan = $hoaDon->so_slot_da_thanh_toan ?? 0;
+                  $tongSoSlot = $hoaDon->tong_so_slot ?? 0;
+                  $isFullyPaid = $hoaDon->da_thanh_toan ?? false;
+                @endphp
                 <div class="d-inline-flex align-items-center px-3 py-1 rounded-pill"
-                  style="background-color: {{ $hoaDon->da_thanh_toan ? '#d4edda' : '#fff3cd' }}; color: {{ $hoaDon->da_thanh_toan ? '#2e7d32' : '#d32f2f' }};">
-                  <i class="fa {{ $hoaDon->da_thanh_toan ? 'fa-check-circle me-2' : 'fa-clock me-2' }}"></i>
-                  {{ $hoaDon->da_thanh_toan ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                  style="background-color: {{ $isFullyPaid ? '#d4edda' : '#fff3cd' }}; color: {{ $isFullyPaid ? '#2e7d32' : '#d32f2f' }};">
+                  <i class="fa {{ $isFullyPaid ? 'fa-check-circle me-2' : 'fa-clock me-2' }}"></i>
+                  @if($tongSoSlot > 0)
+                    {{ $soSlotDaThanhToan }}/{{ $tongSoSlot }} slots đã thanh toán
+                  @else
+                    {{ $isFullyPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                  @endif
                 </div>
                 <div class="mt-2">
                   @if($hoaDon->sent_to_client)
@@ -219,18 +230,6 @@
                       </span>
                       @endif
                     </li>
-                    @if($hoaDon->trang_thai !== 'Đã thanh toán')
-                    <li>
-                      <button type="button"
-                        class="dropdown-item d-flex align-items-center"
-                        data-bs-toggle="modal"
-                        data-bs-target="#paymentModal"
-                        data-id="{{ $hoaDon->id }}"
-                        data-invoice-type="tien-phong">
-                        📄 <span class="ms-2">Thanh toán</span>
-                      </button>
-                    </li>
-                    @endif
 
                     <li>
                       <form action="{{ route('hoadon.destroy', $hoaDon->id) }}"
@@ -623,13 +622,6 @@
 
 
 
-
-
-
-
-
-
-  @endsection
   <!-- CSRF token trong <head> -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -764,3 +756,4 @@
       </div>
     </div>
   </div>
+@endsection

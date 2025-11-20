@@ -243,7 +243,7 @@ if ($slotSinhVien) {
                 ->with('message', 'Bạn chưa được gán vào phòng nên không có hóa đơn.');
         }
 
-        $hoaDons = HoaDon::with(['phong.khu', 'slotPayments'])
+        $hoaDons = HoaDon::with(['phong.khu', 'slotPayments', 'utilitiesPayments'])
             ->where('phong_id', $phong->id)
             ->where(function ($query) {
                 $query->where('sent_to_client', true)
@@ -264,8 +264,11 @@ if ($slotSinhVien) {
             $this->enrichHoaDonWithPhongPricing($hoaDon);
             $this->attachSlotBreakdown($hoaDon);
             $this->initializeSlotPayments($hoaDon);
+            $this->initializeUtilitiesPayments($hoaDon);
+            $hoaDon->setRelation('utilitiesPayments', $hoaDon->utilitiesPayments()->get());
 
             $hoaDon->slotPaymentsMap = $hoaDon->slotPayments->keyBy('slot_label');
+            $hoaDon->utilitiesPaymentsMap = $hoaDon->utilitiesPayments->keyBy('slot_label');
 
             $studentPayment = $hoaDon->slotPayments->firstWhere('sinh_vien_id', $sinhVien->id);
             if ($studentPayment) {
@@ -273,6 +276,14 @@ if ($slotSinhVien) {
                     ->firstWhere('label', $studentPayment->slot_label);
                 $hoaDon->student_payment = $studentPayment;
                 $hoaDon->student_breakdown = $matchingBreakdown;
+            }
+
+            $studentUtilitiesPayment = $hoaDon->utilitiesPayments->firstWhere('sinh_vien_id', $sinhVien->id);
+            if ($studentUtilitiesPayment) {
+                $matchingUtilitiesBreakdown = collect($hoaDon->slot_breakdowns ?? [])
+                    ->firstWhere('label', $studentUtilitiesPayment->slot_label);
+                $hoaDon->student_utilities_payment = $studentUtilitiesPayment;
+                $hoaDon->student_utilities_breakdown = $matchingUtilitiesBreakdown;
             }
         });
 
