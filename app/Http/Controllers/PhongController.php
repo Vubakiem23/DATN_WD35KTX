@@ -10,6 +10,8 @@ use App\Models\Slot;
 use App\Models\SinhVien;
 use App\Models\Khu;
 use App\Models\ThongBaoPhongSv;
+use App\Models\HoaDon;
+use App\Traits\HoaDonCalculations;
 use Illuminate\Support\Facades\Schema;
 use App\Exceptions\PhongException;
 use Illuminate\Http\Request;
@@ -20,6 +22,8 @@ use Exception;
 
 class PhongController extends Controller
 {
+    use HoaDonCalculations;
+
     public function __construct()
     {
         $this->middleware('auth'); // nếu dev muốn mở, có thể tạm comment
@@ -487,7 +491,29 @@ class PhongController extends Controller
                 ->orderBy('ho_ten')
                 ->get();
 
-            return view('phong.show', compact('phong', 'sinhViens', 'roomAssets', 'commonAssetStats'));
+            // Lấy hóa đơn mới nhất của phòng
+            $hoaDon = HoaDon::with('phong.slots.sinhVien')
+                ->where('phong_id', $phong->id)
+                ->orderByDesc('thang')
+                ->orderByDesc('created_at')
+                ->first();
+
+            // Tính toán hóa đơn nếu có
+            if ($hoaDon) {
+                // Tính tiền điện nước
+                $so_dien = ($hoaDon->so_dien_moi ?? 0) - ($hoaDon->so_dien_cu ?? 0);
+                $so_nuoc = ($hoaDon->so_nuoc_moi ?? 0) - ($hoaDon->so_nuoc_cu ?? 0);
+                $hoaDon->tien_dien = $so_dien * ($hoaDon->don_gia_dien ?? 0);
+                $hoaDon->tien_nuoc = $so_nuoc * ($hoaDon->don_gia_nuoc ?? 0);
+                
+                // Tính tiền phòng
+                $this->enrichHoaDonWithPhongPricing($hoaDon);
+                
+                // Tính slot breakdown
+                $this->attachSlotBreakdown($hoaDon);
+            }
+
+            return view('phong.show', compact('phong', 'sinhViens', 'roomAssets', 'commonAssetStats', 'hoaDon'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning('Phòng không tồn tại: ID ' . $id);
             return redirect()->route('phong.index')->with('error', 'Phòng không tồn tại trong hệ thống!');

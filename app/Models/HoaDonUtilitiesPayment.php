@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class HoaDonSlotPayment extends Model
+class HoaDonUtilitiesPayment extends Model
 {
     use HasFactory;
 
-    protected $table = 'hoa_don_slot_payments';
+    protected $table = 'hoa_don_utilities_payments';
 
     public const TRANG_THAI_CHUA_THANH_TOAN = 'chua_thanh_toan';
     public const TRANG_THAI_CHO_XAC_NHAN = 'cho_xac_nhan';
@@ -22,6 +22,9 @@ class HoaDonSlotPayment extends Model
         'slot_label',
         'sinh_vien_id',
         'sinh_vien_ten',
+        'tien_dien',
+        'tien_nuoc',
+        'tong_tien',
         'trang_thai',
         'da_thanh_toan',
         'ngay_thanh_toan',
@@ -59,3 +62,4 @@ class HoaDonSlotPayment extends Model
         return $this->belongsTo(User::class, 'xac_nhan_boi');
     }
 }
+

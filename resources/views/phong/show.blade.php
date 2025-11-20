@@ -236,6 +236,20 @@
           </div>
         </div>
         @php
+          $slotPrice = $phong->giaSlot();
+        @endphp
+        @if($slotPrice > 0)
+        <div class="room-info-card room-info-card--price">
+          <div class="room-info-card__icon">
+            <i class="fa fa-money"></i>
+          </div>
+          <div>
+            <div class="room-info-card__label">Giá slot</div>
+            <div class="room-info-card__value">{{ number_format($slotPrice, 0, ',', '.') }} VND/slot/tháng</div>
+          </div>
+        </div>
+        @endif
+        @php
           $computedPerPersonPrice = null;
           $totalSlots = $phong->totalSlots();
           if (!is_null($phong->gia_moi_nguoi)) {
@@ -455,6 +469,131 @@
             </tbody>
           </table>
       </div>
+      {{-- Chi tiết hóa đơn --}}
+      <div class="card shadow-sm room-assets-card mt-4">
+        <div class="card-header bg-white border-0">
+          <div class="asset-card__header">
+            <button
+              class="card-toggle asset-card__collapse-trigger"
+              type="button"
+              data-bs-toggle="collapse"
+              data-toggle="collapse"
+              data-bs-target="#roomInvoiceCollapse"
+              data-target="#roomInvoiceCollapse"
+              aria-expanded="true"
+              aria-controls="roomInvoiceCollapse"
+              data-role="room-invoice-toggle"
+            >
+              <div class="toggle-content">
+                <div class="section-heading">
+                  <h5 class="section-heading__title mb-1">
+                    <span class="section-heading__title-icon">
+                      <svg class="icon icon--lg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                      </svg>
+                    </span>
+                    Chi tiết hóa đơn phòng {{ $phong->ten_phong }}
+                  </h5>
+                  <p class="section-heading__desc mb-0">Thông tin hóa đơn tiền phòng và điện nước</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div id="roomInvoiceCollapse" class="collapse show">
+          <div class="card-body">
+            @if(!$hoaDon)
+              <div class="room-assets-empty">
+                Phòng chưa có hóa đơn nào.
+              </div>
+            @else
+             
+              <div class="mb-3">
+                <strong>Tháng {{ \Carbon\Carbon::parse($hoaDon->created_at)->format('m/Y') }}</strong>
+              </div>
+              
+              {{-- Tiền điện nước --}}
+              <div class="mb-4">
+                <h6 class="mb-3" style="color: #0d6efd;">
+                  <i class="fa fa-bolt"></i> Tiền điện nước
+                </h6>
+                <div class="table-responsive">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Chỉ số cũ</th>
+                        <th>Chỉ số mới</th>
+                        <th>Tiêu thụ</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Điện: {{ number_format($hoaDon->so_dien_cu ?? 0, 0, ',', '.') }} kWh</td>
+                        <td>{{ number_format($hoaDon->so_dien_moi ?? 0, 0, ',', '.') }} kWh</td>
+                        <td>{{ number_format(($hoaDon->so_dien_moi ?? 0) - ($hoaDon->so_dien_cu ?? 0), 0, ',', '.') }} kWh</td>
+                        <td>{{ number_format($hoaDon->don_gia_dien ?? 0, 0, ',', '.') }} VND/kWh</td>
+                        <td><strong>{{ number_format($hoaDon->tien_dien ?? 0, 0, ',', '.') }} VND</strong></td>
+                      </tr>
+                      <tr>
+                        <td>Nước: {{ number_format($hoaDon->so_nuoc_cu ?? 0, 0, ',', '.') }} m³</td>
+                        <td>{{ number_format($hoaDon->so_nuoc_moi ?? 0, 0, ',', '.') }} m³</td>
+                        <td>{{ number_format(($hoaDon->so_nuoc_moi ?? 0) - ($hoaDon->so_nuoc_cu ?? 0), 0, ',', '.') }} m³</td>
+                        <td>{{ number_format($hoaDon->don_gia_nuoc ?? 0, 0, ',', '.') }} VND/m³</td>
+                        <td><strong>{{ number_format($hoaDon->tien_nuoc ?? 0, 0, ',', '.') }} VND</strong></td>
+                      </tr>
+                      <tr class="table-info">
+                        <td colspan="4" class="text-end"><strong>Tổng tiền điện nước:</strong></td>
+                        <td><strong>{{ number_format(($hoaDon->tien_dien ?? 0) + ($hoaDon->tien_nuoc ?? 0), 0, ',', '.') }} VND</strong></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {{-- Tiền phòng theo slots --}}
+              <div>
+                <h6 class="mb-3" style="color: #0d6efd;">
+                  <i class="fa fa-home"></i> Tiền phòng ({{ $hoaDon->slot_billing_count ?? 0 }} slots)
+                </h6>
+                @if(!empty($hoaDon->slot_breakdowns) && count($hoaDon->slot_breakdowns) > 0)
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Slot</th>
+                          <th>Sinh viên</th>
+                          <th>Tiền phòng</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @foreach($hoaDon->slot_breakdowns as $slot)
+                          <tr>
+                            <td><strong>{{ $slot['label'] }}</strong></td>
+                            <td>{{ $slot['sinh_vien'] }}</td>
+                            <td><strong>{{ number_format($slot['tien_phong'] ?? 0, 0, ',', '.') }} VND</strong></td>
+                          </tr>
+                        @endforeach
+                        <tr class="table-info">
+                          <td colspan="2" class="text-end">
+                            <strong>
+                              Đơn giá: {{ number_format($hoaDon->slot_unit_price ?? 0, 0, ',', '.') }} VND/slot/tháng
+                            </strong>
+                          </td>
+                          <td><strong>{{ number_format($hoaDon->tien_phong_slot ?? 0, 0, ',', '.') }} VND</strong></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                @else
+                  <div class="text-muted">Chưa có thông tin chi tiết slots.</div>
+                @endif
+              </div>
+            @endif
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -592,6 +731,40 @@
     collapseEl.addEventListener('shown.bs.collapse', updateState);
     collapseEl.addEventListener('hidden.bs.collapse', updateState);
     updateState();
+  });
+  document.addEventListener('DOMContentLoaded', function () {
+    const invoiceCollapseEl = document.getElementById('roomInvoiceCollapse');
+    const invoiceToggleBtn = document.querySelector('[data-role="room-invoice-toggle"]');
+    if (!invoiceCollapseEl || !invoiceToggleBtn) {
+      return;
+    }
+    const hasBootstrap = !!(window.bootstrap && bootstrap.Collapse);
+    const hasjQueryCollapse = !hasBootstrap && window.jQuery && typeof window.jQuery.fn.collapse === 'function';
+    if (hasBootstrap) {
+      bootstrap.Collapse.getOrCreateInstance(invoiceCollapseEl, { toggle: false });
+    } else if (hasjQueryCollapse) {
+      window.jQuery(invoiceCollapseEl).collapse({ toggle: false });
+    }
+    invoiceToggleBtn.addEventListener('click', function (event) {
+      if (hasBootstrap) {
+        return; // Bootstrap data API will handle the toggle
+      }
+      if (hasjQueryCollapse) {
+        event.preventDefault();
+        window.jQuery(invoiceCollapseEl).collapse('toggle');
+      } else {
+        event.preventDefault();
+        invoiceCollapseEl.classList.toggle('show');
+        updateInvoiceState();
+      }
+    });
+    const updateInvoiceState = () => {
+      const expanded = invoiceCollapseEl.classList.contains('show');
+      invoiceToggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    };
+    invoiceCollapseEl.addEventListener('shown.bs.collapse', updateInvoiceState);
+    invoiceCollapseEl.addEventListener('hidden.bs.collapse', updateInvoiceState);
+    updateInvoiceState();
   });
   let currentSlotId = null;
   function openCreateSlots(){
