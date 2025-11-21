@@ -1,258 +1,234 @@
 @extends('admin.layouts.admin')
 @section('title', 'Thêm tài sản mới')
+
 @section('content')
-
 <style>
-  .card {
-    border-radius: 18px;
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+/* --- Card và tổng thể --- */
+.card {
+    border-radius: 20px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
     border: none;
-  }
+    padding: 30px;
+    background-color: #ffffff;
+}
 
-  .bulk-title {
-    font-weight: 700;
+/* --- Tiêu đề --- */
+.bulk-title {
+    font-weight: 800;
     color: #1f2937;
-  }
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+}
 
-  .table-wrapper {
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    overflow: hidden;
-  }
-
-  .bulk-table {
-    margin-bottom: 0;
+/* --- Bảng --- */
+.bulk-table {
     border-collapse: separate;
-    border-spacing: 0;
-  }
+    border-spacing: 0 8px;
+}
 
-  .bulk-table thead th {
-    background: #f8fafc;
+.bulk-table thead th {
+    background: #f1f5f9;
+    padding: 12px 15px;
+    font-size: 13px;
     text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #64748b;
-    font-size: .78rem;
-    padding: 16px 14px;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .bulk-table tbody td {
-    padding: 14px;
-    vertical-align: middle;
-  }
-
-  .bulk-table tbody tr:hover {
-    background: #f9fbff;
-  }
-
-  .bulk-table input,
-  .bulk-table select,
-  .bulk-table textarea {
+    letter-spacing: .05em;
+    color: #475569;
+    border-bottom: none;
     border-radius: 12px;
-    border: 1px solid #d1d5db;
-    font-size: .92rem;
-  }
+}
 
-  .bulk-table textarea {
+.bulk-table tbody tr {
+    background: #ffffff;
+    transition: all 0.2s;
+    border-radius: 12px;
+}
+
+.bulk-table tbody tr:hover {
+    background: #f0f4f8;
+}
+
+.bulk-table tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+/* --- Inputs & selects --- */
+.form-control, .form-select {
+    border-radius: 12px;
+    height: 42px;
+    border-color: #cbd5e1;
+    padding: 5px 12px;
+    font-size: 14px;
+}
+
+textarea.form-control {
     min-height: 70px;
     resize: vertical;
-  }
+}
 
-  .img-preview {
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
+/* --- Preview ảnh --- */
+.img-preview {
+    width: 60px;
+    height: 60px;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
-  }
+    object-fit: cover;
+    background: #f1f5f9;
+}
 
-  #addRow {
-    border-radius: 999px;
-    padding: 10px 22px;
-    font-weight: 600;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, #2563eb, #4f46e5);
-    border: none;
-    border-radius: 12px;
-    padding: 10px 22px;
-    font-weight: 600;
-  }
-
-  .btn-danger.btn-sm {
-    border-radius: 10px;
-    padding-inline: 16px;
-  }
-
-  .empty-state {
+/* --- Dòng trống --- */
+.empty-state td {
     text-align: center;
-    color: #94a3b8;
+    padding: 25px;
     font-style: italic;
-  }
+    color: #94a3b8;
+}
 
-  @media (max-width: 992px) {
-    .table-wrapper {
-      border: none;
-      box-shadow: none;
-    }
+/* --- Button & Input số lượng nhân bản --- */
+.clone-qty {
+    width: 70px;
+    display: inline-block;
+    margin-right: 5px;
+}
 
-    .bulk-table thead {
-      display: none;
-    }
+.btn-sm {
+    padding: 5px 8px;
+    font-size: 13px;
+}
 
-    .bulk-table tbody tr {
-      display: block;
-      margin-bottom: 20px;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
-      overflow: hidden;
-    }
+/* --- Nút thêm dòng --- */
+#addRow {
+    border-radius: 12px;
+}
 
-    .bulk-table tbody td {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .bulk-table tbody td:last-child {
-      border-bottom: none;
-      justify-content: flex-end;
-    }
-
-    .bulk-table tbody td::before {
-      content: attr(data-title);
-      flex: 0 0 130px;
-      font-weight: 600;
-      color: #475569;
-      font-size: .85rem;
-      margin-right: 12px;
-    }
-  }
+/* --- Responsive table --- */
+.table-responsive {
+    overflow-x: auto;
+}
 </style>
 
 <div class="container mt-4">
-  <h4 class="mb-3 bulk-title">➕ Thêm nhiều tài sản cho loại: {{ $loai->ten_loai }}</h4>
+    <h4 class="bulk-title">➕ Thêm nhiều tài sản cho loại: {{ $loai->ten_loai }}</h4>
 
-  <form action="{{ route('kho.store', $loai->id) }}" method="POST" enctype="multipart/form-data" class="card p-4">
-    @csrf
-    <div class="table-wrapper mb-4">
-      <div class="table-responsive">
-        <table class="table bulk-table align-middle" id="assetTable">
-          <thead>
-            <tr>
-              <th style="min-width:180px;">Tên tài sản</th>
-              <th style="min-width:140px;">Đơn vị</th>
-              <th style="min-width:160px;">Tình trạng</th>
-              <th style="min-width:220px;">Ghi chú</th>
-              <th style="min-width:200px;">Hình ảnh</th>
-              <th style="width:120px;">Xem trước</th>
-              <th style="width:90px;">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+    <form action="{{ route('kho.store', $loai->id) }}" method="POST" enctype="multipart/form-data" class="card">
+        @csrf
 
-    <button type="button" id="addRow" class="btn btn-outline-primary mb-3">➕ Thêm dòng</button>
+        <div class="table-responsive">
+            <table class="table bulk-table" id="assetTable">
+                <thead>
+                    <tr>
+                        <th>Tên tài sản</th>
+                        <th>Đơn vị</th>
+                        <th>Tình trạng</th>
+                        <th>Ghi chú</th>
+                        <th>Hình ảnh</th>
+                        <th>Xem trước</th>
+                        <th class="text-center">Nhân bản</th>
+                        <th class="text-center">Xoá</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-    <div class="text-end">
-      <button type="submit" class="btn btn-primary">💾 Lưu tất cả</button>
-    </div>
-  </form>
+        <button type="button" id="addRow" class="btn btn-outline-primary mt-3">➕ Thêm dòng</button>
+
+        <div class="text-end mt-4">
+            <button class="btn btn-primary">💾 Lưu tất cả</button>
+        </div>
+    </form>
 </div>
 
 <script>
-  const tbody = document.querySelector('#assetTable tbody');
-  const addRowBtn = document.getElementById('addRow');
-  const tenMacDinh = @json($loai->ten_loai);
-  const tinhTrangOptions = @json($tinhTrangOptions);
+const tbody = document.querySelector('#assetTable tbody');
+const addRowBtn = document.getElementById('addRow');
 
-  function buildOptions() {
-    return ['<option value="">--Chọn--</option>', ...tinhTrangOptions.map(status => `<option value="${status}">${status}</option>`)].join('');
-  }
+const tenDefault = @json($loai->ten_loai);
+const tinhTrangOptions = @json($tinhTrangOptions);
 
-  function removeEmptyState() {
-    const placeholder = tbody.querySelector('.empty-state');
-    if (placeholder) placeholder.remove();
-  }
-
-  function showEmptyState() {
-    if (tbody.children.length) return;
-    const row = document.createElement('tr');
-    row.className = 'empty-state';
-    row.innerHTML = `
-      <td colspan="7" class="py-4">
-        Chưa có dòng nào. Nhấn <strong>Thêm dòng</strong> để bổ sung tài sản.
-      </td>
+function buildTinhTrangOptions(selected = "") {
+    return `
+        <option value="">--Chọn--</option>
+        ${tinhTrangOptions.map(x => `<option value="${x}" ${x===selected?"selected":""}>${x}</option>`).join("")}
     `;
-    tbody.appendChild(row);
-  }
+}
 
-  function createRow() {
+function createRow(copyData = null, copiedFile = null) {
     const tr = document.createElement('tr');
+    const don_vi_value = copyData?.don_vi ?? "";
+    const tinh_trang_value = copyData?.tinh_trang ?? "";
+    const ghi_chu_value = copyData?.ghi_chu ?? "";
+    const img_src_value = copyData?.img_src ?? "";
+
     tr.innerHTML = `
-      <td data-title="Tên tài sản">
-        <input type="text" name="ten_tai_san[]" class="form-control" value="${tenMacDinh}" readonly>
-      </td>
-      <td data-title="Đơn vị">
-        <input type="text" name="don_vi_tinh[]" class="form-control" placeholder="chiếc, bộ...">
-      </td>
-      <td data-title="Tình trạng">
-        <select name="tinh_trang[]" class="form-select">
-          ${buildOptions()}
-        </select>
-      </td>
-      <td data-title="Ghi chú">
-        <textarea name="ghi_chu[]" class="form-control" rows="1" placeholder="Ghi chú thêm (không bắt buộc)"></textarea>
-      </td>
-      <td data-title="Hình ảnh">
-        <input type="file" name="hinh_anh[]" class="form-control file-input" accept="image/*">
-      </td>
-      <td data-title="Xem trước" class="text-center">
-        <img class="img-preview" alt="Xem trước">
-      </td>
-      <td data-title="Thao tác" class="text-center">
-        <button type="button" class="btn btn-danger btn-sm remove-row" title="Xóa dòng">
-          ✖
-        </button>
-      </td>
+        <td><input type="text" name="ten_tai_san[]" class="form-control" value="${tenDefault}" readonly></td>
+        <td><input type="text" name="don_vi_tinh[]" class="form-control" value="${don_vi_value}" placeholder="chiếc, bộ..."></td>
+        <td><select name="tinh_trang[]" class="form-select">${buildTinhTrangOptions(tinh_trang_value)}</select></td>
+        <td><textarea name="ghi_chu[]" class="form-control" placeholder="Ghi chú thêm...">${ghi_chu_value}</textarea></td>
+        <td><input type="file" name="hinh_anh[]" class="form-control file-input" accept="image/*"></td>
+        <td class="text-center"><img class="img-preview" src="${img_src_value}"></td>
+        <td class="text-center"><input type="number" class="clone-qty form-control" min="1" value="1"><button type="button" class="btn btn-warning btn-sm clone-row">📄</button></td>
+        <td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-row">✖</button></td>
     `;
+
+    if (copiedFile) {
+        const fileInput = tr.querySelector(".file-input");
+        const dt = new DataTransfer();
+        dt.items.add(copiedFile);
+        fileInput.files = dt.files;
+    }
     return tr;
-  }
+}
 
-  addRowBtn.addEventListener('click', () => {
-    removeEmptyState();
-    tbody.appendChild(createRow());
-  });
-
-  document.addEventListener('click', e => {
-    if (e.target.closest('.remove-row')) {
-      const row = e.target.closest('tr');
-      row.remove();
-      showEmptyState();
+function showEmptyState() {
+    if(tbody.children.length===0){
+        const tr=document.createElement('tr');
+        tr.classList.add('empty-state');
+        tr.innerHTML=`<td colspan="8">Chưa có dòng nào. Nhấn <b>Thêm dòng</b> để bắt đầu.</td>`;
+        tbody.appendChild(tr);
     }
-  });
+}
 
-  document.addEventListener('change', e => {
-    if (e.target.classList.contains('file-input')) {
-      const file = e.target.files[0];
-      const preview = e.target.closest('tr').querySelector('.img-preview');
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = evt => preview.src = evt.target.result;
-        reader.readAsDataURL(file);
-      } else {
-        preview.src = '';
-      }
+function removeEmptyState() {
+    const empty = tbody.querySelector('.empty-state');
+    if(empty) empty.remove();
+}
+
+// Thêm dòng
+addRowBtn.addEventListener('click',()=>{removeEmptyState();tbody.appendChild(createRow());});
+
+// Xoá + Nhân bản + Preview ảnh
+document.addEventListener('click', e=>{
+    const row=e.target.closest('tr');
+    if(e.target.classList.contains('remove-row')){row.remove();showEmptyState();}
+    if(e.target.classList.contains('clone-row')){
+        const qty=parseInt(row.querySelector(".clone-qty").value)||1;
+        const copyData={
+            don_vi: row.querySelector('input[name="don_vi_tinh[]"]').value,
+            tinh_trang: row.querySelector('select[name="tinh_trang[]"]').value,
+            ghi_chu: row.querySelector('textarea[name="ghi_chu[]"]').value,
+            img_src: row.querySelector('.img-preview').src
+        };
+        let copiedFile=null;
+        const oldFile=row.querySelector(".file-input");
+        if(oldFile.files.length>0){const file=oldFile.files[0];copiedFile=new File([file],file.name,{type:file.type});}
+        removeEmptyState();
+        for(let i=0;i<qty;i++) tbody.appendChild(createRow(copyData,copiedFile));
     }
-  });
+});
 
-  removeEmptyState();
-  tbody.appendChild(createRow());
+// Preview ảnh
+document.addEventListener('change', e=>{
+    if(e.target.classList.contains('file-input')){
+        const img=e.target.closest('tr').querySelector('.img-preview');
+        const file=e.target.files[0];
+        img.src=file?URL.createObjectURL(file):"";
+    }
+});
+
+// Khởi tạo 1 dòng mặc định
+removeEmptyState();
+tbody.appendChild(createRow());
 </script>
 
 @endsection

@@ -47,46 +47,47 @@ class KhoTaiSanController extends Controller
 
     /** 🔁 Hiển thị các tài sản cùng loại */
     public function related(Request $request, $loai_id)
-{
-    $loai = LoaiTaiSan::findOrFail($loai_id);
+    {
+        $loai = LoaiTaiSan::findOrFail($loai_id);
 
-    // Lấy query ban đầu
-    $query = KhoTaiSan::with(['phong', 'taiSans.phong'])
-        ->where('loai_id', $loai_id);
+        // Lấy query ban đầu
+        $query = KhoTaiSan::with(['phong', 'taiSans.phong'])
+            ->where('loai_id', $loai_id);
 
-    // Lọc theo tình trạng nếu có
-    if ($request->filled('tinh_trang')) {
-        $query->where('tinh_trang', $request->tinh_trang);
+        // Lọc theo tình trạng nếu có
+        if ($request->filled('tinh_trang')) {
+            $query->where('tinh_trang', $request->tinh_trang);
+        }
+
+        // Lọc theo mã tài sản nếu có
+        if ($request->filled('ma_tai_san')) {
+            $query->where('ma_tai_san', 'like', '%' . $request->ma_tai_san . '%');
+        }
+
+        // Lấy toàn bộ kết quả trước khi phân trang
+        $taiSanCollection = $query->orderBy('id', 'desc')->get();
+
+        // Sắp xếp: đã gán phòng lên đầu
+        $taiSanCollection = $taiSanCollection->sortByDesc(function ($item) {
+            return $item->taiSans->whereNotNull('phong_id')->count() > 0;
+        })->values();
+
+        // Phân trang thủ công
+        $perPage = 5;
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $taiSanCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $taiSan = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $taiSanCollection->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('kho.related', compact('loai', 'taiSan'));
     }
 
-    // Lọc theo mã tài sản nếu có
-    if ($request->filled('ma_tai_san')) {
-        $query->where('ma_tai_san', 'like', '%' . $request->ma_tai_san . '%');
-    }
-
-    // Lấy toàn bộ kết quả trước khi phân trang
-    $taiSanCollection = $query->orderBy('id', 'desc')->get();
-
-    // Sắp xếp: chưa gán phòng lên đầu, đã gán phòng xuống cuối
-    $taiSanCollection = $taiSanCollection->sortBy(function ($item) {
-        return $item->taiSans->whereNotNull('phong_id')->count() > 0 ? 1 : 0;
-    })->values();
-
-    // Phân trang thủ công
-    $perPage = 5;
-    $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
-    $currentItems = $taiSanCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-    $taiSan = new \Illuminate\Pagination\LengthAwarePaginator(
-        $currentItems,
-        $taiSanCollection->count(),
-        $perPage,
-        $currentPage,
-        ['path' => request()->url(), 'query' => request()->query()]
-    );
-
-    return view('kho.related', compact('loai', 'taiSan'));
-}
 
     public function create($loai_id)
     {
@@ -119,10 +120,10 @@ class KhoTaiSanController extends Controller
             }
 
             KhoTaiSan::create([
-                'ma_tai_san' => $this->generateMaTaiSan(),
+                'ma_tai_san' => $this->generateMaTaiSan($loai),
                 'loai_id' => $loai->id,
                 'ten_tai_san' => $request->ten_tai_san[$i],
-                'so_luong' => 1, // mỗi dòng 1 tài sản
+                'so_luong' => 1,
                 'don_vi_tinh' => $request->don_vi_tinh[$i] ?? null,
                 'tinh_trang' => $request->tinh_trang[$i] ?? null,
                 'ghi_chu' => $request->ghi_chu[$i] ?? null,
@@ -218,12 +219,18 @@ class KhoTaiSanController extends Controller
 
 
     /** 🔧 Hàm sinh mã tài sản tự động */
-    private function generateMaTaiSan()
+    private function generateMaTaiSan($loai)
     {
-        do {
-            $code = 'TS' . rand(1000, 9999);
-        } while (KhoTaiSan::where('ma_tai_san', $code)->exists());
+        // Lấy bản ghi tài sản cuối cùng của loại này
+        $lastItem = KhoTaiSan::where('loai_id', $loai->id)->latest('id')->first();
 
-        return $code;
+        // Lấy ID tăng dần
+        $nextId = $lastItem ? $lastItem->id + 1 : 1;
+
+        // Mã loại (bạn có thể lưu sẵn mã loại trong bảng loai_tai_san)
+        $maLoai = $loai->ma_loai ?? 'XX'; // fallback nếu chưa có
+
+        // Ghép mã loại + số thứ tự, ví dụ: LT0001
+        return $maLoai . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
     }
 }
