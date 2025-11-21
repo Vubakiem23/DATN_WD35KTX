@@ -122,6 +122,52 @@
     #assignStudentModal .assign-student-select{padding:.65rem 1rem;border-radius:14px;border:1px solid rgba(99,102,241,.28);box-shadow:0 10px 28px rgba(79,70,229,.12);font-weight:600;color:#1e1b4b;transition:border-color .2s ease,box-shadow .2s ease;font-size:14px;line-height:1.5;min-height:calc(2.5rem + 2px)}
     #assignStudentModal .assign-student-select:focus{border-color:#4f46e5;box-shadow:0 0 0 .25rem rgba(79,70,229,.18);outline:none}
     #assignStudentModal .assign-student-select option{white-space:normal;line-height:1.5;padding:.35rem .5rem;font-weight:500}
+    /* Select2 styling trong modal */
+    #assignStudentModal .select2-container--default .select2-selection--single {
+      height: calc(2.5rem + 2px);
+      border: 1px solid rgba(99,102,241,.28);
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(79,70,229,.12);
+      font-weight: 600;
+      font-size: 14px;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    #assignStudentModal .select2-container--default .select2-selection--single:focus,
+    #assignStudentModal .select2-container--default.select2-container--focus .select2-selection--single {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 .25rem rgba(79,70,229,.18);
+      outline: none;
+    }
+    #assignStudentModal .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: calc(2.5rem + 2px);
+      padding-left: 1rem;
+      color: #1e1b4b;
+    }
+    #assignStudentModal .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: calc(2.5rem + 2px);
+      right: 1rem;
+    }
+    #assignStudentModal .select2-dropdown {
+      border: 1px solid rgba(99,102,241,.28);
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(79,70,229,.12);
+    }
+    #assignStudentModal .select2-results__option {
+      padding: .5rem 1rem;
+      font-weight: 500;
+    }
+    #assignStudentModal .select2-results__option--highlighted {
+      background-color: #4f46e5;
+    }
+    #assignStudentModal .select2-search--dropdown .select2-search__field {
+      border: 1px solid rgba(99,102,241,.28);
+      border-radius: 8px;
+      padding: .5rem 1rem;
+    }
+    #assignStudentModal .select2-search--dropdown .select2-search__field:focus {
+      border-color: #4f46e5;
+      outline: none;
+    }
     .room-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem}
     .room-info-card{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-radius:18px;background:#f8fafc;border:1px solid rgba(148,163,184,.28);box-shadow:0 10px 24px rgba(15,23,42,.06);transition:transform .2s ease,box-shadow .2s ease}
     .room-info-card:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(15,23,42,.09)}
@@ -785,12 +831,43 @@
     Promise.allSettled(requests).then(()=> location.reload());
   });
   let __currentAssign = { id: null, ma: '' };
+  let studentSelect2Instance = null;
+  
   function openAssignStudent(slotId, maSlot){
     __currentAssign = { id: slotId, ma: maSlot||'' };
     $('#modal_slot_id').val(slotId);
-    $('#modal_sinh_vien_id').val('');
+    
+    // Khởi tạo Select2 nếu chưa có
+    if (!studentSelect2Instance) {
+      studentSelect2Instance = $('#modal_sinh_vien_id').select2({
+        placeholder: '--Chọn sinh viên--',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#assignStudentModal'),
+        language: {
+          noResults: function() {
+            return "Không tìm thấy sinh viên";
+          },
+          searching: function() {
+            return "Đang tìm kiếm...";
+          }
+        }
+      });
+    }
+    
+    // Reset giá trị khi mở modal
+    $('#modal_sinh_vien_id').val('').trigger('change');
+    
     $('#assignStudentModal').modal('show');
   }
+  
+  // Destroy Select2 khi modal đóng để tránh lỗi
+  $('#assignStudentModal').on('hidden.bs.modal', function () {
+    if (studentSelect2Instance) {
+      studentSelect2Instance.select2('destroy');
+      studentSelect2Instance = null;
+    }
+  });
   $('#assignStudentForm').submit(function(e){
     e.preventDefault();
     let slotId = $('#modal_slot_id').val();
