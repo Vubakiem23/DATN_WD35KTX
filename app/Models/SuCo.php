@@ -19,6 +19,7 @@ class SuCo extends Model
         'trang_thai',      // trạng thái tiếp nhận: pending/in_progress/resolved
         'completion_percent', // phần trăm hoàn thiện 0-100
         'payment_amount',   // số tiền
+        'chi_phi_thuc_te',  // chi phí thực tế admin phải trả
         'is_paid',          // thanh toán: true/false
         'anh',              // ảnh minh chứng
         'anh_sau',          // ảnh sau khi xử lý
@@ -32,6 +33,7 @@ class SuCo extends Model
 
     protected $casts = [
         'payment_amount' => 'decimal:2',
+        'chi_phi_thuc_te' => 'decimal:2',
         'is_paid' => 'boolean',
         'ngay_gui' => 'datetime',
         'ngay_hoan_thanh' => 'datetime', // 🆕 cast ngày hoàn thành
