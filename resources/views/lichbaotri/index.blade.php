@@ -452,7 +452,7 @@
                     <form action="{{ route('lichbaotri.tiepnhan', $l->id) }}" method="POST" class="d-inline">
                       @csrf
                       <button type="submit" class="dropdown-item text-primary" onclick="return confirm('Bạn có chắc muốn tiếp nhận báo hỏng này?')">
-                        <i class="fa fa-hand-paper"></i>
+                        <i class="fa fa-check"></i>
                         <span>Tiếp nhận</span>
                       </button>
                     </form>
