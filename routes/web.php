@@ -64,9 +64,9 @@ Route::post('/register', [AuthController::class, 'handle_register'])->name('auth
 // Public Tin tức
 Route::get('/tin-tuc', [TinTucController::class, 'clientIndex'])->name('public.tintuc.index');
 Route::get('/tin-tuc/{slug}', [TinTucController::class, 'clientShow'])->name('public.tintuc.show');
-// CLIENT Thông báo
-Route::get('/thong-bao', [ThongBaoController::class, 'clientIndex'])->name('public.thongbao.index');
-Route::get('/thong-bao/{id}', [ThongBaoController::class, 'clientShow'])->name('public.thongbao.show');
+// PUBLIC Thông báo chung
+Route::get('/thong-bao', [ThongBaoController::class, 'publicIndex'])->name('public.thongbao.index');
+Route::get('/thong-bao/{id}', [ThongBaoController::class, 'publicShow'])->name('public.thongbao.show');
 
 
 

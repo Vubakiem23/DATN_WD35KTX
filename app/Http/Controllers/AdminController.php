@@ -8,6 +8,8 @@ use App\Models\Phong;
 use App\Models\Slot;
 use App\Models\LichBaoTri;
 use App\Models\SinhVien;
+use App\Models\HoaDonSlotPayment;
+use App\Models\HoaDonUtilitiesPayment;
 use Carbon\Carbon;
 
 
@@ -28,26 +30,43 @@ class AdminController extends Controller
             ->where('trang_thai', 'Hoàn thành')
             ->count();
         
-        // 3. Tổng tiền thu được
-        $hoaDonsDaThanhToan = $this->layHoaDonsDaThanhToanTheoThang($selectedMonth);
-
-        // 3.1. Phí phòng: tính từ cấu hình slot & khu của từng phòng
-        $tongTienPhong = $this->tinhTongTienPhongTuHoaDons($hoaDonsDaThanhToan);
+        // 3. Tổng tiền thu được - Tính từ hệ thống thanh toán mới
+        // 3.1. Tiền phòng: Từ HoaDonSlotPayment đã thanh toán trong tháng
+        $tongTienPhong = $this->tinhTongTienPhongTuSlotPayments($monthStart, $monthEnd);
         
-        // 3.2. Tiền điện + nước từ hóa đơn đã thanh toán trong tháng
-        $tongTienDienNuoc = $hoaDonsDaThanhToan->sum('thanh_tien') ?? 0;
+        // 3.2. Tiền điện nước: Từ HoaDonUtilitiesPayment đã thanh toán trong tháng
+        $tongTienDienNuoc = $this->tinhTongTienDienNuocTuUtilitiesPayments($monthStart, $monthEnd);
         
         $tongTienThuDuoc = $tongTienPhong + $tongTienDienNuoc;
         
         // 4. Tổng chi phí bảo trì - sửa chữa
-        // Chi phí từ sự cố đã thanh toán
-        $tongChiPhiSuCo = SuCo::whereBetween('ngay_gui', [$monthStart, $monthEnd])
-            ->where('is_paid', true)
-            ->sum('payment_amount') ?? 0;
+        // Chi phí từ sự cố đã thanh toán (dựa trên ngày thanh toán, không phải ngày gửi)
+        // Logic: Nếu payment_amount = 0 → admin trả toàn bộ chi_phi_thuc_te
+        //        Nếu payment_amount > 0 → admin trả chi_phi_thuc_te - payment_amount (phần chênh lệch)
+        $tongChiPhiSuCo = 0;
+        $suCosDaThanhToan = SuCo::where('is_paid', true)
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
+            ->get();
         
-        // Chi phí từ lịch bảo trì (nếu có trường chi phí, tạm thời dùng 0)
-        // Có thể thêm trường chi_phi vào LichBaoTri sau
-        $tongChiPhiBaoTri = 0; // Tạm thời
+        foreach ($suCosDaThanhToan as $suCo) {
+            $chiPhiThucTe = (float) ($suCo->chi_phi_thuc_te ?? 0);
+            $paymentAmount = (float) ($suCo->payment_amount ?? 0);
+            
+            if ($paymentAmount == 0) {
+                // Admin trả toàn bộ chi phí thực tế
+                $tongChiPhiSuCo += $chiPhiThucTe;
+            } else {
+                // Admin trả phần chênh lệch (chi phí thực tế - số tiền sinh viên đã trả)
+                $tongChiPhiSuCo += max(0, $chiPhiThucTe - $paymentAmount);
+            }
+        }
+        
+        // Chi phí từ lịch bảo trì (tính từ các lịch bảo trì đã hoàn thành trong tháng)
+        $tongChiPhiBaoTri = LichBaoTri::where('trang_thai', 'Hoàn thành')
+            ->whereNotNull('ngay_hoan_thanh')
+            ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
+            ->sum('chi_phi') ?? 0;
         
         $tongChiPhiBaoTriSuaChua = $tongChiPhiSuCo + $tongChiPhiBaoTri;
         
@@ -60,7 +79,6 @@ class AdminController extends Controller
         $thongKeTheoThang = [];
         for ($i = 11; $i >= 0; $i--) {
             $thang = Carbon::now()->subMonths($i);
-            $thangStr = $thang->format('Y-m');
             $thangStart = $thang->copy()->startOfMonth();
             $thangEnd = $thang->copy()->endOfMonth();
             
@@ -68,12 +86,10 @@ class AdminController extends Controller
                 'thang' => $thang->format('m/Y'),
                 'su_co_phat_sinh' => SuCo::whereBetween('ngay_gui', [$thangStart, $thangEnd])->count(),
                 'su_co_da_xu_ly' => SuCo::whereBetween('ngay_gui', [$thangStart, $thangEnd])
-                    ->where('trang_thai', 'resolved')
+                    ->where('trang_thai', 'Hoàn thành')
                     ->count(),
-                'tong_tien_thu' => $this->tinhTongTienThuTheoThang($thangStr),
-                'tong_chi_phi' => SuCo::whereBetween('ngay_gui', [$thangStart, $thangEnd])
-                    ->where('is_paid', true)
-                    ->sum('payment_amount') ?? 0,
+                'tong_tien_thu' => $this->tinhTongTienThuTheoThang($thangStart, $thangEnd),
+                'tong_chi_phi' => $this->tinhTongChiPhiTheoThang($thangStart, $thangEnd),
             ];
         }
         
@@ -142,44 +158,143 @@ class AdminController extends Controller
     }
     
     /**
-     * Tính tổng tiền thu được theo tháng
+     * Tính tổng tiền thu được theo tháng (dựa trên ngày thanh toán)
      */
-    private function tinhTongTienThuTheoThang($thang)
+    private function tinhTongTienThuTheoThang($monthStart, $monthEnd)
     {
-        $hoaDons = $this->layHoaDonsDaThanhToanTheoThang($thang);
-
-        // Phí phòng: tính theo tiền phòng trong hóa đơn đã thanh toán tháng này
-        $tongTienPhong = $this->tinhTongTienPhongTuHoaDons($hoaDons);
+        // Tiền phòng từ slot payments
+        $tongTienPhong = $this->tinhTongTienPhongTuSlotPayments($monthStart, $monthEnd);
         
-        // Tiền điện nước từ hóa đơn đã thanh toán trong tháng
-        $tongTienDienNuoc = $hoaDons->sum('thanh_tien') ?? 0;
+        // Tiền điện nước từ utilities payments
+        $tongTienDienNuoc = $this->tinhTongTienDienNuocTuUtilitiesPayments($monthStart, $monthEnd);
         
         return $tongTienPhong + $tongTienDienNuoc;
     }
 
     /**
-     * Lấy danh sách hóa đơn đã thanh toán trong tháng kèm dữ liệu phòng liên quan.
+     * Tính tổng tiền phòng từ HoaDonSlotPayment đã thanh toán trong khoảng thời gian
      */
-    private function layHoaDonsDaThanhToanTheoThang(string $thang)
+    private function tinhTongTienPhongTuSlotPayments($monthStart, $monthEnd): int
     {
-        return HoaDon::with(['phong.khu', 'phong.slots'])
-            ->where('thang', $thang)
+        // Lấy các slot payment đã thanh toán trong tháng (hệ thống mới)
+        $slotPayments = HoaDonSlotPayment::with(['hoaDon.phong'])
             ->where('da_thanh_toan', true)
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
             ->get();
+
+        // Tính tổng tiền phòng từ các slot payment
+        // Mỗi slot payment đại diện cho 1 slot đã thanh toán
+        // Số tiền mỗi slot = tien_phong_slot / slot_billing_count của hóa đơn
+        $tongTien = 0;
+        
+        foreach ($slotPayments as $payment) {
+            $hoaDon = $payment->hoaDon;
+            if ($hoaDon) {
+                // Tính tiền phòng cho slot này
+                $tienPhongSlot = (int) ($hoaDon->tien_phong_slot ?? 0);
+                $slotBillingCount = (int) ($hoaDon->slot_billing_count ?? 1);
+                
+                if ($slotBillingCount > 0 && $tienPhongSlot > 0) {
+                    // Chia đều tiền phòng cho số slot
+                    $tienMoiSlot = (int) ($tienPhongSlot / $slotBillingCount);
+                    $tongTien += $tienMoiSlot;
+                } else {
+                    // Fallback: tính từ phòng nếu không có dữ liệu hóa đơn
+                    if ($hoaDon->phong) {
+                        $slotUnitPrice = $hoaDon->phong->giaSlot();
+                        if ($slotUnitPrice > 0) {
+                            $tongTien += $slotUnitPrice;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Xử lý hóa đơn cũ (chưa có slot payments) - tính từ da_thanh_toan trên HoaDon
+        $hoaDonsCu = HoaDon::with('phong')
+            ->where('da_thanh_toan', true)
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
+            ->whereDoesntHave('slotPayments') // Chỉ lấy hóa đơn không có slot payments
+            ->get();
+
+        foreach ($hoaDonsCu as $hoaDon) {
+            $tienPhongSlot = (int) ($hoaDon->tien_phong_slot ?? 0);
+            if ($tienPhongSlot > 0) {
+                $tongTien += $tienPhongSlot;
+            } elseif ($hoaDon->phong) {
+                // Tính từ phòng nếu không có tien_phong_slot
+                $tongTien += (int) $hoaDon->phong->tinhTienPhongTheoSlot(true);
+            }
+        }
+
+        return (int) $tongTien;
     }
 
     /**
-     * Tính tổng tiền phòng dựa trên thông tin slot/khu của từng hóa đơn.
+     * Tính tổng tiền điện nước từ HoaDonUtilitiesPayment đã thanh toán trong khoảng thời gian
      */
-    private function tinhTongTienPhongTuHoaDons($hoaDons): int
+    private function tinhTongTienDienNuocTuUtilitiesPayments($monthStart, $monthEnd): int
     {
-        return (int) $hoaDons->sum(function ($hoaDon) {
-            $phong = $hoaDon->phong;
-            if (!$phong) {
-                return 0;
-            }
+        // Lấy các utilities payment đã thanh toán trong tháng (hệ thống mới)
+        $utilitiesPayments = HoaDonUtilitiesPayment::where('da_thanh_toan', true)
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
+            ->sum('tong_tien');
 
-            return (int) $phong->tinhTienPhongTheoSlot(true);
-        });
+        $tongTien = (int) ($utilitiesPayments ?? 0);
+
+        // Xử lý hóa đơn cũ (chưa có utilities payments) - tính từ da_thanh_toan_dien_nuoc trên HoaDon
+        $hoaDonsCu = HoaDon::where('da_thanh_toan_dien_nuoc', true)
+            ->whereNotNull('ngay_thanh_toan_dien_nuoc')
+            ->whereBetween('ngay_thanh_toan_dien_nuoc', [$monthStart, $monthEnd])
+            ->whereDoesntHave('utilitiesPayments') // Chỉ lấy hóa đơn không có utilities payments
+            ->get();
+
+        foreach ($hoaDonsCu as $hoaDon) {
+            // Tính tiền điện nước từ hóa đơn
+            $so_dien = max(0, ($hoaDon->so_dien_moi ?? 0) - ($hoaDon->so_dien_cu ?? 0));
+            $so_nuoc = max(0, ($hoaDon->so_nuoc_moi ?? 0) - ($hoaDon->so_nuoc_cu ?? 0));
+            $tien_dien = $so_dien * ($hoaDon->don_gia_dien ?? 0);
+            $tien_nuoc = $so_nuoc * ($hoaDon->don_gia_nuoc ?? 0);
+            $tongTien += (int) ($tien_dien + $tien_nuoc);
+        }
+
+        return $tongTien;
+    }
+
+    /**
+     * Tính tổng chi phí bảo trì - sửa chữa theo tháng
+     */
+    private function tinhTongChiPhiTheoThang($monthStart, $monthEnd)
+    {
+        // Chi phí từ sự cố
+        $tongChiPhiSuCo = 0;
+        $suCosDaThanhToan = SuCo::where('is_paid', true)
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
+            ->get();
+        
+        foreach ($suCosDaThanhToan as $suCo) {
+            $chiPhiThucTe = (float) ($suCo->chi_phi_thuc_te ?? 0);
+            $paymentAmount = (float) ($suCo->payment_amount ?? 0);
+            
+            if ($paymentAmount == 0) {
+                // Admin trả toàn bộ chi phí thực tế
+                $tongChiPhiSuCo += $chiPhiThucTe;
+            } else {
+                // Admin trả phần chênh lệch (chi phí thực tế - số tiền sinh viên đã trả)
+                $tongChiPhiSuCo += max(0, $chiPhiThucTe - $paymentAmount);
+            }
+        }
+        
+        // Chi phí từ lịch bảo trì
+        $tongChiPhiBaoTri = LichBaoTri::where('trang_thai', 'Hoàn thành')
+            ->whereNotNull('ngay_hoan_thanh')
+            ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
+            ->sum('chi_phi') ?? 0;
+        
+        return $tongChiPhiSuCo + $tongChiPhiBaoTri;
     }
 }
