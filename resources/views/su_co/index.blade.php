@@ -78,7 +78,7 @@
                         <th class="fit">Trạng thái</th>
                         <th class="fit">Giá tiền</th>
                         <th class="fit">Thanh toán</th>
-                        <th class="text-end fit text-center">Thao tác</th>
+                        <th class="text-end fit text-center">HÀNH ĐỘNG</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -149,19 +149,19 @@
                                             <span>Xem</span>
                                         </a>
                                     </li>
-                                    <li>
+                                    <!-- <li>
                                         <a href="{{ route('suco.edit', $sc->id) }}" class="dropdown-item">
                                             <i class="fa fa-pencil text-primary"></i>
                                             <span>Sửa</span>
                                         </a>
-                                    </li>
+                                    </li> -->
                                     @if ($sc->trang_thai == 'Tiếp nhận')
                                         <li>
                                             <form action="{{ route('suco.dangXuLy', $sc->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="dropdown-item text-warning">
                                                     <i class="fa fa-spinner"></i>
-                                                    <span>Đang xử lý</span>
+                                                    <span>Tiếp nhận</span>
                                                 </button>
                                             </form>
                                         </li>
