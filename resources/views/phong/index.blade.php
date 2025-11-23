@@ -81,55 +81,55 @@
             </div>
         </div>
         @push('styles')
-        <style>
-                    .khu-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
-                    .room-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
-          .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
-          .room-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
-          .room-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
-          .room-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
-          .room-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
-          .room-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
-          .room-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
-          .room-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
-          .room-thumb-cell{width:96px}
-          .room-thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:0 0 64px;background:#e9ecef;display:flex;align-items:center;justify-content:center}
-          .room-thumb img{width:100%;height:100%;object-fit:cover;cursor:pointer}
-          .room-thumb svg{width:32px;height:32px;color:#adb5bd}
-          .room-meta{display:flex;flex-direction:column;gap:.25rem}
-          .room-meta .title{font-size:1rem;font-weight:600;color:#1f2937}
-          .room-meta .sub{font-size:.8rem;color:#6c757d}
-          .badge-status{font-size:.72rem;padding:.35rem .6rem;border-radius:999px}
-          .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
-          .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
-          .btn-dergin i{font-size:.8rem}
-          .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
-          .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
-          .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
-          .btn-dergin:disabled,.btn-dergin.disabled{opacity:.5;pointer-events:none}
-          .room-actions{display:flex;justify-content:center}
-          .room-actions.dropdown{position:relative}
-          .room-actions .action-gear{min-width:40px;padding:.45rem .7rem;border-radius:999px}
-          .room-actions .dropdown-menu{position:absolute;top:50% !important;right:110%;left:auto;transform:translateY(-50%);z-index:1050;min-width:190px;border-radius:16px;padding:.4rem 0;margin:0;border:1px solid #e5e7eb;box-shadow:0 16px 40px rgba(15,23,42,.18);font-size:.82rem;background:#fff}
-          .room-actions .dropdown-item{display:flex;align-items:center;gap:.55rem;padding:.42rem .9rem;color:#4b5563}
-          .room-actions .dropdown-item i{width:16px;text-align:center}
-          .room-actions .dropdown-item:hover{background:#eef2ff;color:#111827}
-          .price-tag{font-weight:600;color:#111827}
-          .room-empty-state{font-size:.88rem;color:#6b7280}
-          .room-pagination{margin-top:1.25rem}
-          .room-pagination__summary{font-size:.78rem;color:#6b7280}
-          .room-pagination__nav .pagination{margin-bottom:0}
-          @media (max-width:992px){
-            .room-table thead{display:none}
-            .room-table tbody{display:block}
-            .room-table tbody tr{display:flex;flex-direction:column;padding:1rem}
-            .room-table tbody td{display:flex;justify-content:space-between;padding:.35rem 0}
-            .room-table tbody td[data-label]{position:relative;padding-left:130px}
-            .room-table tbody td[data-label]::before{content:attr(data-label);position:absolute;left:0;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em}
-            .room-actions{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;gap:.35rem}
-            .room-actions .btn-dergin{flex:0 0 auto}
-          }
-        </style>
+            <style>
+                        .khu-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
+                        .room-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
+            .room-table-wrapper{background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,0.06);padding:1.25rem}
+            .room-table{margin-bottom:0;border-collapse:separate;border-spacing:0 12px}
+            .room-table thead th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6c757d;border:none;padding-bottom:.75rem}
+            .room-table tbody tr{background:#f9fafc;border-radius:16px;transition:transform .2s ease,box-shadow .2s ease}
+            .room-table tbody tr:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(15,23,42,0.08)}
+            .room-table tbody td{border:none;vertical-align:middle;padding:1rem .95rem}
+            .room-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
+            .room-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
+            .room-thumb-cell{width:96px}
+            .room-thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;flex:0 0 64px;background:#e9ecef;display:flex;align-items:center;justify-content:center}
+            .room-thumb img{width:100%;height:100%;object-fit:cover;cursor:pointer}
+            .room-thumb svg{width:32px;height:32px;color:#adb5bd}
+            .room-meta{display:flex;flex-direction:column;gap:.25rem}
+            .room-meta .title{font-size:1rem;font-weight:600;color:#1f2937}
+            .room-meta .sub{font-size:.8rem;color:#6c757d}
+            .badge-status{font-size:.72rem;padding:.35rem .6rem;border-radius:999px}
+            .btn-dergin{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;padding:.4rem .9rem;border-radius:999px;font-weight:600;font-size:.72rem;border:none;color:#fff;background:linear-gradient(135deg,#4e54c8 0%,#8f94fb 100%);box-shadow:0 6px 16px rgba(78,84,200,.22);transition:transform .2s ease,box-shadow .2s ease}
+            .btn-dergin:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(78,84,200,.32);color:#fff}
+            .btn-dergin i{font-size:.8rem}
+            .btn-dergin--muted{background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%)}
+            .btn-dergin--info{background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 100%)}
+            .btn-dergin--danger{background:linear-gradient(135deg,#f43f5e 0%,#ef4444 100%)}
+            .btn-dergin:disabled,.btn-dergin.disabled{opacity:.5;pointer-events:none}
+            .room-actions{display:flex;justify-content:center}
+            .room-actions.dropdown{position:relative}
+            .room-actions .action-gear{min-width:40px;padding:.45rem .7rem;border-radius:999px}
+            .room-actions .dropdown-menu{position:absolute;top:50% !important;right:110%;left:auto;transform:translateY(-50%);z-index:1050;min-width:190px;border-radius:16px;padding:.4rem 0;margin:0;border:1px solid #e5e7eb;box-shadow:0 16px 40px rgba(15,23,42,.18);font-size:.82rem;background:#fff}
+            .room-actions .dropdown-item{display:flex;align-items:center;gap:.55rem;padding:.42rem .9rem;color:#4b5563}
+            .room-actions .dropdown-item i{width:16px;text-align:center}
+            .room-actions .dropdown-item:hover{background:#eef2ff;color:#111827}
+            .price-tag{font-weight:600;color:#111827}
+            .room-empty-state{font-size:.88rem;color:#6b7280}
+            .room-pagination{margin-top:1.25rem}
+            .room-pagination__summary{font-size:.78rem;color:#6b7280}
+            .room-pagination__nav .pagination{margin-bottom:0}
+            @media (max-width:992px){
+                .room-table thead{display:none}
+                .room-table tbody{display:block}
+                .room-table tbody tr{display:flex;flex-direction:column;padding:1rem}
+                .room-table tbody td{display:flex;justify-content:space-between;padding:.35rem 0}
+                .room-table tbody td[data-label]{position:relative;padding-left:130px}
+                .room-table tbody td[data-label]::before{content:attr(data-label);position:absolute;left:0;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:.7rem;letter-spacing:.05em}
+                .room-actions{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;gap:.35rem}
+                .room-actions .btn-dergin{flex:0 0 auto}
+            }
+            </style>
         @endpush
         <div class="tab-content">
             @foreach($khuList as $k => $items)
