@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\HoaDonSlotPayment;
+use App\Models\HoaDonUtilitiesPayment;
 use App\Models\ThongBao;
 use App\Models\Phong;
 use App\Models\Khu;
@@ -10,6 +11,7 @@ use App\Models\MucDo;
 use App\Models\ThongBaoSinhVien;
 use App\Models\ThongBaoSuCo;
 use App\Models\ThongBaoPhongSv;
+use APP\Models\SuCo;
 use App\Models\SinhVien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -251,7 +253,7 @@ class ThongBaoController extends Controller
     {
         $user = Auth::user();
         $sinhVien = null;
-        
+
         // Lấy thông tin sinh viên
         if ($user) {
             if ($user->sinhVien) {
@@ -265,21 +267,46 @@ class ThongBaoController extends Controller
         $thongBaoSinhVien = collect([]);
         $thongBaoSuCo = collect([]);
         $thongBaoPhongSv = collect([]);
-        
+        $SuCo = collect([]);
+        $HoaDonSlotPayment = collect([]);
+        $HoaDonUtilitiesPayment = collect([]);
+
         if ($sinhVien) {
             // Thông báo riêng từ bảng thongbao_sinh_vien
             $thongBaoSinhVien = ThongBaoSinhVien::where('sinh_vien_id', $sinhVien->id)
                 ->orderBy('created_at', 'desc')
                 ->get();
-            
+
             // Thông báo sự cố (lấy qua quan hệ su_co)
-            $thongBaoSuCo = ThongBaoSuCo::whereHas('su_co', function($query) use ($sinhVien) {
-                    $query->where('sinh_vien_id', $sinhVien->id);
-                })
+            $thongBaoSuCo = ThongBaoSuCo::whereHas('su_co', function ($query) use ($sinhVien) {
+                $query->where('sinh_vien_id', $sinhVien->id);
+            })
                 ->with('su_co.phong')
                 ->orderBy('ngay_tao', 'desc')
                 ->get();
-            
+            //Thông báo sự cố 
+            $SuCo = SuCo::whereHas('sinhVien', function ($query) use ($sinhVien) {
+                $query->where('id', $sinhVien->id);
+            })
+                ->with('phong')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            //Thông báo hóa đơn phòng
+            $HoaDonSlotPayment = HoaDonSlotPayment::whereHas('sinhVien', function ($query) use ($sinhVien) {
+                $query->where('id', $sinhVien->id);
+            })
+                ->with('slot.phong')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            //Thông báo hóa đơn điện nước 
+            $HoaDonUtilitiesPayment = HoaDonUtilitiesPayment::whereHas('sinhVien', function ($query) use ($sinhVien) {
+                $query->where('id', $sinhVien->id);
+            })
+                ->with('slot.phong')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+
             // Thông báo phòng sinh viên
             $thongBaoPhongSv = ThongBaoPhongSv::where('sinh_vien_id', $sinhVien->id)
                 ->with('phong')
@@ -287,7 +314,7 @@ class ThongBaoController extends Controller
                 ->get();
         }
 
-        return view('client.thongbao.index', compact('thongBaoSinhVien', 'thongBaoSuCo', 'thongBaoPhongSv', 'sinhVien'));
+        return view('client.thongbao.index', compact('thongBaoSinhVien', 'thongBaoSuCo', 'thongBaoPhongSv', 'sinhVien', 'SuCo','HoaDonSlotPayment','HoaDonUtilitiesPayment'));
     }
 
     // =========================
