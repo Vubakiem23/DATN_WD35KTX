@@ -85,8 +85,8 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
 
 
     Route::post('/client/su_co/{id}/thanhtoan', [ClientController::class, 'su_co_thanhtoan'])
-    ->name('client.su_co.thanhtoan')
-    ->middleware('auth');
+        ->name('client.su_co.thanhtoan')
+        ->middleware('auth');
 
 
 
@@ -118,10 +118,6 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         Route::post('/{hoaDonId}/utilities-payment/{utilitiesPaymentId}', [HoaDonController::class, 'thanhToanUtilities'])
             ->name('client.hoadon.utilitiespayment');
     });
-
- 
-    
-
 });
 
 // =================== 🧑‍🎓 STUDENT (OLD - giữ để tương thích) ===================
@@ -198,6 +194,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
         // ✅ Tiếp nhận báo hỏng
         Route::post('/tiep-nhan/{id}', [LichBaoTriController::class, 'tiepNhan'])->name('lichbaotri.tiepnhan');
+        // ❌ NEW: Từ chối tiếp nhận
+        Route::post('/tu-choi/{id}', [LichBaoTriController::class, 'tuChoi'])->name('lichbaotri.tuchoi');
 
         Route::get('/get-loai-tai-san', [LichBaoTriController::class, 'getLoaiTaiSan']);
         Route::get('/get-tai-san-kho/{loaiId}', [LichBaoTriController::class, 'getTaiSanKho']);
@@ -246,41 +244,41 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('khu', KhuController::class)->except(['destroy']);
 
     // ---------------- THÔNG BÁO ----------------
-Route::resource('thongbao', ThongBaoController::class);
+    Route::resource('thongbao', ThongBaoController::class);
 
-Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
-Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
-Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])->name('thongbao_sinh_vien.index');
-
-
-
-Route::get('/thong-bao-phong-sv', [ThongBaoPhongSvController::class, 'index'])
-    ->name('thongbao_phong_sv.index');
+    Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
+    Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
+    Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])->name('thongbao_sinh_vien.index');
 
 
 
-
-// ---------------- TIN TỨC ----------------
-Route::prefix('tin-tuc')->group(function () {
-    Route::get('/', [TinTucController::class, 'index'])->name('tintuc.index');
-    Route::get('/tao', [TinTucController::class, 'create'])->name('tintuc.create');
-    Route::post('/', [TinTucController::class, 'store'])->name('tintuc.store');
-    Route::get('/{id}', [TinTucController::class, 'show'])->name('tintuc.show');
-    Route::get('/{id}/edit', [TinTucController::class, 'edit'])->name('tintuc.edit');
-    Route::put('/{id}', [TinTucController::class, 'update'])->name('tintuc.update');
-    Route::delete('/{id}', [TinTucController::class, 'destroy'])->name('tintuc.destroy');
-});
+    Route::get('/thong-bao-phong-sv', [ThongBaoPhongSvController::class, 'index'])
+        ->name('thongbao_phong_sv.index');
 
 
 
-Route::prefix('hashtags')->group(function () {
-    Route::get('/', [HashtagController::class, 'index'])->name('hashtags.index');
-    Route::get('/create', [HashtagController::class, 'create'])->name('hashtags.create');
-    Route::post('/', [HashtagController::class, 'store'])->name('hashtags.store');
-    Route::get('/{id}/edit', [HashtagController::class, 'edit'])->name('hashtags.edit');
-    Route::put('/{id}', [HashtagController::class, 'update'])->name('hashtags.update');
-    Route::delete('/{id}', [HashtagController::class, 'destroy'])->name('hashtags.destroy');
-});
+
+    // ---------------- TIN TỨC ----------------
+    Route::prefix('tin-tuc')->group(function () {
+        Route::get('/', [TinTucController::class, 'index'])->name('tintuc.index');
+        Route::get('/tao', [TinTucController::class, 'create'])->name('tintuc.create');
+        Route::post('/', [TinTucController::class, 'store'])->name('tintuc.store');
+        Route::get('/{id}', [TinTucController::class, 'show'])->name('tintuc.show');
+        Route::get('/{id}/edit', [TinTucController::class, 'edit'])->name('tintuc.edit');
+        Route::put('/{id}', [TinTucController::class, 'update'])->name('tintuc.update');
+        Route::delete('/{id}', [TinTucController::class, 'destroy'])->name('tintuc.destroy');
+    });
+
+
+
+    Route::prefix('hashtags')->group(function () {
+        Route::get('/', [HashtagController::class, 'index'])->name('hashtags.index');
+        Route::get('/create', [HashtagController::class, 'create'])->name('hashtags.create');
+        Route::post('/', [HashtagController::class, 'store'])->name('hashtags.store');
+        Route::get('/{id}/edit', [HashtagController::class, 'edit'])->name('hashtags.edit');
+        Route::put('/{id}', [HashtagController::class, 'update'])->name('hashtags.update');
+        Route::delete('/{id}', [HashtagController::class, 'destroy'])->name('hashtags.destroy');
+    });
     // ---------------- HÓA ĐƠN ----------------
     Route::prefix('hoadon')->group(function () {
 
@@ -296,8 +294,6 @@ Route::prefix('hashtags')->group(function () {
         Route::get('/hoadon/{id}/bienlai', [HoaDonController::class, 'xemBienLai'])->name('hoadon.bienlai');
         Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
         Route::post('/admin/hoadon/{id}/quickupdate', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
-
-
     });
 
     Route::post('/hoadon/import', [HoaDonController::class, 'importHoaDon'])->name('hoadon.import');
@@ -321,36 +317,36 @@ Route::prefix('hashtags')->group(function () {
         ->middleware(['auth', 'admin']);
 });
 
-    Route::post('/hoadon/gui-email-hang-loat', [HoaDonController::class, 'guiEmailHangLoat'])->name('hoadon.guiemailhangloat');
-    Route::get('/testmailpit', [HoaDonController::class, 'testMail']);
-    Route::get('/sendemailphong/{phong_id}', [HoaDonController::class, 'guiEmailTheoPhong']);
-    Route::get('/hoadon/timkiem', [HoaDonController::class, 'timKiem'])->name('hoadon.timkiem');
-    Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
-    Route::post('/admin/hoadon/{id}/quickupdate', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
+Route::post('/hoadon/gui-email-hang-loat', [HoaDonController::class, 'guiEmailHangLoat'])->name('hoadon.guiemailhangloat');
+Route::get('/testmailpit', [HoaDonController::class, 'testMail']);
+Route::get('/sendemailphong/{phong_id}', [HoaDonController::class, 'guiEmailTheoPhong']);
+Route::get('/hoadon/timkiem', [HoaDonController::class, 'timKiem'])->name('hoadon.timkiem');
+Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
+Route::post('/admin/hoadon/{id}/quickupdate', [HoaDonController::class, 'quickUpdate'])->name('hoadon.quickupdate');
 
 
-    // ====== VI PHẠM (violations) ======
-    Route::resource('vipham', ViolationController::class);
-    Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
-    // đánh dấu đã xử lý
-    Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
-        ->name('vipham.resolve');
-    // ====== LOẠI VI PHẠM (violation_types) ======
-    Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
+// ====== VI PHẠM (violations) ======
+Route::resource('vipham', ViolationController::class);
+Route::get('/vipham/{id}', [ViolationController::class, 'show'])->name('vipham.show');
+// đánh dấu đã xử lý
+Route::patch('vipham/{violation}/resolve', [ViolationController::class, 'resolve'])
+    ->name('vipham.resolve');
+// ====== LOẠI VI PHẠM (violation_types) ======
+Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
-    // ---------------- SỰ CỐ ----------------
+// ---------------- SỰ CỐ ----------------
 
-    // ---------------- HÓA ĐƠN SỰ CỐ ----------------
-    Route::prefix('hoadonsuco')->group(function () {
-        Route::get('/', [HoaDonSuCoController::class, 'index'])->name('hoadonsuco.index');
-        Route::post('/{id}/xac-nhan-thanh-toan', [HoaDonSuCoController::class, 'xacNhanThanhToan'])->name('hoadonsuco.xacnhan');
-        Route::post('/{id}/huy-thanh-toan', [HoaDonSuCoController::class, 'huyThanhToan'])->name('hoadonsuco.huy');
-        Route::post('/{id}/thanh-toan', [HoaDonSuCoController::class, 'thanhToan'])->name('hoadonsuco.thanhtoan');
-    });
+// ---------------- HÓA ĐƠN SỰ CỐ ----------------
+Route::prefix('hoadonsuco')->group(function () {
+    Route::get('/', [HoaDonSuCoController::class, 'index'])->name('hoadonsuco.index');
+    Route::post('/{id}/xac-nhan-thanh-toan', [HoaDonSuCoController::class, 'xacNhanThanhToan'])->name('hoadonsuco.xacnhan');
+    Route::post('/{id}/huy-thanh-toan', [HoaDonSuCoController::class, 'huyThanhToan'])->name('hoadonsuco.huy');
+    Route::post('/{id}/thanh-toan', [HoaDonSuCoController::class, 'thanhToan'])->name('hoadonsuco.thanhtoan');
+});
 
-    // ---------------- BÁO CÁO - THỐNG KÊ ----------------
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
+// ---------------- BÁO CÁO - THỐNG KÊ ----------------
+Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
 
 Route::post('/hoadon/thanhtoan/{id}', [HoaDonController::class, 'thanhtoan'])->name('hoadon.thanhtoan');
 
@@ -422,6 +418,3 @@ Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
 
 require __DIR__ . '/admin.php';
-
-
-
