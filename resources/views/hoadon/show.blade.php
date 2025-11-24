@@ -44,15 +44,26 @@
   </style>
 
   <div class="invoice-actions">
-    <a href="{{ route('hoadon.index') }}" class="btn-dergin btn-dergin--muted" title="Quay lại">
-      <i class="fa fa-arrow-left"></i><span>Quay lại</span>
+  @php
+    $backRoute = route('hoadon.index'); // mặc định
+    if (Route::currentRouteName() === 'client.hoadon.lichsu.diennuoc') {
+      $backRoute = route('client.hoadon.lichsu.diennuoc');
+    } elseif (Route::currentRouteName() === 'client.hoadon.lichsu.tienphong') {
+      $backRoute = route('client.hoadon.lichsu.tienphong');
+    }
+  @endphp
+
+  <a href="{{ $backRoute }}" class="btn-dergin btn-dergin--muted" title="Quay lại">
+    <i class="fa fa-arrow-left"></i><span>Quay lại</span>
+  </a>
+
+  @if(($hoaDon->trang_thai ?? '') !== 'Đã thanh toán')
+    <a href="{{ route('hoadon.edit', $hoaDon->id) }}" class="btn-dergin" title="Sửa">
+      <i class="fa fa-pencil"></i><span>Sửa</span>
     </a>
-    @if(($hoaDon->trang_thai ?? '') !== 'Đã thanh toán')
-      <a href="{{ route('hoadon.edit', $hoaDon->id) }}" class="btn-dergin" title="Sửa">
-        <i class="fa fa-pencil"></i><span>Sửa</span>
-      </a>
-    @endif
-  </div>
+  @endif
+</div>
+
 
   <div class="card shadow-sm mb-4">
     <div class="card-body">
@@ -212,6 +223,24 @@
                     </span>
                   </td>
                   <td class="d-flex flex-column gap-2 align-items-center">
+                    <button type="button"
+                        class="btn btn-sm btn-outline-secondary w-100 slot-detail-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#slotDetailModal"
+                        data-slot-label="{{ $slot['label'] }}"
+                        data-sinh-vien="{{ $slot['sinh_vien'] }}"
+                        data-tien-phong="{{ number_format($slot['tien_phong'] ?? 0, 0, ',', '.') }} VND"
+                        data-amount-label="Tiền phòng"
+                        data-status-text="{{ $statusMeta['text'] }}"
+                        data-payment-method-text="{{ $paymentMethodText ?? '' }}"
+                        data-client-request="{{ $clientRequestedText ?? '' }}"
+                        data-confirmed-at="{{ $confirmedAtText ?? '' }}"
+                        data-client-note="{{ $slotPayment->client_ghi_chu ?? '' }}"
+                        data-admin-note="{{ $slotPayment->ghi_chu ?? '' }}"
+                        data-transfer-image="{{ $transferImageUrl ?? '' }}">
+                        <i class="fa fa-info-circle"></i> Xem chi tiết
+                      </button>
+
                     @if($slotPayment && $slotStatus === 'cho_xac_nhan')
                       <button type="button"
                         class="btn btn-sm btn-outline-secondary w-100 slot-detail-btn"
@@ -329,44 +358,86 @@
                       <div class="small text-muted">Ghi chú: {{ $hoaDon->ghi_chu_thanh_toan_dien_nuoc }}</div>
                     @endif
                   </td>
-                  <td>
-                    @if(!$hoaDon->sent_dien_nuoc_to_client)
-                      <span class="text-muted small">Chưa gửi sinh viên</span>
-                    @elseif($utilitiesPayment && $slotStatus === 'cho_xac_nhan')
-                      <div class="d-flex flex-column gap-2">
-                        <button type="button"
-                          class="btn btn-sm btn-outline-secondary slot-detail-btn"
-                          data-slot-label="{{ $slot['label'] }}"
-                          data-sinh-vien="{{ $slot['sinh_vien'] }}"
-                          data-tien-phong="{{ number_format(($slot['tien_dien'] ?? 0) + ($slot['tien_nuoc'] ?? 0), 0, ',', '.') }} VND"
-                          data-amount-label="Tiền điện + nước"
-                          data-status-text="{{ $statusMeta['text'] }}"
-                          data-payment-method-text="{{ $paymentMethodText }}"
-                          data-client-requested-at="{{ $clientRequestedText ?? '' }}"
-                          data-confirmed-at="{{ $confirmedAtText ?? '' }}"
-                          data-client-note="{{ $utilitiesPayment->client_ghi_chu ?? '' }}"
-                          data-admin-note="{{ $utilitiesPayment->ghi_chu ?? '' }}"
-                          data-transfer-image="{{ $transferImageUrl ?? '' }}">
-                          <i class="fa fa-info-circle"></i> Xem chi tiết
-                        </button>
-                        <button type="button"
-                          class="btn btn-sm btn-success slot-direct-confirm-btn"
-                          data-slot-payment-id="{{ $utilitiesPayment->id }}"
-                          data-slot-url="{{ route('hoadon.thanhtoandiennuoc', ['hoaDonId' => $hoaDon->id, 'utilitiesPaymentId' => $utilitiesPayment->id]) }}"
-                          data-slot-label="{{ $slot['label'] }}"
-                          data-sinh-vien="{{ $slot['sinh_vien'] }}"
-                          data-slot-payment-method="{{ $utilitiesPayment->hinh_thuc_thanh_toan ?? 'chuyen_khoan' }}">
-                          <i class="fa fa-check"></i> Xác nhận nhanh
-                        </button>
-                      </div>
-                    @elseif($utilitiesPayment && $slotStatus === 'chua_thanh_toan')
-                      <span class="text-muted small">Chưa có yêu cầu</span>
-                    @elseif($slotStatus === 'da_thanh_toan')
-                      <span class="text-muted small">Đã hoàn tất</span>
-                    @else
-                      <span class="text-muted small">Không khả dụng</span>
-                    @endif
-                  </td>
+                <td>
+  @if(!$hoaDon->sent_dien_nuoc_to_client)
+    <span class="text-muted small">Chưa gửi sinh viên</span>
+  @elseif($utilitiesPayment && $slotStatus === 'cho_xac_nhan')
+    <div class="d-flex flex-column gap-2">
+      <!-- Nút xem chi tiết -->
+      <button type="button"
+        class="btn btn-sm btn-outline-primary slot-detail-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#slotDetailModal"
+        data-slot-label="{{ $slot['label'] }}"
+        data-sinh-vien="{{ $slot['sinh_vien'] }}"
+        data-amount-label="Tiền điện + nước"
+        data-amount="{{ number_format(($slot['tien_dien'] ?? 0) + ($slot['tien_nuoc'] ?? 0), 0, ',', '.') }} VND"
+        data-status-text="{{ $statusMeta['text'] }}"
+        data-payment-method-text="{{ $paymentMethodText }}"
+        data-client-requested-at="{{ $clientRequestedText ?? '' }}"
+        data-confirmed-at="{{ $confirmedAtText ?? '' }}"
+        data-client-note="{{ $utilitiesPayment->client_ghi_chu ?? '' }}"
+        data-admin-note="{{ $utilitiesPayment->ghi_chu ?? '' }}"
+        data-transfer-image="{{ $transferImageUrl ?? '' }}">
+        <i class="fa fa-eye"></i> Xem chi tiết
+      </button>
+
+      <!-- Nút xác nhận nhanh -->
+      <button type="button"
+        class="btn btn-sm btn-success slot-direct-confirm-btn"
+        data-slot-payment-id="{{ $utilitiesPayment->id }}"
+        data-slot-url="{{ route('hoadon.thanhtoandiennuoc', ['hoaDonId' => $hoaDon->id, 'utilitiesPaymentId' => $utilitiesPayment->id]) }}"
+        data-slot-label="{{ $slot['label'] }}"
+        data-sinh-vien="{{ $slot['sinh_vien'] }}"
+        data-slot-payment-method="{{ $utilitiesPayment->hinh_thuc_thanh_toan ?? 'chuyen_khoan' }}">
+        <i class="fa fa-check"></i> Xác nhận nhanh
+      </button>
+    </div>
+  @elseif($utilitiesPayment && $slotStatus === 'chua_thanh_toan')
+    <span class="text-muted small">Chưa có yêu cầu</span>
+    <!-- Nút xem chi tiết -->
+    <button type="button"
+      class="btn btn-sm btn-outline-primary slot-detail-btn"
+      data-bs-toggle="modal"
+      data-bs-target="#slotDetailModal"
+      data-slot-label="{{ $slot['label'] }}"
+      data-sinh-vien="{{ $slot['sinh_vien'] }}"
+      data-amount-label="Tiền điện + nước"
+      data-amount="{{ number_format(($slot['tien_dien'] ?? 0) + ($slot['tien_nuoc'] ?? 0), 0, ',', '.') }} VND"
+      data-status-text="Chưa có yêu cầu"
+      data-payment-method-text="-"
+      data-client-requested-at=""
+      data-confirmed-at=""
+      data-client-note=""
+      data-admin-note=""
+      data-transfer-image="">
+      <i class="fa fa-eye"></i> Xem chi tiết
+    </button>
+  @elseif($slotStatus === 'da_thanh_toan')
+    <span class="text-muted small">Đã hoàn tất</span>
+    <!-- Nút xem chi tiết -->
+    <button type="button"
+      class="btn btn-sm btn-outline-primary slot-detail-btn"
+      data-bs-toggle="modal"
+      data-bs-target="#slotDetailModal"
+      data-slot-label="{{ $slot['label'] }}"
+      data-sinh-vien="{{ $slot['sinh_vien'] }}"
+      data-amount-label="Tiền điện + nước"
+      data-amount="{{ number_format(($slot['tien_dien'] ?? 0) + ($slot['tien_nuoc'] ?? 0), 0, ',', '.') }} VND"
+      data-status-text="Đã hoàn tất"
+      data-payment-method-text="{{ $paymentMethodText ?? '-' }}"
+      data-client-requested-at="{{ $clientRequestedText ?? '' }}"
+      data-confirmed-at="{{ $confirmedAtText ?? '' }}"
+      data-client-note="{{ $utilitiesPayment->client_ghi_chu ?? '' }}"
+      data-admin-note="{{ $utilitiesPayment->ghi_chu ?? '' }}"
+      data-transfer-image="{{ $transferImageUrl ?? '' }}">
+      <i class="fa fa-eye"></i> Xem chi tiết
+    </button>
+  @else
+    <span class="text-muted small">Không khả dụng</span>
+  @endif
+</td>
+
                 </tr>
               @endforeach
             </tbody>
@@ -385,144 +456,192 @@
   @endif
 </div>
 
-<!-- Modal chi tiết slot -->
-<div class="modal fade" id="slotDetailModal" tabindex="-1" aria-labelledby="slotDetailModalLabel" aria-hidden="true">
+<div class="modal fade" id="tienPhongDetailModal" tabindex="-1" aria-labelledby="tienPhongDetailModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-primary text-white border-0">
-        <h5 class="modal-title fw-bold" id="slotDetailModalLabel">
-          <i class="fa fa-info-circle me-2"></i>Chi tiết slot
+        <h5 class="modal-title fw-bold" id="tienPhongDetailModalLabel">
+          <i class="fa fa-info-circle me-2"></i>Chi tiết tiền phòng
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
       </div>
       <div class="modal-body p-4">
         <div class="row g-4">
           <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
-              <div class="card-body p-4">
-                <h6 class="text-primary fw-bold mb-3 d-flex align-items-center">
-                  <i class="fa fa-info-circle me-2"></i>Thông tin chung
-                </h6>
-                <div class="info-item mb-3 pb-3 border-bottom">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-tag text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">Slot:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailSlotLabel" class="fw-semibold text-dark">-</span>
-                  </div>
-                </div>
-                <div class="info-item mb-3 pb-3 border-bottom">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-user text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">Sinh viên:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailSinhVien" class="fw-semibold text-dark">-</span>
-                  </div>
-                </div>
-                <div class="info-item mb-3 pb-3 border-bottom">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-money text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small"><span id="slotDetailAmountLabel">Tiền phòng</span>:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailAmount" class="fw-bold text-success fs-6">-</span>
-                  </div>
-                </div>
-                <div class="info-item">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-check-circle text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">Trạng thái:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailStatus" class="badge bg-info text-dark">-</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <h6 class="text-primary fw-bold mb-3"><i class="fa fa-info-circle me-2"></i>Thông tin chung</h6>
+            <p><strong>Slot:</strong> <span id="tienPhongSlotLabel">-</span></p>
+            <p><strong>Sinh viên:</strong> <span id="tienPhongSinhVien">-</span></p>
+            <p><strong><span id="tienPhongAmountLabel">Tiền phòng</span>:</strong>  <span id="slotDetailTienPhong">-</span></p>
+            <p><strong>Trạng thái:</strong> <span id="tienPhongStatus" class="badge bg-info text-dark">-</span></p>
           </div>
           <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
-              <div class="card-body p-4">
-                <h6 class="text-success fw-bold mb-3 d-flex align-items-center">
-                  <i class="fa fa-credit-card me-2"></i>Thanh toán
-                </h6>
-                <div class="info-item mb-3 pb-3 border-bottom">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-credit-card text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">Hình thức:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailMethod" class="fw-semibold text-dark">-</span>
-                  </div>
-                </div>
-                <div class="info-item mb-3 pb-3 border-bottom">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-clock-o text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">SV gửi lúc:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailClientRequest" class="text-dark">-</span>
-                  </div>
-                </div>
-                <div class="info-item mb-3 pb-3 border-bottom">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-check-square text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">BQL xác nhận:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailConfirmedAt" class="text-dark">-</span>
-                  </div>
-                </div>
-                <div class="info-item mb-3 pb-3 border-bottom">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-file-text text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">Ghi chú SV:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailClientNote" class="text-dark">-</span>
-                  </div>
-                </div>
-                <div class="info-item">
-                  <div class="d-flex align-items-center mb-1">
-                    <i class="fa fa-comments text-muted me-2" style="width: 20px;"></i>
-                    <strong class="text-muted small">Ghi chú BQL:</strong>
-                  </div>
-                  <div class="ms-4">
-                    <span id="slotDetailAdminNote" class="text-dark">-</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <h6 class="text-success fw-bold mb-3"><i class="fa fa-credit-card me-2"></i>Thanh toán</h6>
+            <p><strong>Hình thức:</strong> <span id="tienPhongMethod">-</span></p>
+            <p><strong>SV gửi lúc:</strong> <span id="tienPhongClientRequest">-</span></p>
+            <p><strong>BQL xác nhận:</strong> <span id="tienPhongConfirmedAt">-</span></p>
+            <p><strong>Ghi chú SV:</strong> <span id="tienPhongClientNote">-</span></p>
+            <p><strong>Ghi chú BQL:</strong> <span id="tienPhongAdminNote">-</span></p>
           </div>
         </div>
-        <div class="mt-4 d-none" id="slotDetailImageWrapper">
-          <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-              <h6 class="text-primary fw-bold mb-3 d-flex align-items-center">
-                <i class="fa fa-picture-o me-2"></i>Ảnh chuyển khoản
-              </h6>
-              <div class="text-center mb-3">
-                <a id="slotDetailImageLink" href="#" target="_blank" class="btn btn-outline-primary btn-sm">
-                  <i class="fa fa-external-link me-1"></i> Mở ảnh trong tab mới
-                </a>
-              </div>
-              <div class="text-center">
-                <img id="slotDetailImage" src="" alt="Ảnh chuyển khoản" class="img-fluid rounded shadow" style="max-height: 400px; width: auto; border: 3px solid #e9ecef;">
-              </div>
-            </div>
+        <div class="mt-4 d-none" id="tienPhongImageWrapper">
+          <h6 class="text-primary fw-bold mb-3"><i class="fa fa-image me-2"></i>Ảnh chuyển khoản</h6>
+          <div class="text-center mb-3">
+            <a id="tienPhongImageLink" href="#" target="_blank" class="btn btn-outline-primary btn-sm">
+              <i class="fa fa-external-link-alt me-1"></i> Mở ảnh trong tab mới
+            </a>
           </div>
+          <div class="text-center">
+            <img id="tienPhongImage" src="" alt="Ảnh chuyển khoản" class="img-fluid rounded shadow" style="max-height: 400px;">
+          </div>
+        </div>
+        <div id="tienPhongNoImage" class="text-center mt-4">
+          <p class="text-muted">Chưa có ảnh chuyển khoản được gửi.</p>
         </div>
       </div>
       <div class="modal-footer border-0 bg-light">
         <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-          <i class="fa fa-close me-1"></i>Đóng
+          <i class="fa fa-times me-1"></i>Đóng
         </button>
       </div>
     </div>
   </div>
 </div>
+
+
+<!-- Modal chi tiết slot -->
+<div class="modal fade" id="slotDetailModal" tabindex="-1" aria-labelledby="slotDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white border-0">
+        <h5 class="modal-title fw-bold" id="slotDetailModalLabel">
+          <i class="fa fa-info-circle me-2"></i>Chi tiết thanh toán
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-4">
+          <!-- Thông tin chung -->
+          <div class="col-md-6">
+            <h6 class="text-primary fw-bold mb-3">Thông tin chung</h6>
+            <p><strong>Slot:</strong> <span id="slotDetailSlotLabel">-</span></p>
+            <p><strong>Sinh viên:</strong> <span id="slotDetailSinhVien">-</span></p>
+            <p><strong><span id="slotDetailAmountLabel">Số tiền</span>:</strong> <span id="slotDetailAmount" class="fw-bold text-success">-</span></p>
+            <p><strong>Trạng thái:</strong> <span id="slotDetailStatus" class="badge bg-info text-dark">-</span></p>
+          </div>
+          <!-- Thông tin thanh toán -->
+          <div class="col-md-6">
+            <h6 class="text-success fw-bold mb-3">Thanh toán</h6>
+            <p><strong>Hình thức:</strong> <span id="slotDetailMethod">-</span></p>
+            <p><strong>SV gửi lúc:</strong> <span id="slotDetailClientRequest">-</span></p>
+            <p><strong>BQL xác nhận:</strong> <span id="slotDetailConfirmedAt">-</span></p>
+            <p><strong>Ghi chú SV:</strong> <span id="slotDetailClientNote">-</span></p>
+            <p><strong>Ghi chú BQL:</strong> <span id="slotDetailAdminNote">-</span></p>
+          </div>
+        </div>
+
+        <!-- Ảnh chuyển khoản -->
+        <div class="mt-4 d-none" id="slotDetailImageWrapper">
+          <h6 class="text-primary fw-bold mb-3">Ảnh chuyển khoản</h6>
+          <div class="text-center mb-3">
+            <a id="slotDetailImageLink" href="#" target="_blank" class="btn btn-outline-primary btn-sm">
+              Mở ảnh trong tab mới
+            </a>
+          </div>
+          <div class="text-center">
+            <img id="slotDetailImage" src="" alt="Ảnh chuyển khoản" class="img-fluid rounded shadow" style="max-height: 400px;">
+          </div>
+        </div>
+
+        <div id="slotDetailNoImage" class="text-center mt-4">
+          <p class="text-muted">Chưa có ảnh chuyển khoản được gửi.</p>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 bg-light">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+  const slotDetailModalEl = document.getElementById('slotDetailModal');
+  const slotDetailButtons = document.querySelectorAll('.slot-detail-btn');
+  const slotDetailFields = {
+    slotLabel: document.getElementById('slotDetailSlotLabel'),
+    sinhVien: document.getElementById('slotDetailSinhVien'),
+    amountLabel: document.getElementById('slotDetailAmountLabel'),
+    amount: document.getElementById('slotDetailAmount'),
+    status: document.getElementById('slotDetailStatus'),
+    method: document.getElementById('slotDetailMethod'),
+    clientRequest: document.getElementById('slotDetailClientRequest'),
+    confirmedAt: document.getElementById('slotDetailConfirmedAt'),
+    clientNote: document.getElementById('slotDetailClientNote'),
+    adminNote: document.getElementById('slotDetailAdminNote'),
+  };
+  const slotDetailImageWrapper = document.getElementById('slotDetailImageWrapper');
+  const slotDetailImage = document.getElementById('slotDetailImage');
+  const slotDetailImageLink = document.getElementById('slotDetailImageLink');
+  const slotDetailNoImage = document.getElementById('slotDetailNoImage');
+
+  const setSlotDetailText = (field, value, fallback = '-') => {
+    if (!field) return;
+    const displayValue = value && value.trim() ? value : fallback;
+    field.textContent = displayValue;
+  };
+
+  const renderSlotDetailModal = (button) => {
+    if (!button || !slotDetailModalEl) return;
+
+    setSlotDetailText(slotDetailFields.slotLabel, button.getAttribute('data-slot-label'));
+    setSlotDetailText(slotDetailFields.sinhVien, button.getAttribute('data-sinh-vien'));
+    setSlotDetailText(slotDetailFields.amountLabel, button.getAttribute('data-amount-label'));
+    setSlotDetailText(slotDetailFields.amount, button.getAttribute('data-amount'));
+    setSlotDetailText(slotDetailFields.status, button.getAttribute('data-status-text') || button.getAttribute('data-status'));
+    setSlotDetailText(slotDetailFields.method, button.getAttribute('data-payment-method-text') || button.getAttribute('data-method'));
+    setSlotDetailText(slotDetailFields.clientRequest, button.getAttribute('data-client-requested-at') || button.getAttribute('data-client-request'));
+    setSlotDetailText(slotDetailFields.confirmedAt, button.getAttribute('data-confirmed-at'));
+    setSlotDetailText(slotDetailFields.clientNote, button.getAttribute('data-client-note'));
+    setSlotDetailText(slotDetailFields.adminNote, button.getAttribute('data-admin-note'));
+
+    const transferImage = button.getAttribute('data-transfer-image') || button.getAttribute('data-image');
+    if (transferImage && transferImage.trim() !== '') {
+      slotDetailImageWrapper.classList.remove('d-none');
+      slotDetailNoImage.classList.add('d-none');
+      slotDetailImage.src = transferImage;
+      slotDetailImage.alt = `Ảnh chuyển khoản ${button.getAttribute('data-slot-label') || ''}`;
+      slotDetailImageLink.href = transferImage;
+    } else {
+      slotDetailImageWrapper.classList.add('d-none');
+      slotDetailNoImage.classList.remove('d-none');
+      slotDetailImage.removeAttribute('src');
+      slotDetailImageLink.removeAttribute('href');
+    }
+  };
+
+  if (slotDetailButtons?.length) {
+    slotDetailButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        renderSlotDetailModal(button);
+        if (window.bootstrap?.Modal?.getOrCreateInstance) {
+          window.bootstrap.Modal.getOrCreateInstance(slotDetailModalEl).show();
+        } else if (window.jQuery) {
+          window.jQuery(slotDetailModalEl).modal('show');
+        } else {
+          slotDetailModalEl.classList.add('show');
+          slotDetailModalEl.style.display = 'block';
+        }
+      });
+    });
+  }
+});
+
+  </script>
+@endpush
+
 
 <!-- Modal thanh toán slot -->
 <div class="modal fade" id="slotPaymentModal" tabindex="-1" aria-labelledby="slotPaymentModalLabel" aria-hidden="true">
@@ -597,35 +716,37 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   const renderSlotDetailModal = (button) => {
-    if (!button || !slotDetailModalEl) return;
+  if (!button || !slotDetailModalEl) return;
 
-    setSlotDetailText(slotDetailFields.slotLabel, button.getAttribute('data-slot-label') || '-');
-    setSlotDetailText(slotDetailFields.sinhVien, button.getAttribute('data-sinh-vien') || '-');
-    setSlotDetailText(
-      slotDetailFields.amountLabel,
-      button.getAttribute('data-amount-label') || 'Tiền phòng',
-      'Tiền phòng'
-    );
-    setSlotDetailText(slotDetailFields.amount, button.getAttribute('data-tien-phong') || '-');
-    setSlotDetailText(slotDetailFields.status, button.getAttribute('data-status-text') || '-');
-    setSlotDetailText(slotDetailFields.method, button.getAttribute('data-payment-method-text') || '');
-    setSlotDetailText(slotDetailFields.clientRequest, button.getAttribute('data-client-requested-at') || '');
-    setSlotDetailText(slotDetailFields.confirmedAt, button.getAttribute('data-confirmed-at') || '');
-    setSlotDetailText(slotDetailFields.clientNote, button.getAttribute('data-client-note') || '');
-    setSlotDetailText(slotDetailFields.adminNote, button.getAttribute('data-admin-note') || '');
+  setSlotDetailText(slotDetailFields.slotLabel, button.getAttribute('data-slot-label') || '-');
+  setSlotDetailText(slotDetailFields.sinhVien, button.getAttribute('data-sinh-vien') || '-');
+  setSlotDetailText(
+    slotDetailFields.amountLabel,
+    button.getAttribute('data-amount-label') || 'Tiền điện + nước',
+    'Tiền điện + nước'
+  );
+  // ⚡ Sửa lại: đọc đúng data-amount thay vì data-tien-phong
+  setSlotDetailText(slotDetailFields.amount, button.getAttribute('data-amount') || '-');
+  setSlotDetailText(slotDetailFields.status, button.getAttribute('data-status-text') || '-');
+  setSlotDetailText(slotDetailFields.method, button.getAttribute('data-payment-method-text') || '-');
+  setSlotDetailText(slotDetailFields.clientRequest, button.getAttribute('data-client-requested-at') || '-');
+  setSlotDetailText(slotDetailFields.confirmedAt, button.getAttribute('data-confirmed-at') || '-');
+  setSlotDetailText(slotDetailFields.clientNote, button.getAttribute('data-client-note') || '-');
+  setSlotDetailText(slotDetailFields.adminNote, button.getAttribute('data-admin-note') || '-');
 
-    const transferImage = button.getAttribute('data-transfer-image');
-    if (transferImage && slotDetailImageWrapper && slotDetailImage && slotDetailImageLink) {
-      slotDetailImageWrapper.classList.remove('d-none');
-      slotDetailImage.src = transferImage;
-      slotDetailImage.alt = `Ảnh chuyển khoản ${button.getAttribute('data-slot-label') || ''}`;
-      slotDetailImageLink.href = transferImage;
-    } else if (slotDetailImageWrapper) {
-      slotDetailImageWrapper.classList.add('d-none');
-      if (slotDetailImage) slotDetailImage.removeAttribute('src');
-      if (slotDetailImageLink) slotDetailImageLink.removeAttribute('href');
-    }
-  };
+  const transferImage = button.getAttribute('data-transfer-image');
+  if (transferImage && slotDetailImageWrapper && slotDetailImage && slotDetailImageLink) {
+    slotDetailImageWrapper.classList.remove('d-none');
+    slotDetailImage.src = transferImage;
+    slotDetailImage.alt = `Ảnh chuyển khoản ${button.getAttribute('data-slot-label') || ''}`;
+    slotDetailImageLink.href = transferImage;
+  } else if (slotDetailImageWrapper) {
+    slotDetailImageWrapper.classList.add('d-none');
+    if (slotDetailImage) slotDetailImage.removeAttribute('src');
+    if (slotDetailImageLink) slotDetailImageLink.removeAttribute('href');
+  }
+};
+
 
   const showSlotDetailModal = () => {
     if (!slotDetailModalEl) return;
@@ -835,4 +956,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+
+
+
+
+
 @endsection

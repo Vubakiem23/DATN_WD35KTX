@@ -52,14 +52,17 @@ class HoaDonUtilitiesPayment extends Model
         return $this->belongsTo(Slot::class, 'slot_id');
     }
 
-    public function sinhVien(): BelongsTo
-    {
-        return $this->belongsTo(SinhVien::class, 'sinh_vien_id');
-    }
+    
 
     public function confirmer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'xac_nhan_boi');
+    }
+
+    // Quan hệ tới Sinh viên
+    public function sinhVien()
+    {
+        return $this->belongsTo(SinhVien::class, 'sinh_vien_id', 'id');
     }
 }
 

@@ -81,12 +81,12 @@
     <p><strong>Loại phòng:</strong> {{ $hoaDon->phong->loai_phong ?? 'Không rõ' }}</p>
     <p><strong>Khoảng thời gian sử dụng:</strong> 
     {{ $hoaDon->created_at ? \Carbon\Carbon::parse($hoaDon->created_at)->format('d/m/Y') : '-' }} → 
-    {{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}
+    {{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->update_at)->format('d/m/Y') : '-' }}
     </p>
 
     <p><strong>Ngày tạo hóa đơn:</strong> {{ \Carbon\Carbon::parse($hoaDon->created_at)->format('d/m/Y') }}</p>
     <p><strong>Ngày thanh toán:</strong> 
-        {{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}
+        {{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->update_at)->format('d/m/Y') : '-' }}
     </p>
 </div>
 @if($hoaDon->trang_thai === 'Đã thanh toán')

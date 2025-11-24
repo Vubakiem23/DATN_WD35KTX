@@ -78,6 +78,19 @@
 @section('content')
 <div class="container py-4">
   <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <div class="d-flex justify-content-end mb-3">
+    @if($tab === 'tien-phong')
+        <a href="{{ route('client.hoadon.lichsu.tienphong') }}" 
+           class="btn btn-sm btn-primary">
+            <i class="fa fa-history"></i> Lịch sử tiền phòng
+        </a>
+    @elseif($tab === 'dien-nuoc')
+        <a href="{{ route('client.hoadon.lichsu.diennuoc') }}" 
+           class="btn btn-sm btn-primary">
+            <i class="fa fa-history"></i> Lịch sử điện · nước
+        </a>
+    @endif
+</div>
     <div>
       <h2 class="fw-bold mb-1">Hóa đơn ký túc xá</h2>
       <p class="text-muted mb-0">
