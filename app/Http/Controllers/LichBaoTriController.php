@@ -10,38 +10,37 @@ use Illuminate\Support\Facades\DB;
 
 class LichBaoTriController extends Controller
 {
+
     /** 🧭 Hiển thị danh sách lịch bảo trì */
     public function index(Request $request)
     {
         $today = now()->toDateString();
 
-        // ✅ Tự động cập nhật trạng thái lịch bảo trì
-        // Hoàn thành: nếu đã có ngày hoàn thành
+        // Cập nhật trạng thái tự động cho admin
         DB::table('lich_bao_tri')
             ->whereNotNull('ngay_hoan_thanh')
             ->where('trang_thai', '!=', 'Hoàn thành')
+            ->where('trang_thai', '!=', 'Từ chối tiếp nhận')
             ->update(['trang_thai' => 'Hoàn thành', 'updated_at' => now()]);
 
-        // Chờ bảo trì: nếu ngày bảo trì > hôm nay (chỉ áp dụng cho các trạng thái đã được tiếp nhận)
         DB::table('lich_bao_tri')
             ->whereNull('ngay_hoan_thanh')
             ->whereDate('ngay_bao_tri', '>', $today)
             ->where('trang_thai', '!=', 'Chờ bảo trì')
-            ->where('trang_thai', '!=', 'Đang lên lịch') // Không tự động chuyển "Đang lên lịch"
+            ->where('trang_thai', '!=', 'Đang lên lịch')
+            ->where('trang_thai', '!=', 'Từ chối tiếp nhận')
             ->update(['trang_thai' => 'Chờ bảo trì', 'updated_at' => now()]);
 
-        // Đang bảo trì: nếu ngày bảo trì <= hôm nay (chỉ áp dụng cho các trạng thái đã được tiếp nhận)
         DB::table('lich_bao_tri')
             ->whereNull('ngay_hoan_thanh')
             ->whereDate('ngay_bao_tri', '<=', $today)
             ->where('trang_thai', '!=', 'Đang bảo trì')
-            ->where('trang_thai', '!=', 'Đang lên lịch') // Không tự động chuyển "Đang lên lịch" - phải admin tiếp nhận
+            ->where('trang_thai', '!=', 'Đang lên lịch')
+            ->where('trang_thai', '!=', 'Từ chối tiếp nhận')
             ->update(['trang_thai' => 'Đang bảo trì', 'updated_at' => now()]);
 
-        // 🧩 Bộ lọc
         $query = LichBaoTri::with(['taiSan.phong', 'khoTaiSan']);
 
-        // Lọc theo tháng/năm
         if ($request->filled('month') && $request->filled('year')) {
             $query->whereYear('ngay_bao_tri', $request->year)
                 ->whereMonth('ngay_bao_tri', $request->month);
@@ -67,7 +66,6 @@ class LichBaoTriController extends Controller
             }
         }
 
-        // 📊 Thống kê số tài sản cần bảo trì
         $thongKe = [
             'dang_len_lich' => LichBaoTri::where('trang_thai', 'Đang lên lịch')->count(),
             'cho_bao_tri' => LichBaoTri::where('trang_thai', 'Chờ bảo trì')->count(),
@@ -76,70 +74,45 @@ class LichBaoTriController extends Controller
             'tong_tai_san' => LichBaoTri::count(),
         ];
 
-        // Áp dụng bộ lọc tháng/năm cho thống kê nếu có
-        if ($request->filled('month') && $request->filled('year')) {
-            $thongKeQuery = LichBaoTri::whereYear('ngay_bao_tri', $request->year)
-                ->whereMonth('ngay_bao_tri', $request->month);
-            $thongKe['dang_len_lich'] = (clone $thongKeQuery)->where('trang_thai', 'Đang lên lịch')->count();
-            $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
-            $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
-            $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
-            $thongKe['tong_tai_san'] = $thongKeQuery->count();
-        } elseif ($request->filled('year')) {
-            $thongKeQuery = LichBaoTri::whereYear('ngay_bao_tri', $request->year);
-            $thongKe['dang_len_lich'] = (clone $thongKeQuery)->where('trang_thai', 'Đang lên lịch')->count();
-            $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
-            $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
-            $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
-            $thongKe['tong_tai_san'] = $thongKeQuery->count();
-        } elseif ($request->filled('month')) {
-            $thongKeQuery = LichBaoTri::whereMonth('ngay_bao_tri', $request->month);
-            $thongKe['dang_len_lich'] = (clone $thongKeQuery)->where('trang_thai', 'Đang lên lịch')->count();
-            $thongKe['cho_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Chờ bảo trì')->count();
-            $thongKe['dang_bao_tri'] = (clone $thongKeQuery)->where('trang_thai', 'Đang bảo trì')->count();
-            $thongKe['hoan_thanh'] = (clone $thongKeQuery)->where('trang_thai', 'Hoàn thành')->count();
-            $thongKe['tong_tai_san'] = $thongKeQuery->count();
-        }
-
         $lich = $query->orderByRaw("
-                CASE 
-                    WHEN trang_thai = 'Đang lên lịch' THEN 0  -- Ưu tiên cao nhất: cần admin tiếp nhận
-                    WHEN trang_thai = 'Chờ bảo trì' THEN 1
-                    WHEN trang_thai = 'Đang bảo trì' THEN 2
-                    WHEN trang_thai = 'Hoàn thành' THEN 3
-                    ELSE 4
-                END ASC
-            ")
+            CASE 
+                WHEN trang_thai = 'Đang lên lịch' THEN 0
+                WHEN trang_thai = 'Chờ bảo trì' THEN 1
+                WHEN trang_thai = 'Đang bảo trì' THEN 2
+                WHEN trang_thai = 'Hoàn thành' THEN 3
+                ELSE 4
+            END ASC
+        ")
             ->orderBy('ngay_bao_tri', 'asc')
             ->paginate(6)
             ->appends($request->query());
 
+        $lich->transform(function ($item) {
+            $item->trang_thai_client = $item->trang_thai === 'Từ chối tiếp nhận' ? 'Bình thường' : $item->trang_thai;
+            return $item;
+        });
+
         return view('lichbaotri.index', compact('lich', 'thongKe'));
     }
+
 
     /** ➕ Form tạo mới */
     public function create(Request $request)
     {
         $taiSanId = $request->query('taisan_id');
 
-        // Nếu đi từ nút “Bảo trì” trong danh sách tài sản
         if ($taiSanId) {
             $taiSan = TaiSan::with(['phong', 'khoTaiSan', 'slots.sinhVien'])->find($taiSanId);
-
             if (!$taiSan) {
-                return redirect()
-                    ->route('taisan.index')
-                    ->with('error', 'Không tìm thấy tài sản.');
+                return redirect()->route('taisan.index')->with('error', 'Không tìm thấy tài sản.');
             }
-
             return view('lichbaotri.create', [
-                'taiSan' => $taiSan, // 1 tài sản duy nhất
-                'taiSans' => [], // để view không hiển thị danh sách nhiều tài sản
-                'phongs' => \App\Models\Phong::all(), // cần cho form nếu có dùng tới
+                'taiSan' => $taiSan,
+                'taiSans' => [],
+                'phongs' => \App\Models\Phong::all(),
             ]);
         }
 
-        // Nếu vào form tạo lịch bảo trì thủ công
         $taiSans = TaiSan::with(['phong', 'khoTaiSan'])->get();
         $phongs = \App\Models\Phong::all();
 
@@ -151,112 +124,123 @@ class LichBaoTriController extends Controller
     }
 
 
+
     /** 💾 Lưu lịch bảo trì mới */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'tai_san_id' => 'required|array',
-            'tai_san_id.*' => 'integer',
-            'ngay_bao_tri' => 'required|date',
-            'mo_ta' => 'nullable|array',
-            'mo_ta.*' => 'nullable|string',
-            'hinh_anh' => 'nullable|array',
-            'hinh_anh.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        // Lấy mảng file ảnh (nếu có)
-        $fileArray = $request->file('hinh_anh', []); // Trả về array hoặc []
-
-        $today = now()->toDateString();
-        $trangThai = $request->ngay_bao_tri > $today ? 'Chờ bảo trì' : 'Đang bảo trì';
-
-        foreach ($request->tai_san_id as $index => $id) {
-            $hinhAnhTruoc = null;
-
-            // 🖼️ Nếu có file ứng với chỉ số này → lưu
-            if (isset($fileArray[$index]) && $fileArray[$index] instanceof \Illuminate\Http\UploadedFile) {
-                $file = $fileArray[$index];
-
-                // Đặt tên file an toàn, tránh trùng
-                $fileName = time() . "_{$index}_" . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-
-                // Lưu vào thư mục public/uploads/lichbaotri
-                $file->move(public_path('uploads/lichbaotri'), $fileName);
-
-                $hinhAnhTruoc = $fileName;
-            }
-
-            // 🔍 Kiểm tra xem ID thuộc tài sản trong phòng hay trong kho
-            $taiSan = TaiSan::find($id);
-            $khoTaiSan = KhoTaiSan::find($id);
-
-            $taiSanId = $taiSan ? $taiSan->id : null;
-            $khoTaiSanId = $khoTaiSan ? $khoTaiSan->id : null;
-
-            // 💾 Tạo bản ghi lịch bảo trì
-            LichBaoTri::create([
-                'tai_san_id' => $taiSanId,
-                'kho_tai_san_id' => $khoTaiSanId,
-                'ngay_bao_tri' => $request->ngay_bao_tri,
-                'mo_ta' => $request->mo_ta[$index] ?? null,
-                'hinh_anh_truoc' => $hinhAnhTruoc,
-                'trang_thai' => $trangThai,
-            ]);
-
-            // 🔧 Cập nhật trạng thái tài sản
-            if ($taiSan) {
-                $taiSan->update(['tinh_trang_hien_tai' => 'Đang bảo trì']);
-            } elseif ($khoTaiSan) {
-                $khoTaiSan->update(['tinh_trang' => 'Đang bảo trì']);
-            }
-        }
-
-        return redirect()->route('lichbaotri.index')
-            ->with('success', 'Đã thêm lịch bảo trì cho nhiều tài sản thành công!');
-    }
-
-    /** ✅ Hoàn thành bảo trì */
-    /** ✅ Hoàn thành bảo trì */
-public function hoanthanhSubmit(Request $request, $id)
+   public function store(Request $request)
 {
-    $lich = LichBaoTri::findOrFail($id);
-
     $request->validate([
-        'ngay_hoan_thanh' => 'required|date',
-        'mo_ta_sau' => 'nullable|string',
-        'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'tai_san_id' => 'required|array',
+        'tai_san_id.*' => 'integer',
+        'ngay_bao_tri' => 'required|date',
+        'mo_ta' => 'nullable|array',
+        'mo_ta.*' => 'nullable|string',
+        'hinh_anh' => 'nullable|array',
+        'hinh_anh.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
-    // 🖼️ Lưu ảnh sau bảo trì (nếu có)
-    if ($request->hasFile('hinh_anh')) {
-        $file = $request->file('hinh_anh');
-        $fileName = time() . '_sau_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $file->move(public_path('uploads/lichbaotri'), $fileName);
-        $lich->hinh_anh = $fileName; // ✅ Đổi thành đúng tên cột
-    }
+    $fileArray = $request->file('hinh_anh', []);
+    $today = now()->toDateString();
+    $trangThai = $request->ngay_bao_tri > $today ? 'Chờ bảo trì' : 'Đang bảo trì';
 
-    // 🗓️ Cập nhật thông tin hoàn thành
-    $lich->ngay_hoan_thanh = $request->ngay_hoan_thanh;
-    $lich->mo_ta_sau = $request->mo_ta_sau;
-    $lich->trang_thai = 'Hoàn thành';
-    $lich->save();
+    foreach ($request->tai_san_id as $index => $id) {
+        $hinhAnhTruoc = null;
 
-    $lich->loadMissing(['taiSan', 'khoTaiSan']);
+        // Lưu hình ảnh nếu có
+        if (isset($fileArray[$index]) && $fileArray[$index] instanceof \Illuminate\Http\UploadedFile) {
+            $file = $fileArray[$index];
+            $fileName = time() . "_{$index}_" . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $file->move(public_path('uploads/lichbaotri'), $fileName);
+            $hinhAnhTruoc = $fileName;
+        }
 
-    if ($lich->taiSan) {
-        $lich->taiSan->update([
-            'tinh_trang_hien_tai' => 'Bình thường',
+        $taiSan = TaiSan::find($id);
+        $khoTaiSan = KhoTaiSan::find($id);
+
+        $taiSanId = $taiSan ? $taiSan->id : null;
+        $khoTaiSanId = $khoTaiSan ? $khoTaiSan->id : null;
+
+        // Kiểm tra tồn tại lịch chỉ với trạng thái Chờ bảo trì hoặc Đang bảo trì
+        $existing = LichBaoTri::where(function ($q) use ($taiSanId, $khoTaiSanId) {
+                if ($taiSanId) $q->where('tai_san_id', $taiSanId);
+                if ($khoTaiSanId) $q->orWhere('kho_tai_san_id', $khoTaiSanId);
+            })
+            ->whereIn('trang_thai', ['Chờ bảo trì', 'Đang bảo trì'])
+            ->first();
+
+        if ($existing) {
+            return redirect()->back()->with('error', 'Tài sản này đang có bảo trì chưa hoàn thành.');
+        }
+
+        // Tạo lịch bảo trì mới
+        LichBaoTri::create([
+            'tai_san_id' => $taiSanId,
+            'kho_tai_san_id' => $khoTaiSanId,
+            'ngay_bao_tri' => $request->ngay_bao_tri,
+            'mo_ta' => $request->mo_ta[$index] ?? null,
+            'hinh_anh_truoc' => $hinhAnhTruoc,
+            'trang_thai' => $trangThai,
         ]);
+
+        // Cập nhật trạng thái tài sản nếu đang bảo trì
+        if ($trangThai === 'Đang bảo trì') {
+            if ($taiSan) $taiSan->update(['tinh_trang_hien_tai' => 'Đang bảo trì']);
+            if ($khoTaiSan) $khoTaiSan->update(['tinh_trang' => 'Đang bảo trì']);
+        }
     }
 
-    if ($lich->khoTaiSan) {
-        $lich->khoTaiSan->update([
-            'tinh_trang' => 'Bình thường',
-        ]);
-    }
-
-    return redirect()->route('lichbaotri.index')->with('success', 'Đã cập nhật hoàn thành bảo trì.');
+    return redirect()->route('lichbaotri.index')
+        ->with('success', 'Đã thêm lịch bảo trì cho tài sản thành công!');
 }
+
+
+
+
+
+
+
+
+
+    /** ✅ Hoàn thành bảo trì */
+    public function hoanthanhSubmit(Request $request, $id)
+    {
+        $lich = LichBaoTri::findOrFail($id);
+
+        $request->validate([
+            'ngay_hoan_thanh' => 'required|date',
+            'mo_ta_sau' => 'nullable|string',
+            'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        // 🖼️ Lưu ảnh sau bảo trì (nếu có)
+        if ($request->hasFile('hinh_anh')) {
+            $file = $request->file('hinh_anh');
+            $fileName = time() . '_sau_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $file->move(public_path('uploads/lichbaotri'), $fileName);
+            $lich->hinh_anh = $fileName; // ✅ Đổi thành đúng tên cột
+        }
+
+        // 🗓️ Cập nhật thông tin hoàn thành
+        $lich->ngay_hoan_thanh = $request->ngay_hoan_thanh;
+        $lich->mo_ta_sau = $request->mo_ta_sau;
+        $lich->trang_thai = 'Hoàn thành';
+        $lich->save();
+
+        $lich->loadMissing(['taiSan', 'khoTaiSan']);
+
+        if ($lich->taiSan) {
+            $lich->taiSan->update([
+                'tinh_trang_hien_tai' => 'Bình thường',
+            ]);
+        }
+
+        if ($lich->khoTaiSan) {
+            $lich->khoTaiSan->update([
+                'tinh_trang' => 'Bình thường',
+            ]);
+        }
+
+        return redirect()->route('lichbaotri.index')->with('success', 'Đã cập nhật hoàn thành bảo trì.');
+    }
 
 
     /** 🗑️ Xóa lịch bảo trì */
@@ -324,13 +308,13 @@ public function hoanthanhSubmit(Request $request, $id)
         // 🔄 Khi admin tiếp nhận và chuyển sang "Đang bảo trì", cập nhật trạng thái tài sản
         if ($trangThaiCu !== 'Đang bảo trì' && $request->trang_thai === 'Đang bảo trì') {
             $lich->loadMissing(['taiSan', 'khoTaiSan']);
-            
+
             if ($lich->taiSan) {
                 $lich->taiSan->update([
                     'tinh_trang_hien_tai' => 'Đang bảo trì'
                 ]);
             }
-            
+
             if ($lich->khoTaiSan) {
                 $lich->khoTaiSan->update([
                     'tinh_trang' => 'Đang bảo trì'
@@ -352,6 +336,7 @@ public function hoanthanhSubmit(Request $request, $id)
     }
 
     /** 🔹 Lấy tài sản trong KHO theo loại */
+    /** 🔹 Lấy tài sản trong KHO */
     public function getTaiSanKho($loaiId)
     {
         $data = KhoTaiSan::where('loai_id', $loaiId)
@@ -384,7 +369,6 @@ public function hoanthanhSubmit(Request $request, $id)
             })
             ->get()
             ->map(function ($ts) {
-
                 $slot = $ts->slots->first();
                 $sinhVien = $slot?->sinhVien;
 
@@ -396,8 +380,6 @@ public function hoanthanhSubmit(Request $request, $id)
                     'hinh_anh' => $ts->khoTaiSan && $ts->khoTaiSan->hinh_anh
                         ? asset('storage/' . $ts->khoTaiSan->hinh_anh)
                         : asset('images/no-image.png'),
-
-                    // ✅ Add thêm dữ liệu gửi ra UI
                     'nguoi_su_dung' => $sinhVien?->ho_ten ?? 'Tài sản chung',
                     'ma_sinh_vien' => $sinhVien?->ma_sinh_vien ?? null,
                     'ma_slot' => $slot?->ma_slot ?? null,
@@ -406,6 +388,8 @@ public function hoanthanhSubmit(Request $request, $id)
 
         return response()->json($taiSans);
     }
+
+
 
     /** ✅ Tiếp nhận báo hỏng - chuyển từ "Đang lên lịch" sang "Chờ bảo trì" hoặc "Đang bảo trì" */
     public function tiepNhan($id)
@@ -419,7 +403,7 @@ public function hoanthanhSubmit(Request $request, $id)
         }
 
         $today = now()->toDateString();
-        
+
         // Xác định trạng thái mới dựa trên ngày bảo trì
         if ($lich->ngay_bao_tri > $today) {
             $trangThaiMoi = 'Chờ bảo trì';
@@ -433,14 +417,14 @@ public function hoanthanhSubmit(Request $request, $id)
 
         // Cập nhật trạng thái tài sản (chỉ khi đang bảo trì, không phải chờ bảo trì)
         $lich->loadMissing(['taiSan', 'khoTaiSan']);
-        
+
         if ($trangThaiMoi === 'Đang bảo trì') {
             if ($lich->taiSan) {
                 $lich->taiSan->update([
                     'tinh_trang_hien_tai' => 'Đang bảo trì'
                 ]);
             }
-            
+
             if ($lich->khoTaiSan) {
                 $lich->khoTaiSan->update([
                     'tinh_trang' => 'Đang bảo trì'
@@ -451,6 +435,29 @@ public function hoanthanhSubmit(Request $request, $id)
         return redirect()->route('lichbaotri.index')
             ->with('success', "Đã tiếp nhận báo hỏng và chuyển sang trạng thái '{$trangThaiMoi}'.");
     }
+    /** ❌ Từ chối tiếp nhận báo hỏng */
+    /** ❌ Từ chối tiếp nhận báo hỏng */
+    public function tuChoi(Request $request, $id)
+    {
+        $lich = LichBaoTri::findOrFail($id);
+
+        if ($lich->trang_thai !== 'Đang lên lịch') {
+            return redirect()->route('lichbaotri.index')
+                ->with('error', 'Chỉ có thể từ chối các yêu cầu đang ở trạng thái "Đang lên lịch".');
+        }
+
+        $request->validate(['ly_do' => 'required|string|max:255']);
+
+        $lich->trang_thai = 'Từ chối tiếp nhận';
+        $lich->mo_ta_sau = mb_substr("❌ Lý do từ chối: " . $request->ly_do, 0, 255);
+        $lich->save();
+
+        $lich->loadMissing(['taiSan', 'khoTaiSan']);
+
+        if ($lich->taiSan) $lich->taiSan->update(['tinh_trang_hien_tai' => 'Bình thường']);
+        if ($lich->khoTaiSan) $lich->khoTaiSan->update(['tinh_trang' => 'Bình thường']);
+
+        return redirect()->route('lichbaotri.index')
+            ->with('success', 'Đã từ chối tiếp nhận báo hỏng.');
+    }
 }
-
-
