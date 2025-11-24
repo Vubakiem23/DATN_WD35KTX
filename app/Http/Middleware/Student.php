@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\SinhVien;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,10 +26,22 @@ class Student
             }
 
             $sinhVien = $user->sinhVien;
-            if (!$sinhVien || $sinhVien->trang_thai_ho_so !== 'Đã duyệt') {
+            if (!$sinhVien) {
                 return redirect()
                     ->route('public.home')
-                    ->with('warning', 'Hồ sơ sinh viên của bạn chưa được duyệt. Vui lòng hoàn thành và chờ phê duyệt để sử dụng các chức năng dành cho sinh viên.');
+                    ->with('warning', 'Không tìm thấy hồ sơ sinh viên gắn với tài khoản này.');
+            }
+
+            if ($sinhVien->trang_thai_ho_so === SinhVien::STATUS_PENDING_APPROVAL) {
+                return redirect()
+                    ->route('public.home')
+                    ->with('warning', 'Hồ sơ sinh viên của bạn đang chờ ban quản lý duyệt.');
+            }
+
+            if ($sinhVien->trang_thai_ho_so === SinhVien::STATUS_PENDING_CONFIRMATION) {
+                return redirect()
+                    ->route('client.confirmation.show')
+                    ->with('warning', 'Vui lòng xác nhận hồ sơ trước khi sử dụng các chức năng dành cho sinh viên.');
             }
 
             return $next($request);

@@ -265,12 +265,12 @@
                             @forelse ($sinhviens as $sv)
                                 @php
                                     $status = $sv->trang_thai_ho_so ?? 'Khác';
-                                    $badgeClass =
-                                        $status === 'Đã duyệt'
-                                            ? 'badge-soft-success'
-                                            : ($status === 'Chờ duyệt'
-                                                ? 'badge-soft-warning'
-                                                : 'badge-soft-secondary');
+                                    $badgeClass = match ($status) {
+                                        \App\Models\SinhVien::STATUS_APPROVED => 'badge-soft-success',
+                                        \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION => 'badge-soft-info',
+                                        \App\Models\SinhVien::STATUS_PENDING_APPROVAL => 'badge-soft-warning',
+                                        default => 'badge-soft-secondary'
+                                    };
                                     $imgUrl = $sv->anh_sinh_vien
                                         ? asset('storage/' . $sv->anh_sinh_vien)
                                         : asset('images/default-avatar.png');
@@ -323,7 +323,7 @@
                                             </a>
                                             </li>
 
-                                            @if (($sv->trang_thai_ho_so ?? '') !== 'Đã duyệt')
+                                            @if (($sv->trang_thai_ho_so ?? '') === \App\Models\SinhVien::STATUS_PENDING_APPROVAL)
                                                 <li>
                                                 <form action="{{ route('sinhvien.approve', $sv->id) }}" method="POST"
                                                     class="d-inline">
@@ -404,8 +404,9 @@
                                         <label class="small text-muted">Tình trạng hồ sơ</label>
                                         <select name="status" class="form-control">
                                             <option value="">-- Tất cả --</option>
-                                            <option value="Đã duyệt" @selected(request('status') == 'Đã duyệt')>Đã duyệt</option>
-                                            <option value="Chờ duyệt" @selected(request('status') == 'Chờ duyệt')>Chờ duyệt</option>
+                                            <option value="{{ \App\Models\SinhVien::STATUS_APPROVED }}" @selected(request('status') == \App\Models\SinhVien::STATUS_APPROVED)>Đã duyệt</option>
+                                            <option value="{{ \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION }}" @selected(request('status') == \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION)>Chờ xác nhận</option>
+                                            <option value="{{ \App\Models\SinhVien::STATUS_PENDING_APPROVAL }}" @selected(request('status') == \App\Models\SinhVien::STATUS_PENDING_APPROVAL)>Chờ duyệt</option>
                                         </select>
                                     </div>
 

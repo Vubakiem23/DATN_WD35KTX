@@ -103,8 +103,9 @@ class AdminController extends Controller
         
         // 6. Thống kê hồ sơ sinh viên (tổng tất cả hồ sơ)
         $tongHoSo = SinhVien::count(); // Tổng số hồ sơ được gửi
-        $daDuyet = SinhVien::where('trang_thai_ho_so', 'Đã duyệt')->count(); // Hồ sơ đã duyệt
-        $choDuyet = SinhVien::where('trang_thai_ho_so', 'Chờ duyệt')->count(); // Hồ sơ chờ duyệt
+        $daDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_APPROVED)->count(); // Hồ sơ đã duyệt
+        $choDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_APPROVAL)->count(); // Hồ sơ chờ duyệt
+        $choXacNhan = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_CONFIRMATION)->count(); // Hồ sơ chờ xác nhận
         $chuaDuyet = $tongHoSo - $daDuyet; // Hồ sơ chưa duyệt = Tổng - Đã duyệt
         $tyLeDuyet = $tongHoSo > 0 ? round(($daDuyet / $tongHoSo) * 100, 1) : 0; // Tỷ lệ duyệt
         
@@ -149,6 +150,7 @@ class AdminController extends Controller
             'daDuyet',
             'chuaDuyet',
             'choDuyet',
+            'choXacNhan',
             'tyLeDuyet',
             'soTaiSanDaBaoTri',
             'soTaiSanDangBaoTri',

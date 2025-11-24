@@ -488,6 +488,17 @@
     }
 </style>
 
+@if ($sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION)
+    <div class="alert alert-warning d-flex align-items-center gap-3">
+        <i class="fa fa-info-circle fa-lg"></i>
+        <div>
+            Hồ sơ của bạn đang chờ xác nhận. Vui lòng
+            <a href="{{ route('client.confirmation.show') }}" class="fw-semibold">bấm vào đây</a>
+            để hoàn tất thủ tục.
+        </div>
+    </div>
+@endif
+
 <!-- Welcome Section -->
 <div class="welcome-section">
     <h2>

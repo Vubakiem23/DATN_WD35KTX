@@ -81,8 +81,9 @@ class DashboardController extends Controller
         
         // 6. Thống kê hồ sơ sinh viên (tổng tất cả hồ sơ)
         $tongHoSo = SinhVien::count(); // Tổng số hồ sơ được gửi
-        $daDuyet = SinhVien::where('trang_thai_ho_so', 'Đã duyệt')->count(); // Hồ sơ đã duyệt
-        $choDuyet = SinhVien::where('trang_thai_ho_so', 'Chờ duyệt')->count(); // Hồ sơ chờ duyệt
+        $daDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_APPROVED)->count(); // Hồ sơ đã duyệt
+        $choDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_APPROVAL)->count(); // Hồ sơ chờ duyệt
+        $choXacNhan = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_CONFIRMATION)->count(); // Hồ sơ chờ xác nhận
         $chuaDuyet = $tongHoSo - $daDuyet; // Hồ sơ chưa duyệt = Tổng - Đã duyệt
         
         return [
@@ -100,6 +101,7 @@ class DashboardController extends Controller
             'ho_so_da_duyet' => $daDuyet,
             'ho_so_chua_duyet' => $chuaDuyet,
             'ho_so_cho_duyet' => $choDuyet,
+            'ho_so_cho_xac_nhan' => $choXacNhan,
             'ty_le_duyet' => $tongHoSo > 0 ? round(($daDuyet / $tongHoSo) * 100, 1) : 0,
             'thang' => $month,
             'nam' => $year,

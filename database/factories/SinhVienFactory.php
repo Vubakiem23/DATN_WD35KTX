@@ -28,7 +28,7 @@ class SinhVienFactory extends Factory
             'so_dien_thoai' => $this->faker->phoneNumber,
             'email' => $this->faker->unique()->safeEmail,
             'phong_id' => $phong->id,
-            'trang_thai_ho_so' => $this->faker->randomElement(['Đã duyệt', 'Chờ duyệt']),
+            'trang_thai_ho_so' => $this->faker->randomElement(SinhVien::statusOptions()),
         ];
     }
 }

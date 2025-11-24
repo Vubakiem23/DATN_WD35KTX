@@ -13,7 +13,9 @@ use App\Models\HoaDonUtilitiesPayment;
 use App\Models\LichBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
+use App\Models\Violation;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use App\Traits\HoaDonCalculations;
 
 
@@ -369,8 +371,155 @@ class ClientController extends Controller
         $user = Auth::user();
         $sinhVien = $this->getSinhVien();
 
+        $violations = $sinhVien
+            ? $sinhVien->violations()->with('type')->latest('occurred_at')->get()
+            : collect();
+
         // Nếu chưa có sinh viên, vẫn cho vào giao diện
-        return view('client.profile', compact('user', 'sinhVien'));
+        return view('client.profile', compact('user', 'sinhVien', 'violations'));
+    }
+
+    /**
+     * Cho phép sinh viên xem lại hồ sơ trong bước xác nhận
+     * (không yêu cầu middleware student để tránh redirect vòng lặp)
+     */
+    public function previewProfile()
+    {
+        $user = Auth::user();
+        $sinhVien = $this->getSinhVien();
+        $violations = $sinhVien
+            ? $sinhVien->violations()->with('type')->latest('occurred_at')->get()
+            : collect();
+
+        if (!$sinhVien) {
+            return redirect()
+                ->route('client.confirmation.show')
+                ->with('warning', 'Không tìm thấy hồ sơ sinh viên gắn với tài khoản này.');
+        }
+
+        return view('client.profile', compact('user', 'sinhVien', 'violations'));
+    }
+
+    /**
+     * Sinh viên gửi thanh toán cho vi phạm
+     */
+    public function payViolation(Request $request, Violation $violation)
+    {
+        $sinhVien = $this->getSinhVien();
+
+        if (!$sinhVien || $violation->sinh_vien_id !== $sinhVien->id) {
+            abort(403, 'Bạn không thể thanh toán vi phạm này.');
+        }
+
+        if ($violation->status === 'resolved') {
+            $payload = [
+                'success' => false,
+                'message' => 'Vi phạm này đã được xử lý.',
+            ];
+            return $request->expectsJson()
+                ? response()->json($payload, 422)
+                : back()->with('warning', $payload['message']);
+        }
+
+        $data = $request->validate([
+            'hinh_thuc_thanh_toan' => 'required|in:tien_mat,chuyen_khoan',
+            'ghi_chu' => 'nullable|string|max:2000',
+            'anh_chuyen_khoan' => 'nullable|image|max:4096',
+        ]);
+
+        $violation->client_payment_method = $data['hinh_thuc_thanh_toan'];
+        $violation->client_payment_note = $data['ghi_chu'] ?? null;
+        $violation->client_paid_at = now();
+        $violation->status = 'resolved';
+
+        if ($data['hinh_thuc_thanh_toan'] === 'chuyen_khoan') {
+            if ($request->hasFile('anh_chuyen_khoan')) {
+                if ($violation->client_transfer_image_path) {
+                    Storage::disk('public')->delete($violation->client_transfer_image_path);
+                }
+                $violation->client_transfer_image_path = $request->file('anh_chuyen_khoan')
+                    ->store('violation_payments', 'public');
+            } elseif (!$violation->client_transfer_image_path) {
+                $payload = [
+                    'success' => false,
+                    'message' => 'Vui lòng tải lên ảnh chứng từ chuyển khoản.',
+                ];
+                return $request->expectsJson()
+                    ? response()->json($payload, 422)
+                    : back()->with('warning', $payload['message']);
+            }
+        } else {
+            if ($violation->client_transfer_image_path) {
+                Storage::disk('public')->delete($violation->client_transfer_image_path);
+            }
+            $violation->client_transfer_image_path = null;
+        }
+
+        $violation->save();
+
+        $payload = [
+            'success' => true,
+            'message' => 'Đã ghi nhận thanh toán, vi phạm sẽ hiển thị là "Đã xử lý".',
+            'violation' => [
+                'id' => $violation->id,
+                'status' => $violation->status,
+                'client_paid_at' => optional($violation->client_paid_at)->format('d/m/Y H:i'),
+            ],
+        ];
+
+        return $request->expectsJson()
+            ? response()->json($payload)
+            : back()->with('success', $payload['message']);
+    }
+
+    /**
+     * Trang xác nhận hồ sơ sau khi được admin duyệt
+     */
+    public function showConfirmation()
+    {
+        $user = Auth::user();
+        $sinhVien = $this->getSinhVien();
+
+        if (!$sinhVien) {
+            return redirect()->route('public.apply')
+                ->with('warning', 'Bạn chưa gửi hồ sơ đăng ký ký túc xá.');
+        }
+
+        if ($sinhVien->isPendingApproval()) {
+            return redirect()->route('public.home')
+                ->with('warning', 'Hồ sơ của bạn vẫn đang trong trạng thái chờ ban quản lý duyệt.');
+        }
+
+        if ($sinhVien->isApproved()) {
+            return redirect()->route('client.dashboard')
+                ->with('info', 'Hồ sơ đã được xác nhận trước đó.');
+        }
+
+        return view('client.confirmation', compact('user', 'sinhVien'));
+    }
+
+    /**
+     * Sinh viên xác nhận hồ sơ -> chuyển sang trạng thái Đã duyệt
+     */
+    public function confirmApproval(Request $request)
+    {
+        $sinhVien = $this->getSinhVien();
+
+        if (!$sinhVien) {
+            return redirect()->route('public.apply')
+                ->with('warning', 'Bạn chưa gửi hồ sơ đăng ký ký túc xá.');
+        }
+
+        if (!$sinhVien->isPendingConfirmation()) {
+            return redirect()->route('client.dashboard')
+                ->with('info', 'Hồ sơ của bạn không ở trạng thái cần xác nhận.');
+        }
+
+        $sinhVien->trang_thai_ho_so = SinhVien::STATUS_APPROVED;
+        $sinhVien->save();
+
+        return redirect()->route('client.dashboard')
+            ->with('success', 'Đã xác nhận hồ sơ thành công. Bạn có thể sử dụng đầy đủ các chức năng dành cho sinh viên.');
     }
 public function baoHong(Request $request)
 {

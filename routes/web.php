@@ -71,11 +71,20 @@ Route::get('/thong-bao/{id}', [ThongBaoController::class, 'publicShow'])->name('
 
 
 
+// =================== 🧑‍🎓 CLIENT CONFIRMATION ===================
+Route::prefix('client')->middleware(['auth'])->group(function () {
+    Route::get('/xac-nhan-ho-so', [ClientController::class, 'showConfirmation'])->name('client.confirmation.show');
+    Route::post('/xac-nhan-ho-so', [ClientController::class, 'confirmApproval'])->name('client.confirmation.store');
+    Route::get('/ho-so-da-dang-ky', [ClientController::class, 'previewProfile'])->name('client.profile.preview');
+});
+
 // =================== 🧑‍🎓 CLIENT (SINH VIÊN) ===================
 Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::get('', [ClientController::class, 'dashboard'])->name('client.dashboard');
     Route::get('/phong', [ClientController::class, 'phong'])->name('client.phong');
     Route::get('/profile', [ClientController::class, 'profile'])->name('client.profile');
+    Route::post('/violations/{violation}/pay', [ClientController::class, 'payViolation'])
+        ->name('client.violations.pay');
 
     // Sự cố (sẽ làm sau)
     Route::get('/suco', [ClientController::class, 'suCoIndex'])->name('client.suco.index');

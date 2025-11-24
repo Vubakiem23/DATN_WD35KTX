@@ -14,11 +14,18 @@ class Violation extends Model
         'penalty_amount',
         'receipt_no',
         'note',
-        'image'
+        'image',
+        'client_payment_method',
+        'client_payment_note',
+        'client_transfer_image_path',
+        'client_paid_at',
     ];
 
 
-    protected $casts = ['occurred_at' => 'datetime'];
+    protected $casts = [
+        'occurred_at' => 'datetime',
+        'client_paid_at' => 'datetime',
+    ];
 
     public function student()
     {

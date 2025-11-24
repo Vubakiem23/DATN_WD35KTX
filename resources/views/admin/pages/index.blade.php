@@ -322,7 +322,10 @@
                     <i class="fa fa-clock-o stat-icon"></i>
                     <div class="stat-label">Hồ sơ chưa duyệt</div>
                     <div class="stat-value">{{ number_format($chuaDuyet) }}</div>
-                    <div class="stat-subvalue">Trong đó: {{ number_format($choDuyet) }} đang chờ duyệt</div>
+                    <div class="stat-subvalue">
+                        Chờ duyệt: {{ number_format($choDuyet) }} |
+                        Chờ xác nhận: {{ number_format($choXacNhan) }}
+                    </div>
                 </div>
             </div>
         </div>

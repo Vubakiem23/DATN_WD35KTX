@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Schema;
 
 class SinhVien extends Model
 {
-    
+    public const STATUS_PENDING_APPROVAL      = 'Chờ duyệt';
+    public const STATUS_PENDING_CONFIRMATION  = 'Chờ xác nhận';
+    public const STATUS_APPROVED              = 'Đã duyệt';
+
     protected $table = 'sinh_vien';
 
     protected $fillable = [
@@ -164,6 +167,30 @@ class SinhVien extends Model
         return $this->hasMany(ThongBaoSinhVien::class, 'sinh_vien_id');
     }
 
+    public function isPendingApproval(): bool
+    {
+        return $this->trang_thai_ho_so === self::STATUS_PENDING_APPROVAL;
+    }
+
+    public function isPendingConfirmation(): bool
+    {
+        return $this->trang_thai_ho_so === self::STATUS_PENDING_CONFIRMATION;
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->trang_thai_ho_so === self::STATUS_APPROVED;
+    }
+
+    public static function statusOptions(): array
+    {
+        return [
+            self::STATUS_PENDING_APPROVAL,
+            self::STATUS_PENDING_CONFIRMATION,
+            self::STATUS_APPROVED,
+        ];
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -173,7 +200,7 @@ class SinhVien extends Model
             ThongBaoSinhVien::create([
                 'sinh_vien_id' => $sinhVien->id,
                 'noi_dung' => 'Hồ sơ của bạn đang được duyệt.',
-                'trang_thai' => 'Chờ duyệt',
+                'trang_thai' => self::STATUS_PENDING_APPROVAL,
             ]);
         });
     }
