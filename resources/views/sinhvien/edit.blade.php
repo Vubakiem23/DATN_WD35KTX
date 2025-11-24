@@ -253,8 +253,9 @@
                         <div class="col-md-3">
                             <label class="form-label">Trạng thái</label>
                             <select name="trang_thai_ho_so" class="form-select">
-                                <option value="Chờ duyệt" @selected(old('trang_thai_ho_so', $sinhvien->trang_thai_ho_so) === 'Chờ duyệt')>Chờ duyệt</option>
-                                <option value="Đã duyệt" @selected(old('trang_thai_ho_so', $sinhvien->trang_thai_ho_so) === 'Đã duyệt')>Đã duyệt</option>
+                                <option value="{{ \App\Models\SinhVien::STATUS_PENDING_APPROVAL }}" @selected(old('trang_thai_ho_so', $sinhvien->trang_thai_ho_so) === \App\Models\SinhVien::STATUS_PENDING_APPROVAL)>Chờ duyệt</option>
+                                <option value="{{ \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION }}" @selected(old('trang_thai_ho_so', $sinhvien->trang_thai_ho_so) === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION)>Chờ xác nhận</option>
+                                <option value="{{ \App\Models\SinhVien::STATUS_APPROVED }}" @selected(old('trang_thai_ho_so', $sinhvien->trang_thai_ho_so) === \App\Models\SinhVien::STATUS_APPROVED)>Đã duyệt</option>
                             </select>
                         </div>
                     </div>

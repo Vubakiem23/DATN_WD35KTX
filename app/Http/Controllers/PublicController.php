@@ -38,11 +38,16 @@ class PublicController extends Controller
             $existing = SinhVien::where('user_id', Auth::id())->first();
             if ($existing) {
                 $canRegister = false;
-                $isApproved = $existing->trang_thai_ho_so === 'Đã duyệt';
-                $registerMessage = $isApproved
-                    ? 'Hồ sơ đã được duyệt. Bạn không thể đăng ký thêm.'
-                    : 'Bạn đã gửi hồ sơ. Vui lòng chờ duyệt.';
-                $hideRegisterButton = $isApproved;
+                if ($existing->trang_thai_ho_so === SinhVien::STATUS_APPROVED) {
+                    $registerMessage = 'Hồ sơ đã được duyệt. Bạn không thể đăng ký thêm.';
+                    $hideRegisterButton = true;
+                } elseif ($existing->trang_thai_ho_so === SinhVien::STATUS_PENDING_CONFIRMATION) {
+                    $registerMessage = 'Hồ sơ đã được duyệt. Vui lòng xác nhận để hoàn tất thủ tục.';
+                    $hideRegisterButton = true;
+                } else {
+                    $registerMessage = 'Bạn đã gửi hồ sơ. Vui lòng chờ duyệt.';
+                    $hideRegisterButton = false;
+                }
             }
         }
     } catch (\Exception $e) {
@@ -73,9 +78,13 @@ class PublicController extends Controller
         if (Auth::check()) {
             $existing = SinhVien::where('user_id', Auth::id())->first();
             if ($existing) {
-                if ($existing->trang_thai_ho_so === 'Đã duyệt') {
+                if ($existing->trang_thai_ho_so === SinhVien::STATUS_APPROVED) {
                     return redirect()->route('client.dashboard')
                         ->with('warning', 'Hồ sơ đã được duyệt. Bạn không thể đăng ký thêm.');
+                }
+                if ($existing->trang_thai_ho_so === SinhVien::STATUS_PENDING_CONFIRMATION) {
+                    return redirect()->route('client.confirmation.show')
+                        ->with('warning', 'Hồ sơ đã được duyệt. Vui lòng xác nhận trước khi đăng ký thêm.');
                 }
                 return redirect()->route('public.home')
                     ->with('warning', 'Bạn đã gửi hồ sơ. Vui lòng chờ duyệt.');
@@ -93,9 +102,13 @@ class PublicController extends Controller
         if (Auth::check()) {
             $existing = SinhVien::where('user_id', Auth::id())->first();
             if ($existing) {
-                if ($existing->trang_thai_ho_so === 'Đã duyệt') {
+                if ($existing->trang_thai_ho_so === SinhVien::STATUS_APPROVED) {
                     return redirect()->route('client.dashboard')
                         ->with('warning', 'Hồ sơ đã được duyệt. Bạn không thể đăng ký thêm.');
+                }
+                if ($existing->trang_thai_ho_so === SinhVien::STATUS_PENDING_CONFIRMATION) {
+                    return redirect()->route('client.confirmation.show')
+                        ->with('warning', 'Hồ sơ đã được duyệt. Vui lòng xác nhận trước khi đăng ký thêm.');
                 }
                 return redirect()->route('public.home')
                     ->with('warning', 'Bạn đã gửi hồ sơ. Vui lòng chờ duyệt.');
@@ -133,7 +146,7 @@ class PublicController extends Controller
             $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public');
         }
 
-        $data['trang_thai_ho_so'] = 'Chờ duyệt';
+        $data['trang_thai_ho_so'] = SinhVien::STATUS_PENDING_APPROVAL;
         $data['phong_id'] = null;
 
         SinhVien::create($data);

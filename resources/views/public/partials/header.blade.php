@@ -21,6 +21,13 @@
 
             <!-- Navbar Content -->
             <div class="collapse navbar-collapse" id="navbarContent">
+                @php
+                    $user = auth()->user();
+                    $hasStudentRole = $user?->roles?->contains('ma_quyen', 'student') ?? false;
+                    $sinhVien = $user?->sinhVien;
+                    $studentApproved = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_APPROVED;
+                    $studentPendingConfirmation = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION;
+                @endphp
                 <!-- Main Navigation -->
                 <ul class="navbar-nav main-nav">
                     <li class="nav-item">
@@ -63,12 +70,6 @@
 
                 <!-- User Actions -->
                 <div class="navbar-actions">
-                    @php
-                        $user = auth()->user();
-                        $hasStudentRole = $user?->roles?->contains('ma_quyen', 'student') ?? false;
-                        $sinhVien = $user?->sinhVien;
-                        $studentApproved = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === 'Đã duyệt';
-                    @endphp
 
                     @auth
                         <div class="user-dropdown">
@@ -100,6 +101,13 @@
                                         <li><a class="dropdown-item" href="{{ route('client.thongbao.index') }}">
                                             <i class="fas fa-bell"></i> Thông báo
                                         </a></li>
+                                    @elseif ($studentPendingConfirmation)
+                                        <li><a class="dropdown-item" href="{{ route('client.confirmation.show') }}">
+                                            <i class="fas fa-clipboard-check"></i> Xác nhận hồ sơ
+                                        </a></li>
+                                        <li><div class="dropdown-item-text text-warning">
+                                            <i class="fas fa-info-circle"></i> Hồ sơ đang chờ xác nhận
+                                        </div></li>
                                     @else
                                         <li><div class="dropdown-item-text text-muted">
                                             <i class="fas fa-info-circle"></i> Hồ sơ chưa được duyệt

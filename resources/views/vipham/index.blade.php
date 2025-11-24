@@ -301,6 +301,15 @@
                                 {{-- Trạng thái --}}
                                 <td class="fit text-center">
                                     <span class="badge {{ $statusBadge }}">{{ $statusText }}</span>
+                                    @if($v->client_paid_at)
+                                        <div class="small text-muted mt-1">
+                                            <i class="fa fa-credit-card me-1"></i>
+                                            SV thanh toán {{ optional($v->client_paid_at)->format('d/m H:i') }}
+                                        </div>
+                                        <div class="small text-muted">
+                                            Hình thức: {{ $v->client_payment_method === 'chuyen_khoan' ? 'Chuyển khoản' : 'Tiền mặt' }}
+                                        </div>
+                                    @endif
                                 </td>
 
                                 {{-- Tiền phạt --}}

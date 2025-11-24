@@ -110,6 +110,37 @@
                             <th>Loại vi phạm</th>
                             <td>{{ optional($violation->type)->name ?? '—' }}</td>
                         </tr>
+                        <tr>
+                            <th>Thanh toán của sinh viên</th>
+                            <td>
+                                @if ($violation->client_paid_at)
+                                    <div class="mb-1">
+                                        <span class="badge bg-success-subtle text-success">
+                                            <i class="fa fa-check-circle me-1"></i> Đã thanh toán
+                                        </span>
+                                    </div>
+                                    <div class="small text-muted mb-1">
+                                        Thời gian: {{ optional($violation->client_paid_at)->format('d/m/Y H:i') }}
+                                    </div>
+                                    <div class="small text-muted mb-1">
+                                        Hình thức: {{ $violation->client_payment_method === 'chuyen_khoan' ? 'Chuyển khoản' : 'Tiền mặt' }}
+                                    </div>
+                                    @if ($violation->client_payment_note)
+                                        <div class="small fst-italic mb-1">
+                                            Ghi chú: "{{ $violation->client_payment_note }}"
+                                        </div>
+                                    @endif
+                                    @if ($violation->client_transfer_image_path)
+                                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($violation->client_transfer_image_path) }}"
+                                            class="btn btn-outline-primary btn-sm" target="_blank">
+                                            <i class="fa fa-image me-1"></i> Xem ảnh chuyển khoản
+                                        </a>
+                                    @endif
+                                @else
+                                    <span class="text-muted">Chưa có thông tin thanh toán.</span>
+                                @endif
+                            </td>
+                        </tr>
 
                         {{-- ⬇⬇⬇ HÀNG MỚI: HÌNH ẢNH --}}
                         <tr>

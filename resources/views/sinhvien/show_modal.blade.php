@@ -182,6 +182,7 @@
                                 <th class="text-end">Tiền phạt</th>
                                 <th>Biên lai</th>
                                 <th>Ghi chú</th>
+                                <th>Thanh toán</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -200,6 +201,18 @@
                                     </td>
                                     <td>{{ $v->receipt_no ?? '-' }}</td>
                                     <td>{{ $v->note ? \Illuminate\Support\Str::limit($v->note, 60) : '-' }}</td>
+                                    <td>
+                                        @if($v->client_paid_at)
+                                            <span class="badge bg-success">
+                                                {{ optional($v->client_paid_at)->format('d/m/Y H:i') }}
+                                            </span>
+                                            <div class="small text-muted">
+                                                {{ $v->client_payment_method === 'chuyen_khoan' ? 'Chuyển khoản' : 'Tiền mặt' }}
+                                            </div>
+                                        @else
+                                            <span class="text-muted small">Chưa thanh toán</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

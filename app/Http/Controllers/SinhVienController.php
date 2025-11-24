@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SinhVienApprovalMail;
 use App\Models\SinhVien;
 use App\Models\Phong;
 use App\Models\ThongBaoPhongSv;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Validation\Rule;
 
 class SinhVienController extends Controller
 {
@@ -48,9 +50,10 @@ class SinhVienController extends Controller
 
         // Tính thống kê
         $tongHoSo = (clone $baseQuery)->count();
-        $daDuyet = (clone $baseQuery)->where('trang_thai_ho_so', 'Đã duyệt')->count();
-        $choDuyet = (clone $baseQuery)->where('trang_thai_ho_so', 'Chờ duyệt')->count();
-        $chuaDuyet = $tongHoSo - $daDuyet; // Tổng - đã duyệt (bao gồm cả chờ duyệt và null)
+        $daDuyet = (clone $baseQuery)->where('trang_thai_ho_so', SinhVien::STATUS_APPROVED)->count();
+        $choDuyet = (clone $baseQuery)->where('trang_thai_ho_so', SinhVien::STATUS_PENDING_APPROVAL)->count();
+        $choXacNhan = (clone $baseQuery)->where('trang_thai_ho_so', SinhVien::STATUS_PENDING_CONFIRMATION)->count();
+        $chuaDuyet = $tongHoSo - $daDuyet; // Tổng - đã duyệt (bao gồm cả chờ duyệt, chờ xác nhận và null)
 
         // Query để lấy danh sách (có pagination)
         $sinhviens = (clone $baseQuery)
@@ -71,6 +74,7 @@ class SinhVienController extends Controller
             'tongHoSo'  => $tongHoSo,
             'daDuyet'   => $daDuyet,
             'choDuyet'  => $choDuyet,
+            'choXacNhan' => $choXacNhan,
             'chuaDuyet' => $chuaDuyet,
         ]);
     }
@@ -112,7 +116,7 @@ class SinhVienController extends Controller
             'so_dien_thoai' => 'required|string',
             'email' => 'required|email',
             // 'phong_id' bỏ khỏi form tạo mới; sẽ gán qua chức năng khác
-            'trang_thai_ho_so' => 'nullable|string',
+            'trang_thai_ho_so' => ['nullable', 'string', Rule::in(SinhVien::statusOptions())],
 
             // mới
             'citizen_id_number' => 'nullable|string',
@@ -129,6 +133,8 @@ class SinhVienController extends Controller
         if ($request->hasFile('anh_sinh_vien')) {
             $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public'); // storage/public/students
         }
+
+        $data['trang_thai_ho_so'] = $data['trang_thai_ho_so'] ?? SinhVien::STATUS_PENDING_APPROVAL;
 
         $sv = \App\Models\SinhVien::create($data);
 
@@ -169,7 +175,7 @@ class SinhVienController extends Controller
             'khoa_hoc' => 'required|string',
             'so_dien_thoai' => 'required|string',
             'email' => 'required|email',
-            'trang_thai_ho_so' => 'nullable|string',
+            'trang_thai_ho_so' => ['nullable', 'string', Rule::in(SinhVien::statusOptions())],
 
             // mới
             'citizen_id_number' => 'nullable|string',
@@ -220,10 +226,19 @@ class SinhVienController extends Controller
     public function approve($id)
     {
         $sv = SinhVien::findOrFail($id);
-        $sv->trang_thai_ho_so = 'Đã duyệt';
+        $sv->trang_thai_ho_so = SinhVien::STATUS_PENDING_CONFIRMATION;
         $sv->save();
 
-        return back()->with('success', 'Đã duyệt hồ sơ sinh viên.');
+        if (!empty($sv->email)) {
+            try {
+                $confirmationUrl = route('client.confirmation.show');
+                Mail::to($sv->email)->send(new SinhVienApprovalMail($sv, $confirmationUrl));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        return back()->with('success', 'Đã duyệt hồ sơ sinh viên và gửi email thông báo.');
     }
     public function capNhatPhong(Request $request, $id)
 {

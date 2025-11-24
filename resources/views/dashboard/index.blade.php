@@ -240,7 +240,10 @@
                             <div>
                                 <h6 class="text-muted mb-1">Hồ sơ chưa duyệt</h6>
                                 <h3 class="mb-0 text-warning">{{ number_format($stats['ho_so_chua_duyet']) }}</h3>
-                                <small class="text-muted">Trong đó: {{ number_format($stats['ho_so_cho_duyet']) }} đang chờ duyệt</small>
+                                <small class="text-muted">
+                                    Chờ duyệt: {{ number_format($stats['ho_so_cho_duyet']) }} |
+                                    Chờ xác nhận: {{ number_format($stats['ho_so_cho_xac_nhan']) }}
+                                </small>
                             </div>
                             <div class="text-warning" style="font-size: 3rem; opacity: 0.3;">
                                 <i class="fa fa-clock-o"></i>
