@@ -10,7 +10,7 @@ class ThongBaoSuCoController extends Controller
     public function index()
     {
         // Lấy tất cả thông báo kèm quan hệ su_co, phân trang 10 bản ghi/trang
-        $thongbaos = ThongBaoSuCo::with('su_co.sinh_vien')
+        $thongbaos = ThongBaoSuCo::with('su_co.sinhVien')
                         ->orderByDesc('ngay_tao')
                         ->paginate(10);
 
