@@ -3,12 +3,58 @@
 @section('title', 'Thông báo - Sinh viên')
 
 @section('content')
-<!-- Banner Header Gradient -->
-
-
 <div class="container">
-    <!-- Thông báo riêng của sinh viên -->
-    @if($sinhVien && ($thongBaoSinhVien->count() > 0 || $thongBaoSuCo->count() > 0 || $thongBaoPhongSv->count() > 0))
+
+    @if($sinhVien && ($thongBaoSinhVien->count() > 0 ||
+    $SuCo->count() > 0 ||
+    $thongBaoPhongSv->count() > 0 ||
+    $HoaDonSlotPayment->count() > 0 ||
+    $HoaDonUtilitiesPayment->count() > 0))
+
+    @php
+    // Gom tất cả thông báo + gán thuộc tính time để sort
+    $allNoti = collect()
+    ->merge(
+    $thongBaoSinhVien->map(function ($i) {
+    $i->time = $i->created_at;
+    $i->type = 'sv';
+    return $i;
+    })
+    )
+    ->merge(
+    $SuCo->map(function ($i) {
+    $i->time = $i->ngay_gui ? \Carbon\Carbon::parse($i->ngay_gui) : now();
+    $i->type = 'suco';
+    return $i;
+    })
+    )
+    ->merge(
+    $thongBaoPhongSv->map(function ($i) {
+    $i->time = $i->created_at;
+    $i->type = 'phong';
+    return $i;
+    })
+    )
+    // HÓA ĐƠN PHÒNG
+    ->merge(
+    $HoaDonSlotPayment->map(function($i) {
+    $i->type = 'hoa_don_phong';
+    $i->time = $i->created_at;
+    return $i;
+    })
+    )
+
+    // HÓA ĐƠN ĐIỆN NƯỚC
+    ->merge(
+    $HoaDonUtilitiesPayment->map(function($i) {
+    $i->type = 'hoa_don_dien_nuoc';
+    $i->time = $i->created_at;
+    return $i;
+    })
+    )
+    ->sortByDesc('time');
+    @endphp
+
     <!-- Section Header -->
     <div class="notice-section-header mb-4">
         <div class="d-flex align-items-center">
@@ -19,20 +65,24 @@
 
     <!-- Notifications List -->
     <div class="notifications-container">
-        <!-- Thông báo từ bảng thongbao_sinh_vien -->
-        @foreach($thongBaoSinhVien as $tb)
+
+        {{-- ===== VÒNG LẶP DUY NHẤT ĐÃ SẮP XẾP ===== --}}
+        @foreach($allNoti as $tb)
+
+        {{-- ================== THÔNG BÁO SINH VIÊN ================== --}}
+        @if($tb->type == 'sv')
         <div class="notice-card">
             <div class="notice-card-header">
                 <div class="notice-status-badge">
                     @if($tb->trang_thai == 'Mới')
-                        <i class="fas fa-bell notice-icon-new"></i>
-                        <span class="notice-status-text">Mới</span>
+                    <i class="fas fa-bell notice-icon-new"></i>
+                    <span class="notice-status-text">Mới</span>
                     @elseif($tb->trang_thai == 'Chờ duyệt')
-                        <i class="fas fa-bell notice-icon-pending"></i>
-                        <span class="notice-status-text">Chờ duyệt</span>
+                    <i class="fas fa-bell notice-icon-pending"></i>
+                    <span class="notice-status-text">Chờ duyệt</span>
                     @else
-                        <i class="fas fa-bell notice-icon-read"></i>
-                        <span class="notice-status-text">{{ $tb->trang_thai }}</span>
+                    <i class="fas fa-bell notice-icon-read"></i>
+                    <span class="notice-status-text">{{ $tb->trang_thai }}</span>
                     @endif
                 </div>
                 <div class="notice-time">
@@ -44,41 +94,64 @@
                 <p class="notice-content">{{ $tb->noi_dung }}</p>
             </div>
         </div>
-        @endforeach
+        @endif
 
-        <!-- Thông báo sự cố -->
-        @foreach($thongBaoSuCo as $tb)
-        <div class="notice-card">
-            <div class="notice-card-header">
-                <div class="notice-status-badge">
-                    <i class="fas fa-exclamation-triangle notice-icon-warning"></i>
-                    <span class="notice-status-text">Sự cố</span>
-                    @if($tb->su_co && $tb->su_co->phong)
-                    <span class="notice-room-badge">
-                        <i class="fas fa-door-open"></i>
-                        {{ $tb->su_co->phong->ten_phong }}
-                    </span>
-                    @endif
-                </div>
-                <div class="notice-time">
-                    <i class="far fa-clock"></i>
-                    <span>{{ $tb->ngay_tao ? \Carbon\Carbon::parse($tb->ngay_tao)->format('d/m/Y H:i') : 'N/A' }}</span>
-                </div>
-            </div>
-            <div class="notice-card-body">
-                <h6 class="notice-title">{{ $tb->tieu_de }}</h6>
-                <p class="notice-content">{{ $tb->noi_dung }}</p>
-            </div>
+        {{-- ================== THÔNG BÁO SỰ CỐ ================== --}}
+       @if($tb->type == 'suco')
+<div class="notice-card">
+    <div class="notice-card-header">
+        <div class="notice-status-badge">
+            <i class="fas fa-exclamation-triangle notice-icon-warning"></i>
+            <span class="notice-status-text">Sự cố</span>
+
+            {{-- Hiển thị phòng nếu có --}}
+            @if($tb->phong)
+                <span class="notice-room-badge">
+                    <i class="fas fa-door-open"></i>
+                    {{ $tb->phong->ten_phong }}
+                </span>
+            @endif
+
+            {{-- Xác định class badge theo trạng thái --}}
+            @php
+                $trangThai = $tb->trang_thai ?? 'Chưa xử lý';
+                $badgeClass = match($trangThai) {
+                    'Tiếp nhận' => 'badge-soft-secondary',
+                    'Đang xử lý' => 'badge-soft-warning',
+                    'Hoàn thành' => 'badge-soft-success',
+                    default => 'badge-soft-secondary',
+                };
+            @endphp
+
+            <span class="badge {{ $badgeClass }}">{{ $trangThai }}</span>
         </div>
-        @endforeach
 
-        <!-- Thông báo phòng sinh viên -->
-        @foreach($thongBaoPhongSv as $tb)
+        {{-- Hiển thị thời gian --}}
+        <div class="notice-time">
+            <i class="far fa-clock"></i>
+            @if($tb->trang_thai === 'Hoàn thành' && !empty($tb->ngay_hoan_thanh))
+                <span>Hoàn thành: {{ \Carbon\Carbon::parse($tb->ngay_hoan_thanh)->format('d/m/Y H:i') }}</span>
+            @else
+                <span>{{ $tb->ngay_gui ? \Carbon\Carbon::parse($tb->ngay_gui)->format('d/m/Y H:i') : 'N/A' }}</span>
+            @endif
+        </div>
+    </div>
+
+    <div class="notice-card-body">
+        <p class="notice-content">{{ $tb->mo_ta }}</p>
+    </div>
+</div>
+@endif
+
+
+        {{-- ================== THÔNG BÁO PHÒNG ================== --}}
+        @if($tb->type == 'phong')
         <div class="notice-card">
             <div class="notice-card-header">
                 <div class="notice-status-badge">
                     <i class="fas fa-home notice-icon-room"></i>
                     <span class="notice-status-text">Phòng</span>
+
                     @if($tb->phong)
                     <span class="notice-room-badge">
                         <i class="fas fa-door-open"></i>
@@ -86,6 +159,7 @@
                     </span>
                     @endif
                 </div>
+
                 <div class="notice-time">
                     <i class="far fa-clock"></i>
                     <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
@@ -95,8 +169,81 @@
                 <p class="notice-content">{{ $tb->noi_dung }}</p>
             </div>
         </div>
+        @endif
+       {{-- ==================== 4. HÓA ĐƠN PHÒNG ==================== --}}
+@if($tb->type == 'hoa_don_phong')
+<a href="{{ url('client/hoadon/tien-phong') }}" style="text-decoration: none; color: inherit;">
+    <div class="notice-card">
+        <div class="notice-card-header">
+            <div class="notice-status-badge">
+                <i class="fas fa-file-invoice-dollar text-primary"></i>
+                <span class="notice-status-text">Hóa đơn phòng</span>
+
+                @if($tb->slot && $tb->slot->phong)
+                <span class="notice-room-badge">
+                    <i class="fas fa-door-open"></i>
+                    {{ $tb->slot->phong->ten_phong }}
+                </span>
+                @endif
+            </div>
+
+            <div class="notice-time">
+                <i class="far fa-clock"></i>
+                <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
+            </div>
+        </div>
+
+        <div class="notice-card-body">
+            <p class="notice-content">
+                Số tiền: <b>{{ number_format($tb->hoaDon->slot_unit_price) }}đ</b><br>
+                Trạng thái: <b>{{ $tb->trang_thai }}</b>
+            </p>
+        </div>
+    </div>
+</a>
+@endif
+{{-- ==================== HÓA ĐƠN ĐIỆN NƯỚC ==================== --}}
+@if($tb->type == 'hoa_don_dien_nuoc')
+<a href="{{ url('client/hoadon/dien-nuoc') }}" style="text-decoration: none; color: inherit;">
+    <div class="notice-card">
+        <div class="notice-card-header">
+            <div class="notice-status-badge">
+                <i class="fas fa-file-invoice text-warning"></i>
+                <span class="notice-status-text">Hóa đơn điện nước</span>
+
+                {{-- Hiển thị phòng nếu có --}}
+                @if($tb->slot && $tb->slot->phong)
+                <span class="notice-room-badge">
+                    <i class="fas fa-door-open"></i>
+                    {{ $tb->slot->phong->ten_phong }}
+                </span>
+                @endif
+
+            </div>
+
+            <div class="notice-time">
+                <i class="far fa-clock"></i>
+                <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
+            </div>
+        </div>
+
+        <div class="notice-card-body">
+            <p class="notice-content">
+                {{-- Hiển thị số tiền điện, nước và tổng tiền --}}
+                Tiền điện: <b>{{ number_format($tb->tien_dien) }}đ</b><br>
+                Tiền nước: <b>{{ number_format($tb->tien_nuoc) }}đ</b><br>
+                Tổng tiền: <b>{{ number_format($tb->tong_tien) }}đ</b><br>
+                Trạng thái: <b>{{ $tb->trang_thai }}</b>
+            </p>
+        </div>
+    </div>
+</a>
+@endif
+
+
         @endforeach
     </div>
+
     @else
     <!-- Empty State -->
     <div class="notice-empty-state">
@@ -349,7 +496,11 @@
             padding: 40px 20px;
         }
     }
+
+    .notice-status-badge .badge {
+        color: #111827;
+        /* chữ màu đen */
+    }
 </style>
 @endpush
 @endsection
-
