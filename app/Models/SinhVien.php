@@ -177,4 +177,8 @@ class SinhVien extends Model
             ]);
         });
     }
+     public function utilitiesPayments()
+    {
+        return $this->hasMany(HoaDonUtilitiesPayment::class, 'sinh_vien_id', 'id');
+    }
 }

@@ -104,10 +104,13 @@
       </form>
 
       {{-- Lịch sử --}}
-      <div class="d-flex align-items-center" style="margin-bottom: +15px;">
-        <a href="{{ route('hoadon.lichsu') }}" class="btn btn-dergin btn-dergin--muted" title="Lịch sử">
-          <i class="fa fa-history"></i><span>Lịch sử</span>
-        </a>
+      <div class="d-flex align-items-center" style="margin-bottom: 15px;">
+    <a href="{{ route('hoadon.lichsu_diennuoc') }}" 
+   class="btn btn-dergin btn-dergin--muted me-2" 
+   title="Lịch sử điện nước">
+  <i class="fa fa-bolt"></i><span>Lịch Sử</span>
+</a>
+
       </div>
 
       {{-- Bộ lọc --}}
@@ -735,6 +738,7 @@
 
 {{-- modal bộ lọc --}}
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">

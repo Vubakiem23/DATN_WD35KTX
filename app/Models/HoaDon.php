@@ -84,14 +84,6 @@ public function utilitiesPayments()
     return $this->hasMany(HoaDonUtilitiesPayment::class, 'hoa_don_id');
 }
 
-public function getHinhThucThanhToanLabelAttribute()
-{
-    return match($this->hinh_thuc_thanh_toan) {
-        'tien_mat' => 'Tiền mặt',
-        'chuyen_khoan' => 'Chuyển khoản',
-        default => 'Không xác định',
-    };
-}
 
 /**
  * Lấy số slot đã thanh toán
@@ -108,6 +100,26 @@ public function getTongSoSlotAttribute(): int
 {
     return $this->slotPayments()->count();
 }
+public function getHinhThucThanhToanLabelAttribute()
+{
+    if (!$this->relationLoaded('slotPayments')) {
+        $this->load('slotPayments');
+    }
+
+    // Lấy tất cả slot đã thanh toán
+    $labels = $this->slotPayments
+        ->where('da_thanh_toan', true)
+        ->map(function ($slot) {
+            return $slot->hinh_thuc_thanh_toan === 'tien_mat' ? 'Tiền mặt' : 'Chuyển khoản';
+        })
+        ->countBy(); // đếm số lượng từng loại
+
+    // Ghép thành chuỗi: "1 Tiền mặt, 2 Chuyển khoản"
+    return $labels->map(function ($count, $label) {
+        return $count . ' ' . $label;
+    })->implode(', ');
+}
+
 
 
     // Các thuộc tính khác của model...

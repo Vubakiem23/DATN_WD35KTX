@@ -107,10 +107,10 @@
       </form>
 
       {{-- Lịch sử --}}
-      <div class="d-flex align-items-center" style="margin-bottom: +15px;">
-        <a href="{{ route('hoadon.lichsu') }}" class="btn btn-dergin btn-dergin--muted" title="Lịch sử">
-          <i class="fa fa-history"></i><span>Lịch sử</span>
-        </a>
+      <div class="d-flex align-items-center" style="margin-bottom: 15px;">
+    <a href="{{ route('hoadon.lichsu_tienphong') }}" class="btn btn-dergin btn-dergin--muted me-2" title="Lịch sử tiền phòng">
+      <i class="fa fa-bed"></i><span>Lịch Sử</span>
+    </a>
       </div>
 
       {{-- Bộ lọc --}}

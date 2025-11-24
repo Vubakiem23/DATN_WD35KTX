@@ -358,6 +358,39 @@ if ($slotSinhVien) {
             'tab'
         ));
     }
+    // Lịch sử tiền phòng
+    public function lichSuTienPhong()
+{
+    $sinhVienId = Auth::id();
+
+    // Lấy các khoản tiền phòng mà sinh viên này đã thanh toán
+    $hoaDons = HoaDonUtilitiesPayment::where('sinh_vien_id', $sinhVienId)
+        ->where('da_thanh_toan', true)
+        ->whereNull('tien_dien')   // loại bỏ điện
+        ->whereNull('tien_nuoc')   // loại bỏ nước
+        ->orderByDesc('ngay_thanh_toan')
+        ->get();
+
+    return view('client.hoadon.lichsu_tienphong', compact('hoaDons'));
+}
+
+
+    // Lịch sử điện nước
+    public function lichSuDienNuoc()
+    {
+        $sinhVienId = Auth::id();
+
+        $hoaDons = HoaDonUtilitiesPayment::where('sinh_vien_id', $sinhVienId)
+            ->where('da_thanh_toan', true)
+            ->where(function ($query) {
+                $query->whereNotNull('tien_dien')
+                      ->orWhereNotNull('tien_nuoc');
+            })
+            ->orderByDesc('ngay_thanh_toan')
+            ->get();
+
+        return view('client.hoadon.lichsu_diennuoc', compact('hoaDons'));
+        }
 
     /**
      * Thông tin cá nhân

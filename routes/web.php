@@ -117,6 +117,12 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
             ->name('client.hoadon.slotpayment');
         Route::post('/{hoaDonId}/utilities-payment/{utilitiesPaymentId}', [HoaDonController::class, 'thanhToanUtilities'])
             ->name('client.hoadon.utilitiespayment');
+        Route::get('/lich-su-tien-phong', [ClientController::class, 'lichSuTienPhong'])
+        ->name('client.hoadon.lichsu.tienphong');
+
+    // Trang lịch sử điện nước
+    Route::get('/lich-su-dien-nuoc', [ClientController::class, 'lichSuDienNuoc'])
+        ->name('client.hoadon.lichsu.diennuoc');
     });
 
  
@@ -305,7 +311,10 @@ Route::prefix('hashtags')->group(function () {
     Route::get('/hoadon/dien-nuoc', [HoaDonController::class, 'dienNuoc'])->name('hoadon.diennuoc');
     Route::delete('/hoadon/{id}', [HoaDonController::class, 'destroy'])->name('hoadon.destroy');
     Route::get('/hoadon/export', [HoaDonController::class, 'export'])->name('hoadon.export');
-    Route::get('/hoadon/lichsu', [HoaDonController::class, 'lichSu'])->name('hoadon.lichsu');
+
+    Route::get('/hoadon/lichsu/tienphong', [HoaDonController::class, 'lichSuTienPhong'])->name('hoadon.lichsu_tienphong');
+    Route::get('/hoadon/lichsu/diennuoc', [HoaDonController::class, 'lichSuDienNuoc'])->name('hoadon.lichsu_diennuoc');
+
     Route::get('/hoadon/{id}', [HoaDonController::class, 'show'])->name('hoadon.show');
     Route::get('/hoadon/{id}/edit', [HoaDonController::class, 'edit'])->name('hoadon.edit');
     Route::put('/hoadon/{id}', [HoaDonController::class, 'update'])->name('hoadon.update');
