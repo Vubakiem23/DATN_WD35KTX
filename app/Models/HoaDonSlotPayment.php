@@ -28,6 +28,7 @@ class HoaDonSlotPayment extends Model
         'hinh_thuc_thanh_toan',
         'ghi_chu',
         'client_ghi_chu',
+        'client_transfer_image_path',
         'client_requested_at',
         'xac_nhan_boi',
     ];

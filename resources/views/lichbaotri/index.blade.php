@@ -214,11 +214,11 @@
 
   <h4 class="page-title mb-0"> Danh sách lịch bảo trì</h4>
   <p class="text-muted mb-0">Theo dõi và tổ chức lịch bảo trì tài sản.</p>
-<div class="mb-4">
-  <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
-    <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
-  </a>
-</div>
+  <div class="mb-4">
+    <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
+      <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
+    </a>
+  </div>
 
   {{-- 🟢 Thông báo --}}
   @if(session('success'))
@@ -437,27 +437,27 @@
                   <i class="fa fa-gear"></i>
                 </button>
                 <ul class="dropdown-menu">
-                  <li>
-                    <button type="button"
-                      class="dropdown-item"
-                      data-toggle="modal"
-                      data-target="#xemChiTietModal"
-                      data-id="{{ $l->id }}">
-                      <i class="fa fa-eye text-info"></i>
-                      <span>Xem</span>
-                    </button>
-                  </li>
                   @if($l->trang_thai == 'Đang lên lịch')
                   <li>
                     <form action="{{ route('lichbaotri.tiepnhan', $l->id) }}" method="POST" class="d-inline">
                       @csrf
                       <button type="submit" class="dropdown-item text-primary" onclick="return confirm('Bạn có chắc muốn tiếp nhận báo hỏng này?')">
-                        <i class="fa fa-hand-paper"></i>
+                        <i class="fa fa-check"></i>
                         <span>Tiếp nhận</span>
                       </button>
                     </form>
                   </li>
-                  @endif
+                  <li>
+                    <button type="button"
+                      class="dropdown-item text-danger btn-tuchoi"
+                      data-toggle="modal"
+                      data-target="#tuChoiModal"
+                      data-id="{{ $l->id }}">
+                      <i class="fa fa-times"></i>
+                      <span>Từ chối</span>
+                    </button>
+                  </li>
+                  @else
                   <li>
                     <a href="{{ route('lichbaotri.edit', $l->id) }}" class="dropdown-item">
                       <i class="fa fa-pencil text-primary"></i>
@@ -484,13 +484,26 @@
                     </button>
                   </li>
                   @endif
+                  <li>
+                    <button type="button"
+                      class="dropdown-item text-info"
+                      data-toggle="modal"
+                      data-target="#xemChiTietModal"
+                      data-id="{{ $l->id }}">
+                      <i class="fa fa-eye"></i>
+                      <span>Xem chi tiết</span>
+                    </button>
+                  </li>
+                  @endif
                 </ul>
               </div>
+
               <form id="delete-lich-{{ $l->id }}" action="{{ route('lichbaotri.destroy', $l->id) }}" method="POST" class="d-none">
                 @csrf
                 @method('DELETE')
               </form>
             </td>
+
           </tr>
           @empty
           <tr>
@@ -526,23 +539,23 @@
           {{-- Ngày hoàn thành --}}
           <div class="mb-3">
             <label for="ngay_hoan_thanh" class="form-label fw-semibold"> Ngày hoàn thành</label>
-            <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh" 
-                   class="form-control" required>
+            <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh"
+              class="form-control" required>
           </div>
 
           {{-- Ảnh sau bảo trì --}}
           <div class="mb-3">
             <label for="hinh_anh" class="form-label fw-semibold"> Ảnh sau bảo trì</label>
-            <input type="file" name="hinh_anh" id="hinh_anh" 
-                   class="form-control" accept="image/*">
+            <input type="file" name="hinh_anh" id="hinh_anh"
+              class="form-control" accept="image/*">
           </div>
 
           {{-- Mô tả sau bảo trì --}}
           <div class="mb-3">
             <label for="mo_ta_sau" class="form-label fw-semibold"> Mô tả sau bảo trì</label>
-            <textarea name="mo_ta_sau" id="mo_ta_sau" rows="3" 
-                      class="form-control" 
-                      placeholder="Nhập mô tả tình trạng sau khi bảo trì..." required></textarea>
+            <textarea name="mo_ta_sau" id="mo_ta_sau" rows="3"
+              class="form-control"
+              placeholder="Nhập mô tả tình trạng sau khi bảo trì..." required></textarea>
           </div>
         </div>
 
@@ -552,6 +565,39 @@
           </button>
           <button type="submit" class="btn btn-primary">
             <i class="fa fa-save"></i> Lưu thay đổi
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{-- ❌ Modal Từ Chối --}}
+<div class="modal fade" id="tuChoiModal" tabindex="-1" aria-labelledby="tuChoiLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0 rounded-3">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="tuChoiLabel">❌ Từ chối lịch bảo trì</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="tuChoiForm" method="POST">
+        @csrf
+        <div class="modal-body">
+          <input type="hidden" name="id" id="tuchoi_id">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Lý do từ chối</label>
+            <textarea name="ly_do" id="ly_do" rows="4" class="form-control"
+              placeholder="Nhập lý do từ chối..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa fa-times"></i> Đóng
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fa fa-paper-plane"></i> Xác nhận từ chối
           </button>
         </div>
       </form>
@@ -625,6 +671,18 @@
       // Dùng route relative (absolute=false) để tránh lệch domain (localhost vs 127.0.0.1)
       $form.attr('action', "{{ route('lichbaotri.hoanthanh.submit', ['id' => 'ID_PLACEHOLDER'], false) }}".replace('ID_PLACEHOLDER', id));
       $('#lich_id').val(id);
+    });
+    // ❌ Modal Từ Chối
+    $('#tuChoiModal').on('show.bs.modal', function(event) {
+      var button = $(event.relatedTarget);
+      var id = button.data('id');
+
+      var form = $('#tuChoiForm');
+      var actionUrl = "{{ route('lichbaotri.tuchoi', ['id' => 'ID_PLACEHOLDER'], false) }}"
+        .replace('ID_PLACEHOLDER', id);
+
+      form.attr('action', actionUrl);
+      $('#tuchoi_id').val(id);
     });
 
     // 🔵 Modal Xem chi tiết

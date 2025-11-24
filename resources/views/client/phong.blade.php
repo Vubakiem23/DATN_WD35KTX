@@ -58,7 +58,7 @@
                 // Tổng tiền phòng = đơn giá slot * tổng số slot
                 $giaTienTong = null;
                 if (!is_null($giaTienSlot) && $giaTienSlot > 0 && $totalSlots > 0) {
-                    $giaTienTong = $giaTienSlot * $totalSlots;
+                $giaTienTong = $giaTienSlot * $totalSlots;
                 }
                 // Ảnh phòng
                 $anhPhong = $phong->hinh_anh ?? null;
@@ -153,7 +153,7 @@
                                     <p class="price-value">
                                         {{ number_format($giaTienSlot, 0, ',', '.') }} <span class="price-unit">VND/tháng</span>
                                     </p>
-                                    
+
                                 </div>
                             </div>
                         </div>
@@ -181,50 +181,61 @@
             </div>
             <div class="card-body">
                 <div class="row g-4">
-                    <!-- Cột trái: Tài sản của phòng -->
+                    @php
+                    // Tạo mảng để lặp qua 2 cột
+                    $assetsColumns = [
+                    ['title' => 'Tài sản của phòng', 'data' => $taiSanPhong ?? collect(), 'collapseId' => 'taiSanPhongCollapse', 'chevronId' => 'taiSanPhongChevron'],
+                    ['title' => 'Tài sản riêng của bạn', 'data' => $taiSanCaNhan ?? collect(), 'collapseId' => 'taiSanCaNhanCollapse', 'chevronId' => 'taiSanCaNhanChevron']
+                    ];
+                    @endphp
+
+                    @foreach($assetsColumns as $col)
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                             <h6 class="mb-0 fw-bold text-secondary">
-                                <i class="fas fa-building me-2"></i>
-                                Tài sản của phòng
+                                <i class="fas fa-boxes me-2"></i>
+                                {{ $col['title'] }}
                             </h6>
-                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#taiSanPhongCollapse" aria-expanded="true" aria-controls="taiSanPhongCollapse">
-                                <i class="fas fa-chevron-up" id="taiSanPhongChevron"></i>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#{{ $col['collapseId'] }}" aria-expanded="true" aria-controls="{{ $col['collapseId'] }}">
+                                <i class="fas fa-chevron-up" id="{{ $col['chevronId'] }}"></i>
                             </button>
                         </div>
-                        <div class="collapse show" id="taiSanPhongCollapse">
-                            @if(isset($taiSanPhong) && $taiSanPhong->count())
+                        <div class="collapse show" id="{{ $col['collapseId'] }}">
+                            @if($col['data']->count())
                             <div class="row g-3">
-                                @foreach($taiSanPhong as $ts)
+                                @foreach($col['data'] as $ts)
+                                @php
+                                $hinhAnh = $ts->hinh_anh ?? ($ts->khoTaiSan->hinh_anh ?? null);
+                                $imageUrl = $hinhAnh ? asset('storage/' . $hinhAnh) : asset('uploads/default.png');
+                                $maTaiSan = $ts->khoTaiSan->ma_tai_san ?? 'N/A';
+
+                                // Logic trạng thái
+                                $trangThai = $ts->trang_thai_bao_tri
+                                ? $ts->trang_thai_bao_tri
+                                : ($ts->tinh_trang_hien_tai ?? $ts->tinh_trang ?? 'N/A');
+
+                                // Nếu admin từ chối tiếp nhận → hiển thị Bình thường cho client
+                                if($trangThai === 'Từ chối tiếp nhận') {
+                                $trangThai = 'Bình thường';
+                                }
+
+                                $isBaoTri = in_array($trangThai, ['Đang bảo trì', 'Chờ bảo trì']);
+                                @endphp
                                 <div class="col-12">
                                     <div class="card border tai-san-card">
                                         <div class="card-body p-3">
                                             <div class="d-flex align-items-start">
-                                                @php
-                                                $hinhAnh = $ts->hinh_anh ?? ($ts->khoTaiSan->hinh_anh ?? null);
-                                                $imageUrl = $hinhAnh ? asset('storage/' . $hinhAnh) : asset('uploads/default.png');
-                                                $maTaiSan = $ts->khoTaiSan->ma_tai_san ?? 'N/A';
-                                                $trangThai =
-                                                $ts->trang_thai_bao_tri
-                                                ? $ts->trang_thai_bao_tri
-                                                : ($ts->tinh_trang_hien_tai ?? $ts->tinh_trang ?? 'N/A');
-                                                @endphp
                                                 <img src="{{ $imageUrl }}" alt="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}"
                                                     class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
                                                 <div class="flex-grow-1">
                                                     <h6 class="mb-1">{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}</h6>
-                                                    <p class="mb-1 small text-muted">
-                                                        <strong>Mã tài sản:</strong> {{ $maTaiSan }}
-                                                    </p>
+                                                    <p class="mb-1 small text-muted"><strong>Mã tài sản:</strong> {{ $maTaiSan }}</p>
                                                     <p class="mb-0 small">
                                                         <strong>Trạng thái:</strong>
-                                                        <span class="badge bg-{{ $trangThai == 'Bình thường' ? 'success' : ($trangThai == 'Chờ bảo trì' ? 'info' : ($trangThai == 'Đang bảo trì' ? 'warning' : 'warning')) }}">
+                                                        <span class="badge bg-{{ $trangThai == 'Bình thường' ? 'success' : ($trangThai == 'Chờ bảo trì' ? 'info' : ($trangThai == 'Đang bảo trì' ? 'warning' : 'secondary')) }}">
                                                             {{ $trangThai }}
                                                         </span>
                                                     </p>
-                                                    @php
-                                                    $isBaoTri = in_array($trangThai, ['Đang bảo trì', 'Chờ bảo trì']);
-                                                    @endphp
 
                                                     @if(!$isBaoTri)
                                                     <button class="btn btn-sm btn-danger mt-2 btn-bao-hong"
@@ -235,7 +246,6 @@
                                                         <i class="fas fa-exclamation-triangle"></i> Báo hỏng
                                                     </button>
                                                     @endif
-
                                                 </div>
                                             </div>
                                         </div>
@@ -244,85 +254,16 @@
                                 @endforeach
                             </div>
                             @else
-                            <p class="text-muted fst-italic">Chưa có tài sản phòng.</p>
+                            <p class="text-muted fst-italic">Chưa có tài sản {{ $col['title'] == 'Tài sản của phòng' ? 'phòng' : 'được bàn giao' }}.</p>
                             @endif
                         </div>
                     </div>
+                    @endforeach
 
-                    <!-- Cột phải: Tài sản riêng của bạn -->
-                    <div class="col-md-6">
-                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                            <h6 class="mb-0 fw-bold text-secondary">
-                                <i class="fas fa-hand-holding me-2"></i>
-                                Tài sản riêng của bạn
-                            </h6>
-                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#taiSanCaNhanCollapse" aria-expanded="true" aria-controls="taiSanCaNhanCollapse">
-                                <i class="fas fa-chevron-up" id="taiSanCaNhanChevron"></i>
-                            </button>
-                        </div>
-                        <div class="collapse show" id="taiSanCaNhanCollapse">
-                            @if(isset($taiSanCaNhan) && $taiSanCaNhan->count())
-                            <div class="row g-3">
-                                @foreach($taiSanCaNhan as $ts)
-                                <div class="col-12">
-                                    <div class="card border tai-san-card">
-                                        <div class="card-body p-3">
-                                            <div class="d-flex align-items-start">
-                                                @php
-                                                $hinhAnh = $ts->hinh_anh ?? ($ts->khoTaiSan->hinh_anh ?? null);
-                                                $imageUrl = $hinhAnh ? asset('storage/' . $hinhAnh) : asset('uploads/default.png');
-                                                $maTaiSan = $ts->khoTaiSan->ma_tai_san ?? 'N/A';
-                                                $trangThai =
-                                                $ts->trang_thai_bao_tri
-                                                ? $ts->trang_thai_bao_tri
-                                                : ($ts->tinh_trang_hien_tai ?? $ts->tinh_trang ?? 'N/A');
-                                                @endphp
-                                                <img src="{{ $imageUrl }}" alt="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}"
-                                                    class="me-3" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
-                                                <div class="flex-grow-1">
-                                                    <h6 class="mb-1">{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san ?? 'Không rõ' }}</h6>
-                                                    <p class="mb-1 small text-muted">
-                                                        <strong>Mã tài sản:</strong> {{ $maTaiSan }}
-                                                    </p>
-
-                                                    <p class="mb-0 small">
-                                                        <strong>Trạng thái:</strong>
-                                                        <span class="badge bg-{{ $trangThai == 'Bình thường' ? 'success' :
-                                                            ($trangThai == 'Chờ bảo trì' ? 'info' :
-                                                            ($trangThai == 'Đang bảo trì' ? 'warning' :
-                                                            'secondary')) }}">
-                                                            {{ $trangThai }}
-                                                        </span>
-                                                    </p>
-                                                    @php
-                                                    $isBaoTri = in_array($trangThai, ['Đang bảo trì', 'Chờ bảo trì']);
-                                                    @endphp
-
-                                                    @if(!$isBaoTri)
-                                                    <button class="btn btn-sm btn-danger mt-2 btn-bao-hong"
-                                                        data-id="{{ $ts->id }}"
-                                                        data-ten="{{ $ts->khoTaiSan->ten_tai_san ?? $ts->ten_tai_san }}"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#modalBaoHong">
-                                                        <i class="fas fa-exclamation-triangle"></i> Báo hỏng
-                                                    </button>
-                                                    @endif
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                            @else
-                            <p class="text-muted fst-italic">Chưa có tài sản được bàn giao.</p>
-                            @endif
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Bên phải: Thông tin sinh viên -->

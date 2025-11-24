@@ -7,14 +7,19 @@ use App\Models\Phong;
 use App\Models\Khu;
 use App\Models\TieuDe;
 use App\Models\MucDo;
+use App\Models\ThongBaoSinhVien;
+use App\Models\ThongBaoSuCo;
+use App\Models\ThongBaoPhongSv;
+use App\Models\SinhVien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class ThongBaoController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'admin'])->except(['clientIndex', 'clientShow']);
+        $this->middleware(['auth', 'admin'])->except(['clientIndex', 'clientShow', 'publicIndex', 'publicShow']);
     }
 
 
@@ -244,15 +249,80 @@ class ThongBaoController extends Controller
     // =========================
     public function clientIndex()
     {
-        $thongbaos = ThongBao::orderBy('ngay_dang', 'desc')->paginate(10);
+        $user = Auth::user();
+        $sinhVien = null;
+        
+        // Lấy thông tin sinh viên
+        if ($user) {
+            if ($user->sinhVien) {
+                $sinhVien = $user->sinhVien;
+            } else {
+                $sinhVien = SinhVien::where('email', $user->email)->first();
+            }
+        }
 
-        return view('public.thongbao.index', compact('thongbaos'));
+        // Thông báo riêng của sinh viên (nếu có)
+        $thongBaoSinhVien = collect([]);
+        $thongBaoSuCo = collect([]);
+        $thongBaoPhongSv = collect([]);
+        
+        if ($sinhVien) {
+            // Thông báo riêng từ bảng thongbao_sinh_vien
+            $thongBaoSinhVien = ThongBaoSinhVien::where('sinh_vien_id', $sinhVien->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            // Thông báo sự cố (lấy qua quan hệ su_co)
+            $thongBaoSuCo = ThongBaoSuCo::whereHas('su_co', function($query) use ($sinhVien) {
+                    $query->where('sinh_vien_id', $sinhVien->id);
+                })
+                ->with('su_co.phong')
+                ->orderBy('ngay_tao', 'desc')
+                ->get();
+            
+            // Thông báo phòng sinh viên
+            $thongBaoPhongSv = ThongBaoPhongSv::where('sinh_vien_id', $sinhVien->id)
+                ->with('phong')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('client.thongbao.index', compact('thongBaoSinhVien', 'thongBaoSuCo', 'thongBaoPhongSv', 'sinhVien'));
     }
 
     // =========================
     // CLIENT: Chi tiết thông báo
     // =========================
     public function clientShow($id)
+    {
+        $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
+            ->findOrFail($id);
+
+        $thongBaoMoi = ThongBao::with('tieuDe')
+            ->where('id', '!=', $thongbao->id)
+            ->orderBy('ngay_dang', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('client.thongbao.show', compact('thongbao', 'thongBaoMoi'));
+    }
+
+    // =========================
+    // PUBLIC: Danh sách thông báo chung
+    // =========================
+    public function publicIndex()
+    {
+        $thongbaos = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
+            ->orderBy('ngay_dang', 'desc')
+            ->paginate(10);
+
+        return view('public.thongbao.index', compact('thongbaos'));
+    }
+
+    // =========================
+    // PUBLIC: Chi tiết thông báo chung
+    // =========================
+    public function publicShow($id)
     {
         $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
             ->findOrFail($id);

@@ -18,10 +18,17 @@ class LichBaoTri extends Model
         'location_id',
         'ngay_bao_tri',
         'ngay_hoan_thanh',
+        'chi_phi',
         'trang_thai',
         'mo_ta',
         'hinh_anh_truoc', 
         'hinh_anh',
+    ];
+
+    protected $casts = [
+        'chi_phi' => 'decimal:2',
+        'ngay_bao_tri' => 'date',
+        'ngay_hoan_thanh' => 'date',
     ];
 
     public function taiSan()

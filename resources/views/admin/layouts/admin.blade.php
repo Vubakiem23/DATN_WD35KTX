@@ -51,6 +51,8 @@
 
         .right_col {
             background: #f7f9fc;
+            min-height: calc(100vh - 70px);
+            padding-bottom: 2rem;
         }
 
         .card {

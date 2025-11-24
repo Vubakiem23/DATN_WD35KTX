@@ -13,6 +13,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Models\ThongBaoSinhVien;
 use Exception;
 
 class SlotController extends Controller
@@ -128,6 +130,9 @@ class SlotController extends Controller
                     $sinhVien->phong_id = $phongModel->id;
                     $sinhVien->save();
                 }
+                
+                // Gửi thông báo và email cho sinh viên
+                $this->sendRoomAssignmentNotification($sinhVien, $slot, $phongModel);
             }
 
             // Cập nhật loại phòng theo tổng slots và trạng thái
@@ -277,6 +282,9 @@ class SlotController extends Controller
                     $sinhVien->phong_id = $slot->phong->id;
                     $sinhVien->save();
                 }
+                
+                // Gửi thông báo và email cho sinh viên
+                $this->sendRoomAssignmentNotification($sinhVien, $slot, $slot->phong);
             } elseif ($previousStudentId) {
                 // Bỏ gán sinh viên khỏi slot: kiểm tra xem còn slot nào khác trong phòng không
                 $sinhVien = SinhVien::find($previousStudentId);
@@ -1156,6 +1164,66 @@ class SlotController extends Controller
             return response()->json([
                 'message' => 'Có lỗi xảy ra khi xóa slot'
             ], 500);
+        }
+    }
+
+    /**
+     * Gửi thông báo và email cho sinh viên khi được phân phòng
+     */
+    private function sendRoomAssignmentNotification(SinhVien $sinhVien, Slot $slot, Phong $phong): void
+    {
+        try {
+            // Đảm bảo load relationship khu nếu chưa có
+            if (!$phong->relationLoaded('khu')) {
+                $phong->load('khu');
+            }
+            
+            // Tạo thông báo trong hệ thống
+            $noiDung = "Bạn đã được phân phòng: Phòng {$phong->ten_phong}, Slot {$slot->ma_slot}";
+            if ($phong->khu) {
+                $noiDung .= " - Khu {$phong->khu->ten_khu}";
+            }
+            
+            ThongBaoSinhVien::create([
+                'sinh_vien_id' => $sinhVien->id,
+                'noi_dung' => $noiDung,
+                'trang_thai' => 'Mới',
+            ]);
+
+            // Gửi email nếu sinh viên có email
+            if (!empty($sinhVien->email)) {
+                try {
+                    Mail::send('emails.phan_phong', [
+                        'sinhVien' => $sinhVien,
+                        'slot' => $slot,
+                        'phong' => $phong,
+                    ], function ($message) use ($sinhVien, $phong) {
+                        $message->to($sinhVien->email)
+                                ->subject('Thông báo phân phòng - Phòng ' . $phong->ten_phong);
+                    });
+                    
+                    Log::info('Đã gửi email thông báo phân phòng', [
+                        'sinh_vien_id' => $sinhVien->id,
+                        'email' => $sinhVien->email,
+                        'phong_id' => $phong->id,
+                        'slot_id' => $slot->id,
+                    ]);
+                } catch (\Exception $e) {
+                    // Log lỗi gửi email nhưng không làm gián đoạn quá trình phân phòng
+                    Log::error('Lỗi gửi email thông báo phân phòng: ' . $e->getMessage(), [
+                        'sinh_vien_id' => $sinhVien->id,
+                        'email' => $sinhVien->email,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            // Log lỗi nhưng không làm gián đoạn quá trình phân phòng
+            Log::error('Lỗi tạo thông báo phân phòng: ' . $e->getMessage(), [
+                'sinh_vien_id' => $sinhVien->id,
+                'slot_id' => $slot->id,
+                'phong_id' => $phong->id,
+            ]);
         }
     }
 }

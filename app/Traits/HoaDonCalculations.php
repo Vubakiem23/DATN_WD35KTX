@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\HoaDon;
 use App\Models\HoaDonSlotPayment;
+use App\Models\HoaDonUtilitiesPayment;
 use App\Models\Phong;
 
 trait HoaDonCalculations
@@ -90,6 +91,41 @@ trait HoaDonCalculations
                 'sinh_vien_id' => $slot?->sinh_vien_id,
                 'sinh_vien_ten' => $breakdown['sinh_vien'] ?? null,
                 'trang_thai' => HoaDonSlotPayment::TRANG_THAI_CHUA_THANH_TOAN,
+                'da_thanh_toan' => false,
+            ]);
+        }
+    }
+
+    /**
+     * Khởi tạo bản ghi thanh toán điện nước cho từng slot
+     */
+    protected function initializeUtilitiesPayments(HoaDon $hoaDon): void
+    {
+        if (!$hoaDon->slot_breakdowns || empty($hoaDon->slot_breakdowns)) {
+            return;
+        }
+
+        $existingCount = $hoaDon->utilitiesPayments()->count();
+        if ($existingCount > 0) {
+            return;
+        }
+
+        foreach ($hoaDon->slot_breakdowns as $breakdown) {
+            $slot = null;
+            if ($hoaDon->phong && $hoaDon->phong->slots) {
+                $slot = $hoaDon->phong->slots->firstWhere('ma_slot', $breakdown['label']);
+            }
+
+            HoaDonUtilitiesPayment::create([
+                'hoa_don_id' => $hoaDon->id,
+                'slot_id' => $slot?->id,
+                'slot_label' => $breakdown['label'],
+                'sinh_vien_id' => $slot?->sinh_vien_id,
+                'sinh_vien_ten' => $breakdown['sinh_vien'] ?? null,
+                'tien_dien' => (int) ($breakdown['tien_dien'] ?? 0),
+                'tien_nuoc' => (int) ($breakdown['tien_nuoc'] ?? 0),
+                'tong_tien' => (int) (($breakdown['tien_dien'] ?? 0) + ($breakdown['tien_nuoc'] ?? 0)),
+                'trang_thai' => HoaDonUtilitiesPayment::TRANG_THAI_CHUA_THANH_TOAN,
                 'da_thanh_toan' => false,
             ]);
         }

@@ -8,6 +8,8 @@ use App\Models\SinhVien;
 use App\Models\Phong;
 use App\Models\SuCo;
 use App\Models\HoaDon;
+use App\Models\HoaDonSlotPayment;
+use App\Models\HoaDonUtilitiesPayment;
 use App\Models\LichBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
@@ -70,6 +72,64 @@ class ClientController extends Controller
         }
 
         // Thống kê cơ bản
+        // Đếm hóa đơn chưa thanh toán của sinh viên
+        $hoaDonChuaThanhToan = 0;
+        if ($phongId) {
+            // Lấy tất cả hóa đơn của phòng
+            $hoaDons = HoaDon::where('phong_id', $phongId)->get();
+
+            foreach ($hoaDons as $hoaDon) {
+                $hasUnpaidPayment = false;
+
+                // Kiểm tra xem hóa đơn này có slot payment hoặc utilities payment không
+                $hasSlotPayments = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)->exists();
+                $hasUtilitiesPayments = HoaDonUtilitiesPayment::where('hoa_don_id', $hoaDon->id)->exists();
+
+                if ($hasSlotPayments || $hasUtilitiesPayments) {
+                    // Hệ thống mới: kiểm tra từng loại payment của sinh viên
+
+                    // Kiểm tra slot payment của sinh viên
+                    $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                        ->where('sinh_vien_id', $sinhVien->id)
+                        ->first();
+
+                    if ($slotPayment) {
+                        // Chỉ đếm là chưa thanh toán nếu: chưa thanh toán VÀ không phải đang chờ xác nhận
+                        if ((!$slotPayment->da_thanh_toan || is_null($slotPayment->da_thanh_toan))
+                            && $slotPayment->trang_thai !== HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN
+                            && $slotPayment->trang_thai !== HoaDonSlotPayment::TRANG_THAI_DA_THANH_TOAN
+                        ) {
+                            $hasUnpaidPayment = true;
+                        }
+                    }
+
+                    // Kiểm tra utilities payment của sinh viên
+                    $utilitiesPayment = HoaDonUtilitiesPayment::where('hoa_don_id', $hoaDon->id)
+                        ->where('sinh_vien_id', $sinhVien->id)
+                        ->first();
+
+                    if ($utilitiesPayment) {
+                        // Chỉ đếm là chưa thanh toán nếu: chưa thanh toán VÀ không phải đang chờ xác nhận
+                        if ((!$utilitiesPayment->da_thanh_toan || is_null($utilitiesPayment->da_thanh_toan))
+                            && $utilitiesPayment->trang_thai !== HoaDonUtilitiesPayment::TRANG_THAI_CHO_XAC_NHAN
+                            && $utilitiesPayment->trang_thai !== HoaDonUtilitiesPayment::TRANG_THAI_DA_THANH_TOAN
+                        ) {
+                            $hasUnpaidPayment = true;
+                        }
+                    }
+                } else {
+                    // Hệ thống cũ: kiểm tra da_thanh_toan của hóa đơn
+                    if (!$hoaDon->da_thanh_toan || is_null($hoaDon->da_thanh_toan)) {
+                        $hasUnpaidPayment = true;
+                    }
+                }
+
+                if ($hasUnpaidPayment) {
+                    $hoaDonChuaThanhToan++;
+                }
+            }
+        }
+
         $stats = [
             'phong' => $sinhVien->phong ?? null,
             'so_su_co' => SuCo::where('sinh_vien_id', $sinhVien->id)->count(),
@@ -77,12 +137,7 @@ class ClientController extends Controller
                 // Đếm các sự cố chưa hoàn thành: Tiếp nhận hoặc Đang xử lý
                 ->whereIn('trang_thai', ['Tiếp nhận', 'Đang xử lý'])
                 ->count(),
-            'hoa_don_chua_thanh_toan' => $phongId ? HoaDon::where('phong_id', $phongId)
-                ->where(function ($q) {
-                    $q->where('da_thanh_toan', false)
-                        ->orWhereNull('da_thanh_toan');
-                })
-                ->count() : 0,
+            'hoa_don_chua_thanh_toan' => $hoaDonChuaThanhToan,
         ];
 
         // Sự cố gần đây
@@ -173,18 +228,18 @@ class ClientController extends Controller
                 ->where('phong_id', $phong->id)
                 ->where('sinh_vien_id', $sinhVien->id)
                 ->first();
-$taiSanCaNhan = collect([]);
+            $taiSanCaNhan = collect([]);
 
-if ($slotSinhVien) {
-    $taiSanCaNhan = TaiSan::with('khoTaiSan')
-        ->leftJoin('lich_bao_tri', function ($join) {
-            $join->on('tai_san.id', '=', 'lich_bao_tri.tai_san_id')
-                 ->whereNull('lich_bao_tri.ngay_hoan_thanh'); // chỉ lấy đang bảo trì
-        })
-        ->whereIn('tai_san.id', $slotSinhVien->taiSans->pluck('id'))
-        ->select('tai_san.*', 'lich_bao_tri.trang_thai as trang_thai_bao_tri')
-        ->get();
-}
+            if ($slotSinhVien) {
+                $taiSanCaNhan = TaiSan::with('khoTaiSan')
+                    ->leftJoin('lich_bao_tri', function ($join) {
+                        $join->on('tai_san.id', '=', 'lich_bao_tri.tai_san_id')
+                            ->whereNull('lich_bao_tri.ngay_hoan_thanh'); // chỉ lấy đang bảo trì
+                    })
+                    ->whereIn('tai_san.id', $slotSinhVien->taiSans->pluck('id'))
+                    ->select('tai_san.*', 'lich_bao_tri.trang_thai as trang_thai_bao_tri')
+                    ->get();
+            }
         }
 
         return view('client.phong', compact(
@@ -243,7 +298,7 @@ if ($slotSinhVien) {
                 ->with('message', 'Bạn chưa được gán vào phòng nên không có hóa đơn.');
         }
 
-        $hoaDons = HoaDon::with(['phong.khu', 'slotPayments'])
+        $hoaDons = HoaDon::with(['phong.khu', 'slotPayments', 'utilitiesPayments'])
             ->where('phong_id', $phong->id)
             ->where(function ($query) {
                 $query->where('sent_to_client', true)
@@ -264,8 +319,11 @@ if ($slotSinhVien) {
             $this->enrichHoaDonWithPhongPricing($hoaDon);
             $this->attachSlotBreakdown($hoaDon);
             $this->initializeSlotPayments($hoaDon);
+            $this->initializeUtilitiesPayments($hoaDon);
+            $hoaDon->setRelation('utilitiesPayments', $hoaDon->utilitiesPayments()->get());
 
             $hoaDon->slotPaymentsMap = $hoaDon->slotPayments->keyBy('slot_label');
+            $hoaDon->utilitiesPaymentsMap = $hoaDon->utilitiesPayments->keyBy('slot_label');
 
             $studentPayment = $hoaDon->slotPayments->firstWhere('sinh_vien_id', $sinhVien->id);
             if ($studentPayment) {
@@ -273,6 +331,14 @@ if ($slotSinhVien) {
                     ->firstWhere('label', $studentPayment->slot_label);
                 $hoaDon->student_payment = $studentPayment;
                 $hoaDon->student_breakdown = $matchingBreakdown;
+            }
+
+            $studentUtilitiesPayment = $hoaDon->utilitiesPayments->firstWhere('sinh_vien_id', $sinhVien->id);
+            if ($studentUtilitiesPayment) {
+                $matchingUtilitiesBreakdown = collect($hoaDon->slot_breakdowns ?? [])
+                    ->firstWhere('label', $studentUtilitiesPayment->slot_label);
+                $hoaDon->student_utilities_payment = $studentUtilitiesPayment;
+                $hoaDon->student_utilities_breakdown = $matchingUtilitiesBreakdown;
             }
         });
 
@@ -306,157 +372,178 @@ if ($slotSinhVien) {
         // Nếu chưa có sinh viên, vẫn cho vào giao diện
         return view('client.profile', compact('user', 'sinhVien'));
     }
+public function baoHong(Request $request)
+{
+    // Validate input
+    $request->validate([
+        'tai_san_id' => 'required|exists:tai_san,id',
+        'mo_ta' => 'required|string',
+        'hinh_anh_truoc' => 'nullable|image|max:4096'
+    ]);
 
-    public function baoHong(Request $request)
-    {
-        $request->validate([
-            'tai_san_id' => 'required|exists:tai_san,id',
-            'mo_ta' => 'required|string',
-            'hinh_anh_truoc' => 'nullable|image|max:4096'
-        ]);
+    // Lấy sinh viên hiện tại
+    $sinhVien = $this->getSinhVien();
+    if (!$sinhVien) {
+        return back()->with('error', 'Không tìm thấy thông tin sinh viên.');
+    }
 
-        $sinhVien = $this->getSinhVien();
-        if (!$sinhVien) {
-            return back()->with('error', 'Không tìm thấy thông tin sinh viên.');
-        }
+    // Lấy phòng của sinh viên
+    $phongId = $sinhVien->phong_id ?? Slot::where('sinh_vien_id', $sinhVien->id)->value('phong_id');
+    if (!$phongId) {
+        return back()->with('error', 'Bạn chưa ở trong phòng nào.');
+    }
 
-        $phongId = $sinhVien->phong_id ?? Slot::where('sinh_vien_id', $sinhVien->id)->value('phong_id');
-        if (!$phongId) {
-            return back()->with('error', 'Bạn chưa ở trong phòng nào.');
-        }
+    // Lấy tài sản
+    $taiSan = TaiSan::find($request->tai_san_id);
+    if (!$taiSan) {
+        return back()->with('error', 'Không tìm thấy tài sản.');
+    }
 
-        // Lấy thông tin tài sản
-        $taiSan = TaiSan::find($request->tai_san_id);
-        if (!$taiSan) {
-            return back()->with('error', 'Không tìm thấy tài sản.');
-        }
+    // Kiểm tra quyền truy cập: tài sản phải thuộc phòng của sinh viên
+    if ($taiSan->phong_id != $phongId) {
+        return back()->with('error', 'Tài sản này không thuộc phòng của bạn.');
+    }
 
-        // Kiểm tra bảo mật: tài sản phải thuộc phòng của sinh viên
-        if ($taiSan->phong_id != $phongId) {
-            return back()->with('error', 'Tài sản này không thuộc phòng của bạn.');
-        }
+    // Kiểm tra trạng thái tài sản
+    if (in_array($taiSan->tinh_trang_hien_tai, ['Đang bảo trì', 'Đã báo hỏng'])) {
+        return back()->with('error', 'Tài sản này đang trong quá trình xử lý. Vui lòng chờ hoàn thành trước khi báo hỏng mới.');
+    }
 
-        // Kiểm tra trạng thái tài sản: nếu đang bảo trì hoặc đã báo hỏng thì không cho báo hỏng lại
-        if ($taiSan->tinh_trang_hien_tai === 'Đang bảo trì' || $taiSan->tinh_trang_hien_tai === 'Đã báo hỏng') {
-            return back()->with('error', 'Tài sản này đang trong quá trình xử lý. Vui lòng chờ hoàn thành trước khi báo hỏng mới.');
-        }
+    // Xử lý upload ảnh (giữ nguyên đường dẫn hiện tại)
+    $imagePath = null;
+    if ($request->hasFile('hinh_anh_truoc')) {
+        $file = $request->file('hinh_anh_truoc');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('uploads/lichbaotri'), $filename);
+        $imagePath = $filename;
+    }
 
-        // Kiểm tra trùng lặp: tài sản đang có bảo trì chưa hoàn thành
-        // (ngay_hoan_thanh null nghĩa là chưa hoàn thành)
-        $existingBaoTri = LichBaoTri::where('tai_san_id', $request->tai_san_id)
-            ->whereNull('ngay_hoan_thanh')
-            ->where('trang_thai', '!=', 'Hoàn thành')
-            ->exists();
-        
-        if ($existingBaoTri) {
-            return back()->with('error', 'Tài sản này đang có bảo trì chưa hoàn thành. Vui lòng chờ hoàn thành bảo trì trước khi báo hỏng mới.');
-        }
+    // Kiểm tra nếu có lịch "Từ chối tiếp nhận" gần nhất
+    $lichTuChoi = LichBaoTri::where('tai_san_id', $request->tai_san_id)
+        ->where('trang_thai', 'Từ chối tiếp nhận')
+        ->latest()
+        ->first();
 
-        if ($request->hasFile('hinh_anh_truoc')) {
-            $file = $request->file('hinh_anh_truoc');
-            $filename = time() . '_' . $file->getClientOriginalName();
-
-            $file->move(public_path('uploads/lichbaotri'), $filename);
-
-            // Lưu giống admin
-            $imagePath = $filename;
-        } else {
-            $imagePath = null;
-        }
-
-        // Tạo lịch bảo trì với trạng thái "Đang lên lịch" (chờ admin tiếp nhận)
-        LichBaoTri::create([
-            'tai_san_id'      => $request->tai_san_id,
-            'kho_tai_san_id'  => $taiSan->kho_tai_san_id,
-            'location_type'   => 'phong',
-            'location_id'     => $phongId,
+    if ($lichTuChoi) {
+        // Cập nhật lại lịch từ chối thành "Đang lên lịch"
+        $lichTuChoi->update([
+            'trang_thai'      => 'Đang lên lịch',
             'mo_ta'           => $request->mo_ta,
             'hinh_anh_truoc'  => $imagePath,
             'ngay_bao_tri'    => now()->toDateString(),
-            'trang_thai'      => 'Đang lên lịch' // Chờ admin tiếp nhận
         ]);
 
-        // Cập nhật trạng thái tài sản thành "Đã báo hỏng" (chờ xử lý)
+        // Cập nhật trạng thái tài sản
         $taiSan->update([
             'tinh_trang_hien_tai' => 'Đã báo hỏng'
         ]);
 
-        return back()->with('success', 'Đã gửi báo hỏng thành công!');
+        return back()->with('success', 'Đã gửi lại báo hỏng thành công!');
     }
 
+    // Kiểm tra các lịch đang xử lý thực sự (Đang lên lịch, Chờ bảo trì, Đang bảo trì)
+    $existingBaoTri = LichBaoTri::where('tai_san_id', $request->tai_san_id)
+        ->whereIn('trang_thai', ['Đang lên lịch', 'Chờ bảo trì', 'Đang bảo trì'])
+        ->exists();
 
-        public function suCoIndex()
-{
-    $sinhVien = $this->getSinhVien();
-    $phong = $sinhVien?->phong ?? $sinhVien?->slot?->phong ?? null;
-
-    $dsSuCo = $sinhVien
-        ? SuCo::where('sinh_vien_id', $sinhVien->id)
-            ->orderBy('ngay_gui', 'desc')
-            ->paginate(10)
-        : collect();
-
-    // Thêm xử lý URL ảnh ngay trong controller
-    $dsSuCo->transform(function($sc) {
-        // Ảnh sinh viên upload lúc báo sự cố
-        $sc->anh_url = ($sc->anh && file_exists(storage_path('app/public/' . $sc->anh)))
-            ? asset('storage/' . $sc->anh)
-            : null;
-
-        // Ảnh admin upload sau xử lý
-        $sc->anh_sau_url = ($sc->anh_sau && file_exists(storage_path('app/public/' . $sc->anh_sau)))
-            ? asset('storage/' . $sc->anh_sau)
-            : null;
-
-        // Nếu cả 2 đều null → fallback ảnh dummy
-        $sc->display_anh = $sc->anh_sau_url ?? $sc->anh_url ?? 'https://dummyimage.com/150x150/eff3f9/9aa8b8&text=IMG';
-
-        return $sc;
-    });
-
-    return view('client.suco', compact('sinhVien', 'phong', 'dsSuCo'));
+    if ($existingBaoTri) {
+        return back()->with('error', 'Tài sản này đang có bảo trì chưa hoàn thành. Vui lòng chờ hoàn thành bảo trì trước khi báo hỏng mới.');
     }
 
-
-       public function suCoStore(Request $request)
-{
-    $sinhVien = $this->getSinhVien();
-    $phong = $sinhVien?->phong ?? $sinhVien?->slot?->phong ?? null;
-
-    if (!$sinhVien || !$phong) {
-        return back()->withErrors(['error' => 'Không tìm thấy thông tin phòng để báo sự cố']);
-    }
-
-    // Validate dữ liệu
-    $request->validate([
-        'mo_ta' => 'required|string|max:1000',
-        'anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+    // Nếu không có lịch từ chối hoặc lịch đang xử lý → tạo lịch mới
+    LichBaoTri::create([
+        'tai_san_id'      => $request->tai_san_id,
+        'kho_tai_san_id'  => $taiSan->kho_tai_san_id,
+        'location_type'   => 'phong',
+        'location_id'     => $phongId,
+        'mo_ta'           => $request->mo_ta,
+        'hinh_anh_truoc'  => $imagePath,
+        'ngay_bao_tri'    => now()->toDateString(),
+        'trang_thai'      => 'Đang lên lịch'
     ]);
 
-    $suCo = new SuCo();
-    $suCo->sinh_vien_id = $sinhVien->id;
-    $suCo->phong_id = $phong->id;
-    $suCo->mo_ta = $request->mo_ta;
+    // Cập nhật trạng thái tài sản
+    $taiSan->update([
+        'tinh_trang_hien_tai' => 'Đã báo hỏng'
+    ]);
 
-    // Upload ảnh giống admin
-    if ($request->hasFile('anh')) {
-        $uploadPath = public_path('uploads/suco');
-        if (!\File::exists($uploadPath)) {
-            \File::makeDirectory($uploadPath, 0755, true);
-        }
-        $file = $request->file('anh');
-        $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-        $file->move($uploadPath, $fileName);
-        $suCo->anh = 'uploads/suco/' . $fileName; // Lưu đường dẫn giống admin
+    return back()->with('success', 'Đã gửi báo hỏng thành công!');
+}
+
+
+
+    public function suCoIndex()
+    {
+        $sinhVien = $this->getSinhVien();
+        $phong = $sinhVien?->phong ?? $sinhVien?->slot?->phong ?? null;
+
+        $dsSuCo = $sinhVien
+            ? SuCo::where('sinh_vien_id', $sinhVien->id)
+            ->orderBy('ngay_gui', 'desc')
+            ->paginate(10)
+            : collect();
+
+        // Thêm xử lý URL ảnh ngay trong controller
+        $dsSuCo->transform(function ($sc) {
+            // Ảnh sinh viên upload lúc báo sự cố
+            $sc->anh_url = ($sc->anh && file_exists(storage_path('app/public/' . $sc->anh)))
+                ? asset('storage/' . $sc->anh)
+                : null;
+
+            // Ảnh admin upload sau xử lý
+            $sc->anh_sau_url = ($sc->anh_sau && file_exists(storage_path('app/public/' . $sc->anh_sau)))
+                ? asset('storage/' . $sc->anh_sau)
+                : null;
+
+            // Nếu cả 2 đều null → fallback ảnh dummy
+            $sc->display_anh = $sc->anh_sau_url ?? $sc->anh_url ?? 'https://dummyimage.com/150x150/eff3f9/9aa8b8&text=IMG';
+
+            return $sc;
+        });
+
+        return view('client.suco', compact('sinhVien', 'phong', 'dsSuCo'));
     }
 
-    $suCo->trang_thai = 'Tiếp nhận';
-    $suCo->ngay_gui = now();
-    $suCo->nguoi_tao = 'sinh_vien'; // đánh dấu người tạo
-    $suCo->save();
 
-    return redirect()->route('client.suco.index')->with('success', 'Báo sự cố thành công!');
-}
+    public function suCoStore(Request $request)
+    {
+        $sinhVien = $this->getSinhVien();
+        $phong = $sinhVien?->phong ?? $sinhVien?->slot?->phong ?? null;
+
+        if (!$sinhVien || !$phong) {
+            return back()->withErrors(['error' => 'Không tìm thấy thông tin phòng để báo sự cố']);
+        }
+
+        // Validate dữ liệu
+        $request->validate([
+            'mo_ta' => 'required|string|max:1000',
+            'anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        $suCo = new SuCo();
+        $suCo->sinh_vien_id = $sinhVien->id;
+        $suCo->phong_id = $phong->id;
+        $suCo->mo_ta = $request->mo_ta;
+
+        // Upload ảnh giống admin
+        if ($request->hasFile('anh')) {
+            $uploadPath = public_path('uploads/suco');
+            if (!\File::exists($uploadPath)) {
+                \File::makeDirectory($uploadPath, 0755, true);
+            }
+            $file = $request->file('anh');
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadPath, $fileName);
+            $suCo->anh = 'uploads/suco/' . $fileName; // Lưu đường dẫn giống admin
+        }
+
+        $suCo->trang_thai = 'Tiếp nhận';
+        $suCo->ngay_gui = now();
+        $suCo->nguoi_tao = 'sinh_vien'; // đánh dấu người tạo
+        $suCo->save();
+
+        return redirect()->route('client.suco.index')->with('success', 'Báo sự cố thành công!');
+    }
 
     /**
      * Xem lịch bảo trì tài sản của phòng sinh viên
@@ -506,7 +593,7 @@ if ($slotSinhVien) {
 
         // Lọc theo tab
         $tab = $request->get('tab', 'dang-xu-ly');
-        
+
         if ($tab === 'da-hoan-thanh') {
             // Tab "Đã hoàn thành": chỉ lấy các bảo trì đã hoàn thành
             $daHoanThanh = (clone $baseQuery)
@@ -514,7 +601,7 @@ if ($slotSinhVien) {
                 ->orderBy('ngay_hoan_thanh', 'desc')
                 ->paginate(10, ['*'], 'page')
                 ->appends($request->query());
-            
+
             $dangXuLy = null;
         } else {
             // Tab "Đang xử lý": lấy các trạng thái chưa hoàn thành
@@ -524,7 +611,7 @@ if ($slotSinhVien) {
                 ->orderBy('created_at', 'desc')
                 ->paginate(10, ['*'], 'page')
                 ->appends($request->query());
-            
+
             $daHoanThanh = null;
         }
 
@@ -540,7 +627,7 @@ if ($slotSinhVien) {
         ));
     }
 
-     public function su_co_thanhtoan(Request $request, $id)
+    public function su_co_thanhtoan(Request $request, $id)
     {
         $sinhVien = Auth::user()?->sinhVien;
         if (!$sinhVien) {
@@ -551,8 +638,8 @@ if ($slotSinhVien) {
         }
 
         $suCo = SuCo::where('id', $id)
-                    ->where('sinh_vien_id', $sinhVien->id)
-                    ->first();
+            ->where('sinh_vien_id', $sinhVien->id)
+            ->first();
 
         if (!$suCo) {
             return response()->json([
@@ -591,6 +678,4 @@ if ($slotSinhVien) {
             'message' => 'Thanh toán thành công!'
         ]);
     }
-
-
 }
