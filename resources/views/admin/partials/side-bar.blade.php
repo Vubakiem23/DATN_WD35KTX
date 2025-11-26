@@ -119,6 +119,12 @@
                                 <i class="fa fa-bolt"></i> Quản lý điện & nước
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('payment-confirmation.index') }}"
+                               class="{{ request()->routeIs('payment-confirmation.*') ? 'active' : '' }}">
+                                <i class="fa fa-check-circle"></i> Xác nhận thanh toán sinh viên
+                            </a>
+                        </li>
                     </ul>
 
                 </li>
