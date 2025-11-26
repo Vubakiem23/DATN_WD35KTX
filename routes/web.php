@@ -35,6 +35,7 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\TinTucController;
 use App\Http\Controllers\ThongBaoPhongSvController;
 use App\Http\Controllers\CKEditorUploadController;
+use App\Http\Controllers\PaymentConfirmationController;
 use App\Models\Violation;
 /*
 |--------------------------------------------------------------------------
@@ -153,6 +154,16 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // CKEditor uploads
     Route::post('ckeditor/upload', [CKEditorUploadController::class, 'store'])
         ->name('admin.ckeditor.upload');
+
+    // ===== YÊU CẦU XÁC NHẬN THANH TOÁN =====
+    Route::prefix('payment-confirmation')->group(function () {
+        Route::get('/', [PaymentConfirmationController::class, 'index'])->name('payment-confirmation.index');
+        Route::post('/slot/{id}/confirm', [PaymentConfirmationController::class, 'confirmSlotPayment'])->name('payment-confirmation.slot.confirm');
+        Route::post('/slot/{id}/reject', [PaymentConfirmationController::class, 'rejectSlotPayment'])->name('payment-confirmation.slot.reject');
+        Route::post('/utilities/{id}/confirm', [PaymentConfirmationController::class, 'confirmUtilitiesPayment'])->name('payment-confirmation.utilities.confirm');
+        Route::post('/utilities/{id}/reject', [PaymentConfirmationController::class, 'rejectUtilitiesPayment'])->name('payment-confirmation.utilities.reject');
+        Route::post('/bulk-action', [PaymentConfirmationController::class, 'bulkAction'])->name('payment-confirmation.bulk');
+    });
 
     // ---------------- PHÒNG & SLOT ----------------
     Route::resource('phong', PhongController::class);
