@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Phong;
 use App\Models\HoaDonSlotPayment;
 use App\Models\HoaDonUtilitiesPayment;
 use App\Traits\HoaDonCalculations;
+
 
 class PaymentConfirmationController extends Controller
 {
@@ -243,4 +245,26 @@ class PaymentConfirmationController extends Controller
 
         return response()->json(['success' => true, 'message' => "Đã từ chối {$updated} yêu cầu.", 'count' => $updated]);
     }
+    public function thongBaoHoaDonSlot(Request $request)
+{
+    $phongId = $request->get('phong_id'); // Lọc theo phòng nếu chọn
+    $phongs = Phong::all(); // Lấy danh sách tất cả phòng
+
+    // Query hóa đơn slot payment
+    $query = HoaDonSlotPayment::with(['hoaDon.phong', 'sinhVien']); // load quan hệ
+
+    if ($phongId) {
+        $query->whereHas('hoaDon', function($q) use ($phongId) {
+            $q->where('phong_id', $phongId);
+        });
+    }
+
+    // Phân loại đã thanh toán / chưa thanh toán
+    $daThanhToan = (clone $query)->where('da_thanh_toan', 1)->get();
+    $chuaThanhToan = (clone $query)->where('da_thanh_toan', 0)->get();
+
+    return view('thongbao_hoadonslot.index', compact('phongs', 'phongId', 'daThanhToan', 'chuaThanhToan'));
+}
+
+
 }
