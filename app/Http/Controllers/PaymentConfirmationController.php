@@ -245,17 +245,54 @@ class PaymentConfirmationController extends Controller
 
         return response()->json(['success' => true, 'message' => "Đã từ chối {$updated} yêu cầu.", 'count' => $updated]);
     }
-    public function thongBaoHoaDonSlot(Request $request)
+//     public function thongBaoHoaDonSlot(Request $request)
+// {
+//     $phongId = $request->get('phong_id'); // Lọc theo phòng nếu chọn
+//     $phongs = Phong::all(); // Lấy danh sách tất cả phòng
+
+//     // Query hóa đơn slot payment
+//     $query = HoaDonSlotPayment::with(['hoaDon.phong', 'sinhVien']); // load quan hệ
+
+//     if ($phongId) {
+//         $query->whereHas('hoaDon', function($q) use ($phongId) {
+//             $q->where('phong_id', $phongId);
+//         });
+//     }
+
+//     // Phân loại đã thanh toán / chưa thanh toán
+//     $daThanhToan = (clone $query)->where('da_thanh_toan', 1)->get();
+//     $chuaThanhToan = (clone $query)->where('da_thanh_toan', 0)->get();
+
+//     return view('thongbao_hoadonslot.index', compact('phongs', 'phongId', 'daThanhToan', 'chuaThanhToan'));
+// }
+public function thongBaoHoaDonSlot(Request $request)
 {
     $phongId = $request->get('phong_id'); // Lọc theo phòng nếu chọn
+    $maSV = $request->get('ma_sinh_vien'); // Lọc theo mã sinh viên nếu có
+    $hoTen = $request->get('ho_ten'); // Lọc theo tên sinh viên nếu có
     $phongs = Phong::all(); // Lấy danh sách tất cả phòng
 
     // Query hóa đơn slot payment
     $query = HoaDonSlotPayment::with(['hoaDon.phong', 'sinhVien']); // load quan hệ
 
+    // Lọc theo phòng
     if ($phongId) {
         $query->whereHas('hoaDon', function($q) use ($phongId) {
             $q->where('phong_id', $phongId);
+        });
+    }
+
+    // Lọc theo mã sinh viên
+    if ($maSV) {
+        $query->whereHas('sinhVien', function($q) use ($maSV) {
+            $q->where('ma_sinh_vien', 'LIKE', "%$maSV%");
+        });
+    }
+
+    // Lọc theo tên sinh viên
+    if ($hoTen) {
+        $query->whereHas('sinhVien', function($q) use ($hoTen) {
+            $q->where('ho_ten', 'LIKE', "%$hoTen%");
         });
     }
 
@@ -263,7 +300,7 @@ class PaymentConfirmationController extends Controller
     $daThanhToan = (clone $query)->where('da_thanh_toan', 1)->get();
     $chuaThanhToan = (clone $query)->where('da_thanh_toan', 0)->get();
 
-    return view('thongbao_hoadonslot.index', compact('phongs', 'phongId', 'daThanhToan', 'chuaThanhToan'));
+    return view('thongbao_hoadonslot.index', compact('phongs', 'phongId', 'maSV', 'hoTen', 'daThanhToan', 'chuaThanhToan'));
 }
 
 

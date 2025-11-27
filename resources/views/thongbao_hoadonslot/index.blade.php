@@ -8,20 +8,62 @@
 <div class="mb-4">
     <h3 class="room-page__title mb-2">📢 THÔNG BÁO HÓA ĐƠN SLOT</h3>
 </div>
-<!-- Dropdown chọn phòng -->
-<form action="{{ route('hoadonslot.index') }}" method="GET" class="mb-3 search-bar">
-    <div class="input-group">
-        <label for="phong_id" class="mb-0">Chọn phòng:</label>
-        <select name="phong_id" id="phong_id" class="form-control" onchange="this.form.submit()">
-            <option value="">-- Tất cả phòng --</option>
-            @foreach($phongs as $phong)
-            <option value="{{ $phong->id }}" @if($phongId==$phong->id) selected @endif>
-                {{ $phong->ten ?? $phong->ten_phong }}
-            </option>
-            @endforeach
-        </select>
+
+{{-- Bộ lọc + nút xuất --}}
+<form action="{{ route('hoadonslot.index') }}" method="GET" class="mb-3">
+    <div class="row g-2 align-items-end">
+
+        {{-- Lọc phòng --}}
+        <div class="col-md-3">
+            <label for="phong_id" class="form-label mb-1">Phòng</label>
+            <select name="phong_id" id="phong_id" class="form-control">
+                <option value="">-- Tất cả phòng --</option>
+                @foreach($phongs as $phong)
+                    <option value="{{ $phong->id }}" 
+                        {{ old('phong_id', request('phong_id')) == $phong->id ? 'selected' : '' }}>
+                        {{ $phong->ten_phong ?? $phong->ten }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Lọc mã sinh viên --}}
+        <div class="col-md-3">
+            <label for="ma_sinh_vien" class="form-label mb-1">Mã sinh viên</label>
+            <input type="text" name="ma_sinh_vien" id="ma_sinh_vien"
+                   class="form-control" placeholder="Nhập mã sinh viên..."
+                   value="{{ old('ma_sinh_vien', request('ma_sinh_vien')) }}">
+        </div>
+
+        {{-- Ngày bắt đầu --}}
+        <div class="col-md-3">
+            <label for="date_start" class="form-label mb-1">Từ ngày</label>
+            <input type="date" name="date_start" id="date_start"
+                   class="form-control"
+                   value="{{ old('date_start', request('date_start')) }}">
+        </div>
+
+        {{-- Ngày kết thúc --}}
+        <div class="col-md-3">
+            <label for="date_end" class="form-label mb-1">Đến ngày</label>
+            <input type="date" name="date_end" id="date_end"
+                   class="form-control"
+                   value="{{ old('date_end', request('date_end')) }}">
+        </div>
+
+        {{-- Nút --}}
+        <div class="col-12 mt-2 d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary btn-sm">🔍 Lọc dữ liệu</button>
+            <a href="{{ route('hoadonslot.index') }}" class="btn btn-secondary btn-sm">🔄 Reset</a>
+            <a href="{{ route('hoadonslot.export.all') }}" class="btn btn-primary btn-sm">📥 Xuất tất cả</a>
+            <a href="{{ route('hoadonslot.export.paid') }}" class="btn btn-success btn-sm">📗 Xuất đã thanh toán</a>
+            <a href="{{ route('hoadonslot.export.unpaid') }}" class="btn btn-danger btn-sm">📕 Xuất chưa thanh toán</a>
+        </div>
+
     </div>
 </form>
+
+
 <!-- Sinh viên đã thanh toán -->
 <div class="card mb-4">
     <div class="card-header bg-success text-white">

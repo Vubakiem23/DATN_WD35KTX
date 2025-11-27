@@ -18,6 +18,7 @@ use App\Http\Controllers\HoaDonSuCoController;
 use App\Http\Controllers\SlotController;
 use App\Http\Controllers\KhuController;
 use App\Http\Controllers\ThongBaoHoaDonDienNuocController;
+use App\Http\Controllers\HoaDonSlotController;
 
 use App\Http\Controllers\UserController;
 
@@ -105,6 +106,11 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     // Thông báo
     Route::get('/thongbao', [ThongBaoController::class, 'clientIndex'])->name('client.thongbao.index');
     Route::get('/thongbao/{id}', [ThongBaoController::class, 'clientShow'])->name('client.thongbao.show');
+   Route::get('client/thongbao/load-more', [ThongBaoController::class, 'loadMore'])
+    ->name('client.thongbao.loadMore')
+    ->middleware('auth');
+
+
 
 
     // Lịch bảo trì
@@ -286,14 +292,21 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         ->name('hoadonslot.index');
     // routes/web.php
     // Trang tổng hợp
-Route::get('/hoadon-dien-nuoc', 
-    [ThongBaoHoaDonDienNuocController::class, 'index']
-)->name('hoadon_dien_nuoc.index');
+    Route::get(
+        '/hoadon-dien-nuoc',
+        [ThongBaoHoaDonDienNuocController::class, 'index']
+    )->name('hoadon_dien_nuoc.index');
 
-// Trang chi tiết theo phòng
-Route::get('/hoadon-dien-nuoc/phong/{phong}', 
-    [ThongBaoHoaDonDienNuocController::class, 'detail']
-)->name('hoadon_dien_nuoc.detail');
+    // Trang chi tiết theo phòng
+    Route::get(
+        '/hoadon-dien-nuoc/phong/{phong}',
+        [ThongBaoHoaDonDienNuocController::class, 'detail']
+    )->name('hoadon_dien_nuoc.detail');
+    Route::get('hoadonslot/export', [HoaDonSlotController::class, 'export'])
+        ->name('hoadonslot.export');
+    Route::get('hoadonslot/export/all', [HoaDonSlotController::class, 'exportAll'])->name('hoadonslot.export.all');
+    Route::get('hoadonslot/export/paid', [HoaDonSlotController::class, 'exportPaid'])->name('hoadonslot.export.paid');
+    Route::get('hoadonslot/export/unpaid', [HoaDonSlotController::class, 'exportUnpaid'])->name('hoadonslot.export.unpaid');
 
 
 
