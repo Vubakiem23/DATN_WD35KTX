@@ -17,6 +17,7 @@ use App\Http\Controllers\SuCoController;
 use App\Http\Controllers\HoaDonSuCoController;
 use App\Http\Controllers\SlotController;
 use App\Http\Controllers\KhuController;
+use App\Http\Controllers\ThongBaoHoaDonDienNuocController;
 
 use App\Http\Controllers\UserController;
 
@@ -128,11 +129,11 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         Route::post('/{hoaDonId}/utilities-payment/{utilitiesPaymentId}', [HoaDonController::class, 'thanhToanUtilities'])
             ->name('client.hoadon.utilitiespayment');
         Route::get('/lich-su-tien-phong', [ClientController::class, 'lichSuTienPhong'])
-        ->name('client.hoadon.lichsu.tienphong');
+            ->name('client.hoadon.lichsu.tienphong');
 
-    // Trang lịch sử điện nước
-    Route::get('/lich-su-dien-nuoc', [ClientController::class, 'lichSuDienNuoc'])
-        ->name('client.hoadon.lichsu.diennuoc');
+        // Trang lịch sử điện nước
+        Route::get('/lich-su-dien-nuoc', [ClientController::class, 'lichSuDienNuoc'])
+            ->name('client.hoadon.lichsu.diennuoc');
     });
 });
 
@@ -280,6 +281,20 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/thong-bao-phong-sv', [ThongBaoPhongSvController::class, 'index'])
         ->name('thongbao_phong_sv.index');
+    // Thông báo Hóa đơn Slot
+    Route::get('/hoadonslot', [PaymentConfirmationController::class, 'thongBaoHoaDonSlot'])
+        ->name('hoadonslot.index');
+    // routes/web.php
+    // Trang tổng hợp
+Route::get('/hoadon-dien-nuoc', 
+    [ThongBaoHoaDonDienNuocController::class, 'index']
+)->name('hoadon_dien_nuoc.index');
+
+// Trang chi tiết theo phòng
+Route::get('/hoadon-dien-nuoc/phong/{phong}', 
+    [ThongBaoHoaDonDienNuocController::class, 'detail']
+)->name('hoadon_dien_nuoc.detail');
+
 
 
 

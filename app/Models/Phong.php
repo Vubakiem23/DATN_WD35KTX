@@ -494,5 +494,9 @@ public function sinhViens()
 {
     return $this->hasMany(\App\Models\SinhVien::class, 'phong_id');
 }
+public function hoaDons()
+{
+    return $this->hasMany(\App\Models\HoaDon::class, 'phong_id');
+}
 
 }
