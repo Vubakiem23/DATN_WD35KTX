@@ -267,41 +267,85 @@ class PaymentConfirmationController extends Controller
 // }
 public function thongBaoHoaDonSlot(Request $request)
 {
-    $phongId = $request->get('phong_id'); // Lọc theo phòng nếu chọn
-    $maSV = $request->get('ma_sinh_vien'); // Lọc theo mã sinh viên nếu có
-    $hoTen = $request->get('ho_ten'); // Lọc theo tên sinh viên nếu có
-    $phongs = Phong::all(); // Lấy danh sách tất cả phòng
+    // Lấy giá trị filter từ request
+    $phongId = $request->get('phong_id');
+    $maSV    = $request->get('ma_sinh_vien');
+    $hoTen   = $request->get('ho_ten');
+    $status  = $request->get('status', 'all'); // all | da_thanh_toan | chua_thanh_toan
+    $search  = $request->get('search');
 
-    // Query hóa đơn slot payment
-    $query = HoaDonSlotPayment::with(['hoaDon.phong', 'sinhVien']); // load quan hệ
+    // Lấy danh sách phòng để hiển thị filter
+    $phongs = Phong::all();
 
+    // Khởi tạo query cơ bản
+    $query = HoaDonSlotPayment::with(['hoaDon.phong', 'sinhVien']);
+
+    // -----------------------
     // Lọc theo phòng
-    if ($phongId) {
-        $query->whereHas('hoaDon', function($q) use ($phongId) {
+    if (!empty($phongId)) {
+        $query->whereHas('hoaDon', function ($q) use ($phongId) {
             $q->where('phong_id', $phongId);
         });
     }
 
     // Lọc theo mã sinh viên
-    if ($maSV) {
-        $query->whereHas('sinhVien', function($q) use ($maSV) {
-            $q->where('ma_sinh_vien', 'LIKE', "%$maSV%");
+    if (!empty($maSV)) {
+        $query->whereHas('sinhVien', function ($q) use ($maSV) {
+            $q->where('ma_sinh_vien', 'LIKE', "%{$maSV}%");
         });
     }
 
-    // Lọc theo tên sinh viên
-    if ($hoTen) {
-        $query->whereHas('sinhVien', function($q) use ($hoTen) {
-            $q->where('ho_ten', 'LIKE', "%$hoTen%");
+    // Lọc theo họ tên sinh viên
+    if (!empty($hoTen)) {
+        $query->whereHas('sinhVien', function ($q) use ($hoTen) {
+            $q->where('ho_ten', 'LIKE', "%{$hoTen}%");
         });
     }
 
-    // Phân loại đã thanh toán / chưa thanh toán
-    $daThanhToan = (clone $query)->where('da_thanh_toan', 1)->get();
-    $chuaThanhToan = (clone $query)->where('da_thanh_toan', 0)->get();
+    // Lọc theo trạng thái
+    if ($status && $status !== 'all') {
+        if ($status === 'da_thanh_toan') {
+            $query->where('da_thanh_toan', 1);
+        } elseif ($status === 'chua_thanh_toan') {
+            $query->where('da_thanh_toan', 0);
+        }
+    }
 
-    return view('thongbao_hoadonslot.index', compact('phongs', 'phongId', 'maSV', 'hoTen', 'daThanhToan', 'chuaThanhToan'));
+    // -----------------------
+    // Lọc search tổng hợp: tên sinh viên, mã sinh viên, phòng
+    if (!empty($search)) {
+    $query->where(function($q) use ($search) {
+        $q->whereHas('sinhVien', function($q2) use ($search) {
+            $q2->where('ma_sinh_vien', 'like', "%{$search}%")
+               ->orWhere('ho_ten', 'like', "%{$search}%");
+        })
+        ->orWhereHas('hoaDon.phong', function($q2) use ($search) {
+            $q2->where('ten_phong', 'like', "%{$search}%");
+        });
+    });
 }
+
+
+    // Lấy kết quả cuối cùng
+    $results = $query->orderByDesc('id')->get();
+
+    // Tách ra 2 danh sách để hiển thị trong view
+    $daThanhToan   = $results->where('da_thanh_toan', 1)->values();
+    $chuaThanhToan = $results->where('da_thanh_toan', 0)->values();
+
+    // Truyền dữ liệu ra view
+    return view('thongbao_hoadonslot.index', compact(
+        'phongs',
+        'phongId',
+        'maSV',
+        'hoTen',
+        'status',
+        'search',
+        'daThanhToan',
+        'chuaThanhToan'
+    ));
+}
+
 
 
 }
