@@ -17,6 +17,8 @@ use App\Http\Controllers\SuCoController;
 use App\Http\Controllers\HoaDonSuCoController;
 use App\Http\Controllers\SlotController;
 use App\Http\Controllers\KhuController;
+use App\Http\Controllers\ThongBaoHoaDonDienNuocController;
+use App\Http\Controllers\HoaDonSlotController;
 
 use App\Http\Controllers\UserController;
 
@@ -35,8 +37,13 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\TinTucController;
 use App\Http\Controllers\ThongBaoPhongSvController;
 use App\Http\Controllers\CKEditorUploadController;
-use App\Models\ThongBaoSuCoController as ModelsThongBaoSuCoController;
+use App\Http\Controllers\PaymentConfirmationController;
 use App\Models\Violation;
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
 
 
@@ -99,6 +106,11 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     // Thông báo
     Route::get('/thongbao', [ThongBaoController::class, 'clientIndex'])->name('client.thongbao.index');
     Route::get('/thongbao/{id}', [ThongBaoController::class, 'clientShow'])->name('client.thongbao.show');
+    Route::get('client/thongbao/load-more', [ThongBaoController::class, 'loadMore'])
+        ->name('client.thongbao.loadMore')
+        ->middleware('auth');
+
+
 
 
     // Lịch bảo trì
@@ -123,11 +135,11 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         Route::post('/{hoaDonId}/utilities-payment/{utilitiesPaymentId}', [HoaDonController::class, 'thanhToanUtilities'])
             ->name('client.hoadon.utilitiespayment');
         Route::get('/lich-su-tien-phong', [ClientController::class, 'lichSuTienPhong'])
-        ->name('client.hoadon.lichsu.tienphong');
+            ->name('client.hoadon.lichsu.tienphong');
 
-    // Trang lịch sử điện nước
-    Route::get('/lich-su-dien-nuoc', [ClientController::class, 'lichSuDienNuoc'])
-        ->name('client.hoadon.lichsu.diennuoc');
+        // Trang lịch sử điện nước
+        Route::get('/lich-su-dien-nuoc', [ClientController::class, 'lichSuDienNuoc'])
+            ->name('client.hoadon.lichsu.diennuoc');
     });
 });
 
@@ -149,6 +161,16 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // CKEditor uploads
     Route::post('ckeditor/upload', [CKEditorUploadController::class, 'store'])
         ->name('admin.ckeditor.upload');
+
+    // ===== YÊU CẦU XÁC NHẬN THANH TOÁN =====
+    Route::prefix('payment-confirmation')->group(function () {
+        Route::get('/', [PaymentConfirmationController::class, 'index'])->name('payment-confirmation.index');
+        Route::post('/slot/{id}/confirm', [PaymentConfirmationController::class, 'confirmSlotPayment'])->name('payment-confirmation.slot.confirm');
+        Route::post('/slot/{id}/reject', [PaymentConfirmationController::class, 'rejectSlotPayment'])->name('payment-confirmation.slot.reject');
+        Route::post('/utilities/{id}/confirm', [PaymentConfirmationController::class, 'confirmUtilitiesPayment'])->name('payment-confirmation.utilities.confirm');
+        Route::post('/utilities/{id}/reject', [PaymentConfirmationController::class, 'rejectUtilitiesPayment'])->name('payment-confirmation.utilities.reject');
+        Route::post('/bulk-action', [PaymentConfirmationController::class, 'bulkAction'])->name('payment-confirmation.bulk');
+    });
 
     // ---------------- PHÒNG & SLOT ----------------
     Route::resource('phong', PhongController::class);
@@ -258,13 +280,34 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('thongbao', ThongBaoController::class);
 
     Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
-    Route::get('/thong-bao-su-co', [ModelsThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
+    Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
     Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])->name('thongbao_sinh_vien.index');
 
 
 
     Route::get('/thong-bao-phong-sv', [ThongBaoPhongSvController::class, 'index'])
         ->name('thongbao_phong_sv.index');
+    // Thông báo Hóa đơn Slot
+    Route::get('/hoadonslot', [PaymentConfirmationController::class, 'thongBaoHoaDonSlot'])
+        ->name('hoadonslot.index');
+    // routes/web.php
+    // Trang tổng hợp
+    Route::get(
+        '/hoadon-dien-nuoc',
+        [ThongBaoHoaDonDienNuocController::class, 'index']
+    )->name('hoadon_dien_nuoc.index');
+
+    // Trang chi tiết theo phòng
+    Route::get(
+        '/hoadon-dien-nuoc/phong/{phong}',
+        [ThongBaoHoaDonDienNuocController::class, 'detail']
+    )->name('hoadon_dien_nuoc.detail');
+    Route::get('hoadonslot/export', [HoaDonSlotController::class, 'export'])
+        ->name('hoadonslot.export');
+    Route::get('hoadonslot/export/all', [HoaDonSlotController::class, 'exportAll'])->name('hoadonslot.export.all');
+    Route::get('hoadonslot/export/paid', [HoaDonSlotController::class, 'exportPaid'])->name('hoadonslot.export.paid');
+    Route::get('hoadonslot/export/unpaid', [HoaDonSlotController::class, 'exportUnpaid'])->name('hoadonslot.export.unpaid');
+
 
 
 

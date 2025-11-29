@@ -5,54 +5,8 @@
 @section('content')
 <div class="container">
 
-    @if($sinhVien && ($thongBaoSinhVien->count() > 0 ||
-    $SuCo->count() > 0 ||
-    $thongBaoPhongSv->count() > 0 ||
-    $HoaDonSlotPayment->count() > 0 ||
-    $HoaDonUtilitiesPayment->count() > 0))
-
     @php
-    // Gom tất cả thông báo + gán thuộc tính time để sort
-    $allNoti = collect()
-    ->merge(
-    $thongBaoSinhVien->map(function ($i) {
-    $i->time = $i->created_at;
-    $i->type = 'sv';
-    return $i;
-    })
-    )
-    ->merge(
-    $SuCo->map(function ($i) {
-    $i->time = $i->ngay_gui ? \Carbon\Carbon::parse($i->ngay_gui) : now();
-    $i->type = 'suco';
-    return $i;
-    })
-    )
-    ->merge(
-    $thongBaoPhongSv->map(function ($i) {
-    $i->time = $i->created_at;
-    $i->type = 'phong';
-    return $i;
-    })
-    )
-    // HÓA ĐƠN PHÒNG
-    ->merge(
-    $HoaDonSlotPayment->map(function($i) {
-    $i->type = 'hoa_don_phong';
-    $i->time = $i->created_at;
-    return $i;
-    })
-    )
-
-    // HÓA ĐƠN ĐIỆN NƯỚC
-    ->merge(
-    $HoaDonUtilitiesPayment->map(function($i) {
-    $i->type = 'hoa_don_dien_nuoc';
-    $i->time = $i->created_at;
-    return $i;
-    })
-    )
-    ->sortByDesc('time');
+        $limit = 4; // Số lượng thông báo hiển thị ban đầu
     @endphp
 
     <!-- Section Header -->
@@ -63,198 +17,357 @@
         </div>
     </div>
 
-    <!-- Notifications List -->
     <div class="notifications-container">
 
-        {{-- ===== VÒNG LẶP DUY NHẤT ĐÃ SẮP XẾP ===== --}}
-        @foreach($allNoti as $tb)
-
-        {{-- ================== THÔNG BÁO SINH VIÊN ================== --}}
-        @if($tb->type == 'sv')
-        <div class="notice-card">
-            <div class="notice-card-header">
-                <div class="notice-status-badge">
-                    @if($tb->trang_thai == 'Mới')
-                    <i class="fas fa-bell notice-icon-new"></i>
-                    <span class="notice-status-text">Mới</span>
-                    @elseif($tb->trang_thai == 'Chờ duyệt')
-                    <i class="fas fa-bell notice-icon-pending"></i>
-                    <span class="notice-status-text">Chờ duyệt</span>
-                    @else
-                    <i class="fas fa-bell notice-icon-read"></i>
-                    <span class="notice-status-text">{{ $tb->trang_thai }}</span>
-                    @endif
+        {{-- ================= SINH VIÊN ================= --}}
+        <h4 class="mb-2 mt-3">🔔 Thông báo sinh viên</h4>
+        <div id="noti-sinhvien-container">
+            @foreach($thongBaoSinhVien->sortByDesc('created_at')->take($limit) as $tb)
+                <div class="notice-card">
+                    <div class="notice-card-header">
+                        <div class="notice-status-badge">
+                            @if($tb->trang_thai == 'Mới')
+                                <i class="fas fa-bell notice-icon-new"></i>
+                            @elseif($tb->trang_thai == 'Chờ duyệt')
+                                <i class="fas fa-bell notice-icon-pending"></i>
+                            @else
+                                <i class="fas fa-bell notice-icon-read"></i>
+                            @endif
+                            <span class="notice-status-text">{{ $tb->trang_thai }}</span>
+                        </div>
+                        <div class="notice-time">
+                            <i class="far fa-clock"></i>
+                            <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
+                        </div>
+                    </div>
+                    <div class="notice-card-body">
+                        <p class="notice-content">{{ $tb->noi_dung }}</p>
+                    </div>
                 </div>
-                <div class="notice-time">
-                    <i class="far fa-clock"></i>
-                    <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
-                </div>
-            </div>
-            <div class="notice-card-body">
-                <p class="notice-content">{{ $tb->noi_dung }}</p>
-            </div>
+            @endforeach
         </div>
+        @if($thongBaoSinhVien->count() > $limit)
+    <div class="text-center mt-2">
+        <button class="btn btn-outline-primary load-more-btn" 
+                data-type="sinhvien" 
+                data-offset="{{ $limit }}">
+            Xem thêm
+        </button>
+    </div>
+@endif
+
+
+        {{-- ================= SỰ CỐ ================= --}}
+        <h4 class="mb-2 mt-4">⚠️ Thông báo sự cố</h4>
+        <div id="noti-suco-container">
+            @foreach($SuCo->sortByDesc(fn($i) => $i->ngay_gui ?? now())->take($limit) as $tb)
+            <a href="{{ url('client/suco') }}" style="text-decoration: none; color: inherit;">
+                <div class="notice-card">
+                    <div class="notice-card-header">
+                        <div class="notice-status-badge">
+                            <i class="fas fa-exclamation-triangle notice-icon-warning"></i>
+                            <span class="notice-status-text">Sự cố</span>
+                            @if($tb->phong)
+                                <span class="notice-room-badge">
+                                    <i class="fas fa-door-open"></i>
+                                    {{ $tb->phong->ten_phong }}
+                                </span>
+                            @endif
+                            @php
+                                $trangThai = $tb->trang_thai ?? 'Chưa xử lý';
+                                $badgeClass = match($trangThai) {
+                                    'Tiếp nhận' => 'badge-soft-secondary',
+                                    'Đang xử lý' => 'badge-soft-warning',
+                                    'Hoàn thành' => 'badge-soft-success',
+                                    default => 'badge-soft-secondary',
+                                };
+                            @endphp
+                            <span class="badge {{ $badgeClass }}">{{ $trangThai }}</span>
+                        </div>
+                        <div class="notice-time">
+                            <i class="far fa-clock"></i>
+                            @if($tb->trang_thai === 'Hoàn thành' && !empty($tb->ngay_hoan_thanh))
+                                <span>Hoàn thành: {{ \Carbon\Carbon::parse($tb->ngay_hoan_thanh)->format('d/m/Y H:i') }}</span>
+                            @else
+                                <span>{{ $tb->ngay_gui ? \Carbon\Carbon::parse($tb->ngay_gui)->format('d/m/Y H:i') : 'N/A' }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="notice-card-body">
+                        <p class="notice-content">{{ $tb->mo_ta }}</p>
+                    </div>
+                </div>
+                </a>
+            @endforeach
+        </div>
+        @if($SuCo->count() > $limit)
+            <div class="text-center mt-2">
+                <button class="btn btn-outline-primary load-more-btn" data-type="suco" data-offset="{{ $limit }}">Xem thêm</button>
+            </div>
         @endif
 
-        {{-- ================== THÔNG BÁO SỰ CỐ ================== --}}
-       @if($tb->type == 'suco')
-<div class="notice-card">
-    <div class="notice-card-header">
-        <div class="notice-status-badge">
-            <i class="fas fa-exclamation-triangle notice-icon-warning"></i>
-            <span class="notice-status-text">Sự cố</span>
-
-            {{-- Hiển thị phòng nếu có --}}
-            @if($tb->phong)
-                <span class="notice-room-badge">
-                    <i class="fas fa-door-open"></i>
-                    {{ $tb->phong->ten_phong }}
-                </span>
-            @endif
-
-            {{-- Xác định class badge theo trạng thái --}}
-            @php
-                $trangThai = $tb->trang_thai ?? 'Chưa xử lý';
-                $badgeClass = match($trangThai) {
-                    'Tiếp nhận' => 'badge-soft-secondary',
-                    'Đang xử lý' => 'badge-soft-warning',
-                    'Hoàn thành' => 'badge-soft-success',
-                    default => 'badge-soft-secondary',
-                };
-            @endphp
-
-            <span class="badge {{ $badgeClass }}">{{ $trangThai }}</span>
+        {{-- ================= HÓA ĐƠN PHÒNG ================= --}}
+        <h4 class="mb-2 mt-4">💰 Hóa đơn phòng</h4>
+        <div id="noti-slot-container">
+            @foreach($HoaDonSlotPayment->sortByDesc('created_at')->take($limit) as $tb)
+                <a href="{{ url('client/hoadon/tien-phong') }}" style="text-decoration: none; color: inherit;">
+                    <div class="notice-card">
+                        <div class="notice-card-header">
+                            <div class="notice-status-badge">
+                                <i class="fas fa-file-invoice-dollar text-primary"></i>
+                                <span class="notice-status-text">Hóa đơn phòng</span>
+                                @if($tb->slot && $tb->slot->phong)
+                                    <span class="notice-room-badge">
+                                        <i class="fas fa-door-open"></i>
+                                        {{ $tb->slot->phong->ten_phong }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="notice-time">
+                                <i class="far fa-clock"></i>
+                                <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
+                            </div>
+                        </div>
+                        <div class="notice-card-body">
+                            <p class="notice-content">
+                                Số tiền: <b>{{ number_format($tb->hoaDon->slot_unit_price ?? 0) }}đ</b><br>
+                                Trạng thái: <b>{{ $tb->trang_thai }}</b>
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
         </div>
-
-        {{-- Hiển thị thời gian --}}
-        <div class="notice-time">
-            <i class="far fa-clock"></i>
-            @if($tb->trang_thai === 'Hoàn thành' && !empty($tb->ngay_hoan_thanh))
-                <span>Hoàn thành: {{ \Carbon\Carbon::parse($tb->ngay_hoan_thanh)->format('d/m/Y H:i') }}</span>
-            @else
-                <span>{{ $tb->ngay_gui ? \Carbon\Carbon::parse($tb->ngay_gui)->format('d/m/Y H:i') : 'N/A' }}</span>
-            @endif
-        </div>
-    </div>
-
-    <div class="notice-card-body">
-        <p class="notice-content">{{ $tb->mo_ta }}</p>
-    </div>
-</div>
-@endif
-
-
-        {{-- ================== THÔNG BÁO PHÒNG ================== --}}
-        @if($tb->type == 'phong')
-        <div class="notice-card">
-            <div class="notice-card-header">
-                <div class="notice-status-badge">
-                    <i class="fas fa-home notice-icon-room"></i>
-                    <span class="notice-status-text">Phòng</span>
-
-                    @if($tb->phong)
-                    <span class="notice-room-badge">
-                        <i class="fas fa-door-open"></i>
-                        {{ $tb->phong->ten_phong }}
-                    </span>
-                    @endif
-                </div>
-
-                <div class="notice-time">
-                    <i class="far fa-clock"></i>
-                    <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
-                </div>
+        @if($HoaDonSlotPayment->count() > $limit)
+            <div class="text-center mt-2">
+                <button class="btn btn-outline-primary load-more-btn" data-type="slot" data-offset="{{ $limit }}">Xem thêm</button>
             </div>
-            <div class="notice-card-body">
-                <p class="notice-content">{{ $tb->noi_dung }}</p>
-            </div>
-        </div>
         @endif
-       {{-- ==================== 4. HÓA ĐƠN PHÒNG ==================== --}}
-@if($tb->type == 'hoa_don_phong')
-<a href="{{ url('client/hoadon/tien-phong') }}" style="text-decoration: none; color: inherit;">
-    <div class="notice-card">
-        <div class="notice-card-header">
-            <div class="notice-status-badge">
-                <i class="fas fa-file-invoice-dollar text-primary"></i>
-                <span class="notice-status-text">Hóa đơn phòng</span>
 
-                @if($tb->slot && $tb->slot->phong)
-                <span class="notice-room-badge">
-                    <i class="fas fa-door-open"></i>
-                    {{ $tb->slot->phong->ten_phong }}
-                </span>
-                @endif
-            </div>
-
-            <div class="notice-time">
-                <i class="far fa-clock"></i>
-                <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
-            </div>
+        {{-- ================= HÓA ĐƠN ĐIỆN NƯỚC ================= --}}
+        <h4 class="mb-2 mt-4">🌊 Hóa đơn điện nước</h4>
+        <div id="noti-utilities-container">
+            @foreach($HoaDonUtilitiesPayment->sortByDesc('created_at')->take($limit) as $tb)
+                <a href="{{ url('client/hoadon/dien-nuoc') }}" style="text-decoration: none; color: inherit;">
+                    <div class="notice-card">
+                        <div class="notice-card-header">
+                            <div class="notice-status-badge">
+                                <i class="fas fa-file-invoice text-warning"></i>
+                                <span class="notice-status-text">Hóa đơn điện nước</span>
+                                @if($tb->slot && $tb->slot->phong)
+                                    <span class="notice-room-badge">
+                                        <i class="fas fa-door-open"></i>
+                                        {{ $tb->slot->phong->ten_phong }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="notice-time">
+                                <i class="far fa-clock"></i>
+                                <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
+                            </div>
+                        </div>
+                        <div class="notice-card-body">
+                            <p class="notice-content">
+                                Tiền điện: <b>{{ number_format($tb->tien_dien ?? 0) }}đ</b><br>
+                                Tiền nước: <b>{{ number_format($tb->tien_nuoc ?? 0) }}đ</b><br>
+                                Tổng tiền: <b>{{ number_format($tb->tong_tien ?? 0) }}đ</b><br>
+                                Trạng thái: <b>{{ $tb->trang_thai }}</b>
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
         </div>
-
-        <div class="notice-card-body">
-            <p class="notice-content">
-                Số tiền: <b>{{ number_format($tb->hoaDon->slot_unit_price) }}đ</b><br>
-                Trạng thái: <b>{{ $tb->trang_thai }}</b>
-            </p>
-        </div>
-    </div>
-</a>
-@endif
-{{-- ==================== HÓA ĐƠN ĐIỆN NƯỚC ==================== --}}
-@if($tb->type == 'hoa_don_dien_nuoc')
-<a href="{{ url('client/hoadon/dien-nuoc') }}" style="text-decoration: none; color: inherit;">
-    <div class="notice-card">
-        <div class="notice-card-header">
-            <div class="notice-status-badge">
-                <i class="fas fa-file-invoice text-warning"></i>
-                <span class="notice-status-text">Hóa đơn điện nước</span>
-
-                {{-- Hiển thị phòng nếu có --}}
-                @if($tb->slot && $tb->slot->phong)
-                <span class="notice-room-badge">
-                    <i class="fas fa-door-open"></i>
-                    {{ $tb->slot->phong->ten_phong }}
-                </span>
-                @endif
-
+        @if($HoaDonUtilitiesPayment->count() > $limit)
+            <div class="text-center mt-2">
+                <button class="btn btn-outline-primary load-more-btn" data-type="utilities" data-offset="{{ $limit }}">Xem thêm</button>
             </div>
+        @endif
 
-            <div class="notice-time">
-                <i class="far fa-clock"></i>
-                <span>{{ $tb->created_at->format('d/m/Y H:i') }}</span>
-            </div>
-        </div>
-
-        <div class="notice-card-body">
-            <p class="notice-content">
-                {{-- Hiển thị số tiền điện, nước và tổng tiền --}}
-                Tiền điện: <b>{{ number_format($tb->tien_dien) }}đ</b><br>
-                Tiền nước: <b>{{ number_format($tb->tien_nuoc) }}đ</b><br>
-                Tổng tiền: <b>{{ number_format($tb->tong_tien) }}đ</b><br>
-                Trạng thái: <b>{{ $tb->trang_thai }}</b>
-            </p>
-        </div>
-    </div>
-</a>
-@endif
-
-
-        @endforeach
     </div>
 
-    @else
-    <!-- Empty State -->
-    <div class="notice-empty-state">
-        <div class="notice-empty-icon">
-            <i class="fas fa-bell-slash"></i>
+    {{-- EMPTY STATE --}}
+    @if($thongBaoSinhVien->count() == 0 && $SuCo->count() == 0 && $thongBaoPhongSv->count() == 0 && $HoaDonSlotPayment->count() == 0 && $HoaDonUtilitiesPayment->count() == 0)
+        <div class="notice-empty-state">
+            <div class="notice-empty-icon">
+                <i class="fas fa-bell-slash"></i>
+            </div>
+            <h3 class="notice-empty-title">Chưa có thông báo nào</h3>
+            <p class="notice-empty-text">Bạn chưa có thông báo riêng nào.</p>
         </div>
-        <h3 class="notice-empty-title">Chưa có thông báo nào</h3>
-        <p class="notice-empty-text">Bạn chưa có thông báo riêng nào. Các thông báo chung sẽ được hiển thị ở trang chủ.</p>
-    </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.load-more-btn');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.dataset.type;
+            let offset = parseInt(this.dataset.offset);
+            const limit = 4;
+            const container = document.getElementById(`noti-${type}-container`);
+
+            fetch(`{{ url('client/thongbao/load-more') }}?type=${type}&offset=${offset}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        let html = '';
+
+                        switch (type) {
+                            case 'sinhvien':
+                                html = `
+                                <div class="notice-card">
+                                    <div class="notice-card-header">
+                                        <div class="notice-status-badge">
+                                            <i class="fas fa-bell ${item.trang_thai == 'Mới' ? 'notice-icon-new' : 'notice-icon-read'}"></i>
+                                            <span class="notice-status-text">${item.trang_thai}</span>
+                                        </div>
+                                        <div class="notice-time">
+                                            <i class="far fa-clock"></i>
+                                            <span>${new Date(item.created_at).toLocaleString('vi-VN')}</span>
+                                        </div>
+                                    </div>
+                                    <div class="notice-card-body">
+                                        <p class="notice-content">${item.noi_dung}</p>
+                                    </div>
+                                </div>`;
+                                break;
+
+                            case 'suco':
+                                const badgeClass = {
+                                    'Tiếp nhận': 'badge-soft-secondary',
+                                    'Đang xử lý': 'badge-soft-warning',
+                                    'Hoàn thành': 'badge-soft-success'
+                                }[item.trang_thai] || 'badge-soft-secondary';
+
+                                html = `
+                                <div class="notice-card">
+                                    <div class="notice-card-header">
+                                        <div class="notice-status-badge">
+                                            <i class="fas fa-exclamation-triangle notice-icon-warning"></i>
+                                            <span class="notice-status-text">Sự cố</span>
+                                            ${item.su_co && item.su_co.phong ? 
+                                                `<span class="notice-room-badge"><i class="fas fa-door-open"></i>${item.su_co.phong.ten_phong}</span>` 
+                                                : ''
+                                            }
+                                            <span class="badge ${badgeClass}">${item.trang_thai}</span>
+                                        </div>
+                                        <div class="notice-time">
+                                            <i class="far fa-clock"></i>
+                                            <span>${new Date(item.ngay_tao).toLocaleString('vi-VN')}</span>
+                                        </div>
+                                    </div>
+                                    <div class="notice-card-body">
+                                        <p class="notice-content">${item.mo_ta}</p>
+                                    </div>
+                                </div>`;
+                                break;
+
+                            case 'phong':
+                                html = `
+                                <div class="notice-card">
+                                    <div class="notice-card-header">
+                                        <div class="notice-status-badge">
+                                            <i class="fas fa-home notice-icon-room"></i>
+                                            <span class="notice-status-text">Phòng</span>
+                                            ${item.phong ? 
+                                                `<span class="notice-room-badge"><i class="fas fa-door-open"></i>${item.phong.ten_phong}</span>` 
+                                                : ''
+                                            }
+                                        </div>
+                                        <div class="notice-time">
+                                            <i class="far fa-clock"></i>
+                                            <span>${new Date(item.created_at).toLocaleString('vi-VN')}</span>
+                                        </div>
+                                    </div>
+                                    <div class="notice-card-body">
+                                        <p class="notice-content">${item.noi_dung}</p>
+                                    </div>
+                                </div>`;
+                                break;
+
+                            case 'slot':
+                                html = `
+                                <a href="{{ url('client/hoadon/tien-phong') }}" style="text-decoration: none; color: inherit;">
+                                    <div class="notice-card">
+                                        <div class="notice-card-header">
+                                            <div class="notice-status-badge">
+                                                <i class="fas fa-file-invoice-dollar text-primary"></i>
+                                                <span class="notice-status-text">Hóa đơn phòng</span>
+                                                ${item.slot && item.slot.phong ? 
+                                                    `<span class="notice-room-badge"><i class="fas fa-door-open"></i>${item.slot.phong.ten_phong}</span>` 
+                                                    : ''
+                                                }
+                                            </div>
+                                            <div class="notice-time">
+                                                <i class="far fa-clock"></i>
+                                                <span>${new Date(item.created_at).toLocaleString('vi-VN')}</span>
+                                            </div>
+                                        </div>
+                                        <div class="notice-card-body">
+                                            <p class="notice-content">
+                                                Số tiền: <b>${new Intl.NumberFormat('vi-VN').format(item.slot_unit_price ?? 0)}đ</b><br>
+                                                Trạng thái: <b>${item.trang_thai}</b>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>`;
+                                break;
+
+                            case 'utilities':
+                                html = `
+                                <a href="{{ url('client/hoadon/dien-nuoc') }}" style="text-decoration: none; color: inherit;">
+                                    <div class="notice-card">
+                                        <div class="notice-card-header">
+                                            <div class="notice-status-badge">
+                                                <i class="fas fa-file-invoice text-warning"></i>
+                                                <span class="notice-status-text">Hóa đơn điện nước</span>
+                                                ${item.slot && item.slot.phong ? 
+                                                    `<span class="notice-room-badge"><i class="fas fa-door-open"></i>${item.slot.phong.ten_phong}</span>` 
+                                                    : ''
+                                                }
+                                            </div>
+                                            <div class="notice-time">
+                                                <i class="far fa-clock"></i>
+                                                <span>${new Date(item.created_at).toLocaleString('vi-VN')}</span>
+                                            </div>
+                                        </div>
+                                        <div class="notice-card-body">
+                                            <p class="notice-content">
+                                                Tiền điện: <b>${new Intl.NumberFormat('vi-VN').format(item.tien_dien ?? 0)}đ</b><br>
+                                                Tiền nước: <b>${new Intl.NumberFormat('vi-VN').format(item.tien_nuoc ?? 0)}đ</b><br>
+                                                Tổng tiền: <b>${new Intl.NumberFormat('vi-VN').format(item.tong_tien ?? 0)}đ</b><br>
+                                                Trạng thái: <b>${item.trang_thai}</b>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>`;
+                                break;
+                        }
+
+                        container.insertAdjacentHTML('beforeend', html);
+                    });
+
+                    offset += limit;
+                    this.dataset.offset = offset;
+
+                    // Không ẩn nút nữa, luôn giữ hiện
+                }
+            });
+        });
+    });
+});
+
+
+</script>
+
+@endpush
 
 @push('styles')
 <style>
@@ -390,7 +503,7 @@
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
-        display: inline-flex;
+display: inline-flex;
         align-items: center;
         gap: 6px;
     }
@@ -502,5 +615,7 @@
         /* chữ màu đen */
     }
 </style>
+
 @endpush
+
 @endsection
