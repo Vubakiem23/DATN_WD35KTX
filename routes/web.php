@@ -35,12 +35,8 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\TinTucController;
 use App\Http\Controllers\ThongBaoPhongSvController;
 use App\Http\Controllers\CKEditorUploadController;
+use App\Models\ThongBaoSuCoController as ModelsThongBaoSuCoController;
 use App\Models\Violation;
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
 
 
 
@@ -262,7 +258,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('thongbao', ThongBaoController::class);
 
     Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
-    Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
+    Route::get('/thong-bao-su-co', [ModelsThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
     Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])->name('thongbao_sinh_vien.index');
 
 
