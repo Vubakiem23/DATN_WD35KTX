@@ -142,54 +142,62 @@ class PaymentConfirmationController extends Controller
             $payment->ghi_chu = $request->get('ghi_chu_admin', $payment->ghi_chu);
             $payment->save();
 
-            // Kiểm tra xem đây có phải thanh toán cho room assignment không
-            // Nếu có RoomAssignment đang chờ xác nhận và chưa gán vào phòng, thì gán vào phòng
+            // QUAN TRỌNG: Khi xác nhận thanh toán, luôn gán sinh viên vào phòng nếu có phòng trong hóa đơn
             if ($payment->sinhVien && $payment->hoaDon && $payment->hoaDon->phong) {
+                $phongId = $payment->hoaDon->phong->id;
+                
+                // Nếu sinh viên chưa có phong_id hoặc phong_id khác với phòng trong hóa đơn
+                // thì gán lại phong_id cho sinh viên
+                if (empty($payment->sinhVien->phong_id) || $payment->sinhVien->phong_id != $phongId) {
+                    // Gán sinh viên vào phòng
+                    $payment->sinhVien->phong_id = $phongId;
+                    $payment->sinhVien->save();
+                }
+
+                // Tìm hoặc cập nhật assignment
                 $assignment = \App\Models\RoomAssignment::where('sinh_vien_id', $payment->sinhVien->id)
-                    ->where('phong_id', $payment->hoaDon->phong->id)
-                    ->where('trang_thai', \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION)
+                    ->where('phong_id', $phongId)
                     ->whereNull('end_date')
                     ->latest('start_date')
                     ->first();
 
-                if ($assignment && empty($payment->sinhVien->phong_id)) {
-                    // Gán sinh viên vào phòng
-                    $payment->sinhVien->phong_id = $payment->hoaDon->phong->id;
-                    $payment->sinhVien->save();
+                if ($assignment) {
+                    // Cập nhật trạng thái assignment nếu đang pending
+                    if ($assignment->trang_thai == \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION) {
+                        $assignment->trang_thai = \App\Models\RoomAssignment::STATUS_CONFIRMED;
+                        $assignment->save();
+                    }
+                }
 
-                    // Cập nhật trạng thái assignment
-                    $assignment->trang_thai = \App\Models\RoomAssignment::STATUS_CONFIRMED;
-                    $assignment->save();
+                // Tìm hoặc tạo slot cho sinh viên
+                $slot = \App\Models\Slot::where('phong_id', $phongId)
+                    ->where('sinh_vien_id', $payment->sinhVien->id)
+                    ->first();
 
-                    // Tìm hoặc tạo slot cho sinh viên
-                    $slot = \App\Models\Slot::where('phong_id', $payment->hoaDon->phong->id)
-                        ->where('sinh_vien_id', $payment->sinhVien->id)
+                if (!$slot) {
+                    // Tìm slot trống trong phòng
+                    $emptySlot = \App\Models\Slot::where('phong_id', $phongId)
+                        ->whereNull('sinh_vien_id')
                         ->first();
-
-                    if (!$slot) {
-                        $emptySlot = \App\Models\Slot::where('phong_id', $payment->hoaDon->phong->id)
-                            ->whereNull('sinh_vien_id')
-                            ->first();
-                        
-                        if ($emptySlot) {
-                            $emptySlot->sinh_vien_id = $payment->sinhVien->id;
-                            $emptySlot->save();
-                            $payment->slot_id = $emptySlot->id;
-                            // Cập nhật slot_label với tên slot thực tế
-                            $payment->slot_label = $emptySlot->ma_slot ?? ('Slot ' . $emptySlot->id);
-                            $payment->save();
-                        }
-                    } else {
-                        $payment->slot_id = $slot->id;
+                    
+                    if ($emptySlot) {
+                        $emptySlot->sinh_vien_id = $payment->sinhVien->id;
+                        $emptySlot->save();
+                        $payment->slot_id = $emptySlot->id;
                         // Cập nhật slot_label với tên slot thực tế
-                        $payment->slot_label = $slot->ma_slot ?? ('Slot ' . $slot->id);
+                        $payment->slot_label = $emptySlot->ma_slot ?? ('Slot ' . $emptySlot->id);
                         $payment->save();
                     }
+                } else {
+                    $payment->slot_id = $slot->id;
+                    // Cập nhật slot_label với tên slot thực tế
+                    $payment->slot_label = $slot->ma_slot ?? ('Slot ' . $slot->id);
+                    $payment->save();
+                }
 
-                    // Cập nhật trạng thái phòng
-                    if (method_exists($payment->hoaDon->phong, 'updateStatusBasedOnCapacity')) {
-                        $payment->hoaDon->phong->updateStatusBasedOnCapacity();
-                    }
+                // Cập nhật trạng thái phòng
+                if (method_exists($payment->hoaDon->phong, 'updateStatusBasedOnCapacity')) {
+                    $payment->hoaDon->phong->updateStatusBasedOnCapacity();
                 }
             }
 
@@ -276,28 +284,120 @@ class PaymentConfirmationController extends Controller
             return response()->json(['success' => false, 'message' => 'Chưa chọn yêu cầu nào'], 422);
         }
 
-        $model = $type === 'slot' ? HoaDonSlotPayment::class : HoaDonUtilitiesPayment::class;
+        return DB::transaction(function () use ($type, $action, $ids, $note) {
+            $model = $type === 'slot' ? HoaDonSlotPayment::class : HoaDonUtilitiesPayment::class;
+            $now = now();
+            $updated = 0;
 
-        $now = now();
-        if ($action === 'confirm') {
-            $updated = $model::whereIn('id', $ids)->update([
-                'trang_thai' => 'da_thanh_toan',
-                'da_thanh_toan' => true,
-                'ngay_thanh_toan' => $now,
-                'xac_nhan_boi' => auth()->id(),
-                'ghi_chu' => $note,
+            if ($action === 'confirm') {
+                // Lấy tất cả payments với relationships
+                $payments = $model::with(['sinhVien', 'hoaDon.phong'])->whereIn('id', $ids)->get();
+                
+                foreach ($payments as $payment) {
+                    // Cập nhật trạng thái thanh toán
+                    $payment->trang_thai = 'da_thanh_toan';
+                    $payment->da_thanh_toan = true;
+                    $payment->ngay_thanh_toan = $now;
+                    $payment->xac_nhan_boi = auth()->id();
+                    if ($note) {
+                        $payment->ghi_chu = $note;
+                    }
+                    
+                    // Nếu là slot payment, thực hiện logic gán phòng và cập nhật slot_label
+                    if ($type === 'slot' && $payment instanceof HoaDonSlotPayment) {
+                        // Kiểm tra xem có phòng trong hóa đơn không
+                        if ($payment->sinhVien && $payment->hoaDon && $payment->hoaDon->phong) {
+                            $phongId = $payment->hoaDon->phong->id;
+                            
+                            // QUAN TRỌNG: Nếu sinh viên chưa có phong_id hoặc phong_id khác với phòng trong hóa đơn
+                            // thì gán lại phong_id cho sinh viên
+                            if (empty($payment->sinhVien->phong_id) || $payment->sinhVien->phong_id != $phongId) {
+                                // Gán sinh viên vào phòng
+                                $payment->sinhVien->phong_id = $phongId;
+                                $payment->sinhVien->save();
+                            }
+
+                            // Tìm hoặc cập nhật assignment
+                            $assignment = \App\Models\RoomAssignment::where('sinh_vien_id', $payment->sinhVien->id)
+                                ->where('phong_id', $phongId)
+                                ->whereNull('end_date')
+                                ->latest('start_date')
+                                ->first();
+
+                            if ($assignment) {
+                                // Cập nhật trạng thái assignment nếu đang pending
+                                if ($assignment->trang_thai == \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION) {
+                                    $assignment->trang_thai = \App\Models\RoomAssignment::STATUS_CONFIRMED;
+                                    $assignment->save();
+                                }
+                            }
+
+                            // Tìm hoặc tạo slot cho sinh viên
+                            $slot = \App\Models\Slot::where('phong_id', $phongId)
+                                ->where('sinh_vien_id', $payment->sinhVien->id)
+                                ->first();
+
+                            if (!$slot) {
+                                // Tìm slot trống trong phòng
+                                $emptySlot = \App\Models\Slot::where('phong_id', $phongId)
+                                    ->whereNull('sinh_vien_id')
+                                    ->first();
+                                
+                                if ($emptySlot) {
+                                    $emptySlot->sinh_vien_id = $payment->sinhVien->id;
+                                    $emptySlot->save();
+                                    $payment->slot_id = $emptySlot->id;
+                                    // Cập nhật slot_label với tên slot thực tế
+                                    $payment->slot_label = $emptySlot->ma_slot ?? ('Slot ' . $emptySlot->id);
+                                }
+                            } else {
+                                $payment->slot_id = $slot->id;
+                                // Cập nhật slot_label với tên slot thực tế
+                                $payment->slot_label = $slot->ma_slot ?? ('Slot ' . $slot->id);
+                            }
+
+                            // Cập nhật trạng thái phòng
+                            if (method_exists($payment->hoaDon->phong, 'updateStatusBasedOnCapacity')) {
+                                $payment->hoaDon->phong->updateStatusBasedOnCapacity();
+                            }
+                        } else {
+                            // Nếu đã có slot_id nhưng không có phòng trong hóa đơn, cập nhật slot_label từ slot đó
+                            if ($payment->slot_id) {
+                                $slot = \App\Models\Slot::find($payment->slot_id);
+                                if ($slot) {
+                                    $payment->slot_label = $slot->ma_slot ?? ('Slot ' . $slot->id);
+                                }
+                            }
+                        }
+                    }
+                    
+                    $payment->save();
+                    $updated++;
+                }
+                
+                return response()->json([
+                    'success' => true, 
+                    'message' => "Đã xác nhận {$updated} yêu cầu.", 
+                    'count' => $updated
+                ]);
+            }
+
+            // reject
+            $payments = $model::whereIn('id', $ids)->get();
+            foreach ($payments as $payment) {
+                $payment->trang_thai = 'chua_thanh_toan';
+                $payment->da_thanh_toan = false;
+                $payment->ghi_chu = $note ?? 'Yêu cầu bị từ chối';
+                $payment->save();
+                $updated++;
+            }
+
+            return response()->json([
+                'success' => true, 
+                'message' => "Đã từ chối {$updated} yêu cầu.", 
+                'count' => $updated
             ]);
-            return response()->json(['success' => true, 'message' => "Đã xác nhận {$updated} yêu cầu.", 'count' => $updated]);
-        }
-
-        // reject
-        $updated = $model::whereIn('id', $ids)->update([
-            'trang_thai' => 'chua_thanh_toan',
-            'da_thanh_toan' => false,
-            'ghi_chu' => $note ?? 'Yêu cầu bị từ chối',
-        ]);
-
-        return response()->json(['success' => true, 'message' => "Đã từ chối {$updated} yêu cầu.", 'count' => $updated]);
+        });
     }
 //     public function thongBaoHoaDonSlot(Request $request)
 // {
