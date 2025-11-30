@@ -14,50 +14,21 @@
     </a>
   </div>
 
-  {{-- 🎨 Bộ lọc đẹp như trang lịch bảo trì --}}
-  <div class="filter-card mb-4">
-    <form method="GET" action="{{ route('taisan.index') }}" class="row g-3 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label"><i class="fa fa-magnifying-glass text-primary"></i> Tìm kiếm</label>
-        <input type="text" name="search" value="{{ request('search') }}" class="form-control"
-               placeholder="Nhập mã hoặc tên tài sản...">
-      </div>
+  <!-- Ô tìm kiếm -->
+  <form method="GET" class="mb-3 search-bar">
+    <div class="input-group">
+      <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+        placeholder="Tìm kiếm mã hoặc tên tài sản...">
+      <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+      <button type="button" class="btn btn-outline-primary" id="openFilterModalBtn">
+        <i class="fa fa-filter mr-1"></i> Bộ lọc
+      </button>
 
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-door-open text-primary"></i> Phòng</label>
-        <select name="phong_id" class="form-select form-control">
-          <option value="">-- Tất cả phòng --</option>
-          @foreach($phongs as $phong)
-            <option value="{{ $phong->id }}" {{ request('phong_id') == $phong->id ? 'selected' : '' }}>
-              {{ $phong->ten_phong }}
-            </option>
-          @endforeach
-        </select>
-      </div>
-
-      <div class="col-md-3">
-        <label class="form-label"><i class="fa fa-circle-info text-primary"></i> Tình trạng</label>
-        <select name="tinh_trang" class="form-select form-control">
-          <option value="">-- Tất cả tình trạng --</option>
-          <option value="mới" {{ request('tinh_trang') == 'mới' ? 'selected' : '' }}>Mới</option>
-          <option value="cũ" {{ request('tinh_trang') == 'cũ' ? 'selected' : '' }}>Cũ</option>
-          <option value="bảo trì" {{ request('tinh_trang') == 'bảo trì' ? 'selected' : '' }}>Bảo trì</option>
-          <option value="hỏng" {{ request('tinh_trang') == 'hỏng' ? 'selected' : '' }}>Hỏng</option>
-        </select>
-      </div>
-
-      <div class="col-md-2 d-flex gap-2 filter-btns">
-        <button type="submit" class="btn btn-success flex-fill">
-          <i class="fa fa-filter"></i> Lọc
-        </button>
-        @if(request('search') || request('phong_id') || request('tinh_trang'))
-          <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary flex-fill">
-            <i class="fa fa-rotate-left"></i> Đặt lại
-          </a>
-        @endif
-      </div>
-    </form>
-  </div>
+      @if (!empty(request('search')) || request()->filled('phong_id') || request()->filled('tinh_trang'))
+        <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary">Xóa</a>
+      @endif
+    </div>
+  </form>
 
   {{-- 🔔 Thông báo --}}
   @if(session('success'))
@@ -555,4 +526,91 @@
   });
 </script>
 @endpush
+
+{{-- MODAL BỘ LỌC --}}
+<div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">Bộ lọc tài sản</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <form method="GET" action="{{ route('taisan.index') }}" id="filterForm">
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Tìm kiếm</label>
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                    class="form-control" placeholder="Mã hoặc tên tài sản">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Phòng</label>
+                                <select name="phong_id" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    @foreach($phongs as $phong)
+                                        <option value="{{ $phong->id }}" @selected(request('phong_id') == $phong->id)>
+                                            {{ $phong->ten_phong }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="small text-muted">Tình trạng</label>
+                                <select name="tinh_trang" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    <option value="mới" @selected(request('tinh_trang') == 'mới')>Mới</option>
+                                    <option value="cũ" @selected(request('tinh_trang') == 'cũ')>Cũ</option>
+                                    <option value="bảo trì" @selected(request('tinh_trang') == 'bảo trì')>Bảo trì</option>
+                                    <option value="hỏng" @selected(request('tinh_trang') == 'hỏng')>Hỏng</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    <button type="submit" class="btn btn-primary">Áp dụng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+    <script>
+        // Mở modal bộ lọc tài sản (chạy được cho cả Bootstrap 4 và 5)
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                var btn = document.getElementById('openFilterModalBtn');
+                if (!btn) return;
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var modalEl = document.getElementById('filterModal');
+                    if (!modalEl) return;
+
+                    try {
+                        if (window.bootstrap && bootstrap.Modal) {
+                            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            modal.show();
+                        } else if (window.$ && $('#filterModal').modal) {
+                            $('#filterModal').modal('show');
+                        }
+                    } catch (err) {
+                        if (window.$ && $('#filterModal').modal) {
+                            $('#filterModal').modal('show');
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+@endpush
+
 @endsection

@@ -1,14 +1,14 @@
 <div class="sinhvien-modal-content">
     {{-- Logo/Ảnh sinh viên --}}
     <div class="d-flex justify-content-center mb-4">
-    @if (isset($sinhvien->anh_sinh_vien))
+        @if (isset($sinhvien->anh_sinh_vien))
             <img src="{{ asset('storage/' . $sinhvien->anh_sinh_vien) }}" alt="{{ $sinhvien->ho_ten }}"
                 class="sinhvien-avatar">
         @else
             <div class="sinhvien-avatar-placeholder">
                 <span class="sinhvien-avatar-text">{{ strtoupper(substr($sinhvien->ho_ten ?? 'SV', 0, 2)) }}</span>
-        </div>
-    @endif
+            </div>
+        @endif
     </div>
 
     {{-- I. Thông tin cá nhân --}}
@@ -149,7 +149,23 @@
         </div>
     </div>
 
-    {{-- IV. Lịch sử vi phạm --}}
+    {{-- IV. Ảnh giấy xác nhận --}}
+    @if(isset($sinhvien->anh_giay_xac_nhan))
+    <div class="sinhvien-card mb-3">
+        <div class="sinhvien-card-header sinhvien-card-header-info">
+            <i class="bi bi-file-image me-2"></i> Ảnh giấy xác nhận
+        </div>
+        <div class="sinhvien-card-body">
+            <div class="text-center">
+                <button type="button" class="btn btn-primary mb-3" onclick="openImageModal('{{ asset('storage/' . $sinhvien->anh_giay_xac_nhan) }}', 'Ảnh giấy xác nhận')">
+                    <i class="bi bi-eye me-2"></i> Xem ảnh giấy xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- V. Lịch sử vi phạm --}}
     <div class="sinhvien-card">
         <div class="sinhvien-card-header sinhvien-card-header-danger d-flex justify-content-between align-items-center">
             <span><i class="bi bi-exclamation-triangle-fill me-2"></i> Lịch sử vi phạm</span>
@@ -227,6 +243,7 @@
     /* Container chính */
     .sinhvien-modal-content {
         padding: 1.5rem;
+        background: #f8f9fa;
     }
 
     /* Avatar */
@@ -235,70 +252,72 @@
         height: 120px;
         border-radius: 50%;
         object-fit: cover;
-        border: 4px solid #e5e7eb;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 3px solid #dee2e6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .sinhvien-avatar-placeholder {
         width: 120px;
         height: 120px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        background: #6c757d;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 4px solid #e5e7eb;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 3px solid #dee2e6;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .sinhvien-avatar-text {
         color: #fff;
         font-size: 2rem;
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: 1px;
     }
 
     /* Card */
     .sinhvien-card {
-        border: 1px solid #edf1f7;
-        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
         background: #fff;
         overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1rem;
     }
 
-    /* Card Header */
+    /* Card Header - Đơn giản, không gradient */
     .sinhvien-card-header {
         padding: 0.875rem 1.25rem;
         font-weight: 600;
         font-size: 0.95rem;
-        letter-spacing: 0.2px;
-        border-bottom: 1px solid #edf1f7;
-        background: #ffffff;
-        color: #334155;
+        letter-spacing: 0.01em;
+        border-bottom: 1px solid #e9ecef;
+        background: #f8f9fa;
+        color: #495057;
     }
 
     .sinhvien-card-header-primary {
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-        color: #fff;
-        border-bottom: none;
+        background: #f8f9fa;
+        color: #495057;
+        border-left: 3px solid #6c757d;
     }
 
     .sinhvien-card-header-info {
-        background: linear-gradient(135deg, #06b6d4, #0891b2);
-        color: #fff;
-        border-bottom: none;
+        background: #f8f9fa;
+        color: #495057;
+        border-left: 3px solid #6c757d;
     }
 
     .sinhvien-card-header-success {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: #fff;
-        border-bottom: none;
+        background: #f8f9fa;
+        color: #495057;
+        border-left: 3px solid #6c757d;
     }
 
     .sinhvien-card-header-danger {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: #fff;
-        border-bottom: none;
+        background: #f8f9fa;
+        color: #495057;
+        border-left: 3px solid #6c757d;
     }
 
     .sinhvien-card-actions {
@@ -312,111 +331,138 @@
         background: #fff;
     }
 
-    /* Info Item */
+    /* Info Item - Tinh tế hơn */
     .sinhvien-info-item {
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .sinhvien-info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
     }
 
     .sinhvien-label {
         display: block;
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #64748b;
-        margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #6c757d;
+        margin-bottom: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .sinhvien-value {
         display: block;
         font-size: 0.95rem;
-        color: #0f172a;
-        font-weight: 500;
+        color: #212529;
+        font-weight: 400;
+        line-height: 1.5;
     }
 
-    /* Badge */
+    /* Badge - Nhẹ nhàng hơn */
     .sinhvien-badge {
         display: inline-block;
-        padding: 0.4rem 0.7rem;
-        border-radius: 10rem;
-        font-weight: 600;
-        font-size: 0.8rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 0.75rem;
     }
 
     .sinhvien-badge-success {
-        background: #e8fff3;
-        color: #107154;
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
     }
 
     .sinhvien-badge-warning {
-        background: #fff7e6;
-        color: #ad6800;
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
     }
 
     .sinhvien-badge-secondary {
-        background: #f2f4f7;
-        color: #3f4753;
+        background: #e9ecef;
+        color: #495057;
+        border: 1px solid #dee2e6;
     }
 
-    /* Buttons */
+    /* Buttons - Đơn giản hơn */
     .sinhvien-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         padding: 0.5rem 1rem;
         font-size: 0.875rem;
-        font-weight: 600;
-        border-radius: 0.45rem;
-        border: none;
+        font-weight: 500;
+        border-radius: 4px;
+        border: 1px solid transparent;
         text-decoration: none;
-        transition: all 0.2s;
+        transition: all 0.2s ease;
         cursor: pointer;
     }
 
     .sinhvien-btn-success {
-        background: #10b981;
+        background: #28a745;
         color: #fff;
+        border-color: #28a745;
     }
 
     .sinhvien-btn-success:hover {
-        background: #059669;
+        background: #218838;
+        border-color: #1e7e34;
         color: #fff;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        text-decoration: none;
     }
 
     .sinhvien-btn-danger {
-        background: #ef4444;
+        background: #dc3545;
         color: #fff;
+        border-color: #dc3545;
     }
 
     .sinhvien-btn-danger:hover {
-        background: #dc2626;
+        background: #c82333;
+        border-color: #bd2130;
         color: #fff;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        text-decoration: none;
     }
 
-    /* Table */
+    /* Table - Tinh tế hơn */
     .sinhvien-table {
         font-size: 0.875rem;
+        margin-bottom: 0;
     }
 
-    .sinhvien-table th {
-        color: #334155;
+    .sinhvien-table thead th {
+        color: #495057;
         font-weight: 600;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+        background: #f8f9fa;
     }
 
-    .sinhvien-table td {
-        color: #0f172a;
+    .sinhvien-table tbody td {
+        color: #212529;
         font-size: 0.875rem;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .sinhvien-table tbody tr:hover {
+        background: #f8f9fa;
     }
 
     /* Empty State */
     .sinhvien-empty-state {
         text-align: center;
-        color: #94a3b8;
+        color: #6c757d;
         padding: 2rem;
         font-size: 0.9rem;
+        font-style: italic;
     }
 
     /* Responsive */
@@ -441,3 +487,65 @@
         }
     }
 </style>
+
+<script>
+function openImageModal(imageUrl, title) {
+    // Tạo modal động
+    var modalHtml = `
+        <div class="modal fade" id="imageViewModal" tabindex="-1" role="dialog" aria-labelledby="imageViewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageViewModalLabel">
+                            <i class="bi bi-file-image me-2"></i> ${title}
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeImageModal()">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center" style="max-height: 70vh; overflow-y: auto;">
+                        <img src="${imageUrl}" 
+                             alt="${title}" 
+                             class="img-fluid rounded shadow-sm"
+                             style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeImageModal()">Đóng</button>
+                        <a href="${imageUrl}" 
+                           target="_blank" 
+                           class="btn btn-primary">
+                            <i class="bi bi-box-arrow-up-right me-2"></i> Mở trong tab mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Xóa modal cũ nếu có
+    var oldModal = document.getElementById('imageViewModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+    
+    // Thêm modal mới vào body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Hiển thị modal (Bootstrap 4)
+    $('#imageViewModal').modal('show');
+    
+    // Hoặc nếu dùng Bootstrap 5
+    // var modal = new bootstrap.Modal(document.getElementById('imageViewModal'));
+    // modal.show();
+}
+
+function closeImageModal() {
+    $('#imageViewModal').modal('hide');
+    setTimeout(function() {
+        var modal = document.getElementById('imageViewModal');
+        if (modal) {
+            modal.remove();
+        }
+    }, 300);
+}
+</script>

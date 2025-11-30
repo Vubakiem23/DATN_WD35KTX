@@ -16,12 +16,25 @@
                         <i class="fas fa-home me-1"></i> Trang chủ
                     </a>
                 </li>
+                @php
+                    $user = auth()->user();
+                    $sinhVien = $user?->sinhVien;
+                    $hasConfirmedRoom = $sinhVien && !empty($sinhVien->phong_id);
+                @endphp
+                @if($hasConfirmedRoom)
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('client.phong*') ? 'active' : '' }}" 
                        href="{{ route('client.phong') }}">
                         <i class="fas fa-door-open me-1"></i> Phòng của tôi
                     </a>
                 </li>
+                @else
+                <li class="nav-item">
+                    <span class="nav-link text-muted" style="cursor: not-allowed; opacity: 0.5;" title="Bạn cần xác nhận vào phòng trước">
+                        <i class="fas fa-door-open me-1"></i> Phòng của tôi
+                    </span>
+                </li>
+                @endif
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('client.suco*') ? 'active' : '' }}" 
                        href="{{ route('client.suco.index') }}">

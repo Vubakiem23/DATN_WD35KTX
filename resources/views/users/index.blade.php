@@ -282,32 +282,27 @@
     </div>
     @endif
 
-    {{-- ✅ Form lọc tìm kiếm --}}
-    <form method="GET" class="filter-card">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-5">
-                <label class="form-label">Tìm kiếm</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                    <input type="text" name="search" value="{{ request('search') ?? '' }}" 
-                           class="form-control" placeholder="Tìm kiếm theo tên, email...">
-                </div>
-            </div>
-            <div class="col-md-7 d-flex gap-2 justify-content-end">
-                <button type="submit" class="btn-dergin btn-dergin--info">
-                    <i class="fa fa-filter"></i> Lọc
-                </button>
-            @if(request('search'))
-                    <a href="{{ route('users.index') }}" class="btn-dergin btn-dergin--muted">
-                        <i class="fa fa-rotate-left"></i> Xóa lọc
-                    </a>
+    <!-- Ô tìm kiếm -->
+    <form method="GET" class="mb-3 search-bar">
+        <div class="input-group">
+            <input type="text" name="search" value="{{ request('search') ?? '' }}" class="form-control"
+                placeholder="Tìm kiếm theo tên, email...">
+            <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+            <button type="button" class="btn btn-outline-primary" id="openFilterModalBtn">
+                <i class="fa fa-filter mr-1"></i> Bộ lọc
+            </button>
+
+            @if (!empty(request('search')))
+                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Xóa</a>
             @endif
-                <a href="{{ route('users.create') }}" class="btn-dergin btn-dergin--success">
-                    <i class="fa fa-plus"></i> Thêm người dùng
-                </a>
-            </div>
         </div>
     </form>
+
+    <div class="d-flex gap-2 mb-3">
+        <a href="{{ route('users.create') }}" class="btn btn-dergin btn-dergin--success">
+            <i class="fa fa-plus"></i> Thêm người dùng
+        </a>
+    </div>
 
     {{-- 🧾 Bảng danh sách --}}
     <div class="user-table-wrapper">
@@ -364,4 +359,81 @@
         {{ $users->onEachSide(1)->links('pagination::bootstrap-5') }}
     </div>
 </div>
+
+{{-- MODAL BỘ LỌC --}}
+<div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">Bộ lọc người dùng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <form method="GET" id="filterForm">
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="small text-muted">Tìm kiếm</label>
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                    class="form-control" placeholder="Tên, email...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="small text-muted">Quyền</label>
+                                <select name="role" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    @if(isset($roles))
+                                        @foreach($roles as $role)
+                                            <option value="{{ $role->id }}" @selected(request('role') == $role->id)>
+                                                {{ $role->ten_quyen }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    <button type="submit" class="btn btn-primary">Áp dụng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+    <script>
+        // Mở modal bộ lọc người dùng (chạy được cho cả Bootstrap 4 và 5)
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                var btn = document.getElementById('openFilterModalBtn');
+                if (!btn) return;
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var modalEl = document.getElementById('filterModal');
+                    if (!modalEl) return;
+
+                    try {
+                        if (window.bootstrap && bootstrap.Modal) {
+                            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            modal.show();
+                        } else if (window.$ && $('#filterModal').modal) {
+                            $('#filterModal').modal('show');
+                        }
+                    } catch (err) {
+                        if (window.$ && $('#filterModal').modal) {
+                            $('#filterModal').modal('show');
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+@endpush
+
 @endsection

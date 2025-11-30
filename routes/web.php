@@ -79,6 +79,11 @@ Route::prefix('client')->middleware(['auth'])->group(function () {
     Route::get('/xac-nhan-ho-so', [ClientController::class, 'showConfirmation'])->name('client.confirmation.show');
     Route::post('/xac-nhan-ho-so', [ClientController::class, 'confirmApproval'])->name('client.confirmation.store');
     Route::get('/ho-so-da-dang-ky', [ClientController::class, 'previewProfile'])->name('client.profile.preview');
+    
+    // Xác nhận phòng
+    Route::get('/xac-nhan-phong', [ClientController::class, 'showRoomConfirmation'])->name('client.room.confirmation.show');
+    Route::post('/xac-nhan-phong', [ClientController::class, 'confirmRoomAssignment'])->name('client.room.confirm');
+    Route::post('/tu-choi-phong', [ClientController::class, 'rejectRoomAssignment'])->name('client.room.reject');
 });
 
 // =================== 🧑‍🎓 CLIENT (SINH VIÊN) ===================

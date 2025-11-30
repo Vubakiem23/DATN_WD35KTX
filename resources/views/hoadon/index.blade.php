@@ -115,8 +115,8 @@
 
       {{-- Bộ lọc --}}
       <div class="d-flex align-items-center" style="margin-bottom: +15px;">
-        <button type="button" class="btn btn-dergin btn-dergin--info" title="Bộ lọc" data-bs-toggle="modal" data-bs-target="#filterModal">
-          <i class="fa fa-filter"></i><span>Lọc</span>
+        <button type="button" class="btn btn-outline-primary" id="openFilterModalBtn" title="Bộ lọc">
+          <i class="fa fa-filter mr-1"></i> Bộ lọc
         </button>
       </div>
 
@@ -700,60 +700,101 @@
 
 
 
-{{-- modal bộ lọc --}}
-<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="filterModalLabel">Bộ lọc hóa đơn</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-      </div>
-      <div class="modal-body">
-        <form method="GET" action="{{ route('hoadon.index') }}" class="d-flex flex-wrap gap-3 align-items-end">
-          <div>
-            <label for="from_date" class="form-label">Từ ngày</label>
-            <input type="date" name="from_date" id="from_date" class="form-control" value="{{ request('from_date') }}">
-          </div>
-          <div>
-            <label for="to_date" class="form-label">Đến ngày</label>
-            <input type="date" name="to_date" id="to_date" class="form-control" value="{{ request('to_date') }}">
-          </div>
-          <div>
-            <label for="khu" class="form-label">Khu</label>
-            <select name="khu" id="khu" class="form-select">
-              <option value="">-- Tất cả --</option>
-              @foreach(['A','B','C','D','E','F'] as $khu)
+{{-- MODAL BỘ LỌC --}}
+<div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">Bộ lọc hóa đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
 
-                <option value="{{ $khu }}" {{ request('khu') == $khu ? 'selected' : '' }}>Khu {{ $khu }}</option>
-                @endforeach
-              </select>
-            </div>
-            <div>
-              <label for="phong_id" class="form-label">Phòng</label>
-              <select name="phong_id" id="phong_id" class="form-select">
-                <option value="">-- Tất cả --</option>
-                @foreach($dsPhongs as $phong)
-                <option value="{{ $phong->id }}" {{ request('phong_id') == $phong->id ? 'selected' : '' }}>
-                  {{ $phong->ten_phong }} (ID: {{ $phong->id }})
-                </option>
-                @endforeach
-              </select>
-            </div>
-            <div>
-              <label for="trang_thai" class="form-label">Trạng thái</label>
-              <select name="trang_thai" id="trang_thai" class="form-select">
-                <option value="">-- Tất cả --</option>
-                <option value="da_thanh_toan" {{ request('trang_thai') == 'da_thanh_toan' ? 'selected' : '' }}>Đã thanh toán</option>
-                <option value="chua_thanh_toan" {{ request('trang_thai') == 'chua_thanh_toan' ? 'selected' : '' }}>Chưa thanh toán</option>
-              </select>
-            </div>
-            <div class="mt-4">
-              <button type="submit" class="btn btn-primary">Lọc</button>
-              <a href="{{ route('hoadon.index') }}" class="btn btn-secondary ms-2">Đặt lại</a>
-            </div>
-          </form>
+            <form method="GET" action="{{ route('hoadon.index') }}" id="filterForm">
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="small text-muted">Từ ngày</label>
+                                <input type="date" name="from_date" value="{{ request('from_date') }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="small text-muted">Đến ngày</label>
+                                <input type="date" name="to_date" value="{{ request('to_date') }}"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="small text-muted">Khu</label>
+                                <select name="khu" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    @foreach(['A','B','C','D','E','F'] as $khu)
+                                        <option value="{{ $khu }}" @selected(request('khu') == $khu)>
+                                            Khu {{ $khu }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="small text-muted">Phòng</label>
+                                <select name="phong_id" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    @foreach($dsPhongs as $phong)
+                                        <option value="{{ $phong->id }}" @selected(request('phong_id') == $phong->id)>
+                                            {{ $phong->ten_phong }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="small text-muted">Trạng thái</label>
+                                <select name="trang_thai" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    <option value="da_thanh_toan" @selected(request('trang_thai') == 'da_thanh_toan')>Đã thanh toán</option>
+                                    <option value="chua_thanh_toan" @selected(request('trang_thai') == 'chua_thanh_toan')>Chưa thanh toán</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <a href="{{ route('hoadon.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    <button type="submit" class="btn btn-primary">Áp dụng</button>
+                </div>
+            </form>
         </div>
-      </div>
     </div>
-  </div>
+</div>
+
+@push('scripts')
+    <script>
+        // Mở modal bộ lọc hóa đơn (chạy được cho cả Bootstrap 4 và 5)
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                var btn = document.getElementById('openFilterModalBtn');
+                if (!btn) return;
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var modalEl = document.getElementById('filterModal');
+                    if (!modalEl) return;
+
+                    try {
+                        if (window.bootstrap && bootstrap.Modal) {
+                            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                            modal.show();
+                        } else if (window.$ && $('#filterModal').modal) {
+                            $('#filterModal').modal('show');
+                        }
+                    } catch (err) {
+                        if (window.$ && $('#filterModal').modal) {
+                            $('#filterModal').modal('show');
+                        }
+                    }
+                });
+            });
+        })();
+    </script>
+@endpush
 @endsection

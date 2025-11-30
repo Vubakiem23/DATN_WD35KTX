@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PhongRequest;
+use App\Http\Controllers\AssignmentController;
 use App\Models\Phong;
 use App\Models\KhoTaiSan;
 use App\Models\TaiSan;
@@ -640,19 +641,8 @@ class PhongController extends Controller
     }
     public function capNhatPhong(Request $request, $id)
 {
-    $sv = SinhVien::findOrFail($id);
-
-    // Cập nhật phòng
-    $sv->phong_id = $request->phong_id;
-    $sv->save();
-
-    // Tạo thông báo
-    ThongBaoPhongSv::create([
-        'sinh_vien_id' => $sv->id,
-        'phong_id' => $sv->phong_id,
-        'noi_dung' => "Sinh viên {$sv->ho_ten} đã được thêm vào phòng {$sv->phong->ten_phong}.",
-    ]);
-
-    return back()->with('success', 'Đã thêm sinh viên vào phòng và tạo thông báo.');
+        // Chuyển logic gán phòng sang AssignmentController để đảm bảo sinh viên phải xác nhận
+        $assignmentController = new AssignmentController();
+        return $assignmentController->assign($request, $id);
 }
 }

@@ -218,13 +218,23 @@
                             @enderror
                         </div>
 
-                        {{-- Ảnh --}}
+                        {{-- Ảnh sinh viên --}}
                         <div class="col-md-3">
-                            <label for="anh_sinh_vien" class="form-label">Hình ảnh (tuỳ chọn)</label>
+                            <label for="anh_sinh_vien" class="form-label">Ảnh sinh viên (tuỳ chọn)</label>
                             <input type="file" name="anh_sinh_vien" id="anh_sinh_vien" 
                                 class="form-control @error('anh_sinh_vien') is-invalid @enderror" 
                                 accept="image/*">
                             @error('anh_sinh_vien')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        {{-- Ảnh giấy xác nhận --}}
+                        <div class="col-md-3">
+                            <label for="anh_giay_xac_nhan" class="form-label">Ảnh giấy xác nhận (tuỳ chọn)</label>
+                            <input type="file" name="anh_giay_xac_nhan" id="anh_giay_xac_nhan" 
+                                class="form-control @error('anh_giay_xac_nhan') is-invalid @enderror" 
+                                accept="image/*">
+                            @error('anh_giay_xac_nhan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

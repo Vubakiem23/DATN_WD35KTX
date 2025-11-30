@@ -14,6 +14,9 @@ use App\Models\LichBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
 use App\Models\Violation;
+use App\Models\RoomAssignment;
+use App\Models\ThongBaoPhongSv;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use App\Traits\HoaDonCalculations;
@@ -59,7 +62,43 @@ class ClientController extends Controller
             return view('client.dashboard', compact('user', 'sinhVien', 'stats', 'suCoGanDay'));
         }
 
-        // Load quan hệ phòng với khu (ưu tiên từ cột phong_id)
+        // Kiểm tra xem có assignment chờ xác nhận không
+        $pendingRoomAssignment = RoomAssignment::where('sinh_vien_id', $sinhVien->id)
+            ->where('trang_thai', RoomAssignment::STATUS_PENDING_CONFIRMATION)
+            ->whereNull('end_date')
+            ->with(['phong' => function($q) {
+                $q->with('khu');
+            }])
+            ->latest('start_date')
+            ->first();
+        
+        // QUAN TRỌNG: Chỉ hiển thị alert nếu chưa thanh toán
+        // Kiểm tra xem có slotPayment đã thanh toán không
+        if ($pendingRoomAssignment && $pendingRoomAssignment->phong) {
+            $currentMonth = \Carbon\Carbon::now()->format('m/Y');
+            $hoaDon = HoaDon::where('phong_id', $pendingRoomAssignment->phong_id)
+                ->where('thang', $currentMonth)
+                ->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
+                ->first();
+            
+            if ($hoaDon) {
+                $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                    ->where('sinh_vien_id', $sinhVien->id)
+                    ->first();
+                
+                // Nếu đã thanh toán hoặc đang chờ xác nhận (đã submit), không hiển thị alert
+                if ($slotPayment && ($slotPayment->da_thanh_toan || $slotPayment->trang_thai === HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN)) {
+                    $pendingRoomAssignment = null;
+                }
+            }
+            
+            // Nếu đã có phong_id (đã xác nhận và thanh toán), không hiển thị alert
+            if ($sinhVien->phong_id && $sinhVien->phong_id == $pendingRoomAssignment->phong_id) {
+                $pendingRoomAssignment = null;
+            }
+        }
+
+        // Load quan hệ phòng với khu (ưu tiên từ cột phong_id - chỉ khi đã xác nhận)
         $sinhVien->load('phong.khu');
         $phongId = $sinhVien->phong_id;
 
@@ -71,6 +110,19 @@ class ClientController extends Controller
                 // gắn tạm để view dùng luôn
                 $sinhVien->setRelation('phong', $slot->phong);
             }
+        }
+
+        // Nếu có assignment chờ xác nhận, dùng phòng từ assignment để hiển thị
+        // NHƯNG không gán vào sinh viên (để phân biệt đã xác nhận hay chưa)
+        $displayPhong = null;
+        if ($pendingRoomAssignment && $pendingRoomAssignment->phong) {
+            $displayPhong = $pendingRoomAssignment->phong;
+            // Cập nhật phongId để tính toán hóa đơn
+            if (!$phongId) {
+                $phongId = $pendingRoomAssignment->phong_id;
+            }
+        } elseif ($sinhVien->phong) {
+            $displayPhong = $sinhVien->phong;
         }
 
         // Thống kê cơ bản
@@ -133,7 +185,7 @@ class ClientController extends Controller
         }
 
         $stats = [
-            'phong' => $sinhVien->phong ?? null,
+            'phong' => $displayPhong, // Hiển thị phòng từ assignment nếu chưa xác nhận, hoặc từ phong_id nếu đã xác nhận
             'so_su_co' => SuCo::where('sinh_vien_id', $sinhVien->id)->count(),
             'su_co_chua_xu_ly' => SuCo::where('sinh_vien_id', $sinhVien->id)
                 // Đếm các sự cố chưa hoàn thành: Tiếp nhận hoặc Đang xử lý
@@ -149,7 +201,10 @@ class ClientController extends Controller
             ->limit(5)
             ->get();
 
-        return view('client.dashboard', compact('user', 'sinhVien', 'stats', 'suCoGanDay'));
+        // Đánh dấu xem sinh viên đã xác nhận vào phòng chưa (có phong_id thực sự)
+        $hasConfirmedRoom = !empty($sinhVien->phong_id);
+
+        return view('client.dashboard', compact('user', 'sinhVien', 'stats', 'suCoGanDay', 'pendingRoomAssignment', 'hasConfirmedRoom'));
     }
 
     /**
@@ -164,6 +219,25 @@ class ClientController extends Controller
         if (!$sinhVien) {
             $phong = null;
             return view('client.phong', compact('user', 'sinhVien', 'phong'));
+        }
+
+        // QUAN TRỌNG: Kiểm tra nếu sinh viên chưa có phòng được xác nhận (chưa thanh toán)
+        // Chỉ cho vào phòng khi đã có phong_id (đã thanh toán và được gán vào phòng)
+        if (empty($sinhVien->phong_id)) {
+            // Kiểm tra xem có assignment đang chờ xác nhận không
+            $pendingAssignment = RoomAssignment::where('sinh_vien_id', $sinhVien->id)
+                ->where('trang_thai', RoomAssignment::STATUS_PENDING_CONFIRMATION)
+                ->whereNull('end_date')
+                ->latest('start_date')
+                ->first();
+            
+            if ($pendingAssignment) {
+                return redirect()->route('client.dashboard')
+                    ->with('warning', 'Bạn cần xác nhận và thanh toán tiền phòng để xem thông tin phòng. Vui lòng click vào nút "Xác nhận vào phòng" trên trang tổng quan.');
+            }
+            
+            return redirect()->route('client.dashboard')
+                ->with('warning', 'Bạn chưa được gán vào phòng. Vui lòng liên hệ ban quản lý.');
         }
 
         // Load quan hệ phòng với khu (nếu có)
@@ -859,6 +933,342 @@ public function baoHong(Request $request)
             'success' => true,
             'message' => 'Thanh toán thành công!'
         ]);
+    }
+
+    /**
+     * Hiển thị trang xác nhận phòng
+     */
+    public function showRoomConfirmation()
+    {
+        $user = Auth::user();
+        $sinhVien = $this->getSinhVien();
+
+        if (!$sinhVien) {
+            return redirect()->route('public.apply')
+                ->with('warning', 'Bạn chưa gửi hồ sơ đăng ký ký túc xá.');
+        }
+
+        // Tìm assignment đang chờ xác nhận
+        $assignment = RoomAssignment::where('sinh_vien_id', $sinhVien->id)
+            ->where('trang_thai', RoomAssignment::STATUS_PENDING_CONFIRMATION)
+            ->whereNull('end_date')
+            ->with(['phong' => function($q) {
+                $q->with('khu');
+            }])
+            ->latest('start_date')
+            ->first();
+
+        if (!$assignment) {
+            return redirect()->route('client.dashboard')
+                ->with('info', 'Bạn không có yêu cầu gán phòng nào đang chờ xác nhận.');
+        }
+
+        // QUAN TRỌNG: Kiểm tra xem sinh viên đã thanh toán chưa
+        // Nếu đã có phong_id (đã thanh toán), redirect về dashboard
+        if (!empty($sinhVien->phong_id) && $sinhVien->phong_id == $assignment->phong_id) {
+            return redirect()->route('client.dashboard')
+                ->with('success', 'Bạn đã thanh toán và được gán vào phòng thành công!');
+        }
+
+        // Tìm hóa đơn và slot payment của sinh viên
+        $currentMonth = \Carbon\Carbon::now()->format('m/Y');
+        $hoaDon = HoaDon::where('phong_id', $assignment->phong_id)
+            ->where('thang', $currentMonth)
+            ->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
+            ->first();
+
+        $slotPayment = null;
+        if ($hoaDon) {
+            $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                ->where('sinh_vien_id', $sinhVien->id)
+                ->first();
+        }
+
+        // Nếu không tìm thấy slotPayment, tạo mới (có thể do gán slot trực tiếp)
+        if (!$slotPayment && $hoaDon) {
+            // Tìm slot của sinh viên trong phòng này
+            $slot = \App\Models\Slot::where('phong_id', $assignment->phong_id)
+                ->where('sinh_vien_id', $sinhVien->id)
+                ->first();
+            
+            $slotPayment = HoaDonSlotPayment::create([
+                'hoa_don_id' => $hoaDon->id,
+                'slot_id' => $slot ? $slot->id : null,
+                'slot_label' => 'Chờ xác nhận - ' . $sinhVien->ho_ten,
+                'sinh_vien_id' => $sinhVien->id,
+                'sinh_vien_ten' => $sinhVien->ho_ten,
+                'trang_thai' => HoaDonSlotPayment::TRANG_THAI_CHUA_THANH_TOAN,
+                'da_thanh_toan' => false,
+            ]);
+        }
+
+        return view('client.room_confirmation', compact('user', 'sinhVien', 'assignment', 'hoaDon', 'slotPayment'));
+    }
+
+    /**
+     * Sinh viên xác nhận vào phòng và thanh toán
+     */
+    public function confirmRoomAssignment(Request $request)
+    {
+        $sinhVien = $this->getSinhVien();
+
+        if (!$sinhVien) {
+            return redirect()->route('public.apply')
+                ->with('warning', 'Bạn chưa gửi hồ sơ đăng ký ký túc xá.');
+        }
+
+        // Tìm assignment đang chờ xác nhận
+        $assignment = RoomAssignment::where('sinh_vien_id', $sinhVien->id)
+            ->where('trang_thai', RoomAssignment::STATUS_PENDING_CONFIRMATION)
+            ->whereNull('end_date')
+            ->with('phong')
+            ->latest('start_date')
+            ->first();
+
+        if (!$assignment) {
+            return redirect()->route('client.dashboard')
+                ->with('error', 'Không tìm thấy yêu cầu gán phòng cần xác nhận.');
+        }
+
+        // Kiểm tra thanh toán tiền phòng
+        $currentMonth = \Carbon\Carbon::now()->format('m/Y');
+        $hoaDon = HoaDon::where('phong_id', $assignment->phong_id)
+            ->where('thang', $currentMonth)
+            ->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
+            ->first();
+
+        if (!$hoaDon) {
+            return redirect()->back()
+                ->with('error', 'Không tìm thấy hóa đơn tiền phòng. Vui lòng liên hệ ban quản lý.');
+        }
+
+        $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+            ->where('sinh_vien_id', $sinhVien->id)
+            ->first();
+
+        if (!$slotPayment) {
+            return redirect()->back()
+                ->with('error', 'Không tìm thấy thông tin thanh toán. Vui lòng liên hệ ban quản lý.');
+        }
+
+        // Validate thanh toán
+        $request->validate([
+            'hinh_thuc_thanh_toan' => 'required|in:tien_mat,chuyen_khoan',
+            'ghi_chu' => 'nullable|string|max:500',
+            'anh_chuyen_khoan' => 'nullable|image|max:4096',
+        ]);
+
+        // Xử lý thanh toán và xác nhận vào phòng
+        return DB::transaction(function () use ($sinhVien, $assignment, $slotPayment, $hoaDon, $request) {
+            // Xử lý thanh toán
+            $slotPayment->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
+            $slotPayment->client_ghi_chu = $request->ghi_chu ?? '';
+            $slotPayment->client_requested_at = now();
+            
+            if ($request->hasFile('anh_chuyen_khoan')) {
+                $storedPath = $request->file('anh_chuyen_khoan')->store('slot-payments', 'public');
+                $slotPayment->client_transfer_image_path = $storedPath;
+            }
+            
+            // Nếu thanh toán bằng tiền mặt, tự động xác nhận thanh toán ngay và gán vào phòng
+            if ($request->hinh_thuc_thanh_toan === 'tien_mat') {
+                $slotPayment->da_thanh_toan = true;
+                $slotPayment->trang_thai = HoaDonSlotPayment::TRANG_THAI_DA_THANH_TOAN;
+                $slotPayment->ngay_thanh_toan = now();
+                $slotPayment->xac_nhan_boi = auth()->id();
+                $slotPayment->saveOrFail();
+
+                // Xác nhận vào phòng ngay khi thanh toán tiền mặt
+                $sinhVien->phong_id = $assignment->phong_id;
+                $sinhVien->saveOrFail();
+
+                // Cập nhật trạng thái assignment
+                $assignment->trang_thai = RoomAssignment::STATUS_CONFIRMED;
+                $assignment->saveOrFail();
+            } else {
+                // Chuyển khoản: chỉ tạo yêu cầu thanh toán, CHƯA gán vào phòng
+                // Sinh viên phải chờ admin xác nhận thanh toán mới được vào phòng
+                $slotPayment->trang_thai = HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN;
+                $slotPayment->da_thanh_toan = false; // Chưa thanh toán cho đến khi admin xác nhận
+                $slotPayment->saveOrFail();
+
+                // KHÔNG gán vào phòng, giữ nguyên trạng thái assignment là PENDING_CONFIRMATION
+                // Chỉ khi admin xác nhận thanh toán trong PaymentConfirmationController thì mới gán vào phòng
+                
+                // Cập nhật hóa đơn (không cần kiểm tra tất cả slot đã thanh toán vì chưa thanh toán)
+                return redirect()->route('client.dashboard')
+                    ->with('success', 'Đã gửi yêu cầu thanh toán chuyển khoản. Vui lòng chờ ban quản lý xác nhận. Sau khi được xác nhận, bạn sẽ được gán vào phòng.');
+            }
+
+            // Chỉ xử lý slot và cập nhật phòng nếu đã thanh toán tiền mặt (đã vào phòng)
+            if ($request->hinh_thuc_thanh_toan === 'tien_mat') {
+                // Tìm hoặc tạo slot cho sinh viên (nếu chưa có)
+                $slot = Slot::where('phong_id', $assignment->phong_id)
+                    ->where('sinh_vien_id', $sinhVien->id)
+                    ->first();
+
+                if (!$slot) {
+                    // Tìm slot trống trong phòng
+                    $emptySlot = Slot::where('phong_id', $assignment->phong_id)
+                        ->whereNull('sinh_vien_id')
+                        ->first();
+                    
+                    if ($emptySlot) {
+                        $emptySlot->sinh_vien_id = $sinhVien->id;
+                        $emptySlot->saveOrFail();
+                        $slotPayment->slot_id = $emptySlot->id;
+                        $slotPayment->saveOrFail();
+                    }
+                } else {
+                    $slotPayment->slot_id = $slot->id;
+                    $slotPayment->saveOrFail();
+                }
+
+                // Cập nhật trạng thái phòng
+                $phong = $assignment->phong;
+                if ($phong && method_exists($phong, 'updateStatusBasedOnCapacity')) {
+                    $phong->updateStatusBasedOnCapacity();
+                }
+
+                // Cập nhật hóa đơn nếu tất cả slot đã thanh toán
+                $totalSlots = $hoaDon->slotPayments()->count();
+                $paidSlots = $hoaDon->slotPayments()->where('da_thanh_toan', true)->count();
+                
+                if ($paidSlots >= $totalSlots && $totalSlots > 0) {
+                    $hoaDon->trang_thai = 'Đã thanh toán';
+                    $hoaDon->da_thanh_toan = true;
+                    if (!$hoaDon->ngay_thanh_toan) {
+                        $hoaDon->ngay_thanh_toan = now();
+                    }
+                    $hoaDon->saveOrFail();
+                }
+
+                return redirect()->route('client.dashboard')
+                    ->with('success', 'Đã xác nhận vào phòng và thanh toán thành công!');
+            }
+        });
+    }
+
+    /**
+     * Sinh viên từ chối phòng
+     */
+    public function rejectRoomAssignment(Request $request)
+    {
+        $sinhVien = $this->getSinhVien();
+
+        if (!$sinhVien) {
+            return redirect()->route('public.apply')
+                ->with('warning', 'Bạn chưa gửi hồ sơ đăng ký ký túc xá.');
+        }
+
+        // Tìm assignment đang chờ xác nhận
+        $assignment = RoomAssignment::where('sinh_vien_id', $sinhVien->id)
+            ->where('trang_thai', RoomAssignment::STATUS_PENDING_CONFIRMATION)
+            ->whereNull('end_date')
+            ->with('phong.khu')
+            ->latest('start_date')
+            ->first();
+
+        if (!$assignment) {
+            return redirect()->route('client.dashboard')
+                ->with('error', 'Không tìm thấy yêu cầu gán phòng cần từ chối.');
+        }
+
+        // QUAN TRỌNG: Không cho phép từ chối nếu đã thanh toán hoặc đã xác nhận
+        $currentMonth = \Carbon\Carbon::now()->format('m/Y');
+        $hoaDon = HoaDon::where('phong_id', $assignment->phong_id)
+            ->where('thang', $currentMonth)
+            ->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
+            ->first();
+        
+        if ($hoaDon) {
+            $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                ->where('sinh_vien_id', $sinhVien->id)
+                ->first();
+            
+            // Nếu đã thanh toán hoặc đang chờ xác nhận (đã submit), không cho phép từ chối
+            if ($slotPayment && ($slotPayment->da_thanh_toan || $slotPayment->trang_thai === HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN)) {
+                return redirect()->route('client.dashboard')
+                    ->with('error', 'Không thể từ chối phòng sau khi đã thanh toán hoặc đã xác nhận.');
+            }
+        }
+        
+        // Nếu đã có phong_id (đã xác nhận và thanh toán), không cho phép từ chối
+        if ($sinhVien->phong_id && $sinhVien->phong_id == $assignment->phong_id) {
+            return redirect()->route('client.dashboard')
+                ->with('error', 'Không thể từ chối phòng sau khi đã xác nhận và thanh toán.');
+        }
+
+        return DB::transaction(function () use ($assignment, $sinhVien) {
+            // QUAN TRỌNG: Đảm bảo phong_id của sinh viên = null khi từ chối
+            // Sinh viên sẽ chờ admin gán phòng khác
+            if ($sinhVien->phong_id == $assignment->phong_id) {
+                $sinhVien->phong_id = null;
+                $sinhVien->saveOrFail();
+            }
+
+            // Cập nhật trạng thái assignment
+            $assignment->trang_thai = RoomAssignment::STATUS_REJECTED;
+            $assignment->end_date = now()->toDateString();
+            $assignment->saveOrFail();
+
+            // Xóa slot payment nếu có
+            $currentMonth = \Carbon\Carbon::now()->format('m/Y');
+            $hoaDon = HoaDon::where('phong_id', $assignment->phong_id)
+                ->where('thang', $currentMonth)
+                ->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
+                ->first();
+
+            if ($hoaDon) {
+                $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                    ->where('sinh_vien_id', $sinhVien->id)
+                    ->first();
+                
+                if ($slotPayment) {
+                    $slotPayment->delete();
+                    
+                    // Cập nhật lại hóa đơn
+                    $remainingPayments = $hoaDon->slotPayments()->count();
+                    if ($remainingPayments > 0) {
+                        $hoaDon->slot_billing_count = $remainingPayments;
+                        $hoaDon->tien_phong_slot = $hoaDon->slot_unit_price * $remainingPayments;
+                        $hoaDon->saveOrFail();
+                    } else {
+                        $hoaDon->delete();
+                    }
+                }
+            }
+
+            // Gỡ sinh viên khỏi slot nếu có
+            $slot = Slot::where('phong_id', $assignment->phong_id)
+                ->where('sinh_vien_id', $sinhVien->id)
+                ->first();
+            
+            if ($slot) {
+                $slot->sinh_vien_id = null;
+                $slot->saveOrFail();
+            }
+
+            // Cập nhật trạng thái phòng
+            $phong = $assignment->phong;
+            if ($phong && method_exists($phong, 'updateStatusBasedOnCapacity')) {
+                $phong->updateStatusBasedOnCapacity();
+            }
+
+            // Gửi thông báo cho admin
+            try {
+                ThongBaoPhongSv::create([
+                    'sinh_vien_id' => $sinhVien->id,
+                    'phong_id' => $assignment->phong_id,
+                    'noi_dung' => "Sinh viên {$sinhVien->ho_ten} (Mã SV: {$sinhVien->ma_sinh_vien}) đã từ chối phòng " . ($assignment->phong->ten_phong ?? 'N/A') . ($assignment->phong->khu ? " - Khu {$assignment->phong->khu->ten_khu}" : ''),
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Lỗi tạo thông báo từ chối phòng: ' . $e->getMessage());
+            }
+
+            return redirect()->route('client.dashboard')
+                ->with('info', 'Đã từ chối phòng. Bạn sẽ chờ ban quản lý gán phòng khác.');
+        });
     }
 
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Phong;
 use App\Models\HoaDonSlotPayment;
 use App\Models\HoaDonUtilitiesPayment;
@@ -131,19 +132,72 @@ class PaymentConfirmationController extends Controller
      */
     public function confirmSlotPayment(Request $request, $id)
     {
-        $payment = HoaDonSlotPayment::findOrFail($id);
-        
-        $payment->trang_thai = 'da_thanh_toan';
-        $payment->da_thanh_toan = true;
-        $payment->ngay_thanh_toan = now();
-        $payment->xac_nhan_boi = auth()->id();
-        $payment->ghi_chu = $request->get('ghi_chu_admin', $payment->ghi_chu);
-        $payment->save();
+        return DB::transaction(function () use ($request, $id) {
+            $payment = HoaDonSlotPayment::with(['sinhVien', 'hoaDon.phong'])->findOrFail($id);
+            
+            $payment->trang_thai = 'da_thanh_toan';
+            $payment->da_thanh_toan = true;
+            $payment->ngay_thanh_toan = now();
+            $payment->xac_nhan_boi = auth()->id();
+            $payment->ghi_chu = $request->get('ghi_chu_admin', $payment->ghi_chu);
+            $payment->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => '✅ Đã xác nhận thanh toán tiền phòng!'
-        ]);
+            // Kiểm tra xem đây có phải thanh toán cho room assignment không
+            // Nếu có RoomAssignment đang chờ xác nhận và chưa gán vào phòng, thì gán vào phòng
+            if ($payment->sinhVien && $payment->hoaDon && $payment->hoaDon->phong) {
+                $assignment = \App\Models\RoomAssignment::where('sinh_vien_id', $payment->sinhVien->id)
+                    ->where('phong_id', $payment->hoaDon->phong->id)
+                    ->where('trang_thai', \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION)
+                    ->whereNull('end_date')
+                    ->latest('start_date')
+                    ->first();
+
+                if ($assignment && empty($payment->sinhVien->phong_id)) {
+                    // Gán sinh viên vào phòng
+                    $payment->sinhVien->phong_id = $payment->hoaDon->phong->id;
+                    $payment->sinhVien->save();
+
+                    // Cập nhật trạng thái assignment
+                    $assignment->trang_thai = \App\Models\RoomAssignment::STATUS_CONFIRMED;
+                    $assignment->save();
+
+                    // Tìm hoặc tạo slot cho sinh viên
+                    $slot = \App\Models\Slot::where('phong_id', $payment->hoaDon->phong->id)
+                        ->where('sinh_vien_id', $payment->sinhVien->id)
+                        ->first();
+
+                    if (!$slot) {
+                        $emptySlot = \App\Models\Slot::where('phong_id', $payment->hoaDon->phong->id)
+                            ->whereNull('sinh_vien_id')
+                            ->first();
+                        
+                        if ($emptySlot) {
+                            $emptySlot->sinh_vien_id = $payment->sinhVien->id;
+                            $emptySlot->save();
+                            $payment->slot_id = $emptySlot->id;
+                            // Cập nhật slot_label với tên slot thực tế
+                            $payment->slot_label = $emptySlot->ma_slot ?? ('Slot ' . $emptySlot->id);
+                            $payment->save();
+                        }
+                    } else {
+                        $payment->slot_id = $slot->id;
+                        // Cập nhật slot_label với tên slot thực tế
+                        $payment->slot_label = $slot->ma_slot ?? ('Slot ' . $slot->id);
+                        $payment->save();
+                    }
+
+                    // Cập nhật trạng thái phòng
+                    if (method_exists($payment->hoaDon->phong, 'updateStatusBasedOnCapacity')) {
+                        $payment->hoaDon->phong->updateStatusBasedOnCapacity();
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => '✅ Đã xác nhận thanh toán tiền phòng! Sinh viên đã được gán vào phòng.'
+            ]);
+        });
     }
 
     /**

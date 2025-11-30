@@ -101,9 +101,9 @@
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror
                         </div>
-                        {{-- Ảnh --}}
+                        {{-- Ảnh sinh viên --}}
                         <div class="col-md-3">
-                            <label class="form-label">Hình ảnh</label>
+                            <label class="form-label">Ảnh sinh viên</label>
                             <input type="file" name="anh_sinh_vien" class="form-control" accept="image/*">
                             @error('anh_sinh_vien')
                                 <small class="text-danger">{{ $message }}</small>
@@ -111,7 +111,22 @@
 
                             @if (!empty($sinhvien->anh_sinh_vien))
                                 <div class="mt-2">
-                                    <img src="{{ asset('storage/' . $sinhvien->anh_sinh_vien) }}" alt="Ảnh hiện tại"
+                                    <img src="{{ asset('storage/' . $sinhvien->anh_sinh_vien) }}" alt="Ảnh sinh viên hiện tại"
+                                        class="preview-avatar">
+                                </div>
+                            @endif
+                        </div>
+                        {{-- Ảnh giấy xác nhận --}}
+                        <div class="col-md-3">
+                            <label class="form-label">Ảnh giấy xác nhận</label>
+                            <input type="file" name="anh_giay_xac_nhan" class="form-control" accept="image/*">
+                            @error('anh_giay_xac_nhan')
+                                <small class="text-danger">{{ $message }}</small>
+                            @enderror
+
+                            @if (!empty($sinhvien->anh_giay_xac_nhan))
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $sinhvien->anh_giay_xac_nhan) }}" alt="Ảnh giấy xác nhận hiện tại"
                                         class="preview-avatar">
                                 </div>
                             @endif

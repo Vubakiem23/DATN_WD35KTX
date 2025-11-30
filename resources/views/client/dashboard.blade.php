@@ -488,6 +488,34 @@
     }
 </style>
 
+@if (isset($pendingRoomAssignment) && $pendingRoomAssignment)
+    <div class="alert alert-warning d-flex align-items-start gap-3 mb-4 shadow-sm" style="border-left: 5px solid #ffc107; background-color: #fff3cd; border-radius: 8px; padding: 20px;">
+        <i class="fa fa-door-open fa-2x" style="color: #ffc107; margin-top: 2px;"></i>
+        <div class="flex-grow-1">
+            <h5 class="alert-heading mb-2" style="color: #856404; font-weight: 700;">
+                <i class="fa fa-bell me-2"></i>Bạn đã được gán vào phòng!
+            </h5>
+            <p class="mb-2" style="color: #856404; font-size: 15px;">
+                Bạn đã được ban quản lý gán vào phòng <strong style="color: #856404;">{{ $pendingRoomAssignment->phong->ten_phong ?? 'N/A' }}</strong>@if($pendingRoomAssignment->phong && $pendingRoomAssignment->phong->khu) - Khu <strong style="color: #856404;">{{ $pendingRoomAssignment->phong->khu->ten_khu }}</strong>@endif.
+            </p>
+            <p class="mb-3" style="color: #856404; font-size: 15px;">
+                <strong>Vui lòng xác nhận và thanh toán tiền phòng tháng đầu tiên ({{ number_format($pendingRoomAssignment->phong->giaSlot() ?? 0, 0, ',', '.') }} đ/slot) để hoàn tất.</strong>
+            </p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ route('client.room.confirmation.show') }}" class="btn btn-primary btn-lg" style="font-weight: 600; padding: 10px 24px;">
+                    <i class="fa fa-check me-2"></i> Xác nhận vào phòng
+                </a>
+                <form action="{{ route('client.room.reject') }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối phòng này? Bạn sẽ chờ ban quản lý gán phòng khác.')" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger btn-lg" style="font-weight: 600; padding: 10px 24px;">
+                        <i class="fa fa-times me-2"></i> Từ chối
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+@endif
+
 @if ($sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION)
     <div class="alert alert-warning d-flex align-items-center gap-3">
         <i class="fa fa-info-circle fa-lg"></i>
@@ -565,9 +593,12 @@
 </div>
 
 <!-- Thông tin phòng -->
-@if($stats['phong'])
+@if($stats['phong'] || (isset($pendingRoomAssignment) && $pendingRoomAssignment))
 @php
-    $phong = $stats['phong'];
+    // Ưu tiên hiển thị phòng từ assignment chờ xác nhận, nếu không thì từ stats
+    $phong = isset($pendingRoomAssignment) && $pendingRoomAssignment && $pendingRoomAssignment->phong 
+        ? $pendingRoomAssignment->phong 
+        : ($stats['phong'] ?? null);
     $totalSlots = $phong->totalSlots();
     $giaMoiSlot = null;
     if ($phong->gia_phong && $totalSlots > 0) {
@@ -673,10 +704,24 @@
                 </div>
                 @endif
 
+                @if(isset($hasConfirmedRoom) && $hasConfirmedRoom)
                 <a href="{{ route('client.phong') }}" class="room-view-btn mt-3">
                     <i class="fas fa-eye"></i>
                     Xem chi tiết phòng
                 </a>
+                @elseif(isset($pendingRoomAssignment) && $pendingRoomAssignment)
+                <div class="mt-3 d-flex gap-2 flex-wrap">
+                    <a href="{{ route('client.room.confirmation.show') }}" class="btn btn-primary btn-lg" style="font-weight: 600; padding: 12px 24px;">
+                        <i class="fas fa-check me-2"></i> Xác nhận vào phòng
+                    </a>
+                    <form action="{{ route('client.room.reject') }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối phòng này? Bạn sẽ chờ ban quản lý gán phòng khác.')" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger btn-lg" style="font-weight: 600; padding: 12px 24px;">
+                            <i class="fas fa-times me-2"></i> Từ chối
+                        </button>
+                    </form>
+                </div>
+                @endif
             </div>
         </div>
     </div>
