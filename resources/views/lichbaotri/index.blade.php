@@ -448,14 +448,14 @@
                     </form>
                   </li>
                   <li>
-                    <button type="button"
+                    {{-- <button type="button"
                       class="dropdown-item text-danger btn-tuchoi"
                       data-toggle="modal"
                       data-target="#tuChoiModal"
                       data-id="{{ $l->id }}">
                       <i class="fa fa-times"></i>
                       <span>Từ chối</span>
-                    </button>
+                    </button> --}}
                   </li>
                   @else
                   <li>

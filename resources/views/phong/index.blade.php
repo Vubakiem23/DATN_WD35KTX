@@ -58,28 +58,21 @@
             <a href="{{ route('phong.create') }}" class="btn btn-dergin btn-dergin--info"><i class="fa fa-plus"></i><span>Tạo Phòng</span> </a>
             </div>
         </div>
-        <div class="mb-3">
-            <div class="row g-2 align-items-center">
-                <div class="col-sm-6 col-lg-4">
-                    <input type="text" id="roomFilterName" class="form-control" placeholder="Tìm theo tên phòng...">
-                </div>
-                <div class="col-sm-6 col-lg-3">
-                    <select id="roomFilterStatus" class="form-control">
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="empty">Trống</option>
-                        <option value="partial">Còn chỗ</option>
-                        <option value="full">Đã ở full</option>
-                        <option value="no-slot">Chưa có slot</option>
-                    </select>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <input type="number" min="0" step="1000" id="roomFilterPriceMin" class="form-control" placeholder="Giá slot từ">
-                </div>
-                <div class="col-6 col-lg-2">
-                    <input type="number" min="0" step="1000" id="roomFilterPriceMax" class="form-control" placeholder="Giá slot đến">
-                </div>
+        <!-- Ô tìm kiếm -->
+        <form method="GET" class="mb-3 search-bar">
+            <div class="input-group">
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                    placeholder="Tìm theo tên phòng...">
+                <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+                <button type="button" class="btn btn-outline-primary" id="openFilterModalBtn">
+                    <i class="fa fa-filter mr-1"></i> Bộ lọc
+                </button>
+
+                @if (!empty(request('search')) || request()->filled('status') || request()->filled('price_min') || request()->filled('price_max'))
+                    <a href="{{ route('phong.index') }}" class="btn btn-outline-secondary">Xóa</a>
+                @endif
             </div>
-        </div>
+        </form>
         @push('styles')
             <style>
                         .khu-page__title{font-size:1.75rem;font-weight:700;color:#1f2937;}
@@ -600,6 +593,92 @@
                     });
                 });
             });
+        </script>
+    @endpush
+
+    {{-- MODAL BỘ LỌC --}}
+    <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel">Bộ lọc phòng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+
+                <form method="GET" id="filterForm">
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="small text-muted">Tên phòng</label>
+                                    <input type="text" name="search" value="{{ request('search') }}"
+                                        class="form-control" placeholder="Tìm theo tên phòng...">
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="small text-muted">Trạng thái</label>
+                                    <select name="status" class="form-control">
+                                        <option value="">-- Tất cả --</option>
+                                        <option value="empty" @selected(request('status') == 'empty')>Trống</option>
+                                        <option value="partial" @selected(request('status') == 'partial')>Còn chỗ</option>
+                                        <option value="full" @selected(request('status') == 'full')>Đã ở full</option>
+                                        <option value="no-slot" @selected(request('status') == 'no-slot')>Chưa có slot</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-2 mb-3">
+                                    <label class="small text-muted">Giá slot từ</label>
+                                    <input type="number" min="0" step="1000" name="price_min" 
+                                        value="{{ request('price_min') }}" class="form-control" placeholder="0">
+                                </div>
+
+                                <div class="col-md-2 mb-3">
+                                    <label class="small text-muted">Giá slot đến</label>
+                                    <input type="number" min="0" step="1000" name="price_max" 
+                                        value="{{ request('price_max') }}" class="form-control" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <a href="{{ route('phong.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                        <button type="submit" class="btn btn-primary">Áp dụng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            // Mở modal bộ lọc phòng (chạy được cho cả Bootstrap 4 và 5)
+            (function() {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var btn = document.getElementById('openFilterModalBtn');
+                    if (!btn) return;
+
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var modalEl = document.getElementById('filterModal');
+                        if (!modalEl) return;
+
+                        try {
+                            if (window.bootstrap && bootstrap.Modal) {
+                                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                                modal.show();
+                            } else if (window.$ && $('#filterModal').modal) {
+                                $('#filterModal').modal('show');
+                            }
+                        } catch (err) {
+                            if (window.$ && $('#filterModal').modal) {
+                                $('#filterModal').modal('show');
+                            }
+                        }
+                    });
+                });
+            })();
         </script>
     @endpush
 

@@ -479,13 +479,15 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Thông tin sinh viên</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
                 <div class="modal-body" id="modalBody">
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>
@@ -528,32 +530,62 @@
             // Mở modal chi tiết sinh viên
             (function() {
                 $(function() {
-            $('.openModalBtn').on('click', function() {
+                    $('.openModalBtn').on('click', function() {
                         var id = $(this).data('id');
-                get_sinh_vien(id);
+                        if (!id) {
+                            console.error('No ID provided');
+                            alert('Lỗi: Không tìm thấy ID sinh viên');
+                            return;
+                        }
+                        
+                        get_sinh_vien(id);
+                        
+                        // Mở modal - ưu tiên jQuery (Bootstrap 4)
+                        var modalEl = document.getElementById('exampleModal');
+                        if (!modalEl) {
+                            console.error('Modal element not found');
+                            alert('Lỗi: Không tìm thấy modal');
+                            return;
+                        }
+                        
                         try {
-                            var modalEl = document.getElementById('exampleModal');
-                            var modal = window.bootstrap ? new bootstrap.Modal(modalEl) : null;
-                            if (modal) {
-                                modal.show();
-                            } else {
+                            // Ưu tiên jQuery (Bootstrap 4)
+                            if (typeof $ !== 'undefined' && $.fn.modal) {
                                 $('#exampleModal').modal('show');
+                                console.log('Student modal shown successfully (jQuery/Bootstrap 4)');
+                            }
+                            // Fallback Bootstrap 5
+                            else if (window.bootstrap && bootstrap.Modal) {
+                                var modal = new bootstrap.Modal(modalEl);
+                                modal.show();
+                                console.log('Student modal shown successfully (Bootstrap 5)');
+                            }
+                            // Fallback cuối cùng
+                            else {
+                                console.error('jQuery and Bootstrap not found');
+                                alert('Lỗi: jQuery/Bootstrap không được tải. Vui lòng tải lại trang.');
                             }
                         } catch (e) {
-                $('#exampleModal').modal('show');
+                            console.error('Lỗi mở modal sinh viên:', e);
+                            // Fallback cuối cùng
+                            if (typeof $ !== 'undefined' && $.fn.modal) {
+                                $('#exampleModal').modal('show');
+                            } else {
+                                alert('Lỗi khi mở modal: ' + e.message);
+                            }
                         }
-            });
-        });
+                    });
+                });
 
                 window.get_sinh_vien = function(id) {
                     var url = `{{ route('sinhvien.show.modal', ['id' => ':id']) }}`.replace(':id', id);
-            $.ajax({
-                url: url,
-                type: 'GET',
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
                         success: function(res) {
                             var response = res.data ?? '';
-                    renderSinhvien(response);
-                },
+                            renderSinhvien(response);
+                        },
                         error: function(request) {
                             try {
                                 var data = JSON.parse(request.responseText);

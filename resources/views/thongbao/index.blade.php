@@ -18,7 +18,7 @@
             @if (!empty(request('search')))
             <a href="{{ route('thongbao.index') }}" class="btn btn-outline-secondary">Xóa</a>
             @endif
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+            <button type="button" class="btn btn-outline-primary" id="openFilterModalBtn">
                 <i class="fa fa-filter mr-1"></i> Bộ lọc
             </button>
         </div>
@@ -401,3 +401,87 @@
                 }
             </style>
         @endpush
+
+    {{-- MODAL BỘ LỌC --}}
+    <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel">Bộ lọc thông báo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+
+                <form method="GET" id="filterForm">
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="small text-muted">Tìm kiếm</label>
+                                    <input type="text" name="search" value="{{ request('search') }}"
+                                        class="form-control" placeholder="Tiêu đề, nội dung, phòng, khu">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="small text-muted">Mức độ</label>
+                                    <select name="muc_do" class="form-control">
+                                        <option value="">-- Tất cả --</option>
+                                        @if(isset($mucDos))
+                                            @foreach($mucDos as $md)
+                                                <option value="{{ $md->id }}" @selected(request('muc_do') == $md->id)>
+                                                    {{ $md->ten_muc_do }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="small text-muted">Đối tượng</label>
+                                    <select name="doi_tuong" class="form-control">
+                                        <option value="">-- Tất cả --</option>
+                                        <option value="Sinh viên" @selected(request('doi_tuong') == 'Sinh viên')>Sinh viên</option>
+                                        <option value="Tất cả" @selected(request('doi_tuong') == 'Tất cả')>Tất cả</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <a href="{{ route('thongbao.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                        <button type="submit" class="btn btn-primary">Áp dụng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            // Mở modal bộ lọc thông báo (chạy được cho cả Bootstrap 4 và 5)
+            (function() {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var btn = document.getElementById('openFilterModalBtn');
+                    if (!btn) return;
+
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var modalEl = document.getElementById('filterModal');
+                        if (!modalEl) return;
+
+                        try {
+                            if (window.bootstrap && bootstrap.Modal) {
+                                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                                modal.show();
+                            } else if (window.$ && $('#filterModal').modal) {
+                                $('#filterModal').modal('show');
+                            }
+                        } catch (err) {
+                            if (window.$ && $('#filterModal').modal) {
+                                $('#filterModal').modal('show');
+                            }
+                        }
+                    });
+                });
+            })();
+        </script>
+    @endpush

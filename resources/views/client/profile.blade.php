@@ -351,6 +351,45 @@
                     </div>
                 </div>
                 
+                {{-- Phần ảnh --}}
+                <hr class="section-divider">
+                <h6 class="section-title">
+                    <i class="fas fa-images me-2"></i>
+                    Hình ảnh
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <strong>Ảnh sinh viên:</strong>
+                            @if($sinhVien->anh_sinh_vien)
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $sinhVien->anh_sinh_vien) }}" 
+                                         alt="Ảnh sinh viên" 
+                                         class="img-thumbnail" 
+                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                                </div>
+                            @else
+                                <p class="text-muted">Chưa có ảnh</p>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <strong>Ảnh giấy xác nhận:</strong>
+                            @if($sinhVien->anh_giay_xac_nhan)
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $sinhVien->anh_giay_xac_nhan) }}" 
+                                         alt="Ảnh giấy xác nhận" 
+                                         class="img-thumbnail" 
+                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                                </div>
+                            @else
+                                <p class="text-muted">Chưa có ảnh</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                
                 @if($sinhVien->citizen_id_number)
                 <hr class="section-divider">
                 <h6 class="section-title">

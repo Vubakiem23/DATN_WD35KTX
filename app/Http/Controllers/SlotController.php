@@ -123,16 +123,77 @@ class SlotController extends Controller
                 'hinh_anh'     => $imagePath,
             ]);
 
-            // Đồng bộ phong_id trong bảng sinh_vien nếu có gán sinh viên
+            // QUAN TRỌNG: KHÔNG gán phong_id vào sinh viên khi gán slot
+            // Sinh viên phải thanh toán trước khi được gán vào phòng
+            // Tạo RoomAssignment với STATUS_PENDING_CONFIRMATION thay vì gán phong_id trực tiếp
             if (!empty($slot->sinh_vien_id)) {
                 $sinhVien = SinhVien::find($slot->sinh_vien_id);
-                if ($sinhVien && $sinhVien->phong_id != $phongModel->id) {
-                    $sinhVien->phong_id = $phongModel->id;
-                    $sinhVien->save();
-                }
                 
-                // Gửi thông báo và email cho sinh viên
-                $this->sendRoomAssignmentNotification($sinhVien, $slot, $phongModel);
+                if ($sinhVien) {
+                    // Đảm bảo phong_id = null (chưa được gán vào phòng)
+                    if ($sinhVien->phong_id) {
+                        $sinhVien->phong_id = null;
+                        $sinhVien->save();
+                    }
+                    
+                    // Tạo RoomAssignment với trạng thái "Chờ xác nhận" (nếu chưa có)
+                    $existingAssignment = \App\Models\RoomAssignment::where('sinh_vien_id', $sinhVien->id)
+                        ->where('phong_id', $phongModel->id)
+                        ->where('trang_thai', \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION)
+                        ->whereNull('end_date')
+                        ->first();
+                    
+                    if (!$existingAssignment) {
+                        \App\Models\RoomAssignment::create([
+                            'sinh_vien_id' => $sinhVien->id,
+                            'phong_id' => $phongModel->id,
+                            'start_date' => now()->toDateString(),
+                            'end_date' => null,
+                            'trang_thai' => \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION,
+                        ]);
+                    }
+                    
+                    // Tạo hóa đơn và slot payment (nếu chưa có)
+                    $currentMonth = \Carbon\Carbon::now()->format('m/Y');
+                    $hoaDon = \App\Models\HoaDon::where('phong_id', $phongModel->id)
+                        ->where('thang', $currentMonth)
+                        ->where('invoice_type', \App\Models\HoaDon::LOAI_TIEN_PHONG)
+                        ->first();
+                    
+                    if (!$hoaDon) {
+                        $slotUnitPrice = $phongModel->giaSlot();
+                        $hoaDon = \App\Models\HoaDon::create([
+                            'phong_id' => $phongModel->id,
+                            'invoice_type' => \App\Models\HoaDon::LOAI_TIEN_PHONG,
+                            'thang' => $currentMonth,
+                            'tien_phong_slot' => $slotUnitPrice,
+                            'slot_unit_price' => $slotUnitPrice,
+                            'slot_billing_count' => 1,
+                            'trang_thai' => 'Chưa thanh toán',
+                            'da_thanh_toan' => false,
+                        ]);
+                    }
+                    
+                    // Tạo slot payment cho sinh viên (chưa thanh toán)
+                    $existingPayment = \App\Models\HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                        ->where('sinh_vien_id', $sinhVien->id)
+                        ->first();
+                    
+                    if (!$existingPayment) {
+                        \App\Models\HoaDonSlotPayment::create([
+                            'hoa_don_id' => $hoaDon->id,
+                            'slot_id' => $slot->id,
+                            'slot_label' => 'Chờ xác nhận - ' . $sinhVien->ho_ten,
+                            'sinh_vien_id' => $sinhVien->id,
+                            'sinh_vien_ten' => $sinhVien->ho_ten,
+                            'trang_thai' => \App\Models\HoaDonSlotPayment::TRANG_THAI_CHUA_THANH_TOAN,
+                            'da_thanh_toan' => false,
+                        ]);
+                    }
+                    
+                    // Gửi thông báo và email cho sinh viên
+                    $this->sendRoomAssignmentNotification($sinhVien, $slot, $phongModel);
+                }
             }
 
             // Cập nhật loại phòng theo tổng slots và trạng thái
@@ -274,17 +335,77 @@ class SlotController extends Controller
 
             $slot->save();
 
-            // Đồng bộ phong_id trong bảng sinh_vien
+            // QUAN TRỌNG: KHÔNG gán phong_id vào sinh viên khi gán slot
+            // Sinh viên phải thanh toán trước khi được gán vào phòng
+            // Tạo RoomAssignment với STATUS_PENDING_CONFIRMATION thay vì gán phong_id trực tiếp
             if (!empty($slot->sinh_vien_id)) {
-                // Gán sinh viên vào slot: cập nhật phong_id
                 $sinhVien = SinhVien::findOrFail($slot->sinh_vien_id);
-                if ($slot->phong && $sinhVien->phong_id != $slot->phong->id) {
-                    $sinhVien->phong_id = $slot->phong->id;
-                    $sinhVien->save();
-                }
                 
-                // Gửi thông báo và email cho sinh viên
-                $this->sendRoomAssignmentNotification($sinhVien, $slot, $slot->phong);
+                if ($slot->phong) {
+                    // Đảm bảo phong_id = null (chưa được gán vào phòng)
+                    if ($sinhVien->phong_id) {
+                        $sinhVien->phong_id = null;
+                        $sinhVien->save();
+                    }
+                    
+                    // Tạo RoomAssignment với trạng thái "Chờ xác nhận" (nếu chưa có)
+                    $existingAssignment = \App\Models\RoomAssignment::where('sinh_vien_id', $sinhVien->id)
+                        ->where('phong_id', $slot->phong->id)
+                        ->where('trang_thai', \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION)
+                        ->whereNull('end_date')
+                        ->first();
+                    
+                    if (!$existingAssignment) {
+                        \App\Models\RoomAssignment::create([
+                            'sinh_vien_id' => $sinhVien->id,
+                            'phong_id' => $slot->phong->id,
+                            'start_date' => now()->toDateString(),
+                            'end_date' => null,
+                            'trang_thai' => \App\Models\RoomAssignment::STATUS_PENDING_CONFIRMATION,
+                        ]);
+                    }
+                    
+                    // Tạo hóa đơn và slot payment (nếu chưa có)
+                    $currentMonth = \Carbon\Carbon::now()->format('m/Y');
+                    $hoaDon = \App\Models\HoaDon::where('phong_id', $slot->phong->id)
+                        ->where('thang', $currentMonth)
+                        ->where('invoice_type', \App\Models\HoaDon::LOAI_TIEN_PHONG)
+                        ->first();
+                    
+                    if (!$hoaDon) {
+                        $slotUnitPrice = $slot->phong->giaSlot();
+                        $hoaDon = \App\Models\HoaDon::create([
+                            'phong_id' => $slot->phong->id,
+                            'invoice_type' => \App\Models\HoaDon::LOAI_TIEN_PHONG,
+                            'thang' => $currentMonth,
+                            'tien_phong_slot' => $slotUnitPrice,
+                            'slot_unit_price' => $slotUnitPrice,
+                            'slot_billing_count' => 1,
+                            'trang_thai' => 'Chưa thanh toán',
+                            'da_thanh_toan' => false,
+                        ]);
+                    }
+                    
+                    // Tạo slot payment cho sinh viên (chưa thanh toán)
+                    $existingPayment = \App\Models\HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
+                        ->where('sinh_vien_id', $sinhVien->id)
+                        ->first();
+                    
+                    if (!$existingPayment) {
+                        \App\Models\HoaDonSlotPayment::create([
+                            'hoa_don_id' => $hoaDon->id,
+                            'slot_id' => $slot->id,
+                            'slot_label' => 'Chờ xác nhận - ' . $sinhVien->ho_ten,
+                            'sinh_vien_id' => $sinhVien->id,
+                            'sinh_vien_ten' => $sinhVien->ho_ten,
+                            'trang_thai' => \App\Models\HoaDonSlotPayment::TRANG_THAI_CHUA_THANH_TOAN,
+                            'da_thanh_toan' => false,
+                        ]);
+                    }
+                    
+                    // Gửi thông báo và email cho sinh viên
+                    $this->sendRoomAssignmentNotification($sinhVien, $slot, $slot->phong);
+                }
             } elseif ($previousStudentId) {
                 // Bỏ gán sinh viên khỏi slot: kiểm tra xem còn slot nào khác trong phòng không
                 $sinhVien = SinhVien::find($previousStudentId);

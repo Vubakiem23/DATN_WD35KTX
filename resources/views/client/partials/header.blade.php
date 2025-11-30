@@ -27,6 +27,8 @@
                     $sinhVien = $user?->sinhVien;
                     $studentApproved = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_APPROVED;
                     $studentPendingConfirmation = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION;
+                    // Kiểm tra xem sinh viên đã xác nhận vào phòng chưa (có phong_id)
+                    $hasConfirmedRoom = $sinhVien && !empty($sinhVien->phong_id);
                 @endphp
                 <!-- Main Navigation -->
                 <ul class="navbar-nav main-nav">
@@ -37,12 +39,21 @@
                             <span>Tổng quan</span>
                         </a>
                     </li>
+                    @if($hasConfirmedRoom)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('client.phong*') ? 'active' : '' }}" href="{{ route('client.phong') }}">
                             <i class="fas fa-door-open"></i>
                             <span>Phòng của tôi</span>
                         </a>
                     </li>
+                    @else
+                    <li class="nav-item">
+                        <span class="nav-link text-muted" style="cursor: not-allowed; opacity: 0.5;" title="Bạn cần xác nhận vào phòng trước">
+                            <i class="fas fa-door-open"></i>
+                            <span>Phòng của tôi</span>
+                        </span>
+                    </li>
+                    @endif
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('client.suco*') ? 'active' : '' }}" href="{{ route('client.suco.index') }}">
                             <i class="fas fa-tools"></i>
@@ -112,9 +123,11 @@
                                         <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">
                                             <i class="fas fa-home"></i> Tổng quan
                                         </a></li>
+                                        @if($hasConfirmedRoom)
                                         <li><a class="dropdown-item" href="{{ route('client.phong') }}">
                                             <i class="fas fa-door-open"></i> Phòng
                                         </a></li>
+                                        @endif
                                         <li><a class="dropdown-item" href="{{ route('client.profile') }}">
                                             <i class="fas fa-user"></i> Hồ sơ
                                         </a></li>

@@ -56,17 +56,17 @@
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs" role="tablist">
         <li class="nav-item">
-          <a class="nav-link active" id="all-tab" data-bs-toggle="tab" href="#all" role="tab">
+          <a class="nav-link active" id="all-tab" data-toggle="tab" href="#all" role="tab">
             <i class="fa fa-list me-2"></i>Tất cả ({{ $slotPayments->count() + $utilitiesPayments->count() }})
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="slot-tab" data-bs-toggle="tab" href="#slot" role="tab">
+          <a class="nav-link" id="slot-tab" data-toggle="tab" href="#slot" role="tab">
             <i class="fa fa-home me-2"></i>Tiền phòng ({{ $slotPayments->count() }})
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="utilities-tab" data-bs-toggle="tab" href="#utilities" role="tab">
+          <a class="nav-link" id="utilities-tab" data-toggle="tab" href="#utilities" role="tab">
             <i class="fa fa-bolt me-2"></i>Điện nước ({{ $utilitiesPayments->count() }})
           </a>
         </li>
@@ -160,7 +160,8 @@
                         </td>
                         <td><span class="{{ $statusClass }}">{{ $statusText }}</span></td>
                         <td>
-                          <button type="button" class="btn btn-sm btn-outline-primary" onclick="showSlotDetail(@json($slotDetailData))">
+                          <button type="button" class="btn btn-sm btn-outline-primary slot-detail-btn" 
+                                  data-detail='@json($slotDetailData)'>
                             <i class="fa fa-eye me-1"></i>Chi tiết
                           </button>
                         </td>
@@ -345,7 +346,8 @@
                         </span>
                       </td>
                       <td>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="showSlotDetail(@json($slotDetailData2))">
+                        <button type="button" class="btn btn-sm btn-outline-primary slot-detail-btn" 
+                                data-detail='@json($slotDetailData2)'>
                           <i class="fa fa-eye me-1"></i>Chi tiết
                         </button>
                       </td>
@@ -428,7 +430,8 @@
                         </span>
                       </td>
                       <td>
-                        <button type="button" class="btn btn-sm btn-outline-success" onclick="showUtilitiesDetail(@json($utilitiesDetailData2))">
+                        <button type="button" class="btn btn-sm btn-outline-success utilities-detail-btn" 
+                                data-detail='@json($utilitiesDetailData2)'>
                           <i class="fa fa-eye me-1"></i>Chi tiết
                         </button>
                       </td>
@@ -445,97 +448,94 @@
 </div>
 
 <!-- Modal: Chi tiết tiền phòng (Admin) -->
-<div class="modal fade" id="slotDetailModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="slotDetailModal" tabindex="-1" role="dialog" aria-labelledby="slotDetailModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-primary text-white border-0">
         <h5 class="modal-title fw-bold">
           <i class="fa fa-receipt me-2"></i>Chi tiết yêu cầu tiền phòng
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="modal-body p-4">
         <div class="row g-3">
           <div class="col-md-6">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-primary fw-bold mb-3">👤 Sinh viên</h6>
-                <div class="mb-3">
-                  <small class="text-muted">Họ tên</small><br>
-                  <strong id="slotSinhVien">-</strong>
-                </div>
-                <div class="mb-3">
-                  <small class="text-muted">Mã SV</small><br>
-                  <strong id="slotMaSV">-</strong>
-                </div>
-                <div>
-                  <small class="text-muted">Phòng</small><br>
-                  <strong id="slotPhong">-</strong>
-                </div>
+            <div class="simple-section h-100">
+              <h6 class="section-title">Thông tin sinh viên</h6>
+              <div class="info-item">
+                <span class="label">Họ tên:</span>
+                <span class="value" id="slotSinhVien">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Mã SV:</span>
+                <span class="value" id="slotMaSV">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Phòng:</span>
+                <span class="value" id="slotPhong">-</span>
               </div>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-success fw-bold mb-3">💰 Tiền phòng</h6>
-                <div class="mb-3">
-                  <small class="text-muted">Slot</small><br>
-                  <span class="badge bg-secondary" id="slotLabel">-</span>
-                </div>
-                <div class="mb-3">
-                  <small class="text-muted">Số tiền</small><br>
-                  <span class="fw-bold text-success" id="slotAmount">-</span>
-                </div>
-                <div>
-                  <small class="text-muted">Hình thức</small><br>
-                  <strong id="slotMethod">-</strong>
-                </div>
+            <div class="simple-section h-100">
+              <h6 class="section-title">Thông tin thanh toán</h6>
+              <div class="info-item">
+                <span class="label">Slot:</span>
+                <span class="value"><span class="badge badge-secondary" id="slotLabel">-</span></span>
+              </div>
+              <div class="info-item">
+                <span class="label">Số tiền:</span>
+                <span class="value text-success font-weight-bold" id="slotAmount">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Hình thức:</span>
+                <span class="value" id="slotMethod">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Ngày gửi:</span>
+                <span class="value" id="slotRequestedAt">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Trạng thái:</span>
+                <span class="value"><span id="slotStatus" class="status-badge">-</span></span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="row g-3 mt-2">
-          <div class="col-md-6">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-warning fw-bold mb-3">📅 Thời gian</h6>
-                <div class="mb-3">
-                  <small class="text-muted">Ngày gửi</small><br>
-                  <span id="slotRequestedAt">-</span>
-                </div>
-                <div>
-                  <small class="text-muted">Trạng thái</small><br>
-                  <span id="slotStatus" class="badge">-</span>
-                </div>
-              </div>
+        <div class="row g-3 mt-0">
+          <div class="col-12">
+            <div class="simple-section">
+              <h6 class="section-title">Ghi chú sinh viên</h6>
+              <p id="slotNote" class="note-content mb-0">-</p>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-info fw-bold mb-3">📝 Ghi chú SV</h6>
-                <p id="slotNote" class="mb-0 text-muted small">-</p>
+        </div>
+
+        <div class="row g-3 mt-0" id="slotImageWrapper" style="display: none;">
+          <div class="col-12">
+            <div class="simple-section">
+              <h6 class="section-title">Ảnh chuyển khoản</h6>
+              <div class="text-center py-2">
+                <img id="slotDetailImage" src="" alt="Ảnh chuyển khoản" class="transfer-image">
               </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-4" id="slotImageWrapper" style="display: none;">
-          <h6 class="fw-bold mb-2">🖼️ Ảnh chuyển khoản</h6>
-          <div class="text-center">
-            <img id="slotDetailImage" src="" alt="Ảnh chuyển khoản" class="img-fluid rounded shadow" style="max-height: 300px;">
+        <div class="row g-3 mt-0">
+          <div class="col-12">
+            <div class="simple-section">
+              <h6 class="section-title">Ghi chú quản lý</h6>
+              <textarea id="adminNoteSlot" class="form-control" rows="3" placeholder="Nhập ghi chú của quản lý..."></textarea>
+            </div>
           </div>
-        </div>
-
-        <div class="mt-4">
-          <h6 class="fw-bold mb-2">✏️ Ghi chú quản lý</h6>
-          <textarea id="adminNoteSlot" class="form-control" rows="3" placeholder="Nhập ghi chú của quản lý..." style="max-height: 100px;"></textarea>
         </div>
       </div>
       <div class="modal-footer border-0 bg-light">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
         <button type="button" class="btn btn-danger" id="rejectSlotBtn">
           <i class="fa fa-times me-1"></i>Từ chối
         </button>
@@ -548,107 +548,98 @@
 </div>
 
 <!-- Modal: Chi tiết điện nước (Admin) -->
-<div class="modal fade" id="utilitiesDetailModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="utilitiesDetailModal" tabindex="-1" role="dialog" aria-labelledby="utilitiesDetailModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg">
       <div class="modal-header bg-success text-white border-0">
         <h5 class="modal-title fw-bold">
           <i class="fa fa-leaf me-2"></i>Chi tiết yêu cầu điện nước
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
       <div class="modal-body p-4">
         <div class="row g-3">
           <div class="col-md-6">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-primary fw-bold mb-3">👤 Sinh viên</h6>
-                <div class="mb-3">
-                  <small class="text-muted">Họ tên</small><br>
-                  <strong id="utilitiesSinhVien">-</strong>
-                </div>
-                <div class="mb-3">
-                  <small class="text-muted">Mã SV</small><br>
-                  <strong id="utilitiesMaSV">-</strong>
-                </div>
-                <div>
-                  <small class="text-muted">Phòng</small><br>
-                  <strong id="utilitiesPhong">-</strong>
-                </div>
+            <div class="simple-section h-100">
+              <h6 class="section-title">Thông tin sinh viên</h6>
+              <div class="info-item">
+                <span class="label">Họ tên:</span>
+                <span class="value" id="utilitiesSinhVien">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Mã SV:</span>
+                <span class="value" id="utilitiesMaSV">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Phòng:</span>
+                <span class="value" id="utilitiesPhong">-</span>
               </div>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-warning fw-bold mb-3">⚡ Điện · Nước</h6>
-                <div class="mb-3">
-                  <small class="text-muted">Slot</small><br>
-                  <span class="badge bg-secondary" id="utilitiesLabel">-</span>
-                </div>
-                <div class="mb-3">
-                  <small class="text-muted">Tiền điện</small><br>
-                  <span class="fw-semibold text-danger" id="utilitiesTienDien">-</span>
-                </div>
-                <div>
-                  <small class="text-muted">Tiền nước</small><br>
-                  <span class="fw-semibold text-info" id="utilitiesTienNuoc">-</span>
-                </div>
+            <div class="simple-section h-100">
+              <h6 class="section-title">Thông tin thanh toán</h6>
+              <div class="info-item">
+                <span class="label">Slot:</span>
+                <span class="value"><span class="badge badge-secondary" id="utilitiesLabel">-</span></span>
+              </div>
+              <div class="info-item">
+                <span class="label">Tiền điện:</span>
+                <span class="value text-danger" id="utilitiesTienDien">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Tiền nước:</span>
+                <span class="value text-info" id="utilitiesTienNuoc">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Tổng tiền:</span>
+                <span class="value text-success font-weight-bold" id="utilitiesTotal">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Hình thức:</span>
+                <span class="value" id="utilitiesMethod">-</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Ngày gửi:</span>
+                <span class="value" id="utilitiesRequestedAt">-</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="row g-3 mt-2">
-          <div class="col-md-4">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-success fw-bold mb-2">💰 Tổng tiền</h6>
-                <span class="fw-bold fs-5" id="utilitiesTotal">-</span>
-              </div>
+        <div class="row g-3 mt-0">
+          <div class="col-12">
+            <div class="simple-section">
+              <h6 class="section-title">Ghi chú sinh viên</h6>
+              <p id="utilitiesNote" class="note-content mb-0">-</p>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-muted fw-bold mb-2">Hình thức</h6>
-                <span id="utilitiesMethod">-</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card border-0 bg-light">
-              <div class="card-body">
-                <h6 class="text-warning fw-bold mb-2">Ngày gửi</h6>
-                <small id="utilitiesRequestedAt">-</small>
+        </div>
+
+        <div class="row g-3 mt-0" id="utilitiesImageWrapper" style="display: none;">
+          <div class="col-12">
+            <div class="simple-section">
+              <h6 class="section-title">Ảnh chuyển khoản</h6>
+              <div class="text-center py-2">
+                <img id="utilitiesDetailImage" src="" alt="Ảnh chuyển khoản" class="transfer-image">
               </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-4">
-          <h6 class="text-info fw-bold mb-2">📝 Ghi chú của SV</h6>
-          <div class="card border-0 bg-light">
-            <div class="card-body">
-              <p id="utilitiesNote" class="mb-0 text-muted small">-</p>
+        <div class="row g-3 mt-0">
+          <div class="col-12">
+            <div class="simple-section">
+              <h6 class="section-title">Ghi chú quản lý</h6>
+              <textarea id="adminNoteUtilities" class="form-control" rows="3" placeholder="Nhập ghi chú của quản lý..."></textarea>
             </div>
           </div>
-        </div>
-
-        <div class="mt-4" id="utilitiesImageWrapper" style="display: none;">
-          <h6 class="fw-bold mb-2">🖼️ Ảnh chuyển khoản</h6>
-          <div class="text-center">
-            <img id="utilitiesDetailImage" src="" alt="Ảnh chuyển khoản" class="img-fluid rounded shadow" style="max-height: 300px;">
-          </div>
-        </div>
-
-        <div class="mt-4">
-          <h6 class="fw-bold mb-2">✏️ Ghi chú quản lý</h6>
-          <textarea id="adminNoteUtilities" class="form-control" rows="3" placeholder="Nhập ghi chú của quản lý..." style="max-height: 100px;"></textarea>
         </div>
       </div>
       <div class="modal-footer border-0 bg-light">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
         <button type="button" class="btn btn-danger" id="rejectUtilitiesBtn">
           <i class="fa fa-times me-1"></i>Từ chối
         </button>
@@ -660,75 +651,389 @@
   </div>
 </div>
 
+@push('styles')
+<style>
+  /* Simple Section Styles */
+  .simple-section {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .simple-section.h-100 {
+    height: 100%;
+  }
+  
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f8f9fa;
+  }
+  
+  .info-item:last-child {
+    border-bottom: none;
+  }
+  
+  .info-item .label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    min-width: 130px;
+    flex-shrink: 0;
+  }
+  
+  .info-item .value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #212529;
+    text-align: right;
+    flex: 1;
+    word-break: break-word;
+  }
+  
+  .note-content {
+    font-size: 14px;
+    color: #495057;
+    line-height: 1.6;
+    margin: 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    min-height: 50px;
+  }
+  
+  .note-content:empty::before {
+    content: "(Không có ghi chú)";
+    color: #adb5bd;
+    font-style: italic;
+  }
+  
+  .transfer-image {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .status-badge.status-confirmed {
+    background: #28a745;
+    color: #fff;
+  }
+  
+  .status-badge.status-pending {
+    background: #ffc107;
+    color: #000;
+  }
+  
+  .status-badge.status-rejected {
+    background: #dc3545;
+    color: #fff;
+  }
+  
+  .status-badge.status-unpaid {
+    background: #6c757d;
+    color: #fff;
+  }
+  
+  /* Ensure consistent spacing */
+  .row.g-3 {
+    margin-left: -12px;
+    margin-right: -12px;
+  }
+  
+  .row.g-3 > [class*="col-"] {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+</style>
+@endpush
+
 @push('scripts')
 <script>
+// Khai báo biến global
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 let currentSlotPaymentId = null;
 let currentUtilitiesPaymentId = null;
 
-// ===== Hàm hiển thị modal chi tiết =====
-function showSlotDetail(data) {
+// Đảm bảo hàm ở global scope - ĐỊNH NGHĨA TRƯỚC DOMContentLoaded
+window.showSlotDetail = function(data) {
   console.log('showSlotDetail called with data:', data);
-  currentSlotPaymentId = data.id;
-  document.getElementById('slotSinhVien').textContent = data.sinhVien || '-';
-  document.getElementById('slotMaSV').textContent = data.maSv || '-';
-  document.getElementById('slotPhong').textContent = data.phong || '-';
-  document.getElementById('slotLabel').textContent = data.slot || '-';
-  document.getElementById('slotAmount').textContent = data.amount || '-';
-  document.getElementById('slotMethod').textContent = data.method || '-';
-  document.getElementById('slotRequestedAt').textContent = data.requestedAt || '-';
-  document.getElementById('slotStatus').textContent = data.status || '-';
-  document.getElementById('slotNote').textContent = data.note || '(Không có ghi chú)';
-  document.getElementById('adminNoteSlot').value = data.adminNote || '';
   
+  if (!data) {
+    console.error('No data provided to showSlotDetail');
+    alert('Lỗi: Không có dữ liệu để hiển thị');
+    return;
+  }
+  
+  currentSlotPaymentId = data.id;
+  
+  // Kiểm tra các element tồn tại trước khi set
+  const elements = {
+    slotSinhVien: document.getElementById('slotSinhVien'),
+    slotMaSV: document.getElementById('slotMaSV'),
+    slotPhong: document.getElementById('slotPhong'),
+    slotLabel: document.getElementById('slotLabel'),
+    slotAmount: document.getElementById('slotAmount'),
+    slotMethod: document.getElementById('slotMethod'),
+    slotRequestedAt: document.getElementById('slotRequestedAt'),
+    slotStatus: document.getElementById('slotStatus'),
+    slotNote: document.getElementById('slotNote'),
+    adminNoteSlot: document.getElementById('adminNoteSlot')
+  };
+  
+  // Set giá trị
+  if (elements.slotSinhVien) elements.slotSinhVien.textContent = data.sinhVien || '-';
+  if (elements.slotMaSV) elements.slotMaSV.textContent = data.maSv || '-';
+  if (elements.slotPhong) elements.slotPhong.textContent = data.phong || '-';
+  if (elements.slotLabel) elements.slotLabel.textContent = data.slot || '-';
+  if (elements.slotAmount) elements.slotAmount.textContent = data.amount || '-';
+  if (elements.slotMethod) elements.slotMethod.textContent = data.method || '-';
+  if (elements.slotRequestedAt) elements.slotRequestedAt.textContent = data.requestedAt || '-';
+  // Xử lý status badge với màu sắc
+  if (elements.slotStatus) {
+    const status = data.status || '-';
+    elements.slotStatus.textContent = status;
+    // Xóa các class cũ
+    elements.slotStatus.className = 'status-badge';
+    // Thêm class màu sắc dựa trên status
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('đã xác nhận') || statusLower.includes('confirmed')) {
+      elements.slotStatus.classList.add('status-confirmed');
+    } else if (statusLower.includes('chờ xác nhận') || statusLower.includes('pending')) {
+      elements.slotStatus.classList.add('status-pending');
+    } else if (statusLower.includes('từ chối') || statusLower.includes('rejected')) {
+      elements.slotStatus.classList.add('status-rejected');
+    } else if (statusLower.includes('chưa thanh toán') || statusLower.includes('unpaid')) {
+      elements.slotStatus.classList.add('status-unpaid');
+    } else {
+      elements.slotStatus.classList.add('status-unpaid');
+    }
+  }
+  if (elements.slotNote) elements.slotNote.textContent = data.note || '(Không có ghi chú)';
+  if (elements.adminNoteSlot) elements.adminNoteSlot.value = data.adminNote || '';
+  
+  // Xử lý ảnh
   const imgWrapper = document.getElementById('slotImageWrapper');
-  if (data.image && data.image.trim() !== '') {
-    imgWrapper.style.display = 'block';
-    document.getElementById('slotDetailImage').src = data.image;
-  } else {
-    imgWrapper.style.display = 'none';
+  const slotDetailImage = document.getElementById('slotDetailImage');
+  if (imgWrapper && slotDetailImage) {
+    if (data.image && data.image.trim() !== '') {
+      imgWrapper.style.display = 'block';
+      slotDetailImage.src = data.image;
+    } else {
+      imgWrapper.style.display = 'none';
+    }
+  }
+  
+  // Mở modal - ưu tiên jQuery (Bootstrap 4)
+  const modalEl = document.getElementById('slotDetailModal');
+  if (!modalEl) {
+    console.error('Modal element not found');
+    alert('Lỗi: Không tìm thấy modal');
+    return;
   }
   
   try {
-    const modal = new bootstrap.Modal(document.getElementById('slotDetailModal'));
-    modal.show();
-    console.log('Slot modal shown successfully');
+    // Ưu tiên jQuery (Bootstrap 4)
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+      $(modalEl).modal('show');
+      console.log('Slot modal shown successfully (jQuery/Bootstrap 4)');
+    }
+    // Fallback Bootstrap 5
+    else if (window.bootstrap && bootstrap.Modal) {
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+      console.log('Slot modal shown successfully (Bootstrap 5)');
+    }
+    // Fallback cuối cùng
+    else {
+      console.error('jQuery and Bootstrap not found');
+      alert('Lỗi: jQuery/Bootstrap không được tải. Vui lòng tải lại trang.');
+    }
   } catch (e) {
     console.error('Lỗi mở modal tiền phòng:', e);
+    alert('Lỗi khi mở modal: ' + e.message);
+  }
+};
+
+window.showUtilitiesDetail = function(data) {
+  console.log('showUtilitiesDetail called with data:', data);
+  
+  if (!data) {
+    console.error('No data provided to showUtilitiesDetail');
+    alert('Lỗi: Không có dữ liệu để hiển thị');
+    return;
+  }
+  
+  currentUtilitiesPaymentId = data.id;
+  
+  // Kiểm tra các element tồn tại trước khi set
+  const elements = {
+    utilitiesSinhVien: document.getElementById('utilitiesSinhVien'),
+    utilitiesMaSV: document.getElementById('utilitiesMaSV'),
+    utilitiesPhong: document.getElementById('utilitiesPhong'),
+    utilitiesLabel: document.getElementById('utilitiesLabel'),
+    utilitiesTienDien: document.getElementById('utilitiesTienDien'),
+    utilitiesTienNuoc: document.getElementById('utilitiesTienNuoc'),
+    utilitiesTotal: document.getElementById('utilitiesTotal'),
+    utilitiesMethod: document.getElementById('utilitiesMethod'),
+    utilitiesRequestedAt: document.getElementById('utilitiesRequestedAt'),
+    utilitiesNote: document.getElementById('utilitiesNote'),
+    adminNoteUtilities: document.getElementById('adminNoteUtilities')
+  };
+  
+  // Set giá trị
+  if (elements.utilitiesSinhVien) elements.utilitiesSinhVien.textContent = data.sinhVien || '-';
+  if (elements.utilitiesMaSV) elements.utilitiesMaSV.textContent = data.maSv || '-';
+  if (elements.utilitiesPhong) elements.utilitiesPhong.textContent = data.phong || '-';
+  if (elements.utilitiesLabel) elements.utilitiesLabel.textContent = data.slot || '-';
+  if (elements.utilitiesTienDien) elements.utilitiesTienDien.textContent = data.tienDien || '-';
+  if (elements.utilitiesTienNuoc) elements.utilitiesTienNuoc.textContent = data.tienNuoc || '-';
+  if (elements.utilitiesTotal) elements.utilitiesTotal.textContent = data.total || '-';
+  if (elements.utilitiesMethod) elements.utilitiesMethod.textContent = data.method || '-';
+  if (elements.utilitiesRequestedAt) elements.utilitiesRequestedAt.textContent = data.requestedAt || '-';
+  if (elements.utilitiesNote) elements.utilitiesNote.textContent = data.note || '(Không có ghi chú)';
+  if (elements.adminNoteUtilities) elements.adminNoteUtilities.value = data.adminNote || '';
+  
+  // Xử lý ảnh
+  const imgWrapper = document.getElementById('utilitiesImageWrapper');
+  const utilitiesDetailImage = document.getElementById('utilitiesDetailImage');
+  if (imgWrapper && utilitiesDetailImage) {
+    if (data.image && data.image.trim() !== '') {
+      imgWrapper.style.display = 'block';
+      utilitiesDetailImage.src = data.image;
+    } else {
+      imgWrapper.style.display = 'none';
+    }
+  }
+  
+  // Mở modal - ưu tiên jQuery (Bootstrap 4)
+  const modalEl = document.getElementById('utilitiesDetailModal');
+  if (!modalEl) {
+    console.error('Modal element not found');
+    alert('Lỗi: Không tìm thấy modal');
+    return;
+  }
+  
+  try {
+    // Ưu tiên jQuery (Bootstrap 4)
+    if (typeof $ !== 'undefined' && $.fn.modal) {
+      $(modalEl).modal('show');
+      console.log('Utilities modal shown successfully (jQuery/Bootstrap 4)');
+    }
+    // Fallback Bootstrap 5
+    else if (window.bootstrap && bootstrap.Modal) {
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+      console.log('Utilities modal shown successfully (Bootstrap 5)');
+    }
+    // Fallback cuối cùng
+    else {
+      console.error('jQuery and Bootstrap not found');
+      alert('Lỗi: jQuery/Bootstrap không được tải. Vui lòng tải lại trang.');
+    }
+  } catch (e) {
+    console.error('Lỗi mở modal điện nước:', e);
+    alert('Lỗi khi mở modal: ' + e.message);
   }
 }
 
-function showUtilitiesDetail(data) {
-  console.log('showUtilitiesDetail called with data:', data);
-  currentUtilitiesPaymentId = data.id;
-  document.getElementById('utilitiesSinhVien').textContent = data.sinhVien || '-';
-  document.getElementById('utilitiesMaSV').textContent = data.maSv || '-';
-  document.getElementById('utilitiesPhong').textContent = data.phong || '-';
-  document.getElementById('utilitiesLabel').textContent = data.slot || '-';
-  document.getElementById('utilitiesTienDien').textContent = data.tienDien || '-';
-  document.getElementById('utilitiesTienNuoc').textContent = data.tienNuoc || '-';
-  document.getElementById('utilitiesTotal').textContent = data.total || '-';
-  document.getElementById('utilitiesMethod').textContent = data.method || '-';
-  document.getElementById('utilitiesRequestedAt').textContent = data.requestedAt || '-';
-  document.getElementById('utilitiesNote').textContent = data.note || '(Không có ghi chú)';
-  document.getElementById('adminNoteUtilities').value = data.adminNote || '';
+// ===== Xử lý nút xem chi tiết =====
+// Đơn giản hóa: dùng jQuery khi sẵn sàng
+$(document).ready(function() {
+  // Xử lý nút xem chi tiết slot
+  $(document).on('click', '.slot-detail-btn', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const $btn = $(this);
+      const dataStr = $btn.attr('data-detail');
+      
+      if (!dataStr || dataStr.trim() === '') {
+        alert('Lỗi: Không có dữ liệu để hiển thị');
+        return false;
+      }
+      
+      const data = JSON.parse(dataStr);
+      
+      if (window.showSlotDetail) {
+        window.showSlotDetail(data);
+      } else {
+        alert('Lỗi: Hàm hiển thị chi tiết chưa được tải');
+      }
+    } catch (e) {
+      console.error('Error:', e);
+      alert('Lỗi: ' + e.message);
+    }
+    return false;
+  });
   
-  const imgWrapper = document.getElementById('utilitiesImageWrapper');
-  if (data.image && data.image.trim() !== '') {
-    imgWrapper.style.display = 'block';
-    document.getElementById('utilitiesDetailImage').src = data.image;
-  } else {
-    imgWrapper.style.display = 'none';
-  }
-  
-  try {
-    const modal = new bootstrap.Modal(document.getElementById('utilitiesDetailModal'));
-    modal.show();
-    console.log('Utilities modal shown successfully');
-  } catch (e) {
-    console.error('Lỗi mở modal điện nước:', e);
-  }
-}
+  // Xử lý nút xem chi tiết utilities
+  $(document).on('click', '.utilities-detail-btn, .open-utilities-detail-btn', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const $btn = $(this);
+      const dataStr = $btn.attr('data-detail');
+      let data;
+      
+      if (dataStr && dataStr.trim() !== '') {
+        data = JSON.parse(dataStr);
+      } else {
+        // Fallback: lấy từ các data attributes riêng lẻ
+        data = {
+          id: $btn.attr('data-id'),
+          sinhVien: $btn.attr('data-sinh-vien') || 'N/A',
+          maSv: $btn.attr('data-ma-sv') || 'N/A',
+          phong: $btn.attr('data-phong') || 'N/A',
+          slot: $btn.attr('data-slot') || 'N/A',
+          tienDien: $btn.attr('data-tien-dien') || '-',
+          tienNuoc: $btn.attr('data-tien-nuoc') || '-',
+          total: $btn.attr('data-total') || '-',
+          method: $btn.attr('data-method') || '-',
+          requestedAt: $btn.attr('data-requested-at') || '-',
+          status: $btn.attr('data-status') || '-',
+          note: $btn.attr('data-note') || '',
+          adminNote: $btn.attr('data-admin-note') || '',
+          image: $btn.attr('data-image') || ''
+        };
+      }
+      
+      if (window.showUtilitiesDetail) {
+        window.showUtilitiesDetail(data);
+      } else {
+        alert('Lỗi: Hàm hiển thị chi tiết chưa được tải');
+      }
+    } catch (e) {
+      console.error('Error:', e);
+      alert('Lỗi: ' + e.message);
+    }
+    return false;
+  });
+});
 
 // ===== Xử lý nút xác nhận/từ chối =====
 document.addEventListener('DOMContentLoaded', function() {

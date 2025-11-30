@@ -34,6 +34,7 @@ class SinhVien extends Model
         'phong_id',
         'trang_thai_ho_so',
         'anh_sinh_vien',
+        'anh_giay_xac_nhan',
         // mới
         'citizen_id_number',
         'citizen_issue_date',

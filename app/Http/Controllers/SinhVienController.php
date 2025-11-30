@@ -6,6 +6,7 @@ use App\Mail\SinhVienApprovalMail;
 use App\Models\SinhVien;
 use App\Models\Phong;
 use App\Models\ThongBaoPhongSv;
+use App\Http\Controllers\AssignmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -128,10 +129,15 @@ class SinhVienController extends Controller
 
             // ảnh đã có migration riêng từ trước
             'anh_sinh_vien' => 'nullable|image|max:2048',
+            'anh_giay_xac_nhan' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('anh_sinh_vien')) {
             $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public'); // storage/public/students
+        }
+
+        if ($request->hasFile('anh_giay_xac_nhan')) {
+            $data['anh_giay_xac_nhan'] = $request->file('anh_giay_xac_nhan')->store('students', 'public'); // storage/public/students
         }
 
         $data['trang_thai_ho_so'] = $data['trang_thai_ho_so'] ?? SinhVien::STATUS_PENDING_APPROVAL;
@@ -186,11 +192,23 @@ class SinhVienController extends Controller
             'guardian_relationship' => 'nullable|string',
 
             'anh_sinh_vien' => 'nullable|image|max:2048',
+            'anh_giay_xac_nhan' => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('anh_sinh_vien')) {
-            // Storage::disk('public')->delete($sv->anh_sinh_vien); // nếu muốn dọn ảnh cũ
+            // Xóa ảnh cũ nếu có
+            if ($sv->anh_sinh_vien) {
+                Storage::disk('public')->delete($sv->anh_sinh_vien);
+            }
             $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public');
+        }
+
+        if ($request->hasFile('anh_giay_xac_nhan')) {
+            // Xóa ảnh cũ nếu có
+            if ($sv->anh_giay_xac_nhan) {
+                Storage::disk('public')->delete($sv->anh_giay_xac_nhan);
+            }
+            $data['anh_giay_xac_nhan'] = $request->file('anh_giay_xac_nhan')->store('students', 'public');
         }
 
         $sv->update($data);
@@ -242,19 +260,8 @@ class SinhVienController extends Controller
     }
     public function capNhatPhong(Request $request, $id)
 {
-    $sv = SinhVien::findOrFail($id);
-
-    // Cập nhật phòng
-    $sv->phong_id = $request->phong_id;
-    $sv->save();
-
-    // Tạo thông báo
-    ThongBaoPhongSv::create([
-        'sinh_vien_id' => $sv->id,
-        'phong_id' => $sv->phong_id,
-        'noi_dung' => "Sinh viên {$sv->ho_ten} đã được thêm vào phòng {$sv->phong->ten_phong}.",
-    ]);
-
-    return back()->with('success', 'Đã thêm sinh viên vào phòng và tạo thông báo.');
+        // Chuyển logic gán phòng sang AssignmentController để đảm bảo sinh viên phải xác nhận
+        $assignmentController = new AssignmentController();
+        return $assignmentController->assign($request, $id);
 }
 }
