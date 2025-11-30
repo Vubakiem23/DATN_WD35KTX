@@ -93,7 +93,8 @@ class ClientController extends Controller
             }
             
             // Nếu đã có phong_id (đã xác nhận và thanh toán), không hiển thị alert
-            if ($sinhVien->phong_id && $sinhVien->phong_id == $pendingRoomAssignment->phong_id) {
+            // Kiểm tra $pendingRoomAssignment không null trước khi truy cập phong_id
+            if ($pendingRoomAssignment && $sinhVien->phong_id && $sinhVien->phong_id == $pendingRoomAssignment->phong_id) {
                 $pendingRoomAssignment = null;
             }
         }
