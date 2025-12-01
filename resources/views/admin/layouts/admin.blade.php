@@ -35,6 +35,7 @@
     <!-- Custom Theme Style -->
     <link href="{{ asset('assets/admin/build/css/custom.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/admin/build/css/custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/admin/css/admin-theme.css') }}" rel="stylesheet">
     <style>
         /* Global cosmetic polish */
         body {
@@ -439,7 +440,7 @@
             <!-- /top navigation -->
 
             <!-- page content -->
-            <div class="right_col" role="main">
+            <div class="right_col admin-main" role="main">
                 @yield('content')
             </div>
 

@@ -24,24 +24,7 @@
     .asset-table tbody tr td:first-child{border-top-left-radius:16px;border-bottom-left-radius:16px}
     .asset-table tbody tr td:last-child{border-top-right-radius:16px;border-bottom-right-radius:16px}
 
-    .filter-card {
-      background: #f8f9fa;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      padding: 16px 20px;
-      margin-bottom: 20px;
-      border-left: 5px;
-    }
-    .filter-card label {
-      font-weight: 600;
-      color: #495057;
-    }
-    .filter-card input {
-      border-radius: 10px;
-    }
-    .filter-card .btn {
-      border-radius: 10px;
-    }
+    /* form tìm kiếm dùng style chung search-bar trong admin */
     .action-cell{
       position:relative;
       text-align:right;
@@ -108,24 +91,25 @@
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
 
-  {{-- ✅ Form lọc tìm kiếm --}}
-  <form action="{{ route('loaitaisan.index') }}" method="GET" class="filter-card">
-    <div class="row g-3 align-items-end">
-      <div class="col-md-5">
-        <label class="form-label">Từ khóa tìm kiếm</label>
-        <div class="input-group">
-          <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-          <input type="text" name="keyword" value="{{ request('keyword') }}" 
-                 class="form-control" placeholder="Nhập tên loại tài sản...">
-        </div>
-      </div>
-      <div class="col-md-7 d-flex gap-2 justify-content-end">
-        <button type="submit" class="btn-dergin btn-dergin--info">
-          <i class="fa fa-filter"></i><span>Lọc</span>
-        </button>
-        <a href="{{ route('loaitaisan.index') }}" class="btn-dergin btn-dergin--muted"><i class="fa fa-rotate-left"></i><span>Làm mới</span></a>
-        <a href="{{ route('loaitaisan.create') }}" class="btn-dergin btn-dergin--success"><i class="fa fa-plus"></i><span>Thêm mới</span></a>
-      </div>
+  {{-- ✅ Thanh tìm kiếm giống trang sinh viên --}}
+  <form action="{{ route('loaitaisan.index') }}" method="GET" class="mb-3 search-bar">
+    <div class="input-group">
+      <input type="text" name="keyword" value="{{ request('keyword') }}"
+             class="form-control" placeholder="Nhập tên loại tài sản...">
+
+      <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+
+      <button type="submit" name="filter" value="1" class="btn btn-outline-primary">
+        <i class="fa fa-filter mr-1"></i> Lọc
+      </button>
+
+      @if (request()->filled('keyword'))
+        <a href="{{ route('loaitaisan.index') }}" class="btn btn-outline-secondary">Xóa</a>
+      @endif
+
+      <a href="{{ route('loaitaisan.create') }}" class="btn btn-primary ms-auto">
+        <i class="fa fa-plus"></i><span> Thêm mới</span>
+      </a>
     </div>
   </form>
 

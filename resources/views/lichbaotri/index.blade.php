@@ -279,10 +279,10 @@
       </div>
     </form>
   </div>
-  <div class="row mb-4">
-    <div class="col-md-2">
-      <div class="card shadow-sm border-start border-info border-4">
-        <div class="card-body">
+  <div class="row mb-4 g-3">
+    <div class="col-md-3 col-lg-2">
+      <div class="card shadow-sm border-start border-info border-4 h-100">
+        <div class="card-body d-flex align-items-center">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h6 class="text-muted mb-1">Đang lên lịch</h6>
@@ -295,9 +295,9 @@
         </div>
       </div>
     </div>
-    <div class="col-md-2">
-      <div class="card shadow-sm border-start border-warning border-4">
-        <div class="card-body">
+    <div class="col-md-3 col-lg-2">
+      <div class="card shadow-sm border-start border-warning border-4 h-100">
+        <div class="card-body d-flex align-items-center">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h6 class="text-muted mb-1">Chờ bảo trì</h6>
@@ -310,9 +310,9 @@
         </div>
       </div>
     </div>
-    <div class="col-md-2">
-      <div class="card shadow-sm border-start border-danger border-4">
-        <div class="card-body">
+    <div class="col-md-3 col-lg-2">
+      <div class="card shadow-sm border-start border-danger border-4 h-100">
+        <div class="card-body d-flex align-items-center">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h6 class="text-muted mb-1">Đang bảo trì</h6>
@@ -325,9 +325,9 @@
         </div>
       </div>
     </div>
-    <div class="col-md-2">
-      <div class="card shadow-sm border-start border-success border-4">
-        <div class="card-body">
+    <div class="col-md-3 col-lg-2">
+      <div class="card shadow-sm border-start border-success border-4 h-100">
+        <div class="card-body d-flex align-items-center">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h6 class="text-muted mb-1">Hoàn thành</h6>
@@ -340,9 +340,9 @@
         </div>
       </div>
     </div>
-    <div class="col-md-2">
-      <div class="card shadow-sm border-start border-primary border-4">
-        <div class="card-body">
+    <div class="col-md-3 col-lg-2">
+      <div class="card shadow-sm border-start border-primary border-4 h-100">
+        <div class="card-body d-flex align-items-center">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h6 class="text-muted mb-1">Tổng tài sản</h6>
