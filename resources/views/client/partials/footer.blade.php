@@ -343,12 +343,12 @@
     }
 
     .footer-hours .time {
-        color: #0066cc;
+        color: #ffffff;
         font-weight: 600;
         font-size: 13px;
-        background: rgba(0, 102, 204, 0.1);
-        padding: 3px 8px;
-        border-radius: 5px;
+        background: rgba(0, 102, 204, 0.22);
+        padding: 3px 10px;
+        border-radius: 999px;
     }
 
     /* ===== FOOTER BOTTOM ===== */
@@ -385,8 +385,8 @@
     }
 
     .footer-credit strong {
-        color: #0066cc;
-        font-weight: 700;
+        color: #ffffff;
+        font-weight: 600;
     }
 
     /* ===== RESPONSIVE ===== */

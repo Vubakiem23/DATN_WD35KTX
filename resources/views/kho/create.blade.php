@@ -84,21 +84,42 @@ textarea.form-control {
     color: #94a3b8;
 }
 
-/* --- Button & Input số lượng nhân bản --- */
-.clone-qty {
-    width: 70px;
-    display: inline-block;
-    margin-right: 5px;
+/* --- Cột nhân bản & xoá --- */
+.bulk-table td.actions-clone,
+.bulk-table td.actions-delete {
+    white-space: nowrap;
 }
 
-.btn-sm {
-    padding: 5px 8px;
+.bulk-table td.actions-clone .clone-qty {
+    width: 72px;
+    display: inline-block;
+    margin-right: 6px;
+    text-align: center;
+}
+
+.bulk-table td.actions-clone .clone-qty::-webkit-outer-spin-button,
+.bulk-table td.actions-clone .clone-qty::-webkit-inner-spin-button {
+    margin: 0;
+}
+
+.bulk-table td.actions-clone .btn-sm,
+.bulk-table td.actions-delete .btn-sm {
+    padding: 6px 10px;
     font-size: 13px;
+    border-radius: 999px;
+}
+
+.bulk-table td.actions-delete .btn-sm {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* --- Nút thêm dòng --- */
 #addRow {
-    border-radius: 12px;
+    border-radius: 999px;
 }
 
 /* --- Responsive table --- */
@@ -131,7 +152,9 @@ textarea.form-control {
             </table>
         </div>
 
-        <button type="button" id="addRow" class="btn btn-outline-primary mt-3">➕ Thêm dòng</button>
+        <button type="button" id="addRow" class="btn btn-dergin btn-dergin--info mt-3">
+            ➕ Thêm dòng
+        </button>
 
         <div class="text-end mt-4">
             <button class="btn btn-primary">💾 Lưu tất cả</button>
@@ -167,8 +190,17 @@ function createRow(copyData = null, copiedFile = null) {
         <td><textarea name="ghi_chu[]" class="form-control" placeholder="Ghi chú thêm...">${ghi_chu_value}</textarea></td>
         <td><input type="file" name="hinh_anh[]" class="form-control file-input" accept="image/*"></td>
         <td class="text-center"><img class="img-preview" src="${img_src_value}"></td>
-        <td class="text-center"><input type="number" class="clone-qty form-control" min="1" value="1"><button type="button" class="btn btn-warning btn-sm clone-row">📄</button></td>
-        <td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-row">✖</button></td>
+        <td class="text-center actions-clone">
+            <input type="number" class="clone-qty form-control" min="1" value="1">
+            <button type="button" class="btn btn-warning btn-sm clone-row" title="Nhân bản dòng">
+                📄
+            </button>
+        </td>
+        <td class="text-center actions-delete">
+            <button type="button" class="btn btn-danger btn-sm remove-row" title="Xoá dòng">
+                ✖
+            </button>
+        </td>
     `;
 
     if (copiedFile) {

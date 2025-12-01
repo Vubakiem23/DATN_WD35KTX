@@ -87,7 +87,7 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <div class="d-flex flex-wrap align-items-center gap-3">
+    <div class="admin-toolbar">
       {{-- Nhập từ Excel --}}
       <form action="{{ route('hoadon.import') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
         @csrf
@@ -107,18 +107,17 @@
       </form>
 
       {{-- Lịch sử --}}
-      <div class="d-flex align-items-center" style="margin-bottom: 15px;">
-    <a href="{{ route('hoadon.lichsu_tienphong') }}" class="btn btn-dergin btn-dergin--muted me-2" title="Lịch sử tiền phòng">
-      <i class="fa fa-bed"></i><span>Lịch Sử</span>
-    </a>
-      </div>
+      <a href="{{ route('hoadon.lichsu_tienphong') }}" class="btn btn-dergin btn-dergin--muted" title="Lịch sử tiền phòng">
+        <i class="fa fa-bed"></i><span>Lịch Sử</span>
+      </a>
 
-      {{-- Bộ lọc --}}
-      <div class="d-flex align-items-center" style="margin-bottom: +15px;">
-        <button type="button" class="btn btn-outline-primary" id="openFilterModalBtn" title="Bộ lọc">
-          <i class="fa fa-filter mr-1"></i> Bộ lọc
-        </button>
-      </div>
+      {{-- Bộ lọc (nút lớn giống các nút khác) --}}
+      <button type="button"
+              class="btn btn-dergin btn-dergin--info"
+              id="openFilterModalBtn"
+              title="Bộ lọc">
+        <i class="fa fa-filter mr-1"></i><span>Bộ lọc</span>
+      </button>
 
       {{-- Gửi email hàng loạt --}}
       <form method="POST" action="{{ route('hoadon.guiemailhangloat') }}" class="d-flex align-items-center">
