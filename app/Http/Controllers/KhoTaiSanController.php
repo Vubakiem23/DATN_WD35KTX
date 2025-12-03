@@ -98,42 +98,54 @@ class KhoTaiSanController extends Controller
 
 
     public function store(Request $request, $loai_id)
-    {
-        $loai = LoaiTaiSan::findOrFail($loai_id);
+{
+    $loai = LoaiTaiSan::findOrFail($loai_id);
 
-        // ✅ Validate mảng dữ liệu
-        $request->validate([
-            'ten_tai_san.*' => 'required|string|max:255',
-            'don_vi_tinh.*' => 'nullable|string|max:50',
-            'tinh_trang.*' => 'nullable|in:Mới,Hỏng,Cũ,Bảo trì,Bình thường',
-            'ghi_chu.*' => 'nullable|string',
-            'hinh_anh.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+    // Validate mảng dữ liệu
+    $request->validate([
+        'ten_tai_san.*' => 'required|string|max:255',
+        'don_vi_tinh.*' => 'nullable|string|max:50',
+        'tinh_trang.*' => 'nullable|in:Mới,Hỏng,Cũ,Bảo trì,Bình thường',
+        'ghi_chu.*' => 'nullable|string',
+        'hinh_anh.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'so_luong.*' => 'required|integer|min:1',
+    ]);
 
-        $count = count($request->ten_tai_san);
+    $count = count($request->ten_tai_san);
+    $totalCreated = 0; // 👉 biến đếm tổng số tài sản thực tế được tạo
 
-        for ($i = 0; $i < $count; $i++) {
-            $path = null;
+    for ($i = 0; $i < $count; $i++) {
 
-            if ($request->hasFile("hinh_anh.$i")) {
-                $path = $request->file("hinh_anh.$i")->store('kho', 'public');
-            }
+        $path = null;
+        if ($request->hasFile("hinh_anh.$i")) {
+            $path = $request->file("hinh_anh.$i")->store('kho', 'public');
+        }
+
+        $soLuong = $request->so_luong[$i]; // số lượng người dùng nhập
+
+        // 👉 Tạo nhiều bản ghi đúng theo số lượng
+        for ($j = 0; $j < $soLuong; $j++) {
 
             KhoTaiSan::create([
                 'ma_tai_san' => $this->generateMaTaiSan($loai),
                 'loai_id' => $loai->id,
                 'ten_tai_san' => $request->ten_tai_san[$i],
-                'so_luong' => 1,
+                'so_luong' => 1, // mỗi bản ghi luôn là 1
                 'don_vi_tinh' => $request->don_vi_tinh[$i] ?? null,
                 'tinh_trang' => $request->tinh_trang[$i] ?? null,
                 'ghi_chu' => $request->ghi_chu[$i] ?? null,
                 'hinh_anh' => $path,
             ]);
-        }
 
-        return redirect()->route('kho.related', $loai_id)
-            ->with('success', "Đã thêm $count tài sản cho loại {$loai->ten_loai}!");
+            $totalCreated++; // 👉 tăng tổng số tài sản được tạo
+        }
     }
+
+    // 🎉 Hiển thị đúng số lượng đã tạo
+    return redirect()->route('kho.related', $loai_id)
+        ->with('success', "Đã thêm $totalCreated tài sản cho loại {$loai->ten_loai}!");
+}
+
 
     public function edit($id)
     {

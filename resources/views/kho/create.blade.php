@@ -3,129 +3,116 @@
 
 @section('content')
 <style>
-/* --- Card và tổng thể --- */
-.card {
-    border-radius: 20px;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
-    border: none;
-    padding: 30px;
-    background-color: #ffffff;
-}
+    /* --- Card và tổng thể --- */
+    .card {
+        border-radius: 20px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+        border: none;
+        padding: 30px;
+        background-color: #ffffff;
+    }
 
-/* --- Tiêu đề --- */
-.bulk-title {
-    font-weight: 800;
-    color: #1f2937;
-    font-size: 1.25rem;
-    margin-bottom: 20px;
-}
+    /* --- Tiêu đề --- */
+    .bulk-title {
+        font-weight: 800;
+        color: #1f2937;
+        font-size: 1.25rem;
+        margin-bottom: 20px;
+    }
 
-/* --- Bảng --- */
-.bulk-table {
-    border-collapse: separate;
-    border-spacing: 0 8px;
-}
+    /* --- Bảng --- */
+    .bulk-table {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
 
-.bulk-table thead th {
-    background: #f1f5f9;
-    padding: 12px 15px;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    color: #475569;
-    border-bottom: none;
-    border-radius: 12px;
-}
+    .bulk-table thead th {
+        background: #f1f5f9;
+        padding: 12px 15px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: #475569;
+        border-bottom: none;
+        border-radius: 12px;
+    }
 
-.bulk-table tbody tr {
-    background: #ffffff;
-    transition: all 0.2s;
-    border-radius: 12px;
-}
+    .bulk-table tbody tr {
+        background: #ffffff;
+        transition: all 0.2s;
+        border-radius: 12px;
+    }
 
-.bulk-table tbody tr:hover {
-    background: #f0f4f8;
-}
+    .bulk-table tbody tr:hover {
+        background: #f0f4f8;
+    }
 
-.bulk-table tbody td {
-    padding: 10px 12px;
-    vertical-align: middle;
-}
+    .bulk-table tbody td {
+        padding: 10px 12px;
+        vertical-align: middle;
+    }
 
-/* --- Inputs & selects --- */
-.form-control, .form-select {
-    border-radius: 12px;
-    height: 42px;
-    border-color: #cbd5e1;
-    padding: 5px 12px;
-    font-size: 14px;
-}
+    /* --- Inputs & selects --- */
+    .form-control,
+    .form-select {
+        border-radius: 12px;
+        height: 42px;
+        border-color: #cbd5e1;
+        padding: 5px 12px;
+        font-size: 14px;
+    }
 
-textarea.form-control {
-    min-height: 70px;
-    resize: vertical;
-}
+    textarea.form-control {
+        min-height: 70px;
+        resize: vertical;
+    }
 
-/* --- Preview ảnh --- */
-.img-preview {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    object-fit: cover;
-    background: #f1f5f9;
-}
+    /* --- Preview ảnh --- */
+    .img-preview {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        object-fit: cover;
+        background: #f1f5f9;
+    }
 
-/* --- Dòng trống --- */
-.empty-state td {
-    text-align: center;
-    padding: 25px;
-    font-style: italic;
-    color: #94a3b8;
-}
+    /* --- Dòng trống --- */
+    .empty-state td {
+        text-align: center;
+        padding: 25px;
+        font-style: italic;
+        color: #94a3b8;
+    }
 
-/* --- Cột nhân bản & xoá --- */
-.bulk-table td.actions-clone,
-.bulk-table td.actions-delete {
-    white-space: nowrap;
-}
+    /* --- Cột xoá --- */
+    .bulk-table td.actions-delete {
+        white-space: nowrap;
+    }
 
-.bulk-table td.actions-clone .clone-qty {
-    width: 72px;
-    display: inline-block;
-    margin-right: 6px;
-    text-align: center;
-}
+    .bulk-table td.actions-delete .btn-sm {
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 999px;
+    }
 
-.bulk-table td.actions-clone .clone-qty::-webkit-outer-spin-button,
-.bulk-table td.actions-clone .clone-qty::-webkit-inner-spin-button {
-    margin: 0;
-}
+    .bulk-table td.actions-delete .btn-sm {
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.bulk-table td.actions-clone .btn-sm,
-.bulk-table td.actions-delete .btn-sm {
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 999px;
-}
+    /* --- Nút thêm dòng --- */
+    #addRow {
+        border-radius: 999px;
+    }
 
-.bulk-table td.actions-delete .btn-sm {
-    width: 38px;
-    height: 38px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* --- Nút thêm dòng --- */
-#addRow {
-    border-radius: 999px;
-}
-
-/* --- Responsive table --- */
-.table-responsive {
-    overflow-x: auto;
-}
+    /* --- Responsive table --- */
+    .table-responsive {
+        overflow-x: auto;
+    }
 </style>
 
 <div class="container mt-4">
@@ -144,7 +131,7 @@ textarea.form-control {
                         <th>Ghi chú</th>
                         <th>Hình ảnh</th>
                         <th>Xem trước</th>
-                        <th class="text-center">Nhân bản</th>
+                        <th class="text-center">Số lượng</th>
                         <th class="text-center">Xoá</th>
                     </tr>
                 </thead>
@@ -163,38 +150,35 @@ textarea.form-control {
 </div>
 
 <script>
-const tbody = document.querySelector('#assetTable tbody');
-const addRowBtn = document.getElementById('addRow');
+    const tbody = document.querySelector('#assetTable tbody');
+    const addRowBtn = document.getElementById('addRow');
 
-const tenDefault = @json($loai->ten_loai);
-const tinhTrangOptions = @json($tinhTrangOptions);
+    const tenDefault = @json($loai -> ten_loai);
+    const tinhTrangOptions = @json($tinhTrangOptions);
 
-function buildTinhTrangOptions(selected = "") {
-    return `
+    function buildTinhTrangOptions(selected = "") {
+        return `
         <option value="">--Chọn--</option>
         ${tinhTrangOptions.map(x => `<option value="${x}" ${x===selected?"selected":""}>${x}</option>`).join("")}
     `;
-}
+    }
 
-function createRow(copyData = null, copiedFile = null) {
-    const tr = document.createElement('tr');
-    const don_vi_value = copyData?.don_vi ?? "";
-    const tinh_trang_value = copyData?.tinh_trang ?? "";
-    const ghi_chu_value = copyData?.ghi_chu ?? "";
-    const img_src_value = copyData?.img_src ?? "";
+    function createRow(copyData = null, copiedFile = null) {
+        const tr = document.createElement('tr');
+        const don_vi_value = copyData?.don_vi ?? "";
+        const tinh_trang_value = copyData?.tinh_trang ?? "";
+        const ghi_chu_value = copyData?.ghi_chu ?? "";
+        const img_src_value = copyData?.img_src ?? "";
 
-    tr.innerHTML = `
+        tr.innerHTML = `
         <td><input type="text" name="ten_tai_san[]" class="form-control" value="${tenDefault}" readonly></td>
         <td><input type="text" name="don_vi_tinh[]" class="form-control" value="${don_vi_value}" placeholder="chiếc, bộ..."></td>
         <td><select name="tinh_trang[]" class="form-select">${buildTinhTrangOptions(tinh_trang_value)}</select></td>
         <td><textarea name="ghi_chu[]" class="form-control" placeholder="Ghi chú thêm...">${ghi_chu_value}</textarea></td>
         <td><input type="file" name="hinh_anh[]" class="form-control file-input" accept="image/*"></td>
         <td class="text-center"><img class="img-preview" src="${img_src_value}"></td>
-        <td class="text-center actions-clone">
-            <input type="number" class="clone-qty form-control" min="1" value="1">
-            <button type="button" class="btn btn-warning btn-sm clone-row" title="Nhân bản dòng">
-                📄
-            </button>
+        <td class="text-center">
+            <input type="number" class="form-control" name="so_luong[]" min="1" value="1">
         </td>
         <td class="text-center actions-delete">
             <button type="button" class="btn btn-danger btn-sm remove-row" title="Xoá dòng">
@@ -203,64 +187,56 @@ function createRow(copyData = null, copiedFile = null) {
         </td>
     `;
 
-    if (copiedFile) {
-        const fileInput = tr.querySelector(".file-input");
-        const dt = new DataTransfer();
-        dt.items.add(copiedFile);
-        fileInput.files = dt.files;
+        if (copiedFile) {
+            const fileInput = tr.querySelector(".file-input");
+            const dt = new DataTransfer();
+            dt.items.add(copiedFile);
+            fileInput.files = dt.files;
+        }
+        return tr;
     }
-    return tr;
-}
 
-function showEmptyState() {
-    if(tbody.children.length===0){
-        const tr=document.createElement('tr');
-        tr.classList.add('empty-state');
-        tr.innerHTML=`<td colspan="8">Chưa có dòng nào. Nhấn <b>Thêm dòng</b> để bắt đầu.</td>`;
-        tbody.appendChild(tr);
+    function showEmptyState() {
+        if (tbody.children.length === 0) {
+            const tr = document.createElement('tr');
+            tr.classList.add('empty-state');
+            tr.innerHTML = `<td colspan="8">Chưa có dòng nào. Nhấn <b>Thêm dòng</b> để bắt đầu.</td>`;
+            tbody.appendChild(tr);
+        }
     }
-}
 
-function removeEmptyState() {
-    const empty = tbody.querySelector('.empty-state');
-    if(empty) empty.remove();
-}
+    function removeEmptyState() {
+        const empty = tbody.querySelector('.empty-state');
+        if (empty) empty.remove();
+    }
 
-// Thêm dòng
-addRowBtn.addEventListener('click',()=>{removeEmptyState();tbody.appendChild(createRow());});
-
-// Xoá + Nhân bản + Preview ảnh
-document.addEventListener('click', e=>{
-    const row=e.target.closest('tr');
-    if(e.target.classList.contains('remove-row')){row.remove();showEmptyState();}
-    if(e.target.classList.contains('clone-row')){
-        const qty=parseInt(row.querySelector(".clone-qty").value)||1;
-        const copyData={
-            don_vi: row.querySelector('input[name="don_vi_tinh[]"]').value,
-            tinh_trang: row.querySelector('select[name="tinh_trang[]"]').value,
-            ghi_chu: row.querySelector('textarea[name="ghi_chu[]"]').value,
-            img_src: row.querySelector('.img-preview').src
-        };
-        let copiedFile=null;
-        const oldFile=row.querySelector(".file-input");
-        if(oldFile.files.length>0){const file=oldFile.files[0];copiedFile=new File([file],file.name,{type:file.type});}
+    // Thêm dòng mới
+    addRowBtn.addEventListener('click', () => {
         removeEmptyState();
-        for(let i=0;i<qty;i++) tbody.appendChild(createRow(copyData,copiedFile));
-    }
-});
+        tbody.appendChild(createRow());
+    });
 
-// Preview ảnh
-document.addEventListener('change', e=>{
-    if(e.target.classList.contains('file-input')){
-        const img=e.target.closest('tr').querySelector('.img-preview');
-        const file=e.target.files[0];
-        img.src=file?URL.createObjectURL(file):"";
-    }
-});
+    // Xoá dòng
+    document.addEventListener('click', e => {
+        const row = e.target.closest('tr');
+        if (e.target.classList.contains('remove-row')) {
+            row.remove();
+            showEmptyState();
+        }
+    });
 
-// Khởi tạo 1 dòng mặc định
-removeEmptyState();
-tbody.appendChild(createRow());
+    // Preview ảnh
+    document.addEventListener('change', e => {
+        if (e.target.classList.contains('file-input')) {
+            const img = e.target.closest('tr').querySelector('.img-preview');
+            const file = e.target.files[0];
+            img.src = file ? URL.createObjectURL(file) : "";
+        }
+    });
+
+    // Khởi tạo 1 dòng mặc định
+    removeEmptyState();
+    tbody.appendChild(createRow());
 </script>
 
 @endsection
