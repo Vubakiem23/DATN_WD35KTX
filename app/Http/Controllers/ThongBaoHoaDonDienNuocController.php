@@ -4,34 +4,48 @@ namespace App\Http\Controllers;
 
 use App\Models\HoaDonUtilitiesPayment;
 use App\Models\Phong;
+use App\Models\Khu; // <-- THÊM DÒNG NÀY
 use Illuminate\Http\Request;
 
 class ThongBaoHoaDonDienNuocController extends Controller
 {
     /**
-     * ---------------------------------------------
-     *  TRANG TỔNG QUAN – DANH SÁCH PHÒNG
-     * ---------------------------------------------
+     * TRANG TỔNG QUAN – DANH SÁCH PHÒNG
      */
     public function index(Request $request)
     {
         $phongId = $request->query('phong_id');
+        $khuId   = $request->query('khu_id'); // <-- THÊM LỌC KHU
 
-        // Lấy tất cả phòng để hiển thị dropdown
-        $phongs = Phong::orderBy('ten_phong')->get();
+        // DANH SÁCH KHU CHO DROPDOWN
+        $khus = Khu::orderBy('ten_khu')->get();
 
-        // Lấy các phòng cần hiển thị dữ liệu
+        // DANH SÁCH PHÒNG CHO DROPDOWN (phụ thuộc khu nếu có chọn)
+        $phongsDropdown = Phong::query()->orderBy('ten_phong');
+        if ($khuId) {
+            $phongsDropdown->where('khu_id', $khuId);
+        }
+        $phongs = $phongsDropdown->get();
+
+        // Query các phòng cần hiển thị + thống kê
         $phongsQuery = Phong::with(['hoaDons.utilitiesPayments'])
             ->orderBy('ten_phong');
 
+        // Lọc theo khu
+        if ($khuId) {
+            $phongsQuery->where('khu_id', $khuId);
+        }
+
+        // Lọc theo phòng
         if ($phongId) {
             $phongsQuery->where('id', $phongId);
         }
 
-        $phongsData = $phongsQuery->get();
+        // Paginate 10 phòng mỗi trang
+        $phongsData = $phongsQuery->paginate(10)->appends($request->query());
 
-        // Chuẩn bị dữ liệu tổng hợp
-        $data = $phongsData->map(function ($phong) {
+        // Map dữ liệu tổng hợp trên collection của paginator
+        $dataCollection = $phongsData->getCollection()->map(function ($phong) {
             $payments = $phong->hoaDons->flatMap->utilitiesPayments;
 
             return (object)[
@@ -42,17 +56,20 @@ class ThongBaoHoaDonDienNuocController extends Controller
             ];
         });
 
+        // Gắn lại collection đã map vào paginator
+        $phongsData->setCollection($dataCollection);
+
         return view('thongbao_diennuoc.index', [
-            'data'    => $data,
-            'phongs'  => $phongs,
-            'phongId' => $phongId, // để giữ selected dropdown
+            'data'    => $phongsData, // paginator
+            'phongs'  => $phongs,     // dùng cho select phòng
+            'khus'    => $khus,       // dùng cho select khu
+            'phongId' => $phongId,
+            'khuId'   => $khuId,
         ]);
     }
 
     /**
-     * ---------------------------------------------
-     *  TRANG CHI TIẾT MỘT PHÒNG
-     * ---------------------------------------------
+     * TRANG CHI TIẾT MỘT PHÒNG
      */
     public function detail($phongId)
     {
