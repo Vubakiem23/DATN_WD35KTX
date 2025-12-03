@@ -14,32 +14,67 @@
     {{-- Nút mở modal bộ lọc + xuất --}}
     {{-- Form tìm kiếm --}}
 <form method="GET" class="mb-3 search-bar">
-    <div class="input-group">
-        {{-- Ô tìm kiếm --}}
-        <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Tìm kiếm...">
 
+    <div class="input-group">
+
+        {{-- Ô tìm kiếm --}}
+        <input type="text"
+               name="search"
+               value="{{ request('search') }}"
+               class="form-control"
+               placeholder="Tìm kiếm...">
 
         {{-- Nút tìm kiếm --}}
-        <button type="submit" class="btn btn-dergin btn-dergin--info">
+        <button type="submit"
+                class="btn btn-outline-secondary">
             <i class="fa fa-search"></i> Tìm kiếm
         </button>
 
         {{-- Nút bộ lọc --}}
-        <button type="button" class="btn btn-dergin btn-dergin--info" id="openFilterModalBtn">
-            <i class="fa fa-filter"></i> <span>Bộ lọc</span>
+        <button type="button"
+                class="btn btn-outline-primary"
+                id="openFilterModalBtn">
+            <i class="fa fa-filter"></i> Bộ lọc
         </button>
-</div>
-        {{-- Nút xuất tất cả --}}
-        <a href="{{ route('hoadonslot.export.all') }}" class="btn btn-dergin btn-dergin--primary">
+
+        {{-- Nút xóa từ khóa --}}
+        @if (request('search'))
+            <a href="{{ route('hoadonslot.index') }}"
+               class="btn btn-dergin btn-dergin--muted">
+                <i class="fa fa-times"></i> Xóa
+            </a>
+        @endif
+
+    </div>
+
+    {{-- Nhóm nút xuất file --}}
+    <div class="d-flex gap-2 flex-wrap mt-3">
+
+        {{-- Xuất tất cả --}}
+        <a href="{{ route('hoadonslot.export.all') }}"
+           class="btn btn-dergin btn-dergin--primary">
             📥 Xuất tất cả
         </a>
-         <a href="{{ route('hoadonslot.export.paid') }}" class="btn btn-success btn-sm">📗 Xuất đã thanh toán</a>
-            <a href="{{ route('hoadonslot.export.unpaid') }}" class="btn btn-danger btn-sm">📕 Xuất chưa thanh toán</a>
-    
+
+        {{-- Xuất đã thanh toán --}}
+        <a href="{{ route('hoadonslot.export.paid') }}"
+           class="btn btn-dergin btn-dergin--info">
+            📗 Xuất đã thanh toán
+        </a>
+
+        {{-- Xuất chưa thanh toán --}}
+        <a href="{{ route('hoadonslot.export.unpaid') }}"
+           class="btn btn-dergin btn-dergin--danger">
+            📕 Xuất chưa thanh toán
+        </a>
+    </div>
+
 </form>
 
 
+
     {{-- Bảng Đã thanh toán --}}
+        {{-- Bảng Đã thanh toán --}}
     <div class="room-table-wrapper mb-4">
         <h5 class="mb-3 text-success">Sinh viên Đã thanh toán</h5>
         <div class="table-responsive">
@@ -57,7 +92,7 @@
                 <tbody>
                     @forelse($daThanhToan as $item)
                         <tr>
-                            <td class="fit text-center">{{ $loop->iteration }}</td>
+                            <td class="fit text-center">{{ $loop->iteration + ($daThanhToan->currentPage() - 1) * $daThanhToan->perPage() }}</td>
                             <td>{{ $item->hoaDon->phong->ten_phong ?? $item->hoaDon->phong->ten ?? '' }}</td>
                             <td>{{ $item->sinhVien->ma_sinh_vien ?? '' }}</td>
                             <td>{{ $item->sinh_vien_ten }}</td>
@@ -72,9 +107,18 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- PHÂN TRANG ĐÃ THANH TOÁN --}}
+        @if($daThanhToan instanceof \Illuminate\Pagination\AbstractPaginator)
+            <div class="mt-3 d-flex justify-content-end">
+                {{ $daThanhToan->appends(request()->except('page_da'))->links() }}
+            </div>
+        @endif
     </div>
 
+
     {{-- Bảng Chưa thanh toán --}}
+        {{-- Bảng Chưa thanh toán --}}
     <div class="room-table-wrapper mb-4">
         <h5 class="mb-3 text-danger">Sinh viên Chưa thanh toán</h5>
         <div class="table-responsive">
@@ -92,7 +136,7 @@
                 <tbody>
                     @forelse($chuaThanhToan as $item)
                         <tr>
-                            <td class="fit text-center">{{ $loop->iteration }}</td>
+                            <td class="fit text-center">{{ $loop->iteration + ($chuaThanhToan->currentPage() - 1) * $chuaThanhToan->perPage() }}</td>
                             <td>{{ $item->hoaDon->phong->ten_phong ?? $item->hoaDon->phong->ten ?? '' }}</td>
                             <td>{{ $item->sinhVien->ma_sinh_vien ?? '-' }}</td>
                             <td>{{ $item->sinhVien->ho_ten ?? $item->sinh_vien_ten }}</td>
@@ -107,7 +151,15 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- PHÂN TRANG CHƯA THANH TOÁN --}}
+        @if($chuaThanhToan instanceof \Illuminate\Pagination\AbstractPaginator)
+            <div class="mt-3 d-flex justify-content-end">
+                {{ $chuaThanhToan->appends(request()->except('page_chua'))->links() }}
+            </div>
+        @endif
     </div>
+
 </div>
 
 {{-- Modal bộ lọc --}}
@@ -162,6 +214,7 @@
         </div>
     </div>
 </div>
+
 
 @push('scripts')
 <!-- Script này phải load sau bootstrap.bundle.min.js -->

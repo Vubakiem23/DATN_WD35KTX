@@ -431,61 +431,79 @@ public function thongBaoHoaDonSlot(Request $request)
     // Lấy danh sách phòng để hiển thị filter
     $phongs = Phong::all();
 
-    // Khởi tạo query cơ bản
-    $query = HoaDonSlotPayment::with(['hoaDon.phong', 'sinhVien']);
+    // =========================
+    // KHỞI TẠO BASE QUERY CHUNG
+    // =========================
+    $baseQuery = HoaDonSlotPayment::with(['hoaDon.phong', 'sinhVien']);
 
-    // -----------------------
     // Lọc theo phòng
     if (!empty($phongId)) {
-        $query->whereHas('hoaDon', function ($q) use ($phongId) {
+        $baseQuery->whereHas('hoaDon', function ($q) use ($phongId) {
             $q->where('phong_id', $phongId);
         });
     }
 
     // Lọc theo mã sinh viên
     if (!empty($maSV)) {
-        $query->whereHas('sinhVien', function ($q) use ($maSV) {
+        $baseQuery->whereHas('sinhVien', function ($q) use ($maSV) {
             $q->where('ma_sinh_vien', 'LIKE', "%{$maSV}%");
         });
     }
 
     // Lọc theo họ tên sinh viên
     if (!empty($hoTen)) {
-        $query->whereHas('sinhVien', function ($q) use ($hoTen) {
+        $baseQuery->whereHas('sinhVien', function ($q) use ($hoTen) {
             $q->where('ho_ten', 'LIKE', "%{$hoTen}%");
         });
     }
 
-    // Lọc theo trạng thái
-    if ($status && $status !== 'all') {
-        if ($status === 'da_thanh_toan') {
-            $query->where('da_thanh_toan', 1);
-        } elseif ($status === 'chua_thanh_toan') {
-            $query->where('da_thanh_toan', 0);
-        }
-    }
-
-    // -----------------------
     // Lọc search tổng hợp: tên sinh viên, mã sinh viên, phòng
     if (!empty($search)) {
-    $query->where(function($q) use ($search) {
-        $q->whereHas('sinhVien', function($q2) use ($search) {
-            $q2->where('ma_sinh_vien', 'like', "%{$search}%")
-               ->orWhere('ho_ten', 'like', "%{$search}%");
-        })
-        ->orWhereHas('hoaDon.phong', function($q2) use ($search) {
-            $q2->where('ten_phong', 'like', "%{$search}%");
+        $baseQuery->where(function($q) use ($search) {
+            $q->whereHas('sinhVien', function($q2) use ($search) {
+                $q2->where('ma_sinh_vien', 'like', "%{$search}%")
+                   ->orWhere('ho_ten', 'like', "%{$search}%");
+            })
+            ->orWhereHas('hoaDon.phong', function($q2) use ($search) {
+                $q2->where('ten_phong', 'like', "%{$search}%");
+            });
         });
-    });
-}
+    }
 
+    // =========================
+    // TÁCH 2 QUERY RIÊNG & PAGINATE
+    // =========================
 
-    // Lấy kết quả cuối cùng
-    $results = $query->orderByDesc('id')->get();
+    // ĐÃ THANH TOÁN
+    $daQuery = clone $baseQuery;
+    $daQuery->where('da_thanh_toan', 1);
 
-    // Tách ra 2 danh sách để hiển thị trong view
-    $daThanhToan   = $results->where('da_thanh_toan', 1)->values();
-    $chuaThanhToan = $results->where('da_thanh_toan', 0)->values();
+    // Nếu muốn status lọc chỉ còn nhóm này trên BE thì cũng có thể dùng:
+    if ($status === 'chua_thanh_toan') {
+        // user chọn "Chưa thanh toán" => cho danh sách đã thanh toán rỗng
+        $daThanhToan = (new \Illuminate\Pagination\LengthAwarePaginator(
+            [], 0, 20, request()->query('page_da', 1), ['path' => url()->current(), 'pageName' => 'page_da']
+        ));
+    } else {
+        $daThanhToan = $daQuery
+            ->orderByDesc('id')
+            ->paginate(20, ['*'], 'page_da');
+    }
+
+    // CHƯA THANH TOÁN
+    $chuaQuery = clone $baseQuery;
+    $chuaQuery->where('da_thanh_toan', 0);
+
+    if ($status === 'da_thanh_toan') {
+        // user chọn "Đã thanh toán" => cho danh sách chưa thanh toán rỗng
+        $chuaThanhToan = (new \Illuminate\Pagination\LengthAwarePaginator(
+            [], 0, 20, request()->query('page_chua', 1), ['path' => url()->current(), 'pageName' => 'page_chua']
+        ));
+    } else {
+        $chuaThanhToan = $chuaQuery
+            ->orderByDesc('id')
+            ->paginate(20, ['*'], 'page_chua');
+    }
 
     // Truyền dữ liệu ra view
     return view('thongbao_hoadonslot.index', compact(
@@ -499,7 +517,5 @@ public function thongBaoHoaDonSlot(Request $request)
         'chuaThanhToan'
     ));
 }
-
-
 
 }

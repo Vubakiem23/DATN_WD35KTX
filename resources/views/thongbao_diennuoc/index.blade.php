@@ -10,17 +10,49 @@
     </div>
 
     {{-- Dropdown lọc phòng --}}
-     <form action="{{ route('hoadon_dien_nuoc.index') }}" method="GET" class="d-flex align-items-center gap-2 mb-2">
-            <label for="phong_id" class="mb-0">Lọc theo phòng:</label>
-            <select name="phong_id" id="phong_id" class="form-control" onchange="this.form.submit()">
+    <form method="GET" action="{{ route('hoadon_dien_nuoc.index') }}" class="filter-card mb-3">
+    <div class="row g-3 align-items-end">
+        {{-- Lọc theo khu --}}
+        <div class="col-md-3">
+            <label for="khu_id" class="form-label">Khu</label>
+            <select name="khu_id" id="khu_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Tất cả khu --</option>
+                @foreach ($khus as $khu)
+                    <option value="{{ $khu->id }}" {{ request('khu_id') == $khu->id ? 'selected' : '' }}>
+                        {{ $khu->ten_khu ?? $khu->ten }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Lọc theo phòng --}}
+        <div class="col-md-3">
+            <label for="phong_id" class="form-label">Phòng</label>
+            <select name="phong_id" id="phong_id" class="form-select" onchange="this.form.submit()">
                 <option value="">-- Tất cả phòng --</option>
                 @foreach($phongs as $phong)
-                    <option value="{{ $phong->id }}" @if(request('phong_id') == $phong->id) selected @endif>
+                    <option value="{{ $phong->id }}" {{ request('phong_id') == $phong->id ? 'selected' : '' }}>
                         {{ $phong->ten_phong ?? $phong->ten }}
                     </option>
                 @endforeach
             </select>
-        </form>
+        </div>
+
+        {{-- Nhóm nút --}}
+        <div class="col-md-6 d-flex gap-2 justify-content-end">
+            <button type="submit" class="btn-dergin btn-dergin--info">
+                <i class="fa fa-search"></i> Lọc
+            </button>
+
+            @if (request('khu_id') || request('phong_id'))
+                <a href="{{ route('hoadon_dien_nuoc.index') }}" class="btn-dergin btn-dergin--muted">
+                    <i class="fa fa-times"></i> Xóa lọc
+                </a>
+            @endif
+        </div>
+    </div>
+</form>
+
 
     {{-- Bảng tổng quan --}}
     <div class="room-table-wrapper table-responsive">
@@ -36,28 +68,37 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($data as $key => $row)
-                    <tr>
-                        <td class="fit text-center">{{ $key + 1 }}</td>
-                        <td>{{ $row->phong->ten_phong ?? $row->phong->ten }}</td>
-                        <td>{{ number_format($row->tong_tien) }}đ</td>
-                        <td class="text-success">{{ number_format($row->da_thanh_toan) }}</td>
-                        <td class="text-danger">{{ number_format($row->chua_thanh_toan) }}</td>
-                        <td class="fit text-center">
-                            <a href="{{ route('hoadon_dien_nuoc.detail', $row->phong->id) }}"
-                               class="btn btn-dergin btn-dergin--info btn-sm">
-                               Xem
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-3">Chưa có dữ liệu</td>
-                    </tr>
-                @endforelse
-            </tbody>
+    @forelse($data as $key => $row)
+        <tr>
+            {{-- Số thứ tự đúng theo trang: firstItem() + key --}}
+            <td class="fit text-center">{{ $data->firstItem() + $key }}</td>
+
+            <td>{{ $row->phong->ten_phong ?? $row->phong->ten }}</td>
+            <td>{{ number_format($row->tong_tien) }}đ</td>
+            <td class="text-success">{{ number_format($row->da_thanh_toan) }}</td>
+            <td class="text-danger">{{ number_format($row->chua_thanh_toan) }}</td>
+            <td class="fit text-center">
+                <a href="{{ route('hoadon_dien_nuoc.detail', $row->phong->id) }}"
+                   class="btn btn-dergin btn-dergin--info btn-sm">
+                   Xem
+                </a>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="6" class="text-center text-muted py-3">Chưa có dữ liệu</td>
+        </tr>
+    @endforelse
+</tbody>
+
         </table>
     </div>
+     @if($data->hasPages())
+        <div class="mt-3 d-flex justify-content-end">
+            {{-- appends() để giữ lại query phong_id khi chuyển trang --}}
+            {{ $data->appends(request()->query())->links() }}
+        </div>
+    @endif
 </div>
 
 @push('styles')
