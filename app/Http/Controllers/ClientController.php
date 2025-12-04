@@ -11,6 +11,7 @@ use App\Models\HoaDon;
 use App\Models\HoaDonSlotPayment;
 use App\Models\HoaDonUtilitiesPayment;
 use App\Models\LichBaoTri;
+use App\Models\HoaDonBaoTri;
 use App\Models\Slot;
 use App\Models\TaiSan;
 use App\Models\Violation;
@@ -66,12 +67,12 @@ class ClientController extends Controller
         $pendingRoomAssignment = RoomAssignment::where('sinh_vien_id', $sinhVien->id)
             ->where('trang_thai', RoomAssignment::STATUS_PENDING_CONFIRMATION)
             ->whereNull('end_date')
-            ->with(['phong' => function($q) {
+            ->with(['phong' => function ($q) {
                 $q->with('khu');
             }])
             ->latest('start_date')
             ->first();
-        
+
         // QUAN TRỌNG: Chỉ hiển thị alert nếu chưa thanh toán
         // Kiểm tra xem có slotPayment đã thanh toán không
         if ($pendingRoomAssignment && $pendingRoomAssignment->phong) {
@@ -80,18 +81,18 @@ class ClientController extends Controller
                 ->where('thang', $currentMonth)
                 ->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
                 ->first();
-            
+
             if ($hoaDon) {
                 $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
                     ->where('sinh_vien_id', $sinhVien->id)
                     ->first();
-                
+
                 // Nếu đã thanh toán hoặc đang chờ xác nhận (đã submit), không hiển thị alert
                 if ($slotPayment && ($slotPayment->da_thanh_toan || $slotPayment->trang_thai === HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN)) {
                     $pendingRoomAssignment = null;
                 }
             }
-            
+
             // Nếu đã có phong_id (đã xác nhận và thanh toán), không hiển thị alert
             // Kiểm tra $pendingRoomAssignment không null trước khi truy cập phong_id
             if ($pendingRoomAssignment && $sinhVien->phong_id && $sinhVien->phong_id == $pendingRoomAssignment->phong_id) {
@@ -231,12 +232,12 @@ class ClientController extends Controller
                 ->whereNull('end_date')
                 ->latest('start_date')
                 ->first();
-            
+
             if ($pendingAssignment) {
                 return redirect()->route('client.dashboard')
                     ->with('warning', 'Bạn cần xác nhận và thanh toán tiền phòng để xem thông tin phòng. Vui lòng click vào nút "Xác nhận vào phòng" trên trang tổng quan.');
             }
-            
+
             return redirect()->route('client.dashboard')
                 ->with('warning', 'Bạn chưa được gán vào phòng. Vui lòng liên hệ ban quản lý.');
         }
@@ -439,19 +440,19 @@ class ClientController extends Controller
     }
     // Lịch sử tiền phòng
     public function lichSuTienPhong()
-{
-    $sinhVienId = Auth::id();
+    {
+        $sinhVienId = Auth::id();
 
-    // Lấy các khoản tiền phòng mà sinh viên này đã thanh toán
-    $hoaDons = HoaDonUtilitiesPayment::where('sinh_vien_id', $sinhVienId)
-        ->where('da_thanh_toan', true)
-        ->whereNull('tien_dien')   // loại bỏ điện
-        ->whereNull('tien_nuoc')   // loại bỏ nước
-        ->orderByDesc('ngay_thanh_toan')
-        ->get();
+        // Lấy các khoản tiền phòng mà sinh viên này đã thanh toán
+        $hoaDons = HoaDonUtilitiesPayment::where('sinh_vien_id', $sinhVienId)
+            ->where('da_thanh_toan', true)
+            ->whereNull('tien_dien')   // loại bỏ điện
+            ->whereNull('tien_nuoc')   // loại bỏ nước
+            ->orderByDesc('ngay_thanh_toan')
+            ->get();
 
-    return view('client.hoadon.lichsu_tienphong', compact('hoaDons'));
-}
+        return view('client.hoadon.lichsu_tienphong', compact('hoaDons'));
+    }
 
 
     // Lịch sử điện nước
@@ -463,13 +464,13 @@ class ClientController extends Controller
             ->where('da_thanh_toan', true)
             ->where(function ($query) {
                 $query->whereNotNull('tien_dien')
-                      ->orWhereNotNull('tien_nuoc');
+                    ->orWhereNotNull('tien_nuoc');
             })
             ->orderByDesc('ngay_thanh_toan')
             ->get();
 
         return view('client.hoadon.lichsu_diennuoc', compact('hoaDons'));
-        }
+    }
 
     /**
      * Thông tin cá nhân
@@ -629,65 +630,94 @@ class ClientController extends Controller
         return redirect()->route('client.dashboard')
             ->with('success', 'Đã xác nhận hồ sơ thành công. Bạn có thể sử dụng đầy đủ các chức năng dành cho sinh viên.');
     }
-public function baoHong(Request $request)
-{
-    // Validate input
-    $request->validate([
-        'tai_san_id' => 'required|exists:tai_san,id',
-        'mo_ta' => 'required|string',
-        'hinh_anh_truoc' => 'nullable|image|max:4096'
-    ]);
+    public function baoHong(Request $request)
+    {
+        // Validate input
+        $request->validate([
+            'tai_san_id' => 'required|exists:tai_san,id',
+            'mo_ta' => 'required|string',
+            'hinh_anh_truoc' => 'nullable|image|max:4096'
+        ]);
 
-    // Lấy sinh viên hiện tại
-    $sinhVien = $this->getSinhVien();
-    if (!$sinhVien) {
-        return back()->with('error', 'Không tìm thấy thông tin sinh viên.');
-    }
+        // Lấy sinh viên hiện tại
+        $sinhVien = $this->getSinhVien();
+        if (!$sinhVien) {
+            return back()->with('error', 'Không tìm thấy thông tin sinh viên.');
+        }
 
-    // Lấy phòng của sinh viên
-    $phongId = $sinhVien->phong_id ?? Slot::where('sinh_vien_id', $sinhVien->id)->value('phong_id');
-    if (!$phongId) {
-        return back()->with('error', 'Bạn chưa ở trong phòng nào.');
-    }
+        // Lấy phòng của sinh viên
+        $phongId = $sinhVien->phong_id ?? Slot::where('sinh_vien_id', $sinhVien->id)->value('phong_id');
+        if (!$phongId) {
+            return back()->with('error', 'Bạn chưa ở trong phòng nào.');
+        }
 
-    // Lấy tài sản
-    $taiSan = TaiSan::find($request->tai_san_id);
-    if (!$taiSan) {
-        return back()->with('error', 'Không tìm thấy tài sản.');
-    }
+        // Lấy tài sản
+        $taiSan = TaiSan::find($request->tai_san_id);
+        if (!$taiSan) {
+            return back()->with('error', 'Không tìm thấy tài sản.');
+        }
 
-    // Kiểm tra quyền truy cập: tài sản phải thuộc phòng của sinh viên
-    if ($taiSan->phong_id != $phongId) {
-        return back()->with('error', 'Tài sản này không thuộc phòng của bạn.');
-    }
+        // Kiểm tra quyền truy cập: tài sản phải thuộc phòng của sinh viên
+        if ($taiSan->phong_id != $phongId) {
+            return back()->with('error', 'Tài sản này không thuộc phòng của bạn.');
+        }
 
-    // Kiểm tra trạng thái tài sản
-    if (in_array($taiSan->tinh_trang_hien_tai, ['Đang bảo trì', 'Đã báo hỏng'])) {
-        return back()->with('error', 'Tài sản này đang trong quá trình xử lý. Vui lòng chờ hoàn thành trước khi báo hỏng mới.');
-    }
+        // Kiểm tra trạng thái tài sản
+        if (in_array($taiSan->tinh_trang_hien_tai, ['Đang bảo trì', 'Đã báo hỏng'])) {
+            return back()->with('error', 'Tài sản này đang trong quá trình xử lý. Vui lòng chờ hoàn thành trước khi báo hỏng mới.');
+        }
 
-    // Xử lý upload ảnh (giữ nguyên đường dẫn hiện tại)
-    $imagePath = null;
-    if ($request->hasFile('hinh_anh_truoc')) {
-        $file = $request->file('hinh_anh_truoc');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('uploads/lichbaotri'), $filename);
-        $imagePath = $filename;
-    }
+        // Xử lý upload ảnh (giữ nguyên đường dẫn hiện tại)
+        $imagePath = null;
+        if ($request->hasFile('hinh_anh_truoc')) {
+            $file = $request->file('hinh_anh_truoc');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/lichbaotri'), $filename);
+            $imagePath = $filename;
+        }
 
-    // Kiểm tra nếu có lịch "Từ chối tiếp nhận" gần nhất
-    $lichTuChoi = LichBaoTri::where('tai_san_id', $request->tai_san_id)
-        ->where('trang_thai', 'Từ chối tiếp nhận')
-        ->latest()
-        ->first();
+        // Kiểm tra nếu có lịch "Từ chối tiếp nhận" gần nhất
+        $lichTuChoi = LichBaoTri::where('tai_san_id', $request->tai_san_id)
+            ->where('trang_thai', 'Từ chối tiếp nhận')
+            ->latest()
+            ->first();
 
-    if ($lichTuChoi) {
-        // Cập nhật lại lịch từ chối thành "Đang lên lịch"
-        $lichTuChoi->update([
-            'trang_thai'      => 'Đang lên lịch',
+        if ($lichTuChoi) {
+            // Cập nhật lại lịch từ chối thành "Đang lên lịch"
+            $lichTuChoi->update([
+                'trang_thai'      => 'Đang lên lịch',
+                'mo_ta'           => $request->mo_ta,
+                'hinh_anh_truoc'  => $imagePath,
+                'ngay_bao_tri'    => now()->toDateString(),
+            ]);
+
+            // Cập nhật trạng thái tài sản
+            $taiSan->update([
+                'tinh_trang_hien_tai' => 'Đã báo hỏng'
+            ]);
+
+            return back()->with('success', 'Đã gửi lại báo hỏng thành công!');
+        }
+
+        // Kiểm tra các lịch đang xử lý thực sự (Đang lên lịch, Chờ bảo trì, Đang bảo trì)
+        $existingBaoTri = LichBaoTri::where('tai_san_id', $request->tai_san_id)
+            ->whereIn('trang_thai', ['Đang lên lịch', 'Chờ bảo trì', 'Đang bảo trì'])
+            ->exists();
+
+        if ($existingBaoTri) {
+            return back()->with('error', 'Tài sản này đang có bảo trì chưa hoàn thành. Vui lòng chờ hoàn thành bảo trì trước khi báo hỏng mới.');
+        }
+
+        // Nếu không có lịch từ chối hoặc lịch đang xử lý → tạo lịch mới
+        LichBaoTri::create([
+            'tai_san_id'      => $request->tai_san_id,
+            'kho_tai_san_id'  => $taiSan->kho_tai_san_id,
+            'location_type'   => 'phong',
+            'location_id'     => $phongId,
             'mo_ta'           => $request->mo_ta,
             'hinh_anh_truoc'  => $imagePath,
             'ngay_bao_tri'    => now()->toDateString(),
+            'trang_thai'      => 'Đang lên lịch'
         ]);
 
         // Cập nhật trạng thái tài sản
@@ -695,37 +725,8 @@ public function baoHong(Request $request)
             'tinh_trang_hien_tai' => 'Đã báo hỏng'
         ]);
 
-        return back()->with('success', 'Đã gửi lại báo hỏng thành công!');
+        return back()->with('success', 'Đã gửi báo hỏng thành công!');
     }
-
-    // Kiểm tra các lịch đang xử lý thực sự (Đang lên lịch, Chờ bảo trì, Đang bảo trì)
-    $existingBaoTri = LichBaoTri::where('tai_san_id', $request->tai_san_id)
-        ->whereIn('trang_thai', ['Đang lên lịch', 'Chờ bảo trì', 'Đang bảo trì'])
-        ->exists();
-
-    if ($existingBaoTri) {
-        return back()->with('error', 'Tài sản này đang có bảo trì chưa hoàn thành. Vui lòng chờ hoàn thành bảo trì trước khi báo hỏng mới.');
-    }
-
-    // Nếu không có lịch từ chối hoặc lịch đang xử lý → tạo lịch mới
-    LichBaoTri::create([
-        'tai_san_id'      => $request->tai_san_id,
-        'kho_tai_san_id'  => $taiSan->kho_tai_san_id,
-        'location_type'   => 'phong',
-        'location_id'     => $phongId,
-        'mo_ta'           => $request->mo_ta,
-        'hinh_anh_truoc'  => $imagePath,
-        'ngay_bao_tri'    => now()->toDateString(),
-        'trang_thai'      => 'Đang lên lịch'
-    ]);
-
-    // Cập nhật trạng thái tài sản
-    $taiSan->update([
-        'tinh_trang_hien_tai' => 'Đã báo hỏng'
-    ]);
-
-    return back()->with('success', 'Đã gửi báo hỏng thành công!');
-}
 
 
 
@@ -953,7 +954,7 @@ public function baoHong(Request $request)
         $assignment = RoomAssignment::where('sinh_vien_id', $sinhVien->id)
             ->where('trang_thai', RoomAssignment::STATUS_PENDING_CONFIRMATION)
             ->whereNull('end_date')
-            ->with(['phong' => function($q) {
+            ->with(['phong' => function ($q) {
                 $q->with('khu');
             }])
             ->latest('start_date')
@@ -991,7 +992,7 @@ public function baoHong(Request $request)
             $slot = \App\Models\Slot::where('phong_id', $assignment->phong_id)
                 ->where('sinh_vien_id', $sinhVien->id)
                 ->first();
-            
+
             $slotPayment = HoaDonSlotPayment::create([
                 'hoa_don_id' => $hoaDon->id,
                 'slot_id' => $slot ? $slot->id : null,
@@ -1065,12 +1066,12 @@ public function baoHong(Request $request)
             $slotPayment->hinh_thuc_thanh_toan = $request->hinh_thuc_thanh_toan;
             $slotPayment->client_ghi_chu = $request->ghi_chu ?? '';
             $slotPayment->client_requested_at = now();
-            
+
             if ($request->hasFile('anh_chuyen_khoan')) {
                 $storedPath = $request->file('anh_chuyen_khoan')->store('slot-payments', 'public');
                 $slotPayment->client_transfer_image_path = $storedPath;
             }
-            
+
             // Nếu thanh toán bằng tiền mặt, tự động xác nhận thanh toán ngay và gán vào phòng
             if ($request->hinh_thuc_thanh_toan === 'tien_mat') {
                 $slotPayment->da_thanh_toan = true;
@@ -1095,7 +1096,7 @@ public function baoHong(Request $request)
 
                 // KHÔNG gán vào phòng, giữ nguyên trạng thái assignment là PENDING_CONFIRMATION
                 // Chỉ khi admin xác nhận thanh toán trong PaymentConfirmationController thì mới gán vào phòng
-                
+
                 // Cập nhật hóa đơn (không cần kiểm tra tất cả slot đã thanh toán vì chưa thanh toán)
                 return redirect()->route('client.dashboard')
                     ->with('success', 'Đã gửi yêu cầu thanh toán chuyển khoản. Vui lòng chờ ban quản lý xác nhận. Sau khi được xác nhận, bạn sẽ được gán vào phòng.');
@@ -1113,7 +1114,7 @@ public function baoHong(Request $request)
                     $emptySlot = Slot::where('phong_id', $assignment->phong_id)
                         ->whereNull('sinh_vien_id')
                         ->first();
-                    
+
                     if ($emptySlot) {
                         $emptySlot->sinh_vien_id = $sinhVien->id;
                         $emptySlot->saveOrFail();
@@ -1134,7 +1135,7 @@ public function baoHong(Request $request)
                 // Cập nhật hóa đơn nếu tất cả slot đã thanh toán
                 $totalSlots = $hoaDon->slotPayments()->count();
                 $paidSlots = $hoaDon->slotPayments()->where('da_thanh_toan', true)->count();
-                
+
                 if ($paidSlots >= $totalSlots && $totalSlots > 0) {
                     $hoaDon->trang_thai = 'Đã thanh toán';
                     $hoaDon->da_thanh_toan = true;
@@ -1181,19 +1182,19 @@ public function baoHong(Request $request)
             ->where('thang', $currentMonth)
             ->where('invoice_type', HoaDon::LOAI_TIEN_PHONG)
             ->first();
-        
+
         if ($hoaDon) {
             $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
                 ->where('sinh_vien_id', $sinhVien->id)
                 ->first();
-            
+
             // Nếu đã thanh toán hoặc đang chờ xác nhận (đã submit), không cho phép từ chối
             if ($slotPayment && ($slotPayment->da_thanh_toan || $slotPayment->trang_thai === HoaDonSlotPayment::TRANG_THAI_CHO_XAC_NHAN)) {
                 return redirect()->route('client.dashboard')
                     ->with('error', 'Không thể từ chối phòng sau khi đã thanh toán hoặc đã xác nhận.');
             }
         }
-        
+
         // Nếu đã có phong_id (đã xác nhận và thanh toán), không cho phép từ chối
         if ($sinhVien->phong_id && $sinhVien->phong_id == $assignment->phong_id) {
             return redirect()->route('client.dashboard')
@@ -1224,10 +1225,10 @@ public function baoHong(Request $request)
                 $slotPayment = HoaDonSlotPayment::where('hoa_don_id', $hoaDon->id)
                     ->where('sinh_vien_id', $sinhVien->id)
                     ->first();
-                
+
                 if ($slotPayment) {
                     $slotPayment->delete();
-                    
+
                     // Cập nhật lại hóa đơn
                     $remainingPayments = $hoaDon->slotPayments()->count();
                     if ($remainingPayments > 0) {
@@ -1244,7 +1245,7 @@ public function baoHong(Request $request)
             $slot = Slot::where('phong_id', $assignment->phong_id)
                 ->where('sinh_vien_id', $sinhVien->id)
                 ->first();
-            
+
             if ($slot) {
                 $slot->sinh_vien_id = null;
                 $slot->saveOrFail();
@@ -1271,6 +1272,29 @@ public function baoHong(Request $request)
                 ->with('info', 'Đã từ chối phòng. Bạn sẽ chờ ban quản lý gán phòng khác.');
         });
     }
+    public function thanhToanBaoTri($id)
+{
+    $hoaDon = HoaDonBaoTri::with('lichBaoTri')->find($id);
 
+    if (!$hoaDon) {
+        return back()->with('error', 'Không tìm thấy hóa đơn bảo trì.');
+    }
+
+    // 🔥 Cập nhật hóa đơn theo đúng tên cột bạn đã dùng trong update()
+    $hoaDon->trang_thai_thanh_toan = 'Đã thanh toán';
+    $hoaDon->phuong_thuc_thanh_toan = 'Sinh viên tự thanh toán'; // hoặc null tùy bạn muốn để gì
+    $hoaDon->ghi_chu = null; // hoặc ghi chú gì đó nếu cần
+    $hoaDon->save();
+
+    // 🔥 Cập nhật lịch bảo trì về "Hoàn thành"
+    if ($hoaDon->lichBaoTri) {
+        $lich = $hoaDon->lichBaoTri;
+        $lich->trang_thai = 'Hoàn thành';
+        $lich->ngay_hoan_thanh = now();
+        $lich->save();
+    }
+
+    return back()->with('success', 'Thanh toán thành công!');
+}
 
 }

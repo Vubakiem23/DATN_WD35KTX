@@ -101,6 +101,12 @@
                                     <i class="fa fa-tags"></i> Loại tài sản
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('hoadonbaotri.index') }}"
+                                    class="{{ request()->routeIs('hoadonbaotri.*') ? 'active' : '' }}">
+                                    <i class="fa fa-tags"></i> Hóa đơn bảo trì
+                                </a>
+                            </li>
                         </ul>
                     </li>
 

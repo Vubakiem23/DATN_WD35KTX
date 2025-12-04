@@ -14,291 +14,403 @@
 </div>
 
 @if(!$sinhVien)
-    {{-- Chưa nộp hồ sơ --}}
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm text-center py-5">
-                <div class="card-body">
-                    <i class="fas fa-file-alt fa-4x text-info mb-3"></i>
-                    <h4 class="text-info">Bạn chưa nộp hồ sơ đăng ký ký túc xá</h4>
-                    <p class="text-muted">Vui lòng nộp hồ sơ để xem lịch bảo trì tài sản.</p>
-                </div>
+{{-- Chưa nộp hồ sơ --}}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm text-center py-5">
+            <div class="card-body">
+                <i class="fas fa-file-alt fa-4x text-info mb-3"></i>
+                <h4 class="text-info">Bạn chưa nộp hồ sơ đăng ký ký túc xá</h4>
+                <p class="text-muted">Vui lòng nộp hồ sơ để xem lịch bảo trì tài sản.</p>
             </div>
         </div>
     </div>
+</div>
 
 @elseif(!$phong)
-    {{-- Chưa có phòng --}}
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm text-center py-5">
-                <div class="card-body">
-                    <i class="fas fa-door-open fa-4x text-muted mb-3"></i>
-                    <h4 class="text-muted">Bạn chưa được phân phòng</h4>
-                    <p class="text-muted">Vui lòng liên hệ quản trị viên để được phân phòng.</p>
-                </div>
+{{-- Chưa có phòng --}}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm text-center py-5">
+            <div class="card-body">
+                <i class="fas fa-door-open fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Bạn chưa được phân phòng</h4>
+                <p class="text-muted">Vui lòng liên hệ quản trị viên để được phân phòng.</p>
             </div>
         </div>
     </div>
+</div>
 
 @else
-    {{-- Tab Navigation --}}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="fas fa-list me-2"></i>
-                        Danh sách bảo trì
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <ul class="nav nav-tabs" id="baotriTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ ($tab ?? 'dang-xu-ly') === 'dang-xu-ly' ? 'active' : '' }}" 
-                               href="{{ route('client.lichbaotri.index', ['tab' => 'dang-xu-ly']) }}">
-                                <i class="fas fa-clock me-2"></i>
-                                Đang xử lý
-                                @if(isset($dangXuLyCount) && $dangXuLyCount > 0)
-                                    <span class="badge bg-warning ms-2">{{ $dangXuLyCount }}</span>
-                                @elseif(isset($dangXuLy) && $dangXuLy && $dangXuLy->total() > 0)
-                                    <span class="badge bg-warning ms-2">{{ $dangXuLy->total() }}</span>
-                                @endif
-                            </a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link {{ ($tab ?? '') === 'da-hoan-thanh' ? 'active' : '' }}" 
-                               href="{{ route('client.lichbaotri.index', ['tab' => 'da-hoan-thanh']) }}">
-                                <i class="fas fa-check-circle me-2"></i>
-                                Đã hoàn thành
-                                @if(isset($daHoanThanhCount) && $daHoanThanhCount > 0)
-                                    <span class="badge bg-success ms-2">{{ $daHoanThanhCount }}</span>
-                                @elseif(isset($daHoanThanh) && $daHoanThanh && $daHoanThanh->total() > 0)
-                                    <span class="badge bg-success ms-2">{{ $daHoanThanh->total() }}</span>
-                                @endif
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+{{-- Tab Navigation --}}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-list me-2"></i>
+                    Danh sách bảo trì
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="baotriTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {{ ($tab ?? 'dang-xu-ly') === 'dang-xu-ly' ? 'active' : '' }}"
+                            href="{{ route('client.lichbaotri.index', ['tab' => 'dang-xu-ly']) }}">
+                            <i class="fas fa-clock me-2"></i>
+                            Đang xử lý
+                            @if(isset($dangXuLyCount) && $dangXuLyCount > 0)
+                            <span class="badge bg-warning ms-2">{{ $dangXuLyCount }}</span>
+                            @elseif(isset($dangXuLy) && $dangXuLy && $dangXuLy->total() > 0)
+                            <span class="badge bg-warning ms-2">{{ $dangXuLy->total() }}</span>
+                            @endif
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link {{ ($tab ?? '') === 'da-hoan-thanh' ? 'active' : '' }}"
+                            href="{{ route('client.lichbaotri.index', ['tab' => 'da-hoan-thanh']) }}">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Đã hoàn thành
+                            @if(isset($daHoanThanhCount) && $daHoanThanhCount > 0)
+                            <span class="badge bg-success ms-2">{{ $daHoanThanhCount }}</span>
+                            @elseif(isset($daHoanThanh) && $daHoanThanh && $daHoanThanh->total() > 0)
+                            <span class="badge bg-success ms-2">{{ $daHoanThanh->total() }}</span>
+                            @endif
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
+</div>
 
-    {{-- Content --}}
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body p-0">
-                    @if(($tab ?? 'dang-xu-ly') === 'da-hoan-thanh')
-                        {{-- Tab Đã hoàn thành --}}
-                        @if(isset($daHoanThanh) && $daHoanThanh && $daHoanThanh->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th class="fit text-center">ID</th>
-                                            <th class="fit text-center">Hình ảnh</th>
-                                            <th>Tài sản</th>
-                                            <th class="fit text-center col-ngay-bao-tri">Ngày bảo trì</th>
-                                            <th class="fit text-center col-ngay-hoan-thanh">Ngày hoàn thành</th>
-                                            <th class="col-mo-ta">Mô tả</th>
-                                            <th class="fit">Trạng thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($daHoanThanh as $lich)
-                                            <tr>
-                                                <td class="text-center">{{ $lich->id }}</td>
-                                                <td class="text-center">
-                                                    @if($lich->hinh_anh && file_exists(public_path('uploads/lichbaotri/'.$lich->hinh_anh)))
-                                                        <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh) }}"
-                                                            alt="Ảnh sau bảo trì"
-                                                            title="Click để xem ảnh lớn hơn"
-                                                            style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;cursor:pointer;transition:transform 0.2s;"
-                                                            onmouseover="this.style.transform='scale(1.1)'"
-                                                            onmouseout="this.style.transform='scale(1)'"
-                                                            onclick="showImageModal('{{ asset('uploads/lichbaotri/'.$lich->hinh_anh) }}', 'Ảnh sau bảo trì')">
-                                                    @else
-                                                        <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
-                                                            style="width:70px;height:70px;">
-                                                            <i class="fas fa-image text-muted"></i>
-                                                        </div>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if($lich->taiSan)
-                                                        <strong>{{ $lich->taiSan->ten_tai_san ?? 'N/A' }}</strong>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-barcode me-1"></i>
-                                                            Mã: {{ $lich->taiSan->khoTaiSan->ma_tai_san ?? 'N/A' }}
-                                                        </small>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-door-open me-1"></i>
-                                                            {{ $lich->taiSan->phong->ten_phong ?? 'N/A' }}
-                                                        </small>
-                                                    @elseif($lich->khoTaiSan)
-                                                        <strong>{{ $lich->khoTaiSan->ten_tai_san ?? 'N/A' }}</strong>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-barcode me-1"></i>
-                                                            Mã: {{ $lich->khoTaiSan->ma_tai_san ?? 'N/A' }}
-                                                        </small>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-warehouse me-1"></i>
-                                                            Kho tài sản
-                                                        </small>
-                                                    @else
-                                                        <span class="text-muted">N/A</span>
-                                                    @endif
-                                                </td>
-                                                <td class="text-center col-ngay-bao-tri" style="white-space: nowrap;">
-                                                    {{ $lich->ngay_bao_tri ? \Carbon\Carbon::parse($lich->ngay_bao_tri)->format('d/m/Y') : '-' }}
-                                                </td>
-                                                <td class="text-center col-ngay-hoan-thanh" style="white-space: nowrap;">
-                                                    {{ $lich->ngay_hoan_thanh ? \Carbon\Carbon::parse($lich->ngay_hoan_thanh)->format('d/m/Y') : '-' }}
-                                                </td>
-                                                <td class="col-mo-ta" style="max-width:300px;">
-                                                    {{ Str::limit($lich->mo_ta ?? 'Không có mô tả', 100) }}
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-success">
-                                                        <i class="fas fa-check me-1"></i>
-                                                        {{ $lich->trang_thai }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="card-footer">
-                                <div class="d-flex justify-content-center">
-                                    {{ $daHoanThanh->links() }}
-                                </div>
-                            </div>
-                        @else
-                            <div class="text-center py-5 text-muted">
-                                <i class="fas fa-check-circle fa-4x mb-3 text-success"></i>
-                                <h5>Chưa có bảo trì nào đã hoàn thành</h5>
-                                <p>Lịch sử bảo trì đã hoàn thành sẽ hiển thị tại đây.</p>
-                            </div>
-                        @endif
-                    @else
-                        {{-- Tab Đang xử lý --}}
-                        @if(isset($dangXuLy) && $dangXuLy && $dangXuLy->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th class="fit text-center">ID</th>
-                                            <th class="fit text-center">Hình ảnh</th>
-                                            <th>Tài sản</th>
-                                            <th class="fit text-center col-ngay-bao-tri">Ngày bảo trì</th>
-                                            <th class="col-mo-ta">Mô tả</th>
-                                            <th class="fit">Trạng thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($dangXuLy as $lich)
-                                            <tr>
-                                                <td class="text-center">{{ $lich->id }}</td>
-                                                <td class="text-center">
-                                                    @if($lich->hinh_anh_truoc && file_exists(public_path('uploads/lichbaotri/'.$lich->hinh_anh_truoc)))
-                                                        <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh_truoc) }}"
-                                                            alt="Ảnh trước bảo trì"
-                                                            title="Click để xem ảnh lớn hơn"
-                                                            style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;cursor:pointer;transition:transform 0.2s;"
-                                                            onmouseover="this.style.transform='scale(1.1)'"
-                                                            onmouseout="this.style.transform='scale(1)'"
-                                                            onclick="showImageModal('{{ asset('uploads/lichbaotri/'.$lich->hinh_anh_truoc) }}', 'Ảnh trước bảo trì')">
-                                                    @else
-                                                        <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
-                                                            style="width:70px;height:70px;">
-                                                            <i class="fas fa-image text-muted"></i>
-                                                        </div>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if($lich->taiSan)
-                                                        <strong>{{ $lich->taiSan->ten_tai_san ?? 'N/A' }}</strong>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-barcode me-1"></i>
-                                                            Mã: {{ $lich->taiSan->khoTaiSan->ma_tai_san ?? 'N/A' }}
-                                                        </small>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-door-open me-1"></i>
-                                                            {{ $lich->taiSan->phong->ten_phong ?? 'N/A' }}
-                                                        </small>
-                                                    @elseif($lich->khoTaiSan)
-                                                        <strong>{{ $lich->khoTaiSan->ten_tai_san ?? 'N/A' }}</strong>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-barcode me-1"></i>
-                                                            Mã: {{ $lich->khoTaiSan->ma_tai_san ?? 'N/A' }}
-                                                        </small>
-                                                        <br>
-                                                        <small class="text-muted">
-                                                            <i class="fas fa-warehouse me-1"></i>
-                                                            Kho tài sản
-                                                        </small>
-                                                    @else
-                                                        <span class="text-muted">N/A</span>
-                                                    @endif
-                                                </td>
-                                                <td class="text-center col-ngay-bao-tri" style="white-space: nowrap;">
-                                                    {{ $lich->ngay_bao_tri ? \Carbon\Carbon::parse($lich->ngay_bao_tri)->format('d/m/Y') : '-' }}
-                                                </td>
-                                                <td class="col-mo-ta" style="max-width:300px;">
-                                                    {{ Str::limit($lich->mo_ta ?? 'Không có mô tả', 100) }}
-                                                </td>
-                                                <td>
-                                                    @php
-                                                        $badgeClass = 'bg-secondary';
-                                                        $icon = 'fa-clock';
-                                                        if($lich->trang_thai == 'Đang lên lịch') {
-                                                            $badgeClass = 'bg-info';
-                                                            $icon = 'fa-hourglass-half';
-                                                        } elseif($lich->trang_thai == 'Chờ bảo trì') {
-                                                            $badgeClass = 'bg-warning';
-                                                            $icon = 'fa-clock';
-                                                        } elseif($lich->trang_thai == 'Đang bảo trì') {
-                                                            $badgeClass = 'bg-primary';
-                                                            $icon = 'fa-tools';
-                                                        }
-                                                    @endphp
-                                                    <span class="badge {{ $badgeClass }}">
-                                                        <i class="fas {{ $icon }} me-1"></i>
-                                                        {{ $lich->trang_thai }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="card-footer">
-                                <div class="d-flex justify-content-center">
-                                    {{ $dangXuLy->links() }}
-                                </div>
-                            </div>
-                        @else
-                            <div class="text-center py-5 text-muted">
-                                <i class="fas fa-inbox fa-4x mb-3 text-muted"></i>
-                                <h5>Không có bảo trì nào đang xử lý</h5>
-                                <p>Tất cả tài sản trong phòng của bạn đang hoạt động bình thường.</p>
-                            </div>
-                        @endif
-                    @endif
+{{-- Content --}}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                @if(($tab ?? 'dang-xu-ly') === 'da-hoan-thanh')
+                {{-- Tab Đã hoàn thành --}}
+                @if(isset($daHoanThanh) && $daHoanThanh && $daHoanThanh->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="fit text-center">ID</th>
+                                <th class="fit text-center">Hình ảnh</th>
+                                <th>Tài sản</th>
+                                <th class="fit text-center col-ngay-bao-tri">Ngày bảo trì</th>
+                                <th class="fit text-center col-ngay-hoan-thanh">Ngày hoàn thành</th>
+                                <th class="col-mo-ta">Mô tả</th>
+                                <th class="fit">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($daHoanThanh as $lich)
+                            <tr>
+                                <td class="text-center">{{ $lich->id }}</td>
+                                <td class="text-center">
+                                    @if($lich->hinh_anh && file_exists(public_path('uploads/lichbaotri/'.$lich->hinh_anh)))
+                                    <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh) }}"
+                                        alt="Ảnh sau bảo trì"
+                                        title="Click để xem ảnh lớn hơn"
+                                        style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;cursor:pointer;transition:transform 0.2s;"
+                                        onmouseover="this.style.transform='scale(1.1)'"
+                                        onmouseout="this.style.transform='scale(1)'"
+                                        onclick="showImageModal('{{ asset('uploads/lichbaotri/'.$lich->hinh_anh) }}', 'Ảnh sau bảo trì')">
+                                    @else
+                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
+                                        style="width:70px;height:70px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($lich->taiSan)
+                                    <strong>{{ $lich->taiSan->ten_tai_san ?? 'N/A' }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-barcode me-1"></i>
+                                        Mã: {{ $lich->taiSan->khoTaiSan->ma_tai_san ?? 'N/A' }}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-door-open me-1"></i>
+                                        {{ $lich->taiSan->phong->ten_phong ?? 'N/A' }}
+                                    </small>
+                                    @elseif($lich->khoTaiSan)
+                                    <strong>{{ $lich->khoTaiSan->ten_tai_san ?? 'N/A' }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-barcode me-1"></i>
+                                        Mã: {{ $lich->khoTaiSan->ma_tai_san ?? 'N/A' }}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-warehouse me-1"></i>
+                                        Kho tài sản
+                                    </small>
+                                    @else
+                                    <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td class="text-center col-ngay-bao-tri" style="white-space: nowrap;">
+                                    {{ $lich->ngay_bao_tri ? \Carbon\Carbon::parse($lich->ngay_bao_tri)->format('d/m/Y') : '-' }}
+                                </td>
+                                <td class="text-center col-ngay-hoan-thanh" style="white-space: nowrap;">
+                                    {{ $lich->ngay_hoan_thanh ? \Carbon\Carbon::parse($lich->ngay_hoan_thanh)->format('d/m/Y') : '-' }}
+                                </td>
+                                <td class="col-mo-ta" style="max-width:300px;">
+                                    {{ Str::limit($lich->mo_ta ?? 'Không có mô tả', 100) }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>
+                                        {{ $lich->trang_thai }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-center">
+                        {{ $daHoanThanh->links() }}
+                    </div>
+                </div>
+                @else
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-check-circle fa-4x mb-3 text-success"></i>
+                    <h5>Chưa có bảo trì nào đã hoàn thành</h5>
+                    <p>Lịch sử bảo trì đã hoàn thành sẽ hiển thị tại đây.</p>
+                </div>
+                @endif
+                @else
+                {{-- Tab Đang xử lý --}}
+                @if(isset($dangXuLy) && $dangXuLy && $dangXuLy->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="fit text-center">ID</th>
+                                <th class="fit text-center">Hình ảnh</th>
+                                <th>Tài sản</th>
+                                <th class="fit text-center col-ngay-bao-tri">Ngày bảo trì</th>
+                                <th class="col-mo-ta">Mô tả</th>
+                                <th class="fit">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($dangXuLy as $lich)
+                            <tr>
+                                <td class="text-center">{{ $lich->id }}</td>
+                                <td class="text-center">
+                                    @if($lich->hinh_anh_truoc && file_exists(public_path('uploads/lichbaotri/'.$lich->hinh_anh_truoc)))
+                                    <img src="{{ asset('uploads/lichbaotri/'.$lich->hinh_anh_truoc) }}"
+                                        alt="Ảnh trước bảo trì"
+                                        title="Click để xem ảnh lớn hơn"
+                                        style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid #ddd;cursor:pointer;transition:transform 0.2s;"
+                                        onmouseover="this.style.transform='scale(1.1)'"
+                                        onmouseout="this.style.transform='scale(1)'"
+                                        onclick="showImageModal('{{ asset('uploads/lichbaotri/'.$lich->hinh_anh_truoc) }}', 'Ảnh trước bảo trì')">
+                                    @else
+                                    <div class="bg-light text-muted d-flex align-items-center justify-content-center border rounded"
+                                        style="width:70px;height:70px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($lich->taiSan)
+                                    <strong>{{ $lich->taiSan->ten_tai_san ?? 'N/A' }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-barcode me-1"></i>
+                                        Mã: {{ $lich->taiSan->khoTaiSan->ma_tai_san ?? 'N/A' }}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-door-open me-1"></i>
+                                        {{ $lich->taiSan->phong->ten_phong ?? 'N/A' }}
+                                    </small>
+                                    @elseif($lich->khoTaiSan)
+                                    <strong>{{ $lich->khoTaiSan->ten_tai_san ?? 'N/A' }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-barcode me-1"></i>
+                                        Mã: {{ $lich->khoTaiSan->ma_tai_san ?? 'N/A' }}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-warehouse me-1"></i>
+                                        Kho tài sản
+                                    </small>
+                                    @else
+                                    <span class="text-muted">N/A</span>
+                                    @endif
+                                </td>
+                                <td class="text-center col-ngay-bao-tri" style="white-space: nowrap;">
+                                    {{ $lich->ngay_bao_tri ? \Carbon\Carbon::parse($lich->ngay_bao_tri)->format('d/m/Y') : '-' }}
+                                </td>
+                                <td class="col-mo-ta" style="max-width:300px;">
+                                    {{ Str::limit($lich->mo_ta ?? 'Không có mô tả', 100) }}
+                                </td>
+                                <td>
+                                    @php
+                                    $badgeClass = 'bg-secondary';
+                                    $icon = 'fa-clock';
+
+                                    if ($lich->trang_thai == 'Đang lên lịch') {
+                                    $badgeClass = 'bg-info';
+                                    $icon = 'fa-hourglass-half';
+                                    } elseif ($lich->trang_thai == 'Chờ bảo trì') {
+                                    $badgeClass = 'bg-warning';
+                                    $icon = 'fa-clock';
+                                    } elseif ($lich->trang_thai == 'Đang bảo trì') {
+                                    $badgeClass = 'bg-primary';
+                                    $icon = 'fa-tools';
+                                    } elseif ($lich->trang_thai == 'Chờ thanh toán') {
+                                    $badgeClass = 'bg-danger';
+                                    $icon = 'fa-money-bill';
+                                    }
+                                    @endphp
+
+                                    <span class="badge {{ $badgeClass }}">
+                                        <i class="fas {{ $icon }} me-1"></i>
+                                        {{ $lich->trang_thai }}
+                                    </span>
+
+                                    @if($lich->trang_thai == 'Chờ thanh toán' && $lich->hoaDonBaoTri)
+                                    <button class="btn btn-sm btn-success"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#paymentModal"
+                                        data-route="{{ route('client.hoadon.baotri.thanhtoan', $lich->hoaDonBaoTri->id) }}"
+                                        data-amount="{{ $lich->hoaDonBaoTri->chi_phi }}"
+                                        data-phuongthuc="{{ $lich->hoaDonBaoTri->phuong_thuc ?? '' }}">
+                                        <i class="fas fa-credit-card me-1"></i> Thanh toán
+                                    </button>
+                                    @endif
+
+                                </td>
+
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-center">
+                        {{ $dangXuLy->links() }}
+                    </div>
+                </div>
+                @else
+                <div class="text-center py-5 text-muted">
+                    <i class="fas fa-inbox fa-4x mb-3 text-muted"></i>
+                    <h5>Không có bảo trì nào đang xử lý</h5>
+                    <p>Tất cả tài sản trong phòng của bạn đang hoạt động bình thường.</p>
+                </div>
+                @endif
+                @endif
             </div>
         </div>
     </div>
+</div>
 @endif
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content">
+            <form id="paymentForm" method="POST">
+                @csrf
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="paymentModalLabel">💳 Cập nhật thanh toán hóa đơn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <strong>Số tiền:</strong>
+                        <span id="paymentAmount" class="text-danger fs-5">0 VND</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="paymentMethod" class="form-label">Phương thức thanh toán</label>
+                        <select name="phuong_thuc_thanh_toan" id="paymentMethod" class="form-select" required>
+                            <option value="">-- Chọn hình thức --</option>
+                            <option value="Tiền mặt">💵 Tiền mặt</option>
+                            <option value="Chuyển khoản">🏦 Chuyển khoản</option>
+                        </select>
+                    </div>
+
+                    <div id="bankInfo"
+                        style="display: none; margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h6 class="mb-3">Thông tin chuyển khoản:</h6>
+                        <div class="row">
+                            <div class="col-md-7">
+                                <p class="mb-2"><strong>Tên tài khoản:</strong> Nguyễn Quang Thắng</p>
+                                <p class="mb-2"><strong>Số tài khoản:</strong> T1209666</p>
+                                <p class="mb-0"><strong>Ngân hàng:</strong> Techcombank - Chi nhánh Hà Nội</p>
+                            </div>
+                            <div class="col-md-5 text-center">
+                                <img src="{{ asset('images/ma1qr.jpg') }}" alt="QR chuyển khoản"
+                                    class="img-fluid rounded border" style="max-width: 120px;">
+                                <p class="mt-2 text-muted" style="font-size: 0.85rem;">Quét mã để chuyển khoản</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        <label for="ghi_chu" class="form-label">Ghi chú thanh toán</label>
+                        <textarea name="ghi_chu" id="ghi_chu" class="form-control" rows="3"
+                            placeholder="Nhập ghi chú thanh toán" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success" id="confirmPaymentBtn">
+                        <i class="fa fa-check"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentModal = document.getElementById('paymentModal');
+        const paymentForm = document.getElementById('paymentForm');
+        const paymentAmount = document.getElementById('paymentAmount');
+        const paymentMethod = document.getElementById('paymentMethod');
+        const bankInfo = document.getElementById('bankInfo');
+        const ghiChu = document.getElementById('ghi_chu');
+
+        // Hiển thị bank info khi chọn chuyển khoản
+        paymentMethod.addEventListener('change', function() {
+            bankInfo.style.display = this.value === 'Chuyển khoản' ? 'block' : 'none';
+        });
+
+        // Khi mở modal
+        paymentModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const route = button.getAttribute('data-route');
+            const amount = button.getAttribute('data-amount');
+            const phuongThuc = button.getAttribute('data-phuongthuc');
+
+            // Gán đúng route action
+            paymentForm.action = route;
+
+            // Hiển thị số tiền
+            paymentAmount.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
+
+            // Chọn phương thức thanh toán
+            paymentMethod.value = phuongThuc ?? '';
+            bankInfo.style.display = phuongThuc === 'Chuyển khoản' ? 'block' : 'none';
+
+            // Xóa ghi chú
+            ghiChu.value = '';
+        });
+    });
+</script>
 
 @push('styles')
 <style>
@@ -425,24 +537,24 @@
         padding-left: 15px !important;
         padding-right: 15px !important;
     }
-    
+
     /* Tạo khoảng cách giữa cột ngày bảo trì và ngày hoàn thành */
     .table td.col-ngay-bao-tri {
         padding-right: 30px !important;
     }
-    
+
     /* Tạo khoảng cách giữa cột ngày hoàn thành và mô tả */
     .table td.col-ngay-hoan-thanh {
         padding-right: 50px !important;
     }
-    
+
     /* Tạo khoảng cách cho cột mô tả */
     .table th.col-mo-ta,
     .table td.col-mo-ta {
         padding-left: 50px !important;
         padding-right: 20px !important;
     }
-    
+
     /* Đảm bảo cột Tài sản có padding phù hợp */
     .table tbody td:nth-child(3) {
         padding-right: 30px !important;
@@ -602,4 +714,3 @@
 </script>
 @endpush
 @endsection
-
