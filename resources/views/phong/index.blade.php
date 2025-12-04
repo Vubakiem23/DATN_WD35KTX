@@ -34,7 +34,10 @@
                     <p class="text-muted mb-0">Theo dõi và tổ chức các khu theo giới tính và số lượng phòng.</p>
                     </div>
         @php
-            $khuList = $phongs->groupBy(function($p){ return optional($p->khu)->ten_khu ?? 'Không xác định'; });
+            // Nhóm phòng theo tên khu và sắp xếp key theo bảng chữ cái (A, B, C, ...)
+            $khuList = $phongs
+                ->groupBy(function($p){ return optional($p->khu)->ten_khu ?? 'Không xác định'; })
+                ->sortKeys();
             $firstKhu = $khuList->keys()->first() ?? '';
         @endphp
 

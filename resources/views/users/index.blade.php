@@ -269,10 +269,8 @@
             box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
         }
     </style>
-    @endpush
 
     <h4 class="page-title">
-        <i class="fa fa-users"></i>
         Danh sách người dùng
     </h4>
     <p class="page-subtitle">Quản lý và theo dõi tất cả người dùng trong hệ thống</p>
