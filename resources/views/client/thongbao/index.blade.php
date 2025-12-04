@@ -100,11 +100,11 @@
                 </a>
             @endforeach
         </div>
-        @if($SuCo->count() > $limit)
+        <!-- @if($SuCo->count() > $limit)
             <div class="text-center mt-2">
                 <button class="btn btn-outline-primary load-more-btn" data-type="suco" data-offset="{{ $limit }}">Xem thêm</button>
             </div>
-        @endif
+        @endif -->
 
         {{-- ================= HÓA ĐƠN PHÒNG ================= --}}
         <h4 class="mb-2 mt-4">💰 Hóa đơn phòng</h4>

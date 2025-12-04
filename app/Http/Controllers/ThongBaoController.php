@@ -12,7 +12,8 @@ use App\Models\MucDo;
 use App\Models\ThongBaoSinhVien;
 use App\Models\ThongBaoSuCo;
 use App\Models\ThongBaoPhongSv;
-use APP\Models\SuCo;
+use App\Models\SuCo;
+use App\Models\NotificationRead;
 use App\Models\SinhVien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -22,30 +23,33 @@ class ThongBaoController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth', 'admin'])->except(['clientIndex', 'clientShow', 'publicIndex', 'publicShow']);
+        $this->middleware(['auth', 'admin'])->except([
+            'clientIndex', 'clientShow', 'publicIndex', 'publicShow'
+        ]);
     }
 
+    // =========================
+    // ADMIN: Quản lý thông báo
+    // =========================
 
-    /**
-     * Hiển thị danh sách thông báo
-     */
     public function index(Request $request)
     {
-        $query = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs.khu'])->orderBy('id', 'desc');
+        $query = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs.khu'])
+            ->orderBy('id', 'desc');
 
-        // Tìm kiếm text chung
+        // Tìm kiếm
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
-                $q->whereHas('tieuDe', fn($relationQuery) => $relationQuery->where('ten_tieu_de', 'like', "%$search%"))
-                    ->orWhere('noi_dung', 'like', "%$search%")
-                    ->orWhere('doi_tuong', 'like', "%$search%")
-                    ->orWhereHas('mucDo', fn($relationQuery) => $relationQuery->where('ten_muc_do', 'like', "%$search%"))
-                    ->orWhereHas('khus', fn($relationQuery) => $relationQuery->where('ten_khu', 'like', "%$search%"))
-                    ->orWhereHas('phongs', fn($relationQuery) => $relationQuery->where('ten_phong', 'like', "%$search%"));
+                $q->whereHas('tieuDe', fn($rel) => $rel->where('ten_tieu_de', 'like', "%$search%"))
+                  ->orWhere('noi_dung', 'like', "%$search%")
+                  ->orWhere('doi_tuong', 'like', "%$search%")
+                  ->orWhereHas('mucDo', fn($rel) => $rel->where('ten_muc_do', 'like', "%$search%"))
+                  ->orWhereHas('khus', fn($rel) => $rel->where('ten_khu', 'like', "%$search%"))
+                  ->orWhereHas('phongs', fn($rel) => $rel->where('ten_phong', 'like', "%$search%"));
             });
         }
 
-        // Bộ lọc modal
+        // Bộ lọc
         if ($request->filled('doi_tuong')) {
             $query->where('doi_tuong', $request->doi_tuong);
         }
@@ -66,15 +70,9 @@ class ThongBaoController extends Controller
         }
 
         $thongbaos = $query->paginate(10)->appends($request->query());
-
         return view('thongbao.index', compact('thongbaos'));
     }
 
-
-
-    /**
-     * Form thêm thông báo
-     */
     public function create()
     {
         $phongs = Phong::with('khu')->get();
@@ -85,9 +83,6 @@ class ThongBaoController extends Controller
         return view('thongbao.create', compact('phongs', 'khus', 'tieuDes', 'mucDos'));
     }
 
-    /**
-     * Lưu thông báo mới
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -114,44 +109,25 @@ class ThongBaoController extends Controller
             $data['file'] = $request->file('file')->store('thongbao/file', 'public');
         }
 
-        //  Gắn người viết (user đang đăng nhập)
+        // Gắn người viết
         $data['user_id'] = auth()->id();
 
         // Lưu thông báo
-        $thongBao = ThongBao::create([
-            'tieu_de_id' => $data['tieu_de_id'],
-            'muc_do_id' => $data['muc_do_id'] ?? null,
-            'noi_dung' => $data['noi_dung'],
-            'ngay_dang' => $data['ngay_dang'],
-            'doi_tuong' => $data['doi_tuong'],
-            'anh' => $data['anh'] ?? null,
-            'file' => $data['file'] ?? null,
-            'user_id' => auth()->id(),
-        ]);
+        $thongBao = ThongBao::create($data);
 
         // Lưu quan hệ N-N
-        if (!empty($data['khu_id'])) {
-            $thongBao->khus()->sync($data['khu_id']);
-        }
-        if (!empty($data['phong_id'])) {
-            $thongBao->phongs()->sync($data['phong_id']);
-        }
+        if (!empty($data['khu_id'])) $thongBao->khus()->sync($data['khu_id']);
+        if (!empty($data['phong_id'])) $thongBao->phongs()->sync($data['phong_id']);
 
         return redirect()->route('thongbao.index')->with('success', 'Thêm thông báo thành công!');
     }
 
-    /**
-     * Xem chi tiết thông báo
-     */
     public function show(ThongBao $thongbao)
     {
         $thongbao->load(['tieuDe', 'mucDo', 'khus', 'phongs.khu']);
         return view('thongbao.show', compact('thongbao'));
     }
 
-    /**
-     * Form sửa thông báo
-     */
     public function edit(ThongBao $thongbao)
     {
         $phongs = Phong::with('khu')->get();
@@ -163,19 +139,10 @@ class ThongBaoController extends Controller
         $selectedPhongs = $thongbao->phongs->pluck('id')->toArray();
 
         return view('thongbao.edit', compact(
-            'thongbao',
-            'phongs',
-            'khus',
-            'tieuDes',
-            'mucDos',
-            'selectedKhus',
-            'selectedPhongs'
+            'thongbao', 'phongs', 'khus', 'tieuDes', 'mucDos', 'selectedKhus', 'selectedPhongs'
         ));
     }
 
-    /**
-     * Cập nhật thông báo
-     */
     public function update(Request $request, ThongBao $thongbao)
     {
         $data = $request->validate([
@@ -190,8 +157,8 @@ class ThongBaoController extends Controller
             'khu_id.*' => 'exists:khu,id',
             'phong_id' => 'nullable|array',
             'phong_id.*' => 'exists:phong,id',
-
         ]);
+
         $data['user_id'] = auth()->id();
 
         // Xử lý ảnh
@@ -202,7 +169,7 @@ class ThongBaoController extends Controller
             $data['anh'] = $request->file('anh')->store('thongbao/anh', 'public');
         }
 
-        // Xử lý file PDF/Word/Excel
+        // Xử lý file
         if ($request->hasFile('file')) {
             if ($thongbao->file && Storage::disk('public')->exists($thongbao->file)) {
                 Storage::disk('public')->delete($thongbao->file);
@@ -210,16 +177,7 @@ class ThongBaoController extends Controller
             $data['file'] = $request->file('file')->store('thongbao/file', 'public');
         }
 
-        $thongbao->update([
-            'tieu_de_id' => $data['tieu_de_id'],
-            'muc_do_id' => $data['muc_do_id'] ?? null,
-            'noi_dung' => $data['noi_dung'],
-            'ngay_dang' => $data['ngay_dang'],
-            'doi_tuong' => $data['doi_tuong'],
-            'anh' => $data['anh'] ?? $thongbao->anh,
-            'file' => $data['file'] ?? $thongbao->file,
-            'user_id' => auth()->id(),
-        ]);
+        $thongbao->update($data);
 
         // Cập nhật N-N
         $thongbao->khus()->sync($data['khu_id'] ?? []);
@@ -228,43 +186,28 @@ class ThongBaoController extends Controller
         return redirect()->route('thongbao.index')->with('success', 'Cập nhật thông báo thành công!');
     }
 
-    /**
-     * Xóa thông báo
-     */
     public function destroy(ThongBao $thongbao)
     {
         if ($thongbao->anh && Storage::disk('public')->exists($thongbao->anh)) {
             Storage::disk('public')->delete($thongbao->anh);
         }
-
         if ($thongbao->file && Storage::disk('public')->exists($thongbao->file)) {
             Storage::disk('public')->delete($thongbao->file);
         }
 
         $thongbao->delete();
-
         return redirect()->route('thongbao.index')->with('success', 'Xóa thông báo thành công!');
     }
-
 
     // =========================
     // CLIENT: Danh sách thông báo
     // =========================
+
     public function clientIndex()
     {
         $user = Auth::user();
-        $sinhVien = null;
+        $sinhVien = $user->sinhVien ?? SinhVien::where('email', $user->email)->first();
 
-        // Lấy thông tin sinh viên
-        if ($user) {
-            if ($user->sinhVien) {
-                $sinhVien = $user->sinhVien;
-            } else {
-                $sinhVien = SinhVien::where('email', $user->email)->first();
-            }
-        }
-
-        // Thông báo riêng của sinh viên (nếu có)
         $thongBaoSinhVien = collect([]);
         $thongBaoSuCo = collect([]);
         $thongBaoPhongSv = collect([]);
@@ -274,53 +217,70 @@ class ThongBaoController extends Controller
 
         if ($sinhVien) {
             $thongBaoSinhVien = ThongBaoSinhVien::where('sinh_vien_id', $sinhVien->id)
-                ->orderBy('created_at', 'desc')
-                ->paginate(4);
+                ->orderBy('created_at', 'desc')->paginate(4);
 
-            $thongBaoSuCo = ThongBaoSuCo::whereHas('su_co', function ($query) use ($sinhVien) {
-                $query->where('sinh_vien_id', $sinhVien->id);
-            })
-                ->with('su_co.phong')
-                ->orderBy('ngay_tao', 'desc')
-                ->paginate(4);
+            $thongBaoSuCo = ThongBaoSuCo::whereHas('su_co', fn($q) => $q->where('sinh_vien_id', $sinhVien->id))
+                ->with('su_co.phong')->orderBy('ngay_tao', 'desc')->paginate(4);
 
             $thongBaoPhongSv = ThongBaoPhongSv::where('sinh_vien_id', $sinhVien->id)
-                ->with('phong')
-                ->orderBy('created_at', 'desc')
-                ->paginate(4);
+                ->with('phong')->orderBy('created_at', 'desc')->paginate(4);
 
-            $SuCo = SuCo::whereHas('sinhVien', function ($query) use ($sinhVien) {
-                $query->where('id', $sinhVien->id);
-            })
-                ->with('phong')
-                ->orderBy('created_at', 'desc')
-                ->paginate(4);
+            $SuCo = SuCo::whereHas('sinhVien', fn($q) => $q->where('id', $sinhVien->id))
+                ->with('phong')->orderBy('created_at', 'desc')->paginate(4);
 
-            $HoaDonSlotPayment = HoaDonSlotPayment::whereHas('sinhVien', function ($query) use ($sinhVien) {
-                $query->where('id', $sinhVien->id);
-            })
-                ->with('slot.phong')
-                ->orderBy('created_at', 'desc')
-                ->paginate(4);
+            $HoaDonSlotPayment = HoaDonSlotPayment::whereHas('sinhVien', fn($q) => $q->where('id', $sinhVien->id))
+                ->with('slot.phong')->orderBy('created_at', 'desc')->paginate(4);
 
-            $HoaDonUtilitiesPayment = HoaDonUtilitiesPayment::whereHas('sinhVien', function ($query) use ($sinhVien) {
-                $query->where('id', $sinhVien->id);
-            })
-                ->with('slot.phong')
-                ->orderBy('created_at', 'desc')
-                ->paginate(4);
+            $HoaDonUtilitiesPayment = HoaDonUtilitiesPayment::whereHas('sinhVien', fn($q) => $q->where('id', $sinhVien->id))
+                ->with('slot.phong')->orderBy('created_at', 'desc')->paginate(4);
         }
 
-        return view('client.thongbao.index', compact('thongBaoSinhVien', 'thongBaoSuCo', 'thongBaoPhongSv', 'sinhVien', 'SuCo', 'HoaDonSlotPayment', 'HoaDonUtilitiesPayment'));
+        // Đánh dấu đã đọc tất cả thông báo
+        $userId = Auth::id();
+        foreach (ThongBao::all() as $tb) {
+            NotificationRead::firstOrCreate(
+                ['user_id' => $userId, 'type' => 'thongbao', 'type_id' => $tb->id],
+                ['read_at' => now()]
+            );
+        }
+
+        foreach ($SuCo as $item) {
+            NotificationRead::firstOrCreate(
+                ['user_id' => $userId, 'type' => 'suco', 'type_id' => $item->id],
+                ['read_at' => now()]
+            );
+        }
+
+        foreach ($HoaDonSlotPayment as $item) {
+            NotificationRead::firstOrCreate(
+                ['user_id' => $userId, 'type' => 'slot', 'type_id' => $item->id],
+                ['read_at' => now()]
+            );
+        }
+
+        foreach ($HoaDonUtilitiesPayment as $item) {
+            NotificationRead::firstOrCreate(
+                ['user_id' => $userId, 'type' => 'utilities', 'type_id' => $item->id],
+                ['read_at' => now()]
+            );
+        }
+
+        $unread = NotificationRead::where('user_id', $userId)
+            ->whereNull('read_at')->count();
+
+        return view('client.thongbao.index', compact(
+            'thongBaoSinhVien', 'thongBaoSuCo', 'thongBaoPhongSv',
+            'sinhVien', 'SuCo', 'HoaDonSlotPayment', 'HoaDonUtilitiesPayment', 'unread'
+        ));
     }
 
     // =========================
     // CLIENT: Chi tiết thông báo
     // =========================
+
     public function clientShow($id)
     {
-        $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
-            ->findOrFail($id);
+        $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])->findOrFail($id);
 
         $thongBaoMoi = ThongBao::with('tieuDe')
             ->where('id', '!=', $thongbao->id)
@@ -332,24 +292,20 @@ class ThongBaoController extends Controller
     }
 
     // =========================
-    // PUBLIC: Danh sách thông báo chung
+    // PUBLIC: Danh sách & chi tiết thông báo
     // =========================
+
     public function publicIndex()
     {
         $thongbaos = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
-            ->orderBy('ngay_dang', 'desc')
-            ->paginate(10);
+            ->orderBy('ngay_dang', 'desc')->paginate(10);
 
         return view('public.thongbao.index', compact('thongbaos'));
     }
 
-    // =========================
-    // PUBLIC: Chi tiết thông báo chung
-    // =========================
     public function publicShow($id)
     {
-        $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])
-            ->findOrFail($id);
+        $thongbao = ThongBao::with(['tieuDe', 'mucDo', 'khus', 'phongs'])->findOrFail($id);
 
         $thongBaoMoi = ThongBao::with('tieuDe')
             ->where('id', '!=', $thongbao->id)
@@ -359,8 +315,12 @@ class ThongBaoController extends Controller
 
         return view('public.thongbao.show', compact('thongbao', 'thongBaoMoi'));
     }
-    // Route AJAX: client/thongbao/load-more
-public function loadMoreNotifications(Request $request)
+
+    // =========================
+    // AJAX: Load More Notifications
+    // =========================
+
+    public function loadMoreNotifications(Request $request)
     {
         $user = Auth::user();
         if (!$user) return response()->json([], 401);
@@ -368,13 +328,14 @@ public function loadMoreNotifications(Request $request)
         $sinhVien = $user->sinhVien ?? SinhVien::where('email', $user->email)->first();
         if (!$sinhVien) return response()->json([], 404);
 
-        $type = $request->input('type'); 
-        $offset = (int) $request->input('offset', 0);
+        $type = $request->input('type');
+        $offset = (int)$request->input('offset', 0);
         $limit = 4;
 
         switch ($type) {
             case 'sinhvien':
-                $query = ThongBaoSinhVien::where('sinh_vien_id', $sinhVien->id)->orderBy('created_at', 'desc');
+                $query = ThongBaoSinhVien::where('sinh_vien_id', $sinhVien->id)
+                    ->orderBy('created_at', 'desc');
                 break;
             case 'suco':
                 $query = ThongBaoSuCo::whereHas('su_co', fn($q) => $q->where('sinh_vien_id', $sinhVien->id))
@@ -383,43 +344,21 @@ public function loadMoreNotifications(Request $request)
                 break;
             case 'phong':
                 $query = ThongBaoPhongSv::where('sinh_vien_id', $sinhVien->id)
-                    ->with('phong')
-                    ->orderBy('created_at', 'desc');
+                    ->with('phong')->orderBy('created_at', 'desc');
                 break;
             case 'slot':
                 $query = HoaDonSlotPayment::whereHas('sinhVien', fn($q) => $q->where('id', $sinhVien->id))
-                    ->with('slot.phong')
-                    ->orderBy('created_at', 'desc');
+                    ->with('slot.phong')->orderBy('created_at', 'desc');
                 break;
             case 'utilities':
                 $query = HoaDonUtilitiesPayment::whereHas('sinhVien', fn($q) => $q->where('id', $sinhVien->id))
-                    ->with('slot.phong')
-                    ->orderBy('created_at', 'desc');
+                    ->with('slot.phong')->orderBy('created_at', 'desc');
                 break;
             default:
                 return response()->json([]);
         }
 
         $notifications = $query->skip($offset)->take($limit)->get();
-
         return response()->json($notifications);
     }
-    public function loadMore(Request $request)
-{
-    $type = $request->query('type');
-    $offset = (int) $request->query('offset', 0);
-    $limit = 4;
-
-    $data = match($type) {
-        'sinhvien' => ThongBao::where('loai', 'sinhvien')->orderByDesc('created_at')->skip($offset)->take($limit)->get(),
-        'suco' => SuCo::orderByDesc('ngay_gui')->skip($offset)->take($limit)->get(),
-        'slot' => HoaDonSlotPayment::orderByDesc('created_at')->skip($offset)->take($limit)->get(),
-        'utilities' => HoaDonUtilitiesPayment::orderByDesc('created_at')->skip($offset)->take($limit)->get(),
-        default => collect(),
-    };
-
-    return response()->json($data);
-}
-
-
 }
