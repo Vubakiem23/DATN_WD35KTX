@@ -177,7 +177,7 @@
                   style="background-color: {{ $isFullyPaid ? '#d4edda' : '#fff3cd' }}; color: {{ $isFullyPaid ? '#2e7d32' : '#d32f2f' }};">
                   <i class="fa {{ $isFullyPaid ? 'fa-check-circle me-2' : 'fa-clock me-2' }}"></i>
                   @if($tongSoSlot > 0)
-                    {{ $soSlotDaThanhToan }}/{{ $tongSoSlot }} slots đã thanh toán
+                    {{ $soSlotDaThanhToan }}/{{ $hoaDon->slot_billing_count  }} slots đã thanh toán
                   @else
                     {{ $isFullyPaid ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                   @endif
