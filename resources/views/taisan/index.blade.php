@@ -6,7 +6,7 @@
 <div class="container mt-4">
 
 
-  <h3 class="asset-page__title mb-0">Quản lý tài sản phòng</h3>
+  <h3 class="asset-page__title mb-0"><i class="fa fa-cubes me-2"></i> Quản lý tài sản phòng</h3>
   <p class="text-muted mb-0">Theo dõi và tổ chức tài sản trong các phòng.</p>
   <div class="mb-4">
     <a href="{{ route('taisan.create') }}" class="btn btn-dergin btn-dergin--info">
@@ -404,9 +404,16 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
-  .filter-card label {
+  .filter-card .form-label {
+    display: block;
     font-weight: 600;
     color: #333;
+    font-size: .9rem;
+    line-height: 1.3;
+    height: auto;
+    margin-bottom: .35rem;
+    overflow: visible;
+    white-space: normal;
   }
 
   .filter-btns .btn {

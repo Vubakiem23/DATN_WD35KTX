@@ -3,7 +3,7 @@
     <div class="container mt-4">
 
         <div>
-            <h3 class="room-page__title mb-1">Danh sách sinh viên</h3>
+            <h3 class="room-page__title mb-1"><i class="fa fa-users me-2"></i> Danh sách sinh viên</h3>
             <p class="text-muted mb-0">Theo dõi hồ sơ sinh viên và trạng thái duyệt</p>
         </div>
         <div class="d-flex gap-2 mb-3">
@@ -27,6 +27,42 @@
                 @endif
             </div>
         </form>
+
+        {{-- Tabs giới tính giống trang Khu – đặt dưới ô tìm kiếm --}}
+        @php
+            $genderStats = $genderStats ?? ['all' => 0, 'male' => 0, 'female' => 0, 'other' => 0];
+            $currentGender = $currentGender ?? 'all';
+            $tabBaseParams = request()->except(['page', 'gender']);
+        @endphp
+
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ $currentGender === 'all' ? 'active' : '' }}"
+                   href="{{ route('sinhvien.index', $tabBaseParams) }}">
+                    Tất cả <span class="badge rounded-pill ms-1">{{ $genderStats['all'] ?? 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ $currentGender === 'Nam' || $currentGender === 'male' ? 'active' : '' }}"
+                   href="{{ route('sinhvien.index', array_merge($tabBaseParams, ['gender' => 'Nam'])) }}">
+                    Nam <span class="badge rounded-pill ms-1">{{ $genderStats['male'] ?? 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link {{ $currentGender === 'Nữ' || $currentGender === 'female' ? 'active' : '' }}"
+                   href="{{ route('sinhvien.index', array_merge($tabBaseParams, ['gender' => 'Nữ'])) }}">
+                    Nữ <span class="badge rounded-pill ms-1">{{ $genderStats['female'] ?? 0 }}</span>
+                </a>
+            </li>
+            @if(($genderStats['other'] ?? 0) > 0)
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link {{ $currentGender === 'other' ? 'active' : '' }}"
+                       href="{{ route('sinhvien.index', array_merge($tabBaseParams, ['gender' => 'other'])) }}">
+                        Khác <span class="badge rounded-pill ms-1">{{ $genderStats['other'] ?? 0 }}</span>
+                    </a>
+                </li>
+            @endif
+        </ul>
 
         @push('styles')
             <style>

@@ -30,10 +30,9 @@ class SinhVienController extends Controller
         $month      = $request->input('month');          // Lọc theo tháng
         $year       = $request->input('year');           // Lọc theo năm
 
-        // Query base để tính thống kê (áp dụng tất cả filter trừ pagination)
+        // Query base để tính thống kê theo bộ lọc chung (chưa áp dụng giới tính)
         $baseQuery = SinhVien::query()
             ->search($q)
-            ->gender($gender)
             ->hoSoStatus($status)
             ->inRoom($roomId)
             ->inKhu($khu)
@@ -49,19 +48,28 @@ class SinhVienController extends Controller
             $baseQuery->whereYear('created_at', $year);
         }
 
-        // Tính thống kê
-        $tongHoSo = (clone $baseQuery)->count();
-        $daDuyet = (clone $baseQuery)->where('trang_thai_ho_so', SinhVien::STATUS_APPROVED)->count();
-        $choDuyet = (clone $baseQuery)->where('trang_thai_ho_so', SinhVien::STATUS_PENDING_APPROVAL)->count();
-        $choXacNhan = (clone $baseQuery)->where('trang_thai_ho_so', SinhVien::STATUS_PENDING_CONFIRMATION)->count();
+        // Áp dụng filter giới tính cho danh sách hiện tại
+        $filteredQuery = (clone $baseQuery)->gender($gender);
+
+        // Thống kê trạng thái hồ sơ theo bộ lọc hiện tại (bao gồm giới tính)
+        $tongHoSo = (clone $filteredQuery)->count();
+        $daDuyet = (clone $filteredQuery)->where('trang_thai_ho_so', SinhVien::STATUS_APPROVED)->count();
+        $choDuyet = (clone $filteredQuery)->where('trang_thai_ho_so', SinhVien::STATUS_PENDING_APPROVAL)->count();
+        $choXacNhan = (clone $filteredQuery)->where('trang_thai_ho_so', SinhVien::STATUS_PENDING_CONFIRMATION)->count();
         $chuaDuyet = $tongHoSo - $daDuyet; // Tổng - đã duyệt (bao gồm cả chờ duyệt, chờ xác nhận và null)
 
         // Query để lấy danh sách (có pagination)
-        $sinhviens = (clone $baseQuery)
+        $sinhviens = (clone $filteredQuery)
             ->with(['phong', 'slot.phong'])
             ->orderBy('id', 'desc')
             ->paginate(13)
             ->appends($request->query());
+
+        // Thống kê theo giới tính (Tất cả/Nam/Nữ/Khác) dùng cho tab, chỉ áp dụng filter chung, không áp dụng giới tính
+        $genderAll   = (clone $baseQuery)->count();
+        $genderMale  = (clone $baseQuery)->where('gioi_tinh', 'Nam')->count();
+        $genderFemale = (clone $baseQuery)->where('gioi_tinh', 'Nữ')->count();
+        $genderOther = (clone $baseQuery)->whereNotIn('gioi_tinh', ['Nam', 'Nữ'])->count();
 
         // dữ liệu cho dropdown
         $phongs = \App\Models\Phong::select('id', 'ten_phong')->orderBy('ten_phong')->get();
@@ -77,6 +85,13 @@ class SinhVienController extends Controller
             'choDuyet'  => $choDuyet,
             'choXacNhan' => $choXacNhan,
             'chuaDuyet' => $chuaDuyet,
+            'currentGender' => $gender ?: 'all',
+            'genderStats' => [
+                'all'   => $genderAll,
+                'male'  => $genderMale,
+                'female'=> $genderFemale,
+                'other' => $genderOther,
+            ],
         ]);
     }
 

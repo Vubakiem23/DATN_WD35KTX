@@ -3,7 +3,7 @@
 @section('title', 'Danh sách người dùng')
 
 @section('content')
-<div class="container mt-4">
+<div class="container mt-2">
 
     @push('styles')
     <style>
@@ -11,10 +11,10 @@
             font-size: 1.5rem;
             font-weight: 700;
             color: #1f2937;
-         display: flex;
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
+            gap: 0.15rem;
+            margin-bottom: 0.15rem;
         }
 
         .page-title i {
@@ -24,7 +24,7 @@
         .page-subtitle {
             color: #6b7280;
             font-size: 0.9rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0;
         }
 
         .btn-dergin {
@@ -175,11 +175,16 @@
             box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
         }
 
-        .filter-card label {
+        .filter-card .form-label {
+            display: block;
             font-weight: 600;
             color: #374151;
             font-size: 0.9rem;
+            line-height: 1.3;
+            height: auto;
             margin-bottom: 0.5rem;
+            overflow: visible;
+            white-space: normal;
         }
 
         .form-control {
@@ -272,6 +277,12 @@
     </h4>
     <p class="page-subtitle">Quản lý và theo dõi tất cả người dùng trong hệ thống</p>
 
+    <div class="d-flex gap-2 mb-3">
+        <a href="{{ route('users.create') }}" class="btn btn-dergin btn-dergin--info">
+            <i class="fa fa-plus"></i><span> Thêm người dùng</span>
+        </a>
+    </div>
+
     {{-- 🔔 Thông báo --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
@@ -297,12 +308,6 @@
             @endif
         </div>
     </form>
-
-    <div class="d-flex gap-2 mb-3">
-        <a href="{{ route('users.create') }}" class="btn btn-dergin btn-dergin--success">
-            <i class="fa fa-plus"></i> Thêm người dùng
-        </a>
-    </div>
 
     {{-- 🧾 Bảng danh sách --}}
     <div class="user-table-wrapper">

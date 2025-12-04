@@ -4,7 +4,7 @@
     <div class="container mt-4">
 
         <div>
-            <h3 class="room-page__title mb-1">Vi phạm sinh viên</h3>
+            <h3 class="room-page__title mb-1"><i class="fa fa-exclamation-triangle me-2"></i> Vi phạm sinh viên</h3>
             <p class="text-muted mb-0">Ghi nhận, lọc và xử lý các vi phạm</p>
         </div>
         <div class="d-flex gap-2 mb-3">

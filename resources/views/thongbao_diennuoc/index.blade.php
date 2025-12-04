@@ -40,13 +40,13 @@
 
         {{-- Nhóm nút --}}
         <div class="col-md-6 d-flex gap-2 justify-content-end">
-            <button type="submit" class="btn-dergin btn-dergin--info">
-                <i class="fa fa-search"></i> Lọc
+            <button type="submit" class="btn btn-outline-primary d-inline-flex align-items-center px-4">
+                <i class="fa fa-filter me-1"></i> Lọc
             </button>
 
             @if (request('khu_id') || request('phong_id'))
-                <a href="{{ route('hoadon_dien_nuoc.index') }}" class="btn-dergin btn-dergin--muted">
-                    <i class="fa fa-times"></i> Xóa lọc
+                <a href="{{ route('hoadon_dien_nuoc.index') }}" class="btn btn-outline-secondary d-inline-flex align-items-center px-4">
+                    <i class="fa fa-times me-1"></i> Xóa lọc
                 </a>
             @endif
         </div>

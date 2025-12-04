@@ -9,7 +9,7 @@
 <div class="container py-4">
 
   <div>
-    <h3 class="page-title mb-0">Quản lý điện · nước</h3>
+    <h3 class="page-title mb-0"><i class="fa fa-bolt me-2"></i> Quản lý điện · nước</h3>
     <p class="text-muted mb-0">Theo dõi chỉ số, đơn giá và chi phí điện nước cho từng phòng.</p>
   </div>
   <div class="row text-center mb-4">
@@ -72,6 +72,34 @@
         font-size: 1.5rem;
         font-weight: 700;
         color: #1f2937
+      }
+
+      /* Thanh công cụ phía trên bảng (Chọn tệp + các nút) */
+      .admin-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .admin-toolbar form {
+        margin: 0;
+      }
+
+      .admin-toolbar input[type="file"] {
+        max-width: 260px;
+      }
+
+      @media (max-width: 768px) {
+        .admin-toolbar {
+          align-items: stretch;
+        }
+
+        .admin-toolbar input[type="file"] {
+          max-width: 100%;
+        }
       }
     </style>
 

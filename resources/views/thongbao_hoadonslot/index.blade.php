@@ -47,25 +47,25 @@
 
     </div>
 
-    {{-- Nhóm nút xuất file --}}
+    {{-- Nhóm nút xuất file (style giống ban kế toán) --}}
     <div class="d-flex gap-2 flex-wrap mt-3">
 
         {{-- Xuất tất cả --}}
         <a href="{{ route('hoadonslot.export.all') }}"
-           class="btn btn-dergin btn-dergin--primary">
-            📥 Xuất tất cả
+           class="btn btn-dergin btn-dergin--info">
+            <i class="fa fa-file-excel-o"></i><span>Xuất tất cả</span>
         </a>
 
         {{-- Xuất đã thanh toán --}}
         <a href="{{ route('hoadonslot.export.paid') }}"
-           class="btn btn-dergin btn-dergin--info">
-            📗 Xuất đã thanh toán
+           class="btn btn-dergin btn-dergin--success">
+            <i class="fa fa-check"></i><span>Xuất đã thanh toán</span>
         </a>
 
         {{-- Xuất chưa thanh toán --}}
         <a href="{{ route('hoadonslot.export.unpaid') }}"
            class="btn btn-dergin btn-dergin--danger">
-            📕 Xuất chưa thanh toán
+            <i class="fa fa-times"></i><span>Xuất chưa thanh toán</span>
         </a>
     </div>
 
