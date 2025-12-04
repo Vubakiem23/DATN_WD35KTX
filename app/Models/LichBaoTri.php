@@ -40,4 +40,9 @@ class LichBaoTri extends Model
     {
         return $this->belongsTo(KhoTaiSan::class);
     }
+    public function hoaDonBaoTri()
+{
+    return $this->hasOne(HoaDonBaoTri::class, 'lich_bao_tri_id');
+}
+
 }
