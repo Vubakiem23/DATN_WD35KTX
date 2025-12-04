@@ -84,43 +84,55 @@ class ThongBaoController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'tieu_de_id' => 'required|exists:tieu_de,id',
-            'muc_do_id' => 'nullable|exists:muc_do,id',
-            'noi_dung' => 'required|string',
-            'ngay_dang' => 'required|date',
-            'doi_tuong' => 'required|string|max:255',
-            'anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'file' => 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:10240',
-            'khu_id' => 'nullable|array',
-            'khu_id.*' => 'exists:khu,id',
-            'phong_id' => 'nullable|array',
-            'phong_id.*' => 'exists:phong,id',
-        ]);
+{
+    $data = $request->validate([
+        'tieu_de_id' => 'required|exists:tieu_de,id',
+        'muc_do_id'  => 'nullable|exists:muc_do,id',
+        'noi_dung'   => 'required|string',
+        'ngay_dang'  => 'required|date',
+        'doi_tuong'  => 'required|string|max:255',
+        'anh'        => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        'file'       => 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:10240',
+        'khu_id'     => 'nullable|array',
+        'khu_id.*'   => 'exists:khu,id',
+        'phong_id'   => 'nullable|array',
+        'phong_id.*' => 'exists:phong,id',
+    ]);
 
-        // Upload ảnh
-        if ($request->hasFile('anh')) {
-            $data['anh'] = $request->file('anh')->store('thongbao/anh', 'public');
-        }
+    // Tách riêng ra trước
+    $khuIds   = $data['khu_id']   ?? [];
+    $phongIds = $data['phong_id'] ?? [];
 
-        // Upload file PDF/Word/Excel
-        if ($request->hasFile('file')) {
-            $data['file'] = $request->file('file')->store('thongbao/file', 'public');
-        }
+    // Không cho chạy vào create()
+    unset($data['khu_id'], $data['phong_id']);
 
-        // Gắn người viết
-        $data['user_id'] = auth()->id();
-
-        // Lưu thông báo
-        $thongBao = ThongBao::create($data);
-
-        // Lưu quan hệ N-N
-        if (!empty($data['khu_id'])) $thongBao->khus()->sync($data['khu_id']);
-        if (!empty($data['phong_id'])) $thongBao->phongs()->sync($data['phong_id']);
-
-        return redirect()->route('thongbao.index')->with('success', 'Thêm thông báo thành công!');
+    // Upload ảnh
+    if ($request->hasFile('anh')) {
+        $data['anh'] = $request->file('anh')->store('thongbao/anh', 'public');
     }
+
+    // Upload file PDF/Word/Excel
+    if ($request->hasFile('file')) {
+        $data['file'] = $request->file('file')->store('thongbao/file', 'public');
+    }
+
+    // Gắn người viết
+    $data['user_id'] = auth()->id();
+
+    // Lưu thông báo
+    $thongBao = ThongBao::create($data);
+
+    // Lưu quan hệ N-N
+    if (!empty($khuIds)) {
+        $thongBao->khus()->sync($khuIds);
+    }
+    if (!empty($phongIds)) {
+        $thongBao->phongs()->sync($phongIds);
+    }
+
+    return redirect()->route('thongbao.index')->with('success', 'Thêm thông báo thành công!');
+}
+
 
     public function show(ThongBao $thongbao)
     {
@@ -144,47 +156,53 @@ class ThongBaoController extends Controller
     }
 
     public function update(Request $request, ThongBao $thongbao)
-    {
-        $data = $request->validate([
-            'tieu_de_id' => 'required|exists:tieu_de,id',
-            'muc_do_id' => 'nullable|exists:muc_do,id',
-            'noi_dung' => 'required|string',
-            'ngay_dang' => 'required|date',
-            'doi_tuong' => 'required|string|max:255',
-            'anh' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'file' => 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:10240',
-            'khu_id' => 'nullable|array',
-            'khu_id.*' => 'exists:khu,id',
-            'phong_id' => 'nullable|array',
-            'phong_id.*' => 'exists:phong,id',
-        ]);
+{
+    $data = $request->validate([
+        'tieu_de_id' => 'required|exists:tieu_de,id',
+        'muc_do_id'  => 'nullable|exists:muc_do,id',
+        'noi_dung'   => 'required|string',
+        'ngay_dang'  => 'required|date',
+        'doi_tuong'  => 'required|string|max:255',
+        'anh'        => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        'file'       => 'nullable|mimes:pdf,doc,docx,xls,xlsx|max:10240',
+        'khu_id'     => 'nullable|array',
+        'khu_id.*'   => 'exists:khu,id',
+        'phong_id'   => 'nullable|array',
+        'phong_id.*' => 'exists:phong,id',
+    ]);
 
-        $data['user_id'] = auth()->id();
+    $khuIds   = $data['khu_id']   ?? [];
+    $phongIds = $data['phong_id'] ?? [];
 
-        // Xử lý ảnh
-        if ($request->hasFile('anh')) {
-            if ($thongbao->anh && Storage::disk('public')->exists($thongbao->anh)) {
-                Storage::disk('public')->delete($thongbao->anh);
-            }
-            $data['anh'] = $request->file('anh')->store('thongbao/anh', 'public');
+    unset($data['khu_id'], $data['phong_id']);
+
+    $data['user_id'] = auth()->id();
+
+    // Xử lý ảnh
+    if ($request->hasFile('anh')) {
+        if ($thongbao->anh && Storage::disk('public')->exists($thongbao->anh)) {
+            Storage::disk('public')->delete($thongbao->anh);
         }
-
-        // Xử lý file
-        if ($request->hasFile('file')) {
-            if ($thongbao->file && Storage::disk('public')->exists($thongbao->file)) {
-                Storage::disk('public')->delete($thongbao->file);
-            }
-            $data['file'] = $request->file('file')->store('thongbao/file', 'public');
-        }
-
-        $thongbao->update($data);
-
-        // Cập nhật N-N
-        $thongbao->khus()->sync($data['khu_id'] ?? []);
-        $thongbao->phongs()->sync($data['phong_id'] ?? []);
-
-        return redirect()->route('thongbao.index')->with('success', 'Cập nhật thông báo thành công!');
+        $data['anh'] = $request->file('anh')->store('thongbao/anh', 'public');
     }
+
+    // Xử lý file
+    if ($request->hasFile('file')) {
+        if ($thongbao->file && Storage::disk('public')->exists($thongbao->file)) {
+            Storage::disk('public')->delete($thongbao->file);
+        }
+        $data['file'] = $request->file('file')->store('thongbao/file', 'public');
+    }
+
+    $thongbao->update($data);
+
+    // Cập nhật N-N
+    $thongbao->khus()->sync($khuIds);
+    $thongbao->phongs()->sync($phongIds);
+
+    return redirect()->route('thongbao.index')->with('success', 'Cập nhật thông báo thành công!');
+}
+
 
     public function destroy(ThongBao $thongbao)
     {
