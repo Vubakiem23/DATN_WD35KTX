@@ -10,7 +10,12 @@ class HoaDonBaoTriController extends Controller
     // Hiển thị danh sách hóa đơn
     public function index()
     {
-        $hoaDons = HoaDonBaoTri::with('lichBaoTri.taiSan')->paginate(10);
+        $hoaDons = HoaDonBaoTri::orderByRaw("
+    CASE 
+        WHEN trang_thai_thanh_toan = 'Chưa thanh toán' THEN 0
+        ELSE 1
+    END
+")->latest()->paginate(10);
         return view('lichbaotri.hoadonbaotri', compact('hoaDons'));
     }
 

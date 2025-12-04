@@ -39,31 +39,32 @@
                     </td>
                     <td>{{ $h->phuong_thuc_thanh_toan ?? '-' }}</td>
                     <td>{{ $h->created_at->format('d/m/Y') }}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#paymentModal"
-                            data-id="{{ $h->id }}"
-                            data-route="{{ route('hoadonbaotri.update', $h->id) }}"
-                            data-amount="{{ $h->chi_phi }}"
-                            data-phuongthuc="{{ $h->phuong_thuc_thanh_toan }}">
-                            <i class="fa fa-edit"></i> Cập nhật
-                        </button>
-                        <button class="btn btn-sm btn-info"
-    data-bs-toggle="modal"
-    data-bs-target="#detailModal"
-    data-mats="{{ $h->lichBaoTri->taiSan->khoTaiSan->ma_tai_san ?? $h->lichBaoTri->khoTaiSan->ma_tai_san ?? 'Không có' }}"
-    data-tents="{{ $h->lichBaoTri->taiSan->ten_tai_san ?? $h->lichBaoTri->khoTaiSan->ten_tai_san ?? 'Không xác định' }}"
-    data-amount="{{ number_format($h->chi_phi,0,',','.') }}"
-    data-status="{{ $h->trang_thai_thanh_toan }}"
-    data-method="{{ $h->phuong_thuc_thanh_toan ?? '---' }}"
-    data-date="{{ $h->created_at->format('d/m/Y H:i') }}">
-    👁 Xem
-</button>
+                   <td>
+    @if($h->trang_thai_thanh_toan != 'Đã thanh toán')
+    <button class="btn btn-sm btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#paymentModal"
+        data-id="{{ $h->id }}"
+        data-route="{{ route('hoadonbaotri.update', $h->id) }}"
+        data-amount="{{ $h->chi_phi }}"
+        data-phuongthuc="{{ $h->phuong_thuc_thanh_toan }}">
+        <i class="fa fa-edit"></i> Thanh toán
+    </button>
+    @endif
 
+    <button class="btn btn-sm btn-info"
+        data-bs-toggle="modal"
+        data-bs-target="#detailModal"
+        data-mats="{{ $h->lichBaoTri->taiSan->khoTaiSan->ma_tai_san ?? $h->lichBaoTri->khoTaiSan->ma_tai_san ?? 'Không có' }}"
+        data-tents="{{ $h->lichBaoTri->taiSan->ten_tai_san ?? $h->lichBaoTri->khoTaiSan->ten_tai_san ?? 'Không xác định' }}"
+        data-amount="{{ number_format($h->chi_phi,0,',','.') }}"
+        data-status="{{ $h->trang_thai_thanh_toan }}"
+        data-method="{{ $h->phuong_thuc_thanh_toan ?? '---' }}"
+        data-date="{{ $h->created_at->format('d/m/Y H:i') }}">
+        👁 Xem
+    </button>
+</td>
 
-
-                    </td>
                 </tr>
                 @empty
                 <tr>
