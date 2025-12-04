@@ -12,6 +12,13 @@
         <p class="text-muted fs-6 mb-0">Theo dõi, thêm và chỉnh sửa các hashtag trong hệ thống.</p>
     </div>
 
+    {{-- Nút thêm mới (ngay dưới tiêu đề giống trang vi phạm sinh viên) --}}
+    <div class="d-flex gap-2 mb-3">
+        <a href="{{ route('hashtags.create') }}" class="btn btn-dergin btn-dergin--info">
+            <i class="fa fa-plus"></i><span>Thêm Hashtag</span>
+        </a>
+    </div>
+
     {{-- Ô tìm kiếm --}}
     <form method="GET" class="mb-4 search-bar">
         <div class="input-group shadow-sm">
@@ -23,13 +30,6 @@
             @endif
         </div>
     </form>
-
-    {{-- Nút thêm mới --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ route('hashtags.create') }}" class="btn btn-dergin btn-dergin--info">
-            <i class="fa fa-plus"></i><span>Thêm Hashtag</span>
-        </a>
-    </div>
 
     {{-- Thông báo thành công --}}
     @if (session('success'))

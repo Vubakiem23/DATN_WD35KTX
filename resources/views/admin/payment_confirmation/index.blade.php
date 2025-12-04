@@ -11,7 +11,10 @@
     <div class="col-md-12">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h3 class="mb-1">📋 Quản lý yêu cầu thanh toán</h3>
+          <h3 class="mb-1" style="display:flex;align-items:center;gap:.5rem;">
+            <i class="fa fa-clipboard" style="color:#4e54c8;"></i>
+            Quản lý yêu cầu thanh toán
+          </h3>
           <p class="text-muted mb-0">Xem và xác nhận yêu cầu thanh toán từ sinh viên</p>
         </div>
       </div>
@@ -20,32 +23,49 @@
   <!-- Filter & Search -->
   <div class="card shadow-sm mb-4">
     <div class="card-body">
-      <form method="GET" class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label class="form-label fw-semibold">Loại thanh toán</label>
-          <select name="type" class="form-select">
-            <option value="all" {{ $type === 'all' ? 'selected' : '' }}>Tất cả</option>
-            <option value="slot" {{ $type === 'slot' ? 'selected' : '' }}>📄 Tiền phòng</option>
-            <option value="utilities" {{ $type === 'utilities' ? 'selected' : '' }}>⚡ Điện nước</option>
-          </select>
+      <form method="GET">
+        {{-- Hàng tiêu đề (chỉ chữ) --}}
+        <div class="row mb-2">
+          <div class="col-md-3">
+            <span class="form-label fw-semibold d-block">Loại thanh toán</span>
+          </div>
+          <div class="col-md-3">
+            <span class="form-label fw-semibold d-block">Trạng thái</span>
+          </div>
+          <div class="col-md-4">
+            <span class="form-label fw-semibold d-block">Tìm kiếm</span>
+          </div>
         </div>
-        <div class="col-md-3">
-          <label class="form-label fw-semibold">Trạng thái</label>
-          <select name="status" class="form-select">
-            <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Tất cả</option>
-            <option value="cho_xac_nhan" {{ $status === 'cho_xac_nhan' ? 'selected' : '' }}>⏳ Chờ xác nhận</option>
-            <option value="da_thanh_toan" {{ $status === 'da_thanh_toan' ? 'selected' : '' }}>✅ Đã xác nhận</option>
-            <option value="chua_thanh_toan" {{ $status === 'chua_thanh_toan' ? 'selected' : '' }}>❌ Chưa thanh toán</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-semibold">Tìm kiếm</label>
-          <input type="text" name="search" class="form-control" placeholder="Sinh viên, phòng, hóa đơn..." value="{{ $search ?? '' }}">
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100">
-            <i class="fa fa-search me-1"></i>Tìm kiếm
-          </button>
+
+        {{-- Hàng ô lọc (box) --}}
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <select name="type" class="form-select">
+              <option value="all" {{ $type === 'all' ? 'selected' : '' }}>Tất cả</option>
+              <option value="slot" {{ $type === 'slot' ? 'selected' : '' }}>📄 Tiền phòng</option>
+              <option value="utilities" {{ $type === 'utilities' ? 'selected' : '' }}>⚡ Điện nước</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select name="status" class="form-select">
+              <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Tất cả</option>
+              <option value="cho_xac_nhan" {{ $status === 'cho_xac_nhan' ? 'selected' : '' }}>⏳ Chờ xác nhận</option>
+              <option value="da_thanh_toan" {{ $status === 'da_thanh_toan' ? 'selected' : '' }}>✅ Đã xác nhận</option>
+              <option value="chua_thanh_toan" {{ $status === 'chua_thanh_toan' ? 'selected' : '' }}>❌ Chưa thanh toán</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <input type="text"
+                   name="search"
+                   class="form-control"
+                   placeholder="Sinh viên, phòng, hóa đơn..."
+                   value="{{ $search ?? '' }}">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">
+              <i class="fa fa-search me-1"></i>Tìm kiếm
+            </button>
+          </div>
         </div>
       </form>
     </div>

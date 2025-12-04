@@ -48,9 +48,27 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
-  .filter-card label {
+  .filter-card .form-label {
+    display: block;
     font-weight: 600;
     color: #333;
+    font-size: .9rem;
+    line-height: 1.3;
+    height: auto;
+    margin-bottom: .35rem;
+    overflow: visible;
+    white-space: normal;
+  }
+
+  /* Chiều cao đồng bộ cho các ô lọc và nút */
+  .filter-card .form-select,
+  .filter-card select.form-control,
+  .filter-card input.form-control,
+  .filter-card .filter-btns .btn {
+    height: 46px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 1.4;
   }
 
   .filter-btns .btn {
@@ -68,7 +86,7 @@
 
 <div class="container mt-4">
 
-  <h3 class="page-title mb-0"> Kho tài sản</h3>
+  <h3 class="page-title mb-0"><i class="fa fa-archive me-2"></i> Kho tài sản</h3>
   <p class="text-muted mb-0">Theo dõi và tổ chức tài sản trong cửa hàng kho.</p>
 
 
@@ -105,7 +123,7 @@
       </div>
 
       <div class="col-md-3 d-flex gap-2 filter-btns">
-        <button type="submit" class="btn btn-success flex-fill">
+        <button type="submit" class="btn btn-outline-primary flex-fill">
           <i class="fa fa-filter"></i> Lọc
         </button>
         <a href="{{ route('kho.index') }}" class="btn btn-outline-secondary flex-fill">

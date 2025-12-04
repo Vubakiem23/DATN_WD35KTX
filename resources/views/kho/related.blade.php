@@ -286,9 +286,16 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, .08)
     }
 
-    .filter-card label {
+    .filter-card .form-label {
+        display: block;
         font-weight: 600;
-        color: #333
+        color: #333;
+        font-size: .9rem;
+        line-height: 1.3;
+        height: auto;
+        margin-bottom: .35rem;
+        overflow: visible;
+        white-space: normal;
     }
 
     .filter-btns .btn {

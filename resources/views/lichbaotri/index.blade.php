@@ -193,9 +193,28 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
-    .filter-card label {
+    .filter-card label.form-label {
+      display: block;
       font-weight: 600;
       color: #333;
+      font-size: .9rem;
+      line-height: 1.3;
+      height: auto !important;
+      margin: 0 0 .35rem 0;
+      padding-top: 2px;
+      overflow: visible !important;
+      white-space: normal !important;
+    }
+
+    /* Đảm bảo các ô lọc (select, input, nút) cao bằng nhau và text không bị cắt */
+    .filter-card .form-select,
+    .filter-card select.form-control,
+    .filter-card input.form-control,
+    .filter-card .btn {
+      height: 42px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      line-height: 1.4;
     }
 
     .filter-btns .btn {
@@ -212,11 +231,11 @@
   @endpush
 
 
-  <h4 class="page-title mb-0"> Danh sách lịch bảo trì</h4>
+  <h4 class="page-title mb-0"><i class="fa fa-calendar-check-o me-2"></i> Danh sách lịch bảo trì</h4>
   <p class="text-muted mb-0">Theo dõi và tổ chức lịch bảo trì tài sản.</p>
-  <div class="mb-4">
-    <a href="{{ route('lichbaotri.create') }}" class="btn-dergin btn-dergin--info">
-      <i class="fa fa-plus-circle"></i><span>Lên lịch mới</span>
+  <div class="d-flex gap-2 mb-4">
+    <a href="{{ route('lichbaotri.create') }}" class="btn btn-dergin btn-dergin--info">
+      <i class="fa fa-plus"></i><span>Lên lịch mới</span>
     </a>
   </div>
 
@@ -269,13 +288,16 @@
         </select>
       </div>
 
-      <div class="col-md-3 d-flex gap-2 filter-btns">
-        <button type="submit" class="btn btn-success flex-fill">
-          <i class="fa fa-filter"></i> Lọc
-        </button>
-        <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
-          <i class="fa fa-rotate-left"></i> Đặt lại
-        </a>
+      <div class="col-md-3">
+        <label class="form-label d-block">&nbsp;</label>
+        <div class="d-flex gap-2 filter-btns">
+          <button type="submit" class="btn btn-outline-primary flex-fill">
+            <i class="fa fa-filter"></i> Lọc
+          </button>
+          <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
+            <i class="fa fa-rotate-left"></i> Đặt lại
+          </a>
+        </div>
       </div>
     </form>
   </div>

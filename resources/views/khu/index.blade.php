@@ -98,16 +98,12 @@
                 @endif
             </div>
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h3 class="khu-page__title mb-1">Danh sách các khu</h3>
-                    <p class="text-muted mb-0">Theo dõi và tổ chức các khu theo từng nhóm.</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('khu.create') }}" class="btn btn-dergin btn-dergin--info">
-                        <i class="fa fa-plus"></i><span>Tạo khu</span>
-                    </a>
-                </div>
+            <h3 class="khu-page__title mb-1"><i class="fa fa-building me-2"></i> Danh sách các khu</h3>
+            <p class="text-muted mb-0">Theo dõi và tổ chức các khu theo từng nhóm.</p>
+            <div class="d-flex gap-2 mb-3">
+                <a href="{{ route('khu.create') }}" class="btn btn-dergin btn-dergin--info">
+                    <i class="fa fa-plus"></i><span>Tạo khu</span>
+                </a>
             </div>
 
             <div class="khu-toolbar mb-4">

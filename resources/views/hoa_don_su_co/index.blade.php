@@ -161,11 +161,16 @@
             box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
         }
 
-        .filter-card label {
+        .filter-card .form-label {
+            display: block;
             font-weight: 600;
             color: #374151;
             font-size: 0.9rem;
+            line-height: 1.3;
+            height: auto;
             margin-bottom: 0.5rem;
+            overflow: visible;
+            white-space: normal;
         }
 
         .form-control, .form-select {
@@ -174,6 +179,19 @@
             padding: 0.65rem 1rem;
             transition: all 0.2s ease;
             font-size: 0.9rem;
+        }
+
+        /* Chiều cao đồng bộ cho ô tìm kiếm, select và nút lọc */
+        .filter-card .form-control,
+        .filter-card .form-select {
+            height: 46px;
+        }
+
+        .filter-card .btn-dergin {
+            height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .form-control:focus, .form-select:focus {
@@ -231,6 +249,15 @@
             border-color: #4e54c8;
             box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
         }
+
+        /* Đảm bảo các box thống kê cao bằng nhau */
+        .stats-row > [class*="col-"] {
+            display: flex;
+        }
+
+        .stats-row .stats-card {
+            flex: 1;
+        }
     </style>
     @endpush
 
@@ -248,7 +275,7 @@
     </div>
 
     {{-- 📊 Thống kê --}}
-    <div class="row mb-4">
+    <div class="row mb-4 stats-row">
         <div class="col-md-3 col-sm-6 mb-3">
             <div class="stats-card">
                 <h5>Tổng hóa đơn</h5>

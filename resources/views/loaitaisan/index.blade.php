@@ -81,11 +81,14 @@
   @endpush
 
 
-    <h4 class="page-title mb-0"> Danh sách loại tài sản</h4>
-    <p class="text-muted mb-0">Theo dõi và tổ chức loại tài sản.</p>
-    
-  
+    <h4 class="page-title mb-0"><i class="fa fa-tags me-2"></i> Danh sách loại tài sản</h4>
+  <p class="text-muted mb-0">Theo dõi và tổ chức loại tài sản.</p>
 
+  <div class="d-flex gap-2 mb-3">
+    <a href="{{ route('loaitaisan.create') }}" class="btn btn-dergin btn-dergin--info">
+      <i class="fa fa-plus"></i><span> Thêm mới</span>
+    </a>
+  </div>
   {{-- 🔔 Thông báo --}}
   @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -106,10 +109,6 @@
       @if (request()->filled('keyword'))
         <a href="{{ route('loaitaisan.index') }}" class="btn btn-outline-secondary">Xóa</a>
       @endif
-
-      <a href="{{ route('loaitaisan.create') }}" class="btn btn-primary ms-auto">
-        <i class="fa fa-plus"></i><span> Thêm mới</span>
-      </a>
     </div>
   </form>
 

@@ -2,10 +2,10 @@
 @section('content')
 <div class="container mt-4">
 
-    <div>
-        <h3 class="room-page__title mb-1">Danh sách sự cố</h3>
-        <p class="text-muted mb-0">Theo dõi, xử lý và cập nhật trạng thái các sự cố ký túc xá</p>
-    </div>
+        <div>
+            <h3 class="room-page__title mb-1"><i class="fa fa-exclamation-triangle me-2"></i> Danh sách sự cố</h3>
+            <p class="text-muted mb-0">Theo dõi, xử lý và cập nhật trạng thái các sự cố ký túc xá</p>
+        </div>
 
     <div class="d-flex gap-2">
         <a href="{{ route('suco.create') }}" class="btn btn-dergin btn-dergin--info">

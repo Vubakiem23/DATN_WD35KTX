@@ -9,6 +9,13 @@
         <p class="text-muted mb-0">Theo dõi toàn bộ thông báo, mức độ, phòng/khu và người viết.</p>
     </div>
 
+    {{-- Nút thêm (ngay dưới tiêu đề giống trang vi phạm sinh viên) --}}
+    <div class="d-flex gap-2 mb-3">
+        <a href="{{ route('thongbao.create') }}" class="btn btn-dergin btn-dergin--info">
+            <i class="fa fa-plus"></i><span>Thêm thông báo</span>
+        </a>
+    </div>
+
     {{-- Tìm kiếm & Bộ lọc --}}
     <form method="GET" class="mb-3 search-bar">
         <div class="input-group">
@@ -23,13 +30,6 @@
             </button>
         </div>
     </form>
-
-    {{-- Thêm thông báo --}}
-    <div class="d-flex gap-2 mb-3">
-        <a href="{{ route('thongbao.create') }}" class="btn btn-dergin btn-dergin--info">
-            <i class="fa fa-plus"></i><span>Thêm thông báo</span>
-        </a>
-    </div>
 
     {{-- Bảng danh sách --}}
     <div class="room-table-wrapper">

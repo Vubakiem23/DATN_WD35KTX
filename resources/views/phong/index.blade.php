@@ -49,14 +49,12 @@
                 </li>
             @endforeach
         </ul>
-        <div class="d-flex justify-content-between align-items-center mb-3"> 
-                <div>
-                    <h3 class="room-page__title mb-1">Danh sách các phòng</h3>
-                    <p class="text-muted mb-0">Theo dõi và tổ chức các Phòng theo từng Khu</p>
-                </div>
-            <div class="d-flex gap-2">
-            <a href="{{ route('phong.create') }}" class="btn btn-dergin btn-dergin--info"><i class="fa fa-plus"></i><span>Tạo Phòng</span> </a>
-            </div>
+        <h3 class="room-page__title mb-1"><i class="fa fa-bed me-2"></i> Danh sách các phòng</h3>
+        <p class="text-muted mb-0">Theo dõi và tổ chức các Phòng theo từng Khu</p>
+        <div class="d-flex gap-2 mb-3">
+            <a href="{{ route('phong.create') }}" class="btn btn-dergin btn-dergin--info">
+                <i class="fa fa-plus"></i><span>Tạo Phòng</span>
+            </a>
         </div>
         <!-- Ô tìm kiếm -->
         <form method="GET" class="mb-3 search-bar">

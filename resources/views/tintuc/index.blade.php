@@ -12,6 +12,13 @@
         <p class="text-muted fs-6 mb-0">Theo dõi toàn bộ tin tức, hashtags, ngày đăng và hình ảnh.</p>
     </div>
 
+    {{-- Nút thêm mới (ngay dưới tiêu đề giống trang vi phạm sinh viên) --}}
+    <div class="d-flex gap-2 mb-3">
+        <a href="{{ route('tintuc.create') }}" class="btn btn-dergin btn-dergin--info">
+            <i class="fa fa-plus"></i><span>Thêm tin tức</span>
+        </a>
+    </div>
+
     {{-- Ô tìm kiếm --}}
     <form method="GET" class="mb-3 search-bar">
         <div class="input-group">
@@ -23,12 +30,6 @@
             @endif
         </div>
     </form>
-
-    <div class="d-flex gap-2 mb-3">
-        <a href="{{ route('tintuc.create') }}" class="btn btn-dergin btn-dergin--info">
-            <i class="fa fa-plus"></i><span>Thêm tin tức</span>
-        </a>
-    </div>
 
     {{-- Thông báo thành công --}}
     @if (session('success'))
