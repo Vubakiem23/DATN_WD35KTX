@@ -53,7 +53,7 @@
             @endforeach
         </ul>
         <h3 class="room-page__title mb-1"><i class="fa fa-bed me-2"></i> Danh sách các phòng</h3>
-        <p class="text-muted mb-0">Theo dõi và tổ chức các Phòng theo từng Khu</p>
+                    <p class="text-muted mb-0">Theo dõi và tổ chức các Phòng theo từng Khu</p>
         <div class="d-flex gap-2 mb-3">
             <a href="{{ route('phong.create') }}" class="btn btn-dergin btn-dergin--info">
                 <i class="fa fa-plus"></i><span>Tạo Phòng</span>

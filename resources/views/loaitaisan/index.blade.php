@@ -82,8 +82,8 @@
 
 
     <h4 class="page-title mb-0"><i class="fa fa-tags me-2"></i> Danh sách loại tài sản</h4>
-  <p class="text-muted mb-0">Theo dõi và tổ chức loại tài sản.</p>
-
+    <p class="text-muted mb-0">Theo dõi và tổ chức loại tài sản.</p>
+    
   <div class="d-flex gap-2 mb-3">
     <a href="{{ route('loaitaisan.create') }}" class="btn btn-dergin btn-dergin--info">
       <i class="fa fa-plus"></i><span> Thêm mới</span>
