@@ -144,7 +144,7 @@
                           <small class="text-muted">{{ $payment->sinhVien->ma_sinh_vien ?? 'N/A' }}</small>
                         </td>
                         <td>{{ optional($payment->hoaDon->phong)->ten_phong ?? 'N/A' }}</td>
-                        <td><span class="badge bg-secondary">{{ $payment->slot_label }}</span></td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">{{ $payment->slot_label }}</span></td>
                         <td class="fw-semibold text-success">
                           {{ number_format($payment->requested_amount ?? ($payment->hoaDon->slot_unit_price ?? 0), 0, ',', '.') }} VND
                         </td>
@@ -158,7 +158,7 @@
                         <td>
                           {{ $payment->client_requested_at ? \Carbon\Carbon::parse($payment->client_requested_at)->format('d/m/Y H:i') : '-' }}
                         </td>
-                        <td><span class="{{ $statusClass }}">{{ $statusText }}</span></td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle""{{ $statusClass }}">{{ $statusText }}</span></td>
                         <td>
                           <button type="button" class="btn btn-sm btn-outline-primary slot-detail-btn" 
                                   data-detail='@json($slotDetailData)'>
@@ -239,7 +239,7 @@
                           <small class="text-muted">{{ $payment->sinhVien->ma_sinh_vien ?? 'N/A' }}</small>
                         </td>
                         <td>{{ optional($payment->hoaDon->phong)->ten_phong ?? 'N/A' }}</td>
-                        <td><span class="badge bg-secondary">{{ $payment->slot_label }}</span></td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">{{ $payment->slot_label }}</span></td>
                         <td class="text-danger fw-semibold">{{ number_format($payment->requested_tien_dien ?? ($payment->tien_dien ?? 0), 0, ',', '.') }} VND</td>
                         <td class="text-info fw-semibold">{{ number_format($payment->requested_tien_nuoc ?? ($payment->tien_nuoc ?? 0), 0, ',', '.') }} VND</td>
                         <td class="fw-bold">{{ number_format($totalAmount, 0, ',', '.') }} VND</td>
@@ -253,7 +253,7 @@
                         <td>
                           {{ $payment->client_requested_at ? \Carbon\Carbon::parse($payment->client_requested_at)->format('d/m/Y H:i') : '-' }}
                         </td>
-                        <td><span class="{{ $statusClass }}">{{ $statusText }}</span></td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle""{{ $statusClass }}">{{ $statusText }}</span></td>
                         <td>
                           <button type="button" class="btn btn-sm btn-outline-success open-utilities-detail-btn" 
                             data-id="{{ $payment->id }}"

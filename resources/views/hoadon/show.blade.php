@@ -84,7 +84,6 @@
           <tr><th>Đơn giá nước</th><td>{{ number_format($hoaDon->don_gia_nuoc ?? 0, 0, ',', '.') }} VND</td></tr>
           <tr><th>Tiền nước</th><td>{{ number_format($hoaDon->tien_nuoc ?? 0, 0, ',', '.') }} VND</td></tr>
           <tr><th>Ngày chốt</th><td>{{ $hoaDon->created_at->format('d/m/Y H:i') }}</td></tr>
-          <tr><th>Ngày thanh toán</th><td>{{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}</td></tr>
           <tr class="total-row"><th>Tổng tiền điện · nước</th><td><strong>{{ number_format($tongDienNuoc, 0, ',', '.') }} VND</strong></td></tr>
           <tr>
             <th>Trạng thái</th>
@@ -105,15 +104,14 @@
           <tr><th>Loại Phòng</th><td>{{ optional($hoaDon->phong)->loai_phong ?? 'Không rõ' }}</td></tr>
           <tr><th>Tính từ ngày</th><td>{{ $hoaDon->created_at ? $hoaDon->created_at->format('d/m/Y') : '-' }}</td></tr>
           <tr><th>Ngày chốt</th><td>{{ $hoaDon->created_at->format('d/m/Y H:i') }}</td></tr>
-          <tr><th>Ngày thanh toán</th><td>{{ $hoaDon->ngay_thanh_toan ? \Carbon\Carbon::parse($hoaDon->ngay_thanh_toan)->format('d/m/Y') : '-' }}</td></tr>
           <tr class="total-row"><th>Thành tiền</th><td><strong>{{ number_format($hoaDon->thanh_tien, 0, ',', '.') }} VND</strong></td></tr>
           <tr>
             <th>Trạng thái</th>
             <td>
               @if(($hoaDon->trang_thai ?? '') === 'Đã thanh toán')
-                <span class="badge-soft-success">Đã thanh toán</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">Đã thanh toán</span>
               @else
-                <span class="badge-soft-danger">Chưa thanh toán</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">Chưa thanh toán</span>
               @endif
             </td>
           </tr>
@@ -218,7 +216,7 @@
                   <td>{{ $slot['sinh_vien'] }}</td>
                   <td class="fw-semibold">{{ number_format($slot['tien_phong'] ?? 0, 0, ',', '.') }} VND</td>
                   <td>
-                    <span class="{{ $statusMeta['class'] }}">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle""{{ $statusMeta['class'] }}">
                       <i class="fa {{ $statusMeta['icon'] }}"></i> {{ $statusMeta['text'] }}
                     </span>
                   </td>
@@ -344,7 +342,7 @@
                     {{ number_format(($slot['tien_dien'] ?? 0) + ($slot['tien_nuoc'] ?? 0), 0, ',', '.') }} VND
                   </td>
                   <td>
-                    <span class="{{ $statusMeta['class'] }}">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle""{{ $statusMeta['class'] }}">
                       <i class="fa {{ $statusMeta['icon'] }}"></i> {{ $statusMeta['text'] }}
                     </span>
                     @if($hoaDon->da_thanh_toan_dien_nuoc && $hoaDon->ngay_thanh_toan_dien_nuoc)
