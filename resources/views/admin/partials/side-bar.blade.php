@@ -12,11 +12,14 @@
         <!-- Thông tin admin -->
         <div class="profile clearfix">
             <div class="profile_pic">
-                <img src="{{ asset('images/img.jpg') }}" alt="..." class="img-circle profile_img">
+                {{-- Dùng chung logo client --}}
+                <img src="{{ asset('images/logo.png') }}" alt="Ký Túc Xá VaMos" class="img-circle profile_img">
             </div>
             <div class="profile_info">
-                <span>Welcome,</span>
-                <h2>ADMIN</h2>
+                <span class="text-muted" style="font-size: 0.85rem;">Welcome back,</span>
+                <h2 style="font-size: 1.15rem; font-weight: 700; color: #f9fafb; text-transform: uppercase; letter-spacing: .04em;">
+                    ADMIN
+                </h2>
             </div>
         </div>
 
@@ -164,76 +167,76 @@
 
             <!-- Phần khác -->
             <div class="menu_section">
-                <h3>Live On</h3>
-                <ul class="nav side-menu">
-                    <!-- Thông Báo & Tin Tức -->
-                    <li>
-                        <a><i class="fa fa-bullhorn"></i> Thông Báo & Tin Tức <span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
-                            <li>
-                                <a href="{{ route('thongbao.index') }}"
-                                    class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
-                                    <i class="fa fa-bell"></i> Thông báo chung
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('tintuc.index') }}"
-                                    class="{{ request()->routeIs('tintuc.*') ? 'active' : '' }}">
-                                    <i class="fa fa-newspaper-o"></i> Tin tức
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('hashtags.index') }}"
-                                    class="{{ request()->routeIs('hashtags.*') ? 'active' : '' }}">
-                                    <i class="fa fa-tags"></i> Quản lý Hashtag
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+    <h3>Live On</h3>
+    <ul class="nav side-menu">
+        <!-- Thông Báo & Tin Tức -->
+        <li>
+            <a><i class="fa fa-bullhorn"></i> Thông Báo & Tin Tức <span class="fa fa-chevron-down"></span></a>
+            <ul class="nav child_menu">
+                <li>
+                    <a href="{{ route('thongbao.index') }}"
+                        class="{{ request()->routeIs('thongbao.*') ? 'active' : '' }}">
+                        <i class="fa fa-bell"></i> Thông báo chung
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('tintuc.index') }}"
+                        class="{{ request()->routeIs('tintuc.*') ? 'active' : '' }}">
+                        <i class="fa fa-newspaper-o"></i> Tin tức
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('hashtags.index') }}"
+                        class="{{ request()->routeIs('hashtags.*') ? 'active' : '' }}">
+                        <i class="fa fa-tags"></i> Quản lý Hashtag
+                    </a>
+                </li>
+            </ul>
+        </li>
 
-                    <!-- Thanh Toán -->
-                    <li>
-                        <a><i class="fa fa-credit-card"></i> Thanh Toán <span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
-                            <li>
-                                <a href="{{ route('hoadonslot.index') }}"
-                                    class="{{ request()->routeIs('hoadonslot.*') ? 'active' : '' }}">
-                                    <i class="fa fa-credit-card"></i> Hóa đơn Slot
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('hoadon_dien_nuoc.index') }}"
-                                    class="{{ request()->routeIs('hoadon_dien_nuoc.*') ? 'active' : '' }}">
-                                    <i class="fa fa-bolt"></i> Hóa đơn Điện - Nước
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+        <!-- Thanh Toán -->
+        <li>
+            <a><i class="fa fa-credit-card"></i> Thanh Toán <span class="fa fa-chevron-down"></span></a>
+            <ul class="nav child_menu">
+                <li>
+                    <a href="{{ route('hoadonslot.index') }}"
+                        class="{{ request()->routeIs('hoadonslot.*') ? 'active' : '' }}">
+                        <i class="fa fa-credit-card"></i> Hóa đơn Slot
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('hoadon_dien_nuoc.index') }}"
+                        class="{{ request()->routeIs('hoadon_dien_nuoc.*') ? 'active' : '' }}">
+                        <i class="fa fa-bolt"></i> Hóa đơn Điện - Nước
+                    </a>
+                </li>
+            </ul>
+        </li>
 
-                    <!-- Thông Báo Sự Cố -->
-                    <li>
-                        <a><i class="fa fa-bug"></i> Thông Báo Sự Cố, Khu, Phòng, Sinh Viên <span class="fa fa-chevron-down"></span></a>
-                        <ul class="nav child_menu">
-                            <li>
-                                <a href="{{ route('thongbao_su_co.index') }}"
-                                    class="{{ request()->routeIs('thongbao_su_co.*') ? 'active' : '' }}">
-                                    <i class="fa fa-exclamation-triangle"></i> Thông báo sự cố
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('thongbao_khu_phong') }}"
-                                    class="{{ request()->routeIs('thongbao_khu_phong') ? 'active' : '' }}">
-                                    <i class="fa fa-building"></i> Thông báo khu/phòng
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('thongbao_sinh_vien.index') }}"
-                                    class="{{ request()->routeIs('thongbao_sinh_vien.*') ? 'active' : '' }}">
-                                    <i class="fa fa-user"></i> Thông báo sinh viên
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+        <!-- Thông Báo Sự Cố -->
+        <li>
+            <a><i class="fa fa-bug"></i> Thông Báo Sự Cố, Khu, Phòng, Sinh Viên <span class="fa fa-chevron-down"></span></a>
+            <ul class="nav child_menu">
+                <li>
+                    <a href="{{ route('thongbao_su_co.index') }}"
+                        class="{{ request()->routeIs('thongbao_su_co.*') ? 'active' : '' }}">
+                        <i class="fa fa-exclamation-triangle"></i> Thông báo sự cố
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('thongbao_khu_phong') }}"
+                        class="{{ request()->routeIs('thongbao_khu_phong') ? 'active' : '' }}">
+                        <i class="fa fa-building"></i> Thông báo khu/phòng
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('thongbao_sinh_vien.index') }}"
+                        class="{{ request()->routeIs('thongbao_sinh_vien.*') ? 'active' : '' }}">
+                        <i class="fa fa-user"></i> Thông báo sinh viên
+                    </a>
+                </li>
+            </ul>
+        </li>
 
                     <!-- Báo cáo, thống kê -->
                     <li>

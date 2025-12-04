@@ -26,7 +26,7 @@
       <form method="GET">
         {{-- Hàng tiêu đề (chỉ chữ) --}}
         <div class="row mb-2">
-          <div class="col-md-3">
+        <div class="col-md-3">
             <span class="form-label fw-semibold d-block">Loại thanh toán</span>
           </div>
           <div class="col-md-3">
@@ -40,31 +40,31 @@
         {{-- Hàng ô lọc (box) --}}
         <div class="row g-3 align-items-end">
           <div class="col-md-3">
-            <select name="type" class="form-select">
-              <option value="all" {{ $type === 'all' ? 'selected' : '' }}>Tất cả</option>
-              <option value="slot" {{ $type === 'slot' ? 'selected' : '' }}>📄 Tiền phòng</option>
-              <option value="utilities" {{ $type === 'utilities' ? 'selected' : '' }}>⚡ Điện nước</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <select name="status" class="form-select">
-              <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Tất cả</option>
-              <option value="cho_xac_nhan" {{ $status === 'cho_xac_nhan' ? 'selected' : '' }}>⏳ Chờ xác nhận</option>
-              <option value="da_thanh_toan" {{ $status === 'da_thanh_toan' ? 'selected' : '' }}>✅ Đã xác nhận</option>
-              <option value="chua_thanh_toan" {{ $status === 'chua_thanh_toan' ? 'selected' : '' }}>❌ Chưa thanh toán</option>
-            </select>
-          </div>
-          <div class="col-md-4">
+          <select name="type" class="form-select">
+            <option value="all" {{ $type === 'all' ? 'selected' : '' }}>Tất cả</option>
+            <option value="slot" {{ $type === 'slot' ? 'selected' : '' }}>📄 Tiền phòng</option>
+            <option value="utilities" {{ $type === 'utilities' ? 'selected' : '' }}>⚡ Điện nước</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select name="status" class="form-select">
+            <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Tất cả</option>
+            <option value="cho_xac_nhan" {{ $status === 'cho_xac_nhan' ? 'selected' : '' }}>⏳ Chờ xác nhận</option>
+            <option value="da_thanh_toan" {{ $status === 'da_thanh_toan' ? 'selected' : '' }}>✅ Đã xác nhận</option>
+            <option value="chua_thanh_toan" {{ $status === 'chua_thanh_toan' ? 'selected' : '' }}>❌ Chưa thanh toán</option>
+          </select>
+        </div>
+        <div class="col-md-4">
             <input type="text"
                    name="search"
                    class="form-control"
                    placeholder="Sinh viên, phòng, hóa đơn..."
                    value="{{ $search ?? '' }}">
-          </div>
-          <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">
-              <i class="fa fa-search me-1"></i>Tìm kiếm
-            </button>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fa fa-search me-1"></i>Tìm kiếm
+          </button>
           </div>
         </div>
       </form>

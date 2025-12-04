@@ -292,11 +292,11 @@
         <label class="form-label d-block">&nbsp;</label>
         <div class="d-flex gap-2 filter-btns">
           <button type="submit" class="btn btn-outline-primary flex-fill">
-            <i class="fa fa-filter"></i> Lọc
-          </button>
-          <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
-            <i class="fa fa-rotate-left"></i> Đặt lại
-          </a>
+          <i class="fa fa-filter"></i> Lọc
+        </button>
+        <a href="{{ route('lichbaotri.index') }}" class="btn btn-outline-secondary flex-fill">
+          <i class="fa fa-rotate-left"></i> Đặt lại
+        </a>
         </div>
       </div>
     </form>
