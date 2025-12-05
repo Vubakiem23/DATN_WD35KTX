@@ -93,7 +93,7 @@
             <td>
               <span class="badge 
                 @if($item->tinh_trang == 'mới') bg-success
-                @elseif($item->tinh_trang == 'cũ') bg-secondary
+                @elseif($item->tinh_trang == 'cũ') bg-secondary text-white
                 @elseif($item->tinh_trang == 'bảo trì') bg-warning text-dark
                 @elseif($item->tinh_trang == 'hỏng') bg-danger
                 @else bg-light @endif">
@@ -104,7 +104,7 @@
             <td>
               <span class="badge 
                 @if($item->tinh_trang_hien_tai == 'Bình thường') bg-success text-white
-                @elseif($item->tinh_trang_hien_tai == 'Cũ') bg-secondary
+                @elseif($item->tinh_trang_hien_tai == 'Cũ') bg-secondary text-white
                 @elseif($item->tinh_trang_hien_tai == 'Đang bảo trì') bg-warning text-dark
                 @elseif($item->tinh_trang_hien_tai == 'Hỏng') bg-danger
                 @else bg-light @endif">

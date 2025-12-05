@@ -91,9 +91,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info mb-3">
-                        <strong>Số tiền:</strong>
-                        <span id="paymentAmount" class="text-danger fs-5">0 VND</span>
+                    <div class="p-3 mb-3 rounded" style="background:#e9f2ff;border:1px solid #c8ddff;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-bold text-primary">
+                                <i class="fa fa-credit-card me-2"></i> Số tiền
+                            </div>
+                            <div id="paymentAmount" class="fw-bold text-danger fs-4">0 VND</div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -116,7 +120,7 @@
                             </div>
                             <div class="col-md-5 text-center">
                                 <img src="{{ asset('images/ma1qr.jpg') }}" alt="QR chuyển khoản"
-                                    class="img-fluid rounded border" style="max-width: 120px;">
+                                    class="img-fluid rounded border" style="max-width: 150px;">
                                 <p class="mt-2 text-muted" style="font-size: 0.85rem;">Quét mã để chuyển khoản</p>
                             </div>
                         </div>
