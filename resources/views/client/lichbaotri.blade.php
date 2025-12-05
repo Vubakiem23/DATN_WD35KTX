@@ -3,6 +3,30 @@
 @section('title', 'Lịch bảo trì tài sản - Sinh viên')
 
 @section('content')
+@push('styles')
+<style>
+    .badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        height: 42px;
+        padding: 0 1rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .btn-pay {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        height: 42px;
+        padding: 0 1rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+</style>
+@endpush
 <!-- Header màu xanh đậm -->
 <div class="page-header-dark mb-4">
     <div class="d-flex justify-content-center align-items-center py-4 px-4">
@@ -276,21 +300,23 @@
                                     }
                                     @endphp
 
-                                    <span class="badge {{ $badgeClass }}">
-                                        <i class="fas {{ $icon }} me-1"></i>
-                                        {{ $lich->trang_thai }}
-                                    </span>
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        <span class="badge {{ $badgeClass }} badge-status">
+                                            <i class="fas {{ $icon }} me-1"></i>
+                                            {{ $lich->trang_thai }}
+                                        </span>
 
-                                    @if($lich->trang_thai == 'Chờ thanh toán' && $lich->hoaDonBaoTri)
-                                    <button class="btn btn-sm btn-success"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#paymentModal"
-                                        data-route="{{ route('client.hoadon.baotri.thanhtoan', $lich->hoaDonBaoTri->id) }}"
-                                        data-amount="{{ $lich->hoaDonBaoTri->chi_phi }}"
-                                        data-phuongthuc="{{ $lich->hoaDonBaoTri->phuong_thuc ?? '' }}">
-                                        <i class="fas fa-credit-card me-1"></i> Thanh toán
-                                    </button>
-                                    @endif
+                                        @if($lich->trang_thai == 'Chờ thanh toán' && $lich->hoaDonBaoTri)
+                                        <button class="btn btn-success btn-pay"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#paymentModal"
+                                            data-route="{{ route('client.hoadon.baotri.thanhtoan', $lich->hoaDonBaoTri->id) }}"
+                                            data-amount="{{ $lich->hoaDonBaoTri->chi_phi }}"
+                                            data-phuongthuc="{{ $lich->hoaDonBaoTri->phuong_thuc ?? '' }}">
+                                            <i class="fas fa-credit-card me-1"></i> Thanh toán
+                                        </button>
+                                        @endif
+                                    </div>
 
                                 </td>
 
@@ -327,9 +353,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info mb-3">
-                        <strong>Số tiền:</strong>
-                        <span id="paymentAmount" class="text-danger fs-5">0 VND</span>
+                    <div class="p-3 mb-3 rounded" style="background:#e9f2ff;border:1px solid #c8ddff;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="fw-bold text-primary">
+                                <i class="fa fa-credit-card me-2"></i> Số tiền
+                            </div>
+                            <div id="paymentAmount" class="fw-bold text-danger fs-4">0 VND</div>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -352,7 +382,7 @@
                             </div>
                             <div class="col-md-5 text-center">
                                 <img src="{{ asset('images/ma1qr.jpg') }}" alt="QR chuyển khoản"
-                                    class="img-fluid rounded border" style="max-width: 120px;">
+                                    class="img-fluid rounded border" style="max-width: 150px;">
                                 <p class="mt-2 text-muted" style="font-size: 0.85rem;">Quét mã để chuyển khoản</p>
                             </div>
                         </div>
