@@ -560,21 +560,28 @@
 
           {{-- Ngày hoàn thành --}}
           <div class="mb-3">
-            <label for="ngay_hoan_thanh" class="form-label fw-semibold"> Ngày hoàn thành</label>
+            <label for="ngay_hoan_thanh" class="form-label fw-semibold">Ngày hoàn thành</label>
             <input type="date" name="ngay_hoan_thanh" id="ngay_hoan_thanh"
               class="form-control" required>
           </div>
 
+          {{-- Chi phí bảo trì --}}
+          <div class="mb-3">
+            <label for="chi_phi" class="form-label fw-semibold">Chi phí bảo trì (VNĐ)</label>
+            <input type="number" name="chi_phi" id="chi_phi" class="form-control"
+              min="0" step="1000" placeholder="Nhập chi phí..." required>
+          </div>
+
           {{-- Ảnh sau bảo trì --}}
           <div class="mb-3">
-            <label for="hinh_anh" class="form-label fw-semibold"> Ảnh sau bảo trì</label>
+            <label for="hinh_anh" class="form-label fw-semibold">Ảnh sau bảo trì</label>
             <input type="file" name="hinh_anh" id="hinh_anh"
               class="form-control" accept="image/*">
           </div>
 
           {{-- Mô tả sau bảo trì --}}
           <div class="mb-3">
-            <label for="mo_ta_sau" class="form-label fw-semibold"> Mô tả sau bảo trì</label>
+            <label for="mo_ta_sau" class="form-label fw-semibold">Mô tả sau bảo trì</label>
             <textarea name="mo_ta_sau" id="mo_ta_sau" rows="3"
               class="form-control"
               placeholder="Nhập mô tả tình trạng sau khi bảo trì..." required></textarea>
@@ -593,6 +600,7 @@
     </div>
   </div>
 </div>
+
 {{-- ❌ Modal Từ Chối --}}
 <div class="modal fade" id="tuChoiModal" tabindex="-1" aria-labelledby="tuChoiLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

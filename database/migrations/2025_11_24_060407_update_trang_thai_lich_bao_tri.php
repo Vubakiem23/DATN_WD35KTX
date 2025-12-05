@@ -25,9 +25,9 @@ return new class extends Migration {
                 'Đang lên lịch',
                 'Chờ bảo trì',
                 'Đang bảo trì',
-                'Hoàn thành'
+                'Hoàn thành',
+                'Từ chối tiếp nhận'
             ])->default('Đang lên lịch')->change();
         });
     }
 };
-

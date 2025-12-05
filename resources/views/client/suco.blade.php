@@ -164,39 +164,25 @@
                                                 @endif
                                             </td>
                                             <td class="text-end">
-                                                <div class="room-actions dropdown position-relative">
-                                                    <button type="button" class="btn btn-dergin btn-dergin--muted action-gear" title="Tác vụ" data-bs-toggle="dropdown">
-                                                        <i class="fa fa-gear"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end">
-                                                        <li>
-                                                            <a href="#"
-                                                            class="dropdown-item d-flex align-items-center gap-2 btn-show-detail"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#detailModal"
+    <button type="button"
+        class="btn btn-light btn-sm btn-show-detail"
+        data-bs-toggle="modal"
+        data-bs-target="#detailModal"
 
-                                                            data-id="{{ $sc->id }}"
-                                                            data-ngay-gui="{{ $sc->ngay_gui?->format('d/m/Y') }}"
-                                                            data-ngay-hoan-thanh="{{ $sc->ngay_hoan_thanh?->format('d/m/Y') ?? '-' }}"
-                                                            data-trang-thai="{{ $sc->trang_thai }}"
-                                                            data-mo-ta="{{ $sc->mo_ta }}"
-                                                            data-payment="{{ $sc->payment_amount > 0 ? number_format($sc->payment_amount, 0, ',', '.') . ' ₫' : '0 ₫' }}"
+        data-id="{{ $sc->id }}"
+        data-ngay-gui="{{ $sc->ngay_gui?->format('d/m/Y') }}"
+        data-ngay-hoan-thanh="{{ $sc->ngay_hoan_thanh?->format('d/m/Y') ?? '-' }}"
+        data-trang-thai="{{ $sc->trang_thai }}"
+        data-mo-ta="{{ $sc->mo_ta }}"
+        data-payment="{{ $sc->payment_amount > 0 ? number_format($sc->payment_amount, 0, ',', '.') . ' ₫' : '0 ₫' }}"
 
-                                                            data-anh-cu="{{ $sc->display_anh }}"
-                                                            data-anh-moi="{{ $sc->display_anh_moi }}"
-                                                            >
-                                                                <i class="fa fa-eye text-muted"></i>
-                                                                <span>Xem</span>
-                                                            </a>
+        data-anh-cu="{{ $sc->display_anh }}"
+        data-anh-moi="{{ $sc->display_anh_moi }}"
+    >
+        <i class="fa fa-eye text-primary fs-5"></i>
+    </button>
+</td>
 
-
-
-
-                                                        </li>
-                                                        
-                                                    </ul>
-                                                </div>
-                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -495,7 +481,20 @@
 
 
 </style>
+<style>
+    .btn-show-detail {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
 
+.btn-show-detail:hover i {
+    color: #0d6efd; /* xanh primary */
+    transform: scale(1.1);
+    transition: 0.2s;
+}
+
+</style>
 @endpush
 @push('scripts')
 <script>

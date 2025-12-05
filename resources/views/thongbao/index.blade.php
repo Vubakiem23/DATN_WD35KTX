@@ -35,9 +35,9 @@
     <div class="room-table-wrapper">
         <div class="table-responsive">
             @php
-                $perPage = $thongbaos->perPage();
-                $currentPage = $thongbaos->currentPage();
-                $sttBase = ($currentPage - 1) * $perPage;
+            $perPage = $thongbaos->perPage();
+            $currentPage = $thongbaos->currentPage();
+            $sttBase = ($currentPage - 1) * $perPage;
             @endphp
 
             <table class="table table-hover mb-0 room-table">
@@ -59,14 +59,14 @@
                 <tbody>
                     @forelse ($thongbaos as $tb)
                     @php
-                        $stt = $sttBase + $loop->iteration;
-                        $mucDo = $tb->mucDo->ten_muc_do ?? '';
-                        $badgeClass = match($mucDo) {
-                            'Cao' => 'badge-soft-danger',
-                            'Trung bình' => 'badge-soft-warning',
-                            default => 'badge-soft-secondary',
-                        };
-                        $imgUrl = $tb->anh ? Storage::url($tb->anh) : asset('images/default-avatar.png');
+                    $stt = $sttBase + $loop->iteration;
+                    $mucDo = $tb->mucDo->ten_muc_do ?? '';
+                    $badgeClass = match($mucDo) {
+                    'Cao' => 'badge-soft-danger',
+                    'Trung bình' => 'badge-soft-warning',
+                    default => 'badge-soft-secondary',
+                    };
+                    $imgUrl = $tb->anh ? Storage::url($tb->anh) : asset('images/default-avatar.png');
                     @endphp
                     <tr>
                         <td class="fit text-center">{{ $stt }}</td>
@@ -79,8 +79,28 @@
                         <td class="fit text-center">
                             <span class="badge {{ $badgeClass }}">{{ $mucDo ?: '---' }}</span>
                         </td>
-                        <td>{{ $tb->phongs->pluck('ten_phong')->join(', ') ?: '---' }}</td>
-                        <td>{{ $tb->khus->pluck('ten_khu')->join(', ') ?: '---' }}</td>
+                        <td>
+                            @if ($tb->phongs->isEmpty())
+                            ---
+                            @else
+                            {{ $tb->phongs->first()->ten_phong }}
+                            @if ($tb->phongs->count() > 1)
+                            , ...
+                            @endif
+                            @endif
+                        </td>
+
+                        <td>
+                            @if ($tb->khus->isEmpty())
+                            ---
+                            @else
+                            {{ $tb->khus->first()->ten_khu }}
+                            @if ($tb->khus->count() > 1)
+                            , ...
+                            @endif
+                            @endif
+                        </td>
+
                         <td>
                             @if($tb->file)
                             <a href="{{ Storage::url($tb->file) }}" target="_blank"><i class="fa fa-download"></i></a>
@@ -156,14 +176,14 @@
 @push('scripts')
 <script>
     // Modal chi tiết
-    $(document).ready(function(){
-        $('.openModalBtn').click(function(){
+    $(document).ready(function() {
+        $('.openModalBtn').click(function() {
             let id = $(this).data('id');
             let url = `{{ route('thongbao.show', ':id') }}`.replace(':id', id);
-            $.get(url, function(res){
+            $.get(url, function(res) {
                 $('#modalBody').html(res);
                 $('#thongBaoModal').modal('show');
-            }).fail(function(){
+            }).fail(function() {
                 $('#modalBody').html('<p class="text-danger text-center py-3">Không thể tải chi tiết thông báo.</p>');
                 $('#thongBaoModal').modal('show');
             });
@@ -171,317 +191,317 @@
     });
 
     // Dropdown răng cưa
-    document.addEventListener('click', function(e){
+    document.addEventListener('click', function(e) {
         const menus = document.querySelectorAll('.room-actions .dropdown-menu');
         const gearBtn = e.target.closest('.action-gear');
         const insideMenu = e.target.closest('.room-actions .dropdown-menu');
 
-        if(gearBtn){
+        if (gearBtn) {
             e.preventDefault();
             const wrapper = gearBtn.closest('.room-actions');
             const menu = wrapper.querySelector('.dropdown-menu');
             const isOpen = menu.classList.contains('show');
             menus.forEach(m => m.classList.remove('show'));
-            if(!isOpen) menu.classList.add('show');
-        } else if(!insideMenu){
+            if (!isOpen) menu.classList.add('show');
+        } else if (!insideMenu) {
             menus.forEach(m => m.classList.remove('show'));
         }
     });
 </script>
 @endpush
 @endsection
- @push('styles')
-            <style>
-                html {
-                    scroll-behavior: auto !important
-                }
+@push('styles')
+<style>
+    html {
+        scroll-behavior: auto !important
+    }
 
 
-                .room-page__title {
-                    font-size: 1.75rem;
-                    font-weight: 700;
-                    color: #1f2937;
-                }
+    .room-page__title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
 
-                .room-table-wrapper {
-                    background: #fff;
-                    border-radius: 14px;
-                    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-                    padding: 1.25rem;
-                }
+    .room-table-wrapper {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        padding: 1.25rem;
+    }
 
-                .room-table {
-                    margin-bottom: 0;
-                    border-collapse: separate;
-                    border-spacing: 0 12px;
-                }
+    .room-table {
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
 
-                .room-table thead th {
-                    font-size: .78rem;
-                    text-transform: uppercase;
-                    letter-spacing: .05em;
-                    color: #6c757d;
-                    border: none;
-                    padding-bottom: .75rem;
-                }
+    .room-table thead th {
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: #6c757d;
+        border: none;
+        padding-bottom: .75rem;
+    }
 
-                .room-table tbody tr {
-                    background: #f9fafc;
-                    border-radius: 16px;
-                    transition: transform .2s ease, box-shadow .2s ease;
-                }
+    .room-table tbody tr {
+        background: #f9fafc;
+        border-radius: 16px;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
 
-                .room-table tbody tr:hover {
-                    /* transform: translateY(-2px); */
-                    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-                }
+    .room-table tbody tr:hover {
+        /* transform: translateY(-2px); */
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
 
-                .room-table tbody td {
-                    border: none;
-                    vertical-align: middle;
-                    padding: 1rem .95rem;
-                }
+    .room-table tbody td {
+        border: none;
+        vertical-align: middle;
+        padding: 1rem .95rem;
+    }
 
-                .room-table tbody tr td:first-child {
-                    border-top-left-radius: 16px;
-                    border-bottom-left-radius: 16px;
-                }
+    .room-table tbody tr td:first-child {
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
 
-                .room-table tbody tr td:last-child {
-                    border-top-right-radius: 16px;
-                    border-bottom-right-radius: 16px;
-                }
+    .room-table tbody tr td:last-child {
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
 
-                .room-table .fit {
-                    white-space: nowrap;
-                    width: 1%;
-                }
+    .room-table .fit {
+        white-space: nowrap;
+        width: 1%;
+    }
 
-                .room-table th.text-center,
-                .room-table td.text-center {
-                    text-align: center;
-                }
+    .room-table th.text-center,
+    .room-table td.text-center {
+        text-align: center;
+    }
 
-                .room-actions {
-                    display: flex;
-                    justify-content: center;
-                }
+    .room-actions {
+        display: flex;
+        justify-content: center;
+    }
 
-                .room-actions.dropdown {
-                    position: relative;
-                }
+    .room-actions.dropdown {
+        position: relative;
+    }
 
-                /* Nút răng cưa gọn, nằm giữa cột */
-                .room-actions .action-gear {
-                    min-width: 40px;
-                    padding: .45rem .7rem;
-                    border-radius: 999px;
-                }
+    /* Nút răng cưa gọn, nằm giữa cột */
+    .room-actions .action-gear {
+        min-width: 40px;
+        padding: .45rem .7rem;
+        border-radius: 999px;
+    }
 
-                /* MENU: bay ngang sang trái, canh giữa ô, không tràn xuống dòng dưới */
-                .room-actions .dropdown-menu {
-                    position: absolute;
-                    top: 50% !important;
-                    /* lấy mốc giữa ô Thao tác */
-                    right: 110%;
-                    /* bật ngang sang trái của nút răng cưa */
-                    left: auto;
-                    transform: translateY(-50%);
-                    /* canh giữa theo chiều dọc */
-                    z-index: 1050;
+    /* MENU: bay ngang sang trái, canh giữa ô, không tràn xuống dòng dưới */
+    .room-actions .dropdown-menu {
+        position: absolute;
+        top: 50% !important;
+        /* lấy mốc giữa ô Thao tác */
+        right: 110%;
+        /* bật ngang sang trái của nút răng cưa */
+        left: auto;
+        transform: translateY(-50%);
+        /* canh giữa theo chiều dọc */
+        z-index: 1050;
 
-                    min-width: 190px;
-                    border-radius: 16px;
-                    padding: .4rem 0;
-                    margin: 0;
-                    border: 1px solid #e5e7eb;
-                    box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
-                    font-size: .82rem;
-                    background: #fff;
-                }
+        min-width: 190px;
+        border-radius: 16px;
+        padding: .4rem 0;
+        margin: 0;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+        font-size: .82rem;
+        background: #fff;
+    }
 
-                /* Item trong dropdown: icon + chữ đẹp, hover nhẹ */
-                .room-actions .dropdown-item {
-                    display: flex;
-                    align-items: center;
-                    gap: .55rem;
-                    padding: .42rem .9rem;
-                    color: #4b5563;
-                }
+    /* Item trong dropdown: icon + chữ đẹp, hover nhẹ */
+    .room-actions .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        padding: .42rem .9rem;
+        color: #4b5563;
+    }
 
-                .room-actions .dropdown-item i {
-                    width: 16px;
-                    text-align: center;
-                }
+    .room-actions .dropdown-item i {
+        width: 16px;
+        text-align: center;
+    }
 
-                .room-actions .dropdown-item:hover {
-                    background: #eef2ff;
-                    color: #111827;
-                }
+    .room-actions .dropdown-item:hover {
+        background: #eef2ff;
+        color: #111827;
+    }
 
-                /* Riêng nút Xóa giữ màu đỏ */
-                .room-actions .dropdown-item.text-danger,
-                .room-actions .dropdown-item.text-danger:hover {
-                    color: #dc2626;
-                    font-weight: 500;
-                }
-
-
-                .btn-dergin {
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: .35rem;
-                    padding: .4rem .9rem;
-                    border-radius: 999px;
-                    font-weight: 600;
-                    font-size: .72rem;
-                    border: none;
-                    color: #fff;
-                    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
-                    box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
-                    transition: transform .2s ease, box-shadow .2s ease;
-                }
-
-                .btn-dergin:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
-                    color: #fff;
-                }
-
-                .btn-dergin i {
-                    font-size: .8rem;
-                }
-
-                .btn-dergin--muted {
-                    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-                }
-
-                .btn-dergin--info {
-                    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-                }
-
-                .btn-dergin--danger {
-                    background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%);
-                }
-
-                .avatar-56 {
-                    width: 56px;
-                    height: 56px;
-                    border-radius: 12px;
-                    /* bo góc, không tròn nữa */
-                    object-fit: cover;
-                    border: 2px solid #e5e7eb;
-                    /* viền nhạt */
-                    background: #fff;
-                }
+    /* Riêng nút Xóa giữ màu đỏ */
+    .room-actions .dropdown-item.text-danger,
+    .room-actions .dropdown-item.text-danger:hover {
+        color: #dc2626;
+        font-weight: 500;
+    }
 
 
+    .btn-dergin {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+        padding: .4rem .9rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: .72rem;
+        border: none;
+        color: #fff;
+        background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+        box-shadow: 0 6px 16px rgba(78, 84, 200, .22);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
 
-                @media (max-width: 992px) {
-                    .room-table thead {
-                        display: none;
-                    }
+    .btn-dergin:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(78, 84, 200, .32);
+        color: #fff;
+    }
 
-                    .room-table tbody {
-                        display: block;
-                    }
+    .btn-dergin i {
+        font-size: .8rem;
+    }
 
-                    .room-table tbody tr {
-                        display: flex;
-                        flex-direction: column;
-                        padding: 1rem;
-                    }
+    .btn-dergin--muted {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+    }
 
-                    .room-table tbody td {
-                        display: flex;
-                        justify-content: space-between;
-                        padding: .35rem 0;
-                    }
-                }
-            </style>
-        @endpush
+    .btn-dergin--info {
+        background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+    }
 
-    {{-- MODAL BỘ LỌC --}}
-    <div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="filterModalLabel">Bộ lọc thông báo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-                </div>
+    .btn-dergin--danger {
+        background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%);
+    }
 
-                <form method="GET" id="filterForm">
-                    <div class="modal-body">
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="small text-muted">Tìm kiếm</label>
-                                    <input type="text" name="search" value="{{ request('search') }}"
-                                        class="form-control" placeholder="Tiêu đề, nội dung, phòng, khu">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="small text-muted">Mức độ</label>
-                                    <select name="muc_do" class="form-control">
-                                        <option value="">-- Tất cả --</option>
-                                        @if(isset($mucDos))
-                                            @foreach($mucDos as $md)
-                                                <option value="{{ $md->id }}" @selected(request('muc_do') == $md->id)>
-                                                    {{ $md->ten_muc_do }}
-                                                </option>
-                                            @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="small text-muted">Đối tượng</label>
-                                    <select name="doi_tuong" class="form-control">
-                                        <option value="">-- Tất cả --</option>
-                                        <option value="Sinh viên" @selected(request('doi_tuong') == 'Sinh viên')>Sinh viên</option>
-                                        <option value="Tất cả" @selected(request('doi_tuong') == 'Tất cả')>Tất cả</option>
-                                    </select>
-                                </div>
+    .avatar-56 {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        /* bo góc, không tròn nữa */
+        object-fit: cover;
+        border: 2px solid #e5e7eb;
+        /* viền nhạt */
+        background: #fff;
+    }
+
+
+
+    @media (max-width: 992px) {
+        .room-table thead {
+            display: none;
+        }
+
+        .room-table tbody {
+            display: block;
+        }
+
+        .room-table tbody tr {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        .room-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            padding: .35rem 0;
+        }
+    }
+</style>
+@endpush
+
+{{-- MODAL BỘ LỌC --}}
+<div class="modal fade" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel">Bộ lọc thông báo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <form method="GET" id="filterForm">
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="small text-muted">Tìm kiếm</label>
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                    class="form-control" placeholder="Tiêu đề, nội dung, phòng, khu">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="small text-muted">Mức độ</label>
+                                <select name="muc_do" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    @if(isset($mucDos))
+                                    @foreach($mucDos as $md)
+                                    <option value="{{ $md->id }}" @selected(request('muc_do')==$md->id)>
+                                        {{ $md->ten_muc_do }}
+                                    </option>
+                                    @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="small text-muted">Đối tượng</label>
+                                <select name="doi_tuong" class="form-control">
+                                    <option value="">-- Tất cả --</option>
+                                    <option value="Sinh viên" @selected(request('doi_tuong')=='Sinh viên' )>Sinh viên</option>
+                                    <option value="Tất cả" @selected(request('doi_tuong')=='Tất cả' )>Tất cả</option>
+                                </select>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="modal-footer">
-                        <a href="{{ route('thongbao.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
-                        <button type="submit" class="btn btn-primary">Áp dụng</button>
-                    </div>
-                </form>
-            </div>
+                <div class="modal-footer">
+                    <a href="{{ route('thongbao.index') }}" class="btn btn-outline-secondary">Xóa lọc</a>
+                    <button type="submit" class="btn btn-primary">Áp dụng</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    @push('scripts')
-        <script>
-            // Mở modal bộ lọc thông báo (chạy được cho cả Bootstrap 4 và 5)
-            (function() {
-                document.addEventListener('DOMContentLoaded', function() {
-                    var btn = document.getElementById('openFilterModalBtn');
-                    if (!btn) return;
+@push('scripts')
+<script>
+    // Mở modal bộ lọc thông báo (chạy được cho cả Bootstrap 4 và 5)
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('openFilterModalBtn');
+            if (!btn) return;
 
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        var modalEl = document.getElementById('filterModal');
-                        if (!modalEl) return;
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var modalEl = document.getElementById('filterModal');
+                if (!modalEl) return;
 
-                        try {
-                            if (window.bootstrap && bootstrap.Modal) {
-                                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                                modal.show();
-                            } else if (window.$ && $('#filterModal').modal) {
-                                $('#filterModal').modal('show');
-                            }
-                        } catch (err) {
-                            if (window.$ && $('#filterModal').modal) {
-                                $('#filterModal').modal('show');
-                            }
-                        }
-                    });
-                });
-            })();
-        </script>
-    @endpush
+                try {
+                    if (window.bootstrap && bootstrap.Modal) {
+                        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.show();
+                    } else if (window.$ && $('#filterModal').modal) {
+                        $('#filterModal').modal('show');
+                    }
+                } catch (err) {
+                    if (window.$ && $('#filterModal').modal) {
+                        $('#filterModal').modal('show');
+                    }
+                }
+            });
+        });
+    })();
+</script>
+@endpush

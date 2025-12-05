@@ -19,7 +19,7 @@ use App\Http\Controllers\SlotController;
 use App\Http\Controllers\KhuController;
 use App\Http\Controllers\ThongBaoHoaDonDienNuocController;
 use App\Http\Controllers\HoaDonSlotController;
-
+use App\Http\Controllers\HoaDonBaoTriController;
 use App\Http\Controllers\UserController;
 
 use App\Http\Controllers\ViolationController;
@@ -79,7 +79,7 @@ Route::prefix('client')->middleware(['auth'])->group(function () {
     Route::get('/xac-nhan-ho-so', [ClientController::class, 'showConfirmation'])->name('client.confirmation.show');
     Route::post('/xac-nhan-ho-so', [ClientController::class, 'confirmApproval'])->name('client.confirmation.store');
     Route::get('/ho-so-da-dang-ky', [ClientController::class, 'previewProfile'])->name('client.profile.preview');
-    
+
     // Xác nhận phòng
     Route::get('/xac-nhan-phong', [ClientController::class, 'showRoomConfirmation'])->name('client.room.confirmation.show');
     Route::post('/xac-nhan-phong', [ClientController::class, 'confirmRoomAssignment'])->name('client.room.confirm');
@@ -147,6 +147,8 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
             ->name('client.hoadon.lichsu.diennuoc');
     });
 });
+ Route::post('/baotri/{id}', [ClientController::class, 'thanhToanBaoTri'])
+    ->name('client.hoadon.baotri.thanhtoan');
 
 // =================== 🧑‍🎓 STUDENT (OLD - giữ để tương thích) ===================
 Route::group(['prefix' => 'student', 'middleware' => ['student']], function () {
@@ -239,6 +241,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/get-tai-san-kho/{loaiId}', [LichBaoTriController::class, 'getTaiSanKho']);
         Route::get('/get-tai-san-phong/{phongId}', [LichBaoTriController::class, 'getTaiSanPhong']);
     });
+    Route::prefix('hoadonbaotri')->group(function () {
+    Route::get('', [HoaDonBaoTriController::class, 'index'])->name('hoadonbaotri.index');
+    Route::post('{id}/update', [HoaDonBaoTriController::class, 'update'])->name('hoadonbaotri.update');
+});
 
     Route::prefix('taisan')->group(function () {
         Route::get('', [TaiSanController::class, 'index'])->name('taisan.index');
