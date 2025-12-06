@@ -67,28 +67,6 @@
       border-spacing: 0 !important
     }
 
-    /* Tránh bị cắt dropdown (menu ba chấm) */
-    .listing-table-wrapper,
-    .listing-table-wrapper .table-responsive,
-    .listing-table tbody tr,
-    .listing-table tbody td,
-    .action-cell {
-      overflow: visible !important;
-    }
-
-    .listing-table tbody tr {
-      position: relative;
-      z-index: 1;
-    }
-
-    .listing-table tbody tr.active-menu {
-      z-index: 10;
-    }
-
-    .action-menu .dropdown-menu {
-      z-index: 3000;
-    }
-
     .listing-table thead th {
       font-size: .78rem;
       text-transform: uppercase;
@@ -455,12 +433,10 @@
 
             <td class="text-center">
               <span class="badge 
-                @if($l->trang_thai == 'Hoàn thành') bg-success text-white
+                @if($l->trang_thai == 'Hoàn thành') bg-success
                 @elseif($l->trang_thai == 'Đang bảo trì') bg-warning text-dark
                 @elseif($l->trang_thai == 'Đang lên lịch') bg-info text-white
-                @elseif($l->trang_thai == 'Chờ thanh toán') bg-primary text-white
-                @else bg-secondary text-white @endif"
-                style="font-size: 0.92rem; padding: 0.45rem 0.8rem; border-radius: 999px;">
+                @else bg-secondary @endif">
                 {{ $l->trang_thai }}
               </span>
             </td>
@@ -686,28 +662,21 @@
         e.preventDefault();
         const $wrapper = $gear.closest('.action-menu');
         const $menu = $wrapper.find('.dropdown-menu').first();
-        const $row = $gear.closest('tr');
         const isOpen = $menu.hasClass('show');
         $('.action-menu .dropdown-menu').removeClass('show');
-        $('tr.active-menu').removeClass('active-menu');
         if (!isOpen) {
           $menu.addClass('show');
-          if ($row.length) {
-            $row.addClass('active-menu');
-          }
         }
         return;
       }
 
       if (!$target.closest('.action-menu .dropdown-menu').length) {
         $('.action-menu .dropdown-menu').removeClass('show');
-        $('tr.active-menu').removeClass('active-menu');
       }
     });
 
     $(document).on('click', '.action-menu .dropdown-item', function() {
       $('.action-menu .dropdown-menu').removeClass('show');
-      $('tr.active-menu').removeClass('active-menu');
     });
 
     $(document).on('click', '.btn-delete-lich', function(e) {

@@ -128,6 +128,7 @@ class PublicController extends Controller
             'so_dien_thoai' => 'required|string',
             'email' => 'required|email',
             'anh_sinh_vien' => 'nullable|image|max:2048',
+            'anh_giay_xac_nhan' => 'nullable|image|max:2048',
             'citizen_id_number' => 'nullable|string',
             'citizen_issue_date' => 'nullable|date',
             'citizen_issue_place' => 'nullable|string',
@@ -144,6 +145,10 @@ class PublicController extends Controller
 
         if ($request->hasFile('anh_sinh_vien')) {
             $data['anh_sinh_vien'] = $request->file('anh_sinh_vien')->store('students', 'public');
+        }
+
+        if ($request->hasFile('anh_giay_xac_nhan')) {
+            $data['anh_giay_xac_nhan'] = $request->file('anh_giay_xac_nhan')->store('students', 'public');
         }
 
         $data['trang_thai_ho_so'] = SinhVien::STATUS_PENDING_APPROVAL;

@@ -321,10 +321,29 @@
       padding-bottom: .75rem
     }
 
+    /* Tránh dropdown bị che */
+    .room-table-wrapper,
+    .room-table-wrapper .table-responsive,
+    .room-table tbody tr,
+    .room-table tbody td,
+    .action-cell {
+      overflow: visible !important;
+    }
+
+    .room-table-wrapper .table-responsive {
+      overflow: visible !important;
+    }
+
     .room-table tbody tr {
       background: #f9fafc;
       border-radius: 16px;
-      transition: transform .2s ease, box-shadow .2s ease
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .room-table tbody tr.active-menu {
+      z-index: 10;
     }
 
     .room-table tbody tr:hover {
@@ -348,7 +367,30 @@
       border-bottom-right-radius: 16px
     }
 
+    /* Tránh dropdown bị cắt */
+    .room-table-wrapper,
+    .room-table-wrapper .table-responsive,
+    .room-table tbody tr,
+    .room-table tbody td,
+    .action-cell {
+      overflow: visible !important;
+    }
+
+    .room-table tbody tr {
+      position: relative;
+      z-index: 1;
+    }
+
+    .room-table tbody tr.active-menu {
+      z-index: 9999;
+    }
+
     /* Nút thao tác */
+    .action-menu .dropdown-menu,
+    .custom-dropdown {
+      z-index: 5000;
+    }
+
     .btn-dergin {
       display: inline-flex;
       align-items: center;
@@ -395,20 +437,22 @@
     /* Dropdown + nút tròn */
     .custom-dropdown {
       position: absolute !important;
-      top: 50% !important;
-      transform: translateY(-50%) !important;
+      top: 100% !important;
       left: auto !important;
-      right: 60% !important;
-      min-width: 160px;
-      z-index: 9999;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      right: 0 !important;
+      transform: none !important;
+      margin-top: 6px;
+      min-width: 180px;
+      z-index: 5000;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       background-color: #fff;
-      display: none
+      display: none;
+      overflow: visible;
     }
 
     .dropdown.show .custom-dropdown {
-      display: block !important
+      display: block !important;
     }
 
     .custom-dropdown .dropdown-item {
@@ -479,6 +523,18 @@
   {{-- xử lí thanh toán --}}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Giữ dropdown không bị che: nâng z-index của hàng khi mở dropdown
+      document.querySelectorAll('.dropdown').forEach(function(dd) {
+        dd.addEventListener('show.bs.dropdown', function() {
+          const row = dd.closest('tr');
+          if (row) row.classList.add('active-menu');
+        });
+        dd.addEventListener('hide.bs.dropdown', function() {
+          const row = dd.closest('tr');
+          if (row) row.classList.remove('active-menu');
+        });
+      });
+
       const paymentMethodSelect = document.getElementById('paymentMethod');
       const invoiceTypeSelect = document.getElementById('invoiceType');
       const bankInfo = document.getElementById('bankInfo');
@@ -822,6 +878,27 @@
                 });
             });
         })();
+    </script>
+    <script>
+        // Đảm bảo dropdown thao tác không bị che
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.dropdown').forEach(function (dd) {
+                dd.addEventListener('show.bs.dropdown', function () {
+                    const tr = dd.closest('tr');
+                    if (tr) {
+                        tr.classList.add('active-menu');
+                        tr.style.zIndex = 9999;
+                    }
+                });
+                dd.addEventListener('hidden.bs.dropdown', function () {
+                    const tr = dd.closest('tr');
+                    if (tr) {
+                        tr.classList.remove('active-menu');
+                        tr.style.zIndex = '';
+                    }
+                });
+            });
+        });
     </script>
 @endpush
 @endsection
