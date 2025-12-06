@@ -431,23 +431,46 @@
       background: linear-gradient(135deg, #f43f5e 0%, #ef4444 100%)
     }
 
+    /* Tránh dropdown bị cắt */
+    .room-table-wrapper,
+    .room-table-wrapper .table-responsive,
+    .room-table tbody tr,
+    .room-table tbody td {
+      overflow: visible !important;
+    }
+
+    .room-table-wrapper .table-responsive {
+      overflow: visible !important;
+    }
+
+    .room-table tbody tr {
+      position: relative;
+      z-index: 1;
+    }
+
+    .room-table tbody tr.active-menu {
+      z-index: 20;
+    }
+
     /* Dropdown + nút tròn */
     .custom-dropdown {
       position: absolute !important;
-      top: 50% !important;
-      transform: translateY(-50%) !important;
+      top: 100% !important;
       left: auto !important;
-      right: 60% !important;
-      min-width: 160px;
-      z-index: 9999;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      right: 0 !important;
+      transform: none !important;
+      margin-top: 6px;
+      min-width: 180px;
+      z-index: 5000;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       background-color: #fff;
-      display: none
+      display: none;
+      overflow: visible;
     }
 
     .dropdown.show .custom-dropdown {
-      display: block !important
+      display: block !important;
     }
 
     .custom-dropdown .dropdown-item {
@@ -518,6 +541,18 @@
   {{-- xử lí thanh toán --}}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Nâng z-index của hàng khi mở dropdown để không bị che
+      document.querySelectorAll('.dropdown').forEach(function(dd) {
+        dd.addEventListener('show.bs.dropdown', function() {
+          const row = dd.closest('tr');
+          if (row) row.classList.add('active-menu');
+        });
+        dd.addEventListener('hide.bs.dropdown', function() {
+          const row = dd.closest('tr');
+          if (row) row.classList.remove('active-menu');
+        });
+      });
+
       const paymentMethodSelect = document.getElementById('paymentMethod');
       const invoiceTypeSelect = document.getElementById('invoiceType');
       const bankInfo = document.getElementById('bankInfo');

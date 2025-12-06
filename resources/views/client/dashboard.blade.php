@@ -704,7 +704,7 @@
                 </div>
                 @endif
 
-                @if(isset($hasConfirmedRoom) && $hasConfirmedRoom)
+                @if($phong)
                 <a href="{{ route('client.phong') }}" class="room-view-btn mt-3">
                     <i class="fas fa-eye"></i>
                     Xem chi tiết phòng

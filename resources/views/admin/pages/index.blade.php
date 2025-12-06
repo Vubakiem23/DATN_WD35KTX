@@ -288,14 +288,14 @@
                 <div class="stat-subvalue">Trống: {{ number_format($soSlotTrong) }} slot</div>
             </div>
 
-            <div class="stat-card purple">
+            {{-- <div class="stat-card purple">
                 <i class="fa fa-line-chart stat-icon"></i>
                 <div class="stat-label">Lợi nhuận ròng</div>
                 <div class="stat-value" style="color: {{ $loiNhuanRong >= 0 ? '#27ae60' : '#e74c3c' }};">
                     {{ number_format($loiNhuanRong, 0, ',', '.') }} đ
                 </div>
                 <div class="stat-subvalue">Thu - Chi</div>
-            </div>
+            </div> --}}
         </div>
 
         <!-- Section: Thống kê hồ sơ sinh viên -->

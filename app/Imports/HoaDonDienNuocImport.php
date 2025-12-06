@@ -24,10 +24,17 @@ class HoaDonDienNuocImport implements ToModel, WithHeadingRow, WithValidation, S
         }
 
         // Kiểm tra phòng có tồn tại không
-        $phong = Phong::with('khu')->find($row['phong_id']);
+        $phong = Phong::with(['khu', 'slots'])->find($row['phong_id']);
         if (!$phong) {
             Log::warning('Phòng không tồn tại: phong_id = ' . $row['phong_id']);
             return null; // Bỏ qua dòng lỗi
+        }
+
+        // Chỉ tính các phòng có người ở (nhất quán logic tiền phòng)
+        $billableSlots = $phong->billableSlotCount(true);
+        if ($billableSlots <= 0) {
+            Log::info('[IMPORT_DIEN_NUOC] Bỏ qua phòng trống phong_id = ' . $row['phong_id']);
+            return null;
         }
 
         // Kiểm tra các trường bắt buộc
@@ -68,7 +75,7 @@ class HoaDonDienNuocImport implements ToModel, WithHeadingRow, WithValidation, S
         }
 
         // Tiền phòng theo slot/khu - chỉ tính slot có người ở (nhất quán với Controller)
-        $tienPhongSlot = $phong->tinhTienPhongTheoSlot(true);
+        $tienPhongSlot = $billableSlots * $phong->giaSlot();
 
         // Thành tiền = Tiền điện + Tiền nước + Tiền phòng
         $tien_dien = $so_dien * $don_gia_dien;

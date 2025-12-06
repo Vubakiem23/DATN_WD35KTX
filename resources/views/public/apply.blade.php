@@ -77,6 +77,10 @@
                                     <label class="form-label">Ảnh sinh viên</label>
                                     <input type="file" name="anh_sinh_vien" class="form-control" accept="image/*">
                                 </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Ảnh giấy xác nhận</label>
+                                    <input type="file" name="anh_giay_xac_nhan" class="form-control" accept="image/*">
+                                </div>
                             </div>
 
                             <hr class="my-4">
