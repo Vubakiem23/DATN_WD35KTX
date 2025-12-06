@@ -38,11 +38,7 @@ class Student
                     ->with('warning', 'Hồ sơ sinh viên của bạn đang chờ ban quản lý duyệt.');
             }
 
-            if ($sinhVien->trang_thai_ho_so === SinhVien::STATUS_PENDING_CONFIRMATION) {
-                return redirect()
-                    ->route('client.confirmation.show')
-                    ->with('warning', 'Vui lòng xác nhận hồ sơ trước khi sử dụng các chức năng dành cho sinh viên.');
-            }
+            // Bỏ qua kiểm tra STATUS_PENDING_CONFIRMATION vì không còn bước xác nhận nữa
 
             return $next($request);
         }

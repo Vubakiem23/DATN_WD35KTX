@@ -1,15 +1,21 @@
 <p>Chào {{ $sinhVien->ho_ten }},</p>
 
-<p>Ban quản lý ký túc xá đã duyệt hồ sơ đăng ký của bạn. Vui lòng đăng nhập vào cổng sinh viên và xác nhận thông tin để hoàn tất thủ tục.</p>
+<p>Chúc mừng bạn! Ban quản lý ký túc xá đã duyệt hồ sơ đăng ký của bạn.</p>
 
-<p>
-    <a href="{{ $confirmationUrl }}" style="display:inline-block;padding:10px 18px;background-color:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;">
-        Xác nhận hồ sơ
-    </a>
-</p>
+<p><strong>Thông tin hồ sơ:</strong></p>
+<ul>
+    <li>Mã sinh viên: {{ $sinhVien->ma_sinh_vien }}</li>
+    <li>Họ tên: {{ $sinhVien->ho_ten }}</li>
+    <li>Lớp: {{ $sinhVien->lop }}</li>
+    <li>Ngành: {{ $sinhVien->nganh }}</li>
+    <li>Trạng thái: Đã được duyệt</li>
+</ul>
 
-<p>Nếu nút trên không hoạt động, hãy sao chép đường dẫn sau và mở trong trình duyệt:</p>
-<p>{{ $confirmationUrl }}</p>
+<p>Hồ sơ của bạn đã được duyệt và bạn có thể sử dụng đầy đủ các chức năng dành cho sinh viên trong hệ thống.</p>
+
+<p>Vui lòng đăng nhập vào cổng sinh viên để sử dụng các dịch vụ của ký túc xá.</p>
 
 <p>Cảm ơn bạn đã lựa chọn ký túc xá của chúng tôi!</p>
+
+<p>Trân trọng,<br>Ban quản lý ký túc xá</p>
 
