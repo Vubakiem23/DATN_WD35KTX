@@ -259,13 +259,13 @@ class SinhVienController extends Controller
     public function approve($id)
     {
         $sv = SinhVien::findOrFail($id);
-        $sv->trang_thai_ho_so = SinhVien::STATUS_PENDING_CONFIRMATION;
+        $sv->trang_thai_ho_so = SinhVien::STATUS_APPROVED;
         $sv->save();
 
+        // Gửi email thông báo đã được duyệt
         if (!empty($sv->email)) {
             try {
-                $confirmationUrl = route('client.confirmation.show');
-                Mail::to($sv->email)->send(new SinhVienApprovalMail($sv, $confirmationUrl));
+                Mail::to($sv->email)->send(new SinhVienApprovalMail($sv));
             } catch (\Throwable $e) {
                 report($e);
             }

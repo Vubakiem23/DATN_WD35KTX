@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class SinhVienApprovalMail extends Mailable
+class RegistrationSuccessMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -18,8 +18,8 @@ class SinhVienApprovalMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Hồ sơ ký túc xá của bạn đã được duyệt')
-            ->view('emails.sinhvien.approved');
+        return $this->subject('Đăng ký ký túc xá thành công')
+            ->view('emails.registration_success');
     }
 }
 

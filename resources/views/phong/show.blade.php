@@ -168,14 +168,15 @@
       border-color: #4f46e5;
       outline: none;
     }
-    .room-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem}
-    .room-info-card{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-radius:18px;background:#f8fafc;border:1px solid rgba(148,163,184,.28);box-shadow:0 10px 24px rgba(15,23,42,.06);transition:transform .2s ease,box-shadow .2s ease}
+    .room-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem;align-items:stretch}
+    .room-info-card{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;border-radius:18px;background:#f8fafc;border:1px solid rgba(148,163,184,.28);box-shadow:0 10px 24px rgba(15,23,42,.06);transition:transform .2s ease,box-shadow .2s ease;height:100%}
     .room-info-card:hover{transform:translateY(-2px);box-shadow:0 16px 32px rgba(15,23,42,.09)}
     .room-info-card__icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;color:#4338ca;background:rgba(99,102,241,.18)}
     .room-info-card--zone .room-info-card__icon{color:#1d4ed8;background:rgba(59,130,246,.18)}
     .room-info-card--type .room-info-card__icon{color:#16a34a;background:rgba(34,197,94,.16)}
     .room-info-card--capacity .room-info-card__icon{color:#7c3aed;background:rgba(167,139,250,.2)}
     .room-info-card--price .room-info-card__icon{color:#dc2626;background:rgba(248,113,113,.2)}
+    .room-info-card--note .room-info-card__icon{color:#f59e0b;background:rgba(251,191,36,.2)}
     .room-info-card__label{font-size:.72rem;font-weight:600;color:#6b7280;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.15rem}
     .room-info-card__value{font-size:1rem;font-weight:600;color:#1f2937}
     .room-info-card__meta{margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.4rem}
@@ -319,23 +320,18 @@
           </div>
         </div>
         @endif
-      </div>
-      @php $total=$phong->totalSlots(); $used=$phong->usedSlots(); $pct=$total?round($used*100/$total):0; @endphp
-      <div class="room-occupancy">
-        <div class="room-occupancy__label">
-          <i class="fa fa-chart-pie"></i>
-          Tỉ lệ lấp đầy
+        @if($phong->ghi_chu)
+        <div class="room-info-card room-info-card--note">
+          <div class="room-info-card__icon">
+            <i class="fa fa-sticky-note-o"></i>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <div class="room-info-card__label">Mô tả</div>
+            <div class="room-info-card__value" style="font-size: 0.95rem; font-weight: 500; line-height: 1.6; white-space: normal; flex: 1;">{{ $phong->ghi_chu }}</div>
+          </div>
         </div>
-        <div class="room-occupancy__value">{{ $used }} / {{ $total }} ({{ $pct }}%)</div>
-        <div class="progress">
-          <div class="progress-bar {{ $pct==100 ? 'bg-warning text-dark' : 'bg-success' }}" role="progressbar" style="width: {{ $pct }}%" aria-valuenow="{{ $pct }}" aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
+        @endif
       </div>
-      @if($phong->ghi_chu)
-        <ul class="list-unstyled mb-0 mt-2 small text-muted">
-          <li><i class="fa fa-sticky-note-o me-1"></i>{{ $phong->ghi_chu }}</li>
-        </ul>
-      @endif
     </div>
       </div>
       <div class="card shadow-sm room-assets-card">
@@ -472,11 +468,9 @@
                 <td data-label="CSVC (bàn giao)">
                   @if(($slot->taiSans ?? collect())->count() > 0)
                     <style>
-                      .chip{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #e9ecef;border-radius:999px;padding:.15rem .6rem;margin:.12rem;background:#fff;max-width:100%}
-                      .chip img{width:20px;height:20px;border-radius:50%;object-fit:cover;border:1px solid #e9ecef}
-                      .chip .name{font-size:12px;color:#212529;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
-                      .chip .code{font-size:11px;color:#6c757d}
-                      .chip .qty{font-size:11px;color:#6c757d}
+                      .chip{display:inline-flex;align-items:center;gap:.4rem;border:1px solid #e9ecef;border-radius:999px;padding:.2rem .5rem;margin:.12rem;background:#fff}
+                      .chip img{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid #e9ecef;flex-shrink:0}
+                      .chip .qty{font-size:12px;color:#374151;font-weight:500}
                     </style>
                     <div class="d-flex flex-wrap">
                       @foreach($slot->taiSans as $ts)
@@ -488,9 +482,11 @@
                         <span class="chip" title="{{ $ts->ten_tai_san }} ({{ $code }}) x{{ $qty }}">
                           @if($img)
                             <img src="{{ $img }}" alt="{{ $ts->ten_tai_san }}">
+                          @else
+                            <div style="width:24px;height:24px;border-radius:50%;background:#e9ecef;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                              <i class="fa fa-image" style="font-size:10px;color:#9ca3af;"></i>
+                            </div>
                           @endif
-                          <span class="name">{{ $ts->ten_tai_san }}</span>
-                          <span class="code">{{ $code }}</span>
                           <span class="qty">x{{ $qty }}</span>
                         </span>
                       @endforeach

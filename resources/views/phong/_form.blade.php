@@ -15,6 +15,23 @@
 
 @push('styles')
 <style>
+  /* Đảm bảo tất cả input và select có cùng chiều cao */
+  .form-control, select.form-control {
+    min-height: 42px;
+    height: 42px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  textarea.form-control {
+    min-height: 80px;
+    height: auto;
+  }
+  .form-label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+  }
   .form-section-actions{
     margin-top:2rem;
     padding:1.15rem 1.25rem;
@@ -119,27 +136,44 @@
           .asset-picker{display:flex;flex-direction:column;gap:1rem;max-height:320px;overflow:auto;padding-right:.25rem}
           .asset-picker::-webkit-scrollbar{width:6px}
           .asset-picker::-webkit-scrollbar-thumb{background:#ced4da;border-radius:10px}
-          .asset-group{border:1px solid #e5e7eb;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.06);transition:box-shadow .2s ease,border-color .2s ease}
-          .asset-group.is-open{box-shadow:0 10px 24px rgba(15,23,42,.1);border-color:#d1d5db}
-          .asset-group__header{display:grid;grid-template-columns:minmax(0,1.4fr) auto auto;align-items:center;gap:1.25rem;padding:1rem 1.25rem;background:#f8fafc;border-bottom:1px solid #e5e7eb}
+          .asset-group{border:2px solid #d1d5db;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.06);transition:box-shadow .2s ease,border-color .2s ease}
+          .asset-group.is-open{box-shadow:0 10px 24px rgba(15,23,42,.1);border-color:#9ca3af}
+          .asset-group__header{display:grid;grid-template-columns:minmax(0,1.4fr) auto auto;align-items:center;gap:1.25rem;padding:1rem 1.25rem;background:#f8fafc;border-bottom:2px solid #d1d5db}
           .asset-group__title{display:flex;align-items:center;gap:1rem;min-width:200px}
-          .asset-thumb{width:52px;height:52px;border-radius:14px;object-fit:cover;border:1px solid #e5e7eb;background:#f1f5f9}
+          .asset-thumb{width:52px;height:52px;border-radius:14px;object-fit:cover;border:2px solid #d1d5db;background:#f1f5f9;flex-shrink:0}
           .asset-thumb--sm{width:40px;height:40px;border-radius:12px}
-          .asset-group__name{font-weight:600;color:#1f2937;margin-bottom:.15rem}
+          .asset-group__name{font-weight:600;color:#1f2937;margin-bottom:.15rem;word-wrap:break-word}
           .asset-group__meta{display:flex;align-items:center;gap:.75rem;justify-self:flex-start}
-          .asset-group__meta .badge{background:#fff;color:#1f2937;border:1px solid #d1d5db;font-weight:500;border-radius:999px;padding:.35rem .75rem}
+          .asset-group__meta .badge{background:#fff;color:#1f2937;border:2px solid #d1d5db;font-weight:500;border-radius:999px;padding:.35rem .75rem;white-space:nowrap;flex-shrink:0}
           .asset-group__actions{display:flex;align-items:center;gap:.5rem;justify-self:flex-end}
-          .asset-group__actions .btn{white-space:nowrap}
+          .asset-group__actions .btn{white-space:nowrap;border-radius:8px}
+          .asset-group__actions .btn:active,
+          .asset-group__actions .btn:focus,
+          .asset-group__actions .btn:focus-visible{
+            background-color:#0d6efd !important;
+            border-color:#0d6efd !important;
+            color:#fff !important;
+            box-shadow:none !important;
+            outline:none !important;
+          }
+          .asset-group__actions .btn:hover{
+            background-color:#0b5ed7;
+            border-color:#0a58ca;
+            color:#fff;
+          }
           .asset-list{display:none;flex-direction:column;gap:.75rem;padding:1rem 1.25rem;background:#fff}
           .asset-list.show{display:flex}
-          .asset-item{display:grid;grid-template-columns:minmax(0,1.2fr) auto auto;gap:1rem;align-items:center;padding:1rem 1.15rem;border:1px solid #e5e7eb;border-radius:16px;background:#fff;box-shadow:0 10px 18px rgba(15,23,42,.04);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-          .asset-item:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.08)}
-          .asset-item__info{display:flex;align-items:center;gap:.85rem}
-          .asset-item__name{font-weight:600;color:#111827}
-          .asset-item__code{font-size:.85rem;color:#6b7280}
-          .asset-item__extras{text-align:right;display:flex;flex-direction:column;gap:.35rem;margin-right:.5rem}
-          .asset-item__extras .badge{background:#e0f2fe;color:#0369a1;border:none;font-weight:600;border-radius:999px;padding:.35rem .65rem}
-          .asset-item__extras .status{font-size:.85rem;color:#6b7280}
+          .asset-item{display:grid;grid-template-columns:minmax(0,1.2fr) auto auto;gap:1rem;align-items:center;padding:1rem 1.15rem;border:2px solid #d1d5db;border-radius:16px;background:#fff;box-shadow:0 10px 18px rgba(15,23,42,.04);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+          .asset-item:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.08);border-color:#9ca3af}
+          .asset-item__info{display:flex;align-items:center;gap:.85rem;flex:1;min-width:0}
+          .asset-item__info > div{flex:1;min-width:0}
+          .asset-item__name{font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+          .asset-item__code{font-size:.85rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+          .asset-item__extras{text-align:right;display:flex;flex-direction:column;gap:.35rem;margin-right:.5rem;flex-shrink:0;align-items:flex-end}
+          .asset-item__extras .badge{background:#e0f2fe;color:#0369a1;border:none;font-weight:600;border-radius:999px;padding:.35rem .65rem;white-space:nowrap}
+          .asset-item__extras .status-code-line{display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#6b7280;flex-wrap:wrap;justify-content:flex-end}
+          .asset-item__extras .status{white-space:nowrap}
+          .asset-item__code{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;display:inline-block}
           .asset-item__actions{display:flex;align-items:center;justify-content:flex-end}
           .asset-toggle{display:inline-flex;align-items:center;gap:.4rem;border-radius:999px;padding:.45rem 1.15rem;font-weight:600;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;transition:background .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease;cursor:pointer}
           .asset-toggle svg{width:16px;height:16px}
@@ -206,12 +240,14 @@
                       @endif
                       <div>
                         <div class="asset-item__name">{{ $kho->ten_tai_san }}</div>
-                        <div class="asset-item__code">Mã: {{ $kho->ma_tai_san ?? ('TS-'.$kho->id) }}</div>
                       </div>
                     </div>
                     <div class="asset-item__extras">
                       <span class="badge">Còn trong kho: {{ $kho->so_luong }}</span>
-                      <div class="status">Tình trạng: {{ $kho->tinh_trang ?? '-' }}</div>
+                      <div class="status-code-line">
+                        <span class="status">Tình trạng: {{ $kho->tinh_trang ?? '-' }}</span>
+                        <span class="asset-item__code">Mã: {{ $kho->ma_tai_san ?? ('TS-'.$kho->id) }}</span>
+                      </div>
                     </div>
                     <div class="asset-item__actions">
                       <button type="button"
