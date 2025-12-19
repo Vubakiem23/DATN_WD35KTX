@@ -1058,6 +1058,10 @@ class ClientController extends Controller
             'hinh_thuc_thanh_toan' => 'required|in:tien_mat,chuyen_khoan',
             'ghi_chu' => 'nullable|string|max:500',
             'anh_chuyen_khoan' => 'nullable|image|max:4096',
+            'xac_nhan_tinh_trang_phong' => 'required|accepted',
+        ], [
+            'xac_nhan_tinh_trang_phong.required' => 'Vui lòng xác nhận tình trạng phòng và cơ sở vật chất phòng.',
+            'xac_nhan_tinh_trang_phong.accepted' => 'Vui lòng xác nhận tình trạng phòng và cơ sở vật chất phòng.',
         ]);
 
         // Xử lý thanh toán và xác nhận vào phòng

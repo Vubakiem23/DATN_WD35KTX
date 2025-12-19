@@ -209,6 +209,21 @@
                                             @enderror
                                         </div>
 
+                                        <!-- Xác nhận tình trạng phòng -->
+                                        <div class="mb-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="xac_nhan_tinh_trang_phong" 
+                                                       name="xac_nhan_tinh_trang_phong" value="1" required
+                                                       {{ old('xac_nhan_tinh_trang_phong') ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="xac_nhan_tinh_trang_phong">
+                                                    Tôi đã xác nhận tình trạng phòng và cơ sở vật chất phòng <span class="text-danger">*</span>
+                                                </label>
+                                            </div>
+                                            @error('xac_nhan_tinh_trang_phong')
+                                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
                                         <!-- Buttons -->
                                         <div class="d-flex gap-2 justify-content-end">
                                             <button type="button" class="btn btn-danger me-auto" onclick="rejectRoom()">
@@ -482,6 +497,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 alert('Vui lòng upload ảnh chứng từ chuyển khoản');
                 anhChuyenKhoan.focus();
+                return false;
+            }
+            
+            const xacNhanTinhTrangPhong = document.getElementById('xac_nhan_tinh_trang_phong');
+            if (xacNhanTinhTrangPhong && !xacNhanTinhTrangPhong.checked) {
+                e.preventDefault();
+                alert('Vui lòng xác nhận tình trạng phòng và cơ sở vật chất phòng');
+                xacNhanTinhTrangPhong.focus();
                 return false;
             }
         });

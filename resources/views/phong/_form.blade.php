@@ -133,72 +133,78 @@
         <h5>Chọn tài sản từ kho cấp cho phòng (tùy chọn)</h5>
         @push('styles')
         <style>
-          .asset-picker{display:flex;flex-direction:column;gap:1rem;max-height:320px;overflow:auto;padding-right:.25rem}
+          .asset-picker{display:flex;flex-direction:column;gap:1rem;max-height:400px;overflow:auto;padding-right:.25rem}
           .asset-picker::-webkit-scrollbar{width:6px}
           .asset-picker::-webkit-scrollbar-thumb{background:#ced4da;border-radius:10px}
           .asset-group{border:2px solid #d1d5db;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.06);transition:box-shadow .2s ease,border-color .2s ease}
           .asset-group.is-open{box-shadow:0 10px 24px rgba(15,23,42,.1);border-color:#9ca3af}
-          .asset-group__header{display:grid;grid-template-columns:minmax(0,1.4fr) auto auto;align-items:center;gap:1.25rem;padding:1rem 1.25rem;background:#f8fafc;border-bottom:2px solid #d1d5db}
-          .asset-group__title{display:flex;align-items:center;gap:1rem;min-width:200px}
-          .asset-thumb{width:52px;height:52px;border-radius:14px;object-fit:cover;border:2px solid #d1d5db;background:#f1f5f9;flex-shrink:0}
-          .asset-thumb--sm{width:40px;height:40px;border-radius:12px}
-          .asset-group__name{font-weight:600;color:#1f2937;margin-bottom:.15rem;word-wrap:break-word}
-          .asset-group__meta{display:flex;align-items:center;gap:.75rem;justify-self:flex-start}
-          .asset-group__meta .badge{background:#fff;color:#1f2937;border:2px solid #d1d5db;font-weight:500;border-radius:999px;padding:.35rem .75rem;white-space:nowrap;flex-shrink:0}
-          .asset-group__actions{display:flex;align-items:center;gap:.5rem;justify-self:flex-end}
-          .asset-group__actions .btn{white-space:nowrap;border-radius:8px}
-          .asset-group__actions .btn:active,
-          .asset-group__actions .btn:focus,
-          .asset-group__actions .btn:focus-visible{
-            background-color:#0d6efd !important;
-            border-color:#0d6efd !important;
-            color:#fff !important;
-            box-shadow:none !important;
-            outline:none !important;
+          
+          /* Header của nhóm tài sản */
+          .asset-group__header{
+            display:flex;
+            flex-wrap:wrap;
+            align-items:center;
+            justify-content:space-between;
+            gap:0.75rem;
+            padding:1rem 1.25rem;
+            background:#f8fafc;
+            border-bottom:2px solid #d1d5db;
           }
-          .asset-group__actions .btn:hover{
-            background-color:#0b5ed7;
-            border-color:#0a58ca;
-            color:#fff;
-          }
+          .asset-group__title{display:flex;align-items:center;gap:0.75rem;flex:1;min-width:0}
+          .asset-thumb{width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid #d1d5db;background:#f1f5f9;flex-shrink:0}
+          .asset-thumb--sm{width:40px;height:40px;border-radius:10px}
+          .asset-group__name{font-weight:600;color:#1f2937;font-size:0.95rem}
+          .asset-group__title .text-muted{font-size:0.8rem;margin-top:2px}
+          
+          /* Actions của nhóm */
+          .asset-group__actions{display:flex;align-items:center;gap:0.5rem;flex-shrink:0}
+          .asset-group__actions .badge{background:#e0f2fe;color:#0369a1;border:none;font-weight:600;border-radius:999px;padding:.35rem .75rem;white-space:nowrap;font-size:0.8rem}
+          .asset-group__actions .btn{white-space:nowrap;border-radius:8px;font-size:0.85rem;padding:0.4rem 0.8rem}
+          
+          /* Danh sách tài sản con */
           .asset-list{display:none;flex-direction:column;gap:.75rem;padding:1rem 1.25rem;background:#fff}
           .asset-list.show{display:flex}
-          .asset-item{display:grid;grid-template-columns:minmax(0,1.2fr) auto auto;gap:1rem;align-items:center;padding:1rem 1.15rem;border:2px solid #d1d5db;border-radius:16px;background:#fff;box-shadow:0 10px 18px rgba(15,23,42,.04);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-          .asset-item:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(15,23,42,.08);border-color:#9ca3af}
-          .asset-item__info{display:flex;align-items:center;gap:.85rem;flex:1;min-width:0}
+          
+          /* Item tài sản */
+          .asset-item{
+            display:flex;
+            flex-wrap:wrap;
+            align-items:center;
+            justify-content:space-between;
+            gap:0.75rem;
+            padding:0.85rem 1rem;
+            border:2px solid #d1d5db;
+            border-radius:12px;
+            background:#fff;
+            box-shadow:0 4px 12px rgba(15,23,42,.04);
+            transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+          }
+          .asset-item:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.08);border-color:#9ca3af}
+          
+          .asset-item__info{display:flex;align-items:center;gap:0.65rem;flex:1;min-width:0}
           .asset-item__info > div{flex:1;min-width:0}
-          .asset-item__name{font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-          .asset-item__code{font-size:.85rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-          .asset-item__extras{text-align:right;display:flex;flex-direction:column;gap:.35rem;margin-right:.5rem;flex-shrink:0;align-items:flex-end}
-          .asset-item__extras .badge{background:#e0f2fe;color:#0369a1;border:none;font-weight:600;border-radius:999px;padding:.35rem .65rem;white-space:nowrap}
-          .asset-item__extras .status-code-line{display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#6b7280;flex-wrap:wrap;justify-content:flex-end}
-          .asset-item__extras .status{white-space:nowrap}
-          .asset-item__code{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;display:inline-block}
-          .asset-item__actions{display:flex;align-items:center;justify-content:flex-end}
-          .asset-toggle{display:inline-flex;align-items:center;gap:.4rem;border-radius:999px;padding:.45rem 1.15rem;font-weight:600;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;transition:background .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease;cursor:pointer}
-          .asset-toggle svg{width:16px;height:16px}
-          .asset-item.is-selected{border-color:#6366f1;box-shadow:0 18px 32px rgba(79,70,229,.18)}
-          .asset-item.is-selected .asset-toggle{background:#4f46e5;color:#fff;border-color:#4f46e5;box-shadow:0 0 0 4px rgba(99,102,241,.18)}
+          .asset-item__name{font-weight:600;color:#111827;font-size:0.9rem}
+          
+          .asset-item__extras{display:flex;flex-direction:column;gap:0.25rem;align-items:flex-end;flex-shrink:0}
+          .asset-item__extras .badge{background:#e0f2fe;color:#0369a1;border:none;font-weight:600;border-radius:999px;padding:.3rem .6rem;white-space:nowrap;font-size:0.75rem}
+          .asset-item__extras .status-code-line{font-size:0.8rem;color:#6b7280;text-align:right}
+          .asset-item__extras .status-code-line .status{display:block}
+          .asset-item__extras .status-code-line .asset-item__code{display:block;margin-top:2px}
+          
+          .asset-item__actions{flex-shrink:0}
+          .asset-toggle{display:inline-flex;align-items:center;gap:.35rem;border-radius:999px;padding:.4rem 1rem;font-weight:600;font-size:0.85rem;border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;transition:all .2s ease;cursor:pointer}
+          .asset-toggle svg{width:14px;height:14px}
+          .asset-item.is-selected{border-color:#6366f1;box-shadow:0 8px 20px rgba(79,70,229,.15)}
+          .asset-item.is-selected .asset-toggle{background:#4f46e5;color:#fff;border-color:#4f46e5}
           .asset-item .asset-hidden{display:none}
-          @media (max-width: 991.98px){
-            .asset-group__header{grid-template-columns:minmax(0,1fr);row-gap:1rem}
-            .asset-group__meta{justify-self:stretch;justify-content:space-between}
-            .asset-group__actions{justify-self:flex-start}
-            .asset-picker{max-height:none;padding-right:0}
-            .asset-item{grid-template-columns:minmax(0,1fr) auto;align-items:flex-start}
-            .asset-item__extras{margin-right:0}
-            .asset-item__actions{grid-column:1 / -1;justify-content:flex-start}
-          }
+          
           @media (max-width: 767.98px){
-            .asset-group__header{align-items:flex-start}
-            .asset-group__meta{width:100%;justify-content:space-between}
-          }
-          @media (max-width: 575.98px){
-            .asset-item{grid-template-columns:1fr;padding:.9rem .9rem}
-            .asset-item{row-gap:.65rem}
-            .asset-item__extras{text-align:left}
-            .asset-item__extras{grid-column:1 / -1}
-            .asset-item__actions{grid-column:1 / -1;justify-content:flex-start}
+            .asset-group__header{flex-direction:column;align-items:flex-start}
+            .asset-group__actions{width:100%;justify-content:space-between}
+            .asset-item{flex-direction:column;align-items:flex-start}
+            .asset-item__extras{align-items:flex-start;width:100%}
+            .asset-item__extras .status-code-line{text-align:left}
+            .asset-item__actions{width:100%;margin-top:0.5rem}
           }
         </style>
         @endpush
@@ -218,13 +224,13 @@
                   @endif
                   <div>
                     <div class="asset-group__name">{{ $tenLoai }}</div>
-                    <div class="text-muted small">Có {{ $items->count() }} tài sản thuộc nhóm này</div>
+                    <div class="text-muted">{{ $items->count() }} tài sản</div>
                   </div>
                 </div>
                 <div class="asset-group__actions">
-                  <span class="badge">Tổng còn: {{ $tong }}</span>
+                  <span class="badge">Còn: {{ $tong }}</span>
                   <button type="button" class="btn btn-outline-primary btn-sm btn-toggle-group" data-group="{{ $loaiId }}">
-                    Xem kho
+                    Thu gọn
                   </button>
                 </div>
               </div>
@@ -240,13 +246,13 @@
                       @endif
                       <div>
                         <div class="asset-item__name">{{ $kho->ten_tai_san }}</div>
+                        <div class="text-muted" style="font-size:0.8rem">Mã: {{ $kho->ma_tai_san ?? ('TS-'.$kho->id) }}</div>
                       </div>
                     </div>
                     <div class="asset-item__extras">
-                      <span class="badge">Còn trong kho: {{ $kho->so_luong }}</span>
+                      <span class="badge">Còn: {{ $kho->so_luong }}</span>
                       <div class="status-code-line">
-                        <span class="status">Tình trạng: {{ $kho->tinh_trang ?? '-' }}</span>
-                        <span class="asset-item__code">Mã: {{ $kho->ma_tai_san ?? ('TS-'.$kho->id) }}</span>
+                        <span class="status">{{ $kho->tinh_trang ?? '-' }}</span>
                       </div>
                     </div>
                     <div class="asset-item__actions">
