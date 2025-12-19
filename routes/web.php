@@ -1,50 +1,49 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminPhanHoiSinhVienController;
+use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CKEditorUploadController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HashtagController;
+use App\Http\Controllers\HoaDonBaoTriController;
+use App\Http\Controllers\HoaDonController;
+use App\Http\Controllers\HoaDonSlotController;
+use App\Http\Controllers\HoaDonSuCoController;
+use App\Http\Controllers\KhoTaiSanController;
+use App\Http\Controllers\KhuController;
+use App\Http\Controllers\LichBaoTriController;
+use App\Http\Controllers\MucDoController;
+use App\Http\Controllers\PaymentConfirmationController;
+use App\Http\Controllers\PhanHoiSinhVienController;
+use App\Http\Controllers\PhongController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\QuanLyController;
 use App\Http\Controllers\SinhVienController;
-use App\Http\Controllers\PhongController;
-use App\Http\Controllers\HoaDonController;
-use App\Http\Controllers\ThanhtoanController;
-use App\Http\Controllers\TaiSanController;
-use App\Http\Controllers\KhoTaiSanController;
-use App\Http\Controllers\AssignmentController;
-use App\Http\Controllers\LichBaoTriController;
-use App\Http\Controllers\ThongBaoController;
-use App\Http\Controllers\SuCoController;
-use App\Http\Controllers\HoaDonSuCoController;
 use App\Http\Controllers\SlotController;
-use App\Http\Controllers\KhuController;
+use App\Http\Controllers\SuCoController;
+use App\Http\Controllers\TaiSanController;
+use App\Http\Controllers\ThanhtoanController;
+use App\Http\Controllers\ThongBaoController;
 use App\Http\Controllers\ThongBaoHoaDonDienNuocController;
-use App\Http\Controllers\HoaDonSlotController;
-use App\Http\Controllers\HoaDonBaoTriController;
+use App\Http\Controllers\ThongBaoKhuPhongController;
+use App\Http\Controllers\ThongBaoPhongSvController;
+use App\Http\Controllers\ThongBaoSinhVienController;
+use App\Http\Controllers\ThongBaoSuCoController;
+use App\Http\Controllers\TieuDeController;
+use App\Http\Controllers\TinTucController;
 use App\Http\Controllers\UserController;
-
 use App\Http\Controllers\ViolationController;
 use App\Http\Controllers\ViolationTypeController;
-use App\Http\Controllers\MucDoController;
-use App\Http\Controllers\TieuDeController;
+use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\ThongBaoSuCoController;
-use App\Http\Controllers\ThongBaoKhuPhongController;
-use App\Http\Controllers\ThongBaoSinhVienController;
-use App\Http\Controllers\HashtagController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\PublicController;
-use App\Http\Controllers\TinTucController;
-use App\Http\Controllers\ThongBaoPhongSvController;
-use App\Http\Controllers\CKEditorUploadController;
-use App\Http\Controllers\PaymentConfirmationController;
-use App\Models\Violation;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
-
 
 
 // =================== 🌐 PUBLIC (Công khai) ===================
@@ -70,8 +69,6 @@ Route::get('/tin-tuc/{slug}', [TinTucController::class, 'clientShow'])->name('pu
 // PUBLIC Thông báo chung
 Route::get('/thong-bao', [ThongBaoController::class, 'publicIndex'])->name('public.thongbao.index');
 Route::get('/thong-bao/{id}', [ThongBaoController::class, 'publicShow'])->name('public.thongbao.show');
-
-
 
 
 // =================== 🧑‍🎓 CLIENT CONFIRMATION ===================
@@ -106,8 +103,6 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         ->middleware('auth');
 
 
-
-
     // Thông báo
     Route::get('/thongbao', [ThongBaoController::class, 'clientIndex'])->name('client.thongbao.index');
     Route::get('/thongbao/{id}', [ThongBaoController::class, 'clientShow'])->name('client.thongbao.show');
@@ -116,12 +111,8 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         ->middleware('auth');
 
 
-
-
     // Lịch bảo trì
     Route::get('/lichbaotri', [ClientController::class, 'lichBaoTriIndex'])->name('client.lichbaotri.index');
-
-
 
 
     // Hóa đơn
@@ -146,8 +137,17 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
         Route::get('/lich-su-dien-nuoc', [ClientController::class, 'lichSuDienNuoc'])
             ->name('client.hoadon.lichsu.diennuoc');
     });
+
+    Route::prefix('phan-hoi')->group(function () {
+        Route::get('list', [PhanHoiSinhVienController::class, 'list'])->name('client.phan_hoi.list');
+        Route::get('show/{id}', [PhanHoiSinhVienController::class, 'show'])->name('client.phan_hoi.show');
+        Route::get('create', [PhanHoiSinhVienController::class, 'create'])->name('client.phan_hoi.create');
+        Route::post('store', [PhanHoiSinhVienController::class, 'store'])->name('client.phan_hoi.store');
+        Route::put('update/{id}', [PhanHoiSinhVienController::class, 'update'])->name('client.phan_hoi.update');
+        Route::delete('delete/{id}', [PhanHoiSinhVienController::class, 'delete'])->name('client.phan_hoi.delete');
+    });
 });
- Route::post('/baotri/{id}', [ClientController::class, 'thanhToanBaoTri'])
+Route::post('/baotri/{id}', [ClientController::class, 'thanhToanBaoTri'])
     ->name('client.hoadon.baotri.thanhtoan');
 
 // =================== 🧑‍🎓 STUDENT (OLD - giữ để tương thích) ===================
@@ -242,9 +242,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/get-tai-san-phong/{phongId}', [LichBaoTriController::class, 'getTaiSanPhong']);
     });
     Route::prefix('hoadonbaotri')->group(function () {
-    Route::get('', [HoaDonBaoTriController::class, 'index'])->name('hoadonbaotri.index');
-    Route::post('{id}/update', [HoaDonBaoTriController::class, 'update'])->name('hoadonbaotri.update');
-});
+        Route::get('', [HoaDonBaoTriController::class, 'index'])->name('hoadonbaotri.index');
+        Route::post('{id}/update', [HoaDonBaoTriController::class, 'update'])->name('hoadonbaotri.update');
+    });
 
     Route::prefix('taisan')->group(function () {
         Route::get('', [TaiSanController::class, 'index'])->name('taisan.index');
@@ -278,7 +278,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('loaitaisan', App\Http\Controllers\LoaiTaiSanController::class);
 
 
-
     Route::get('kho/show/{id}', [KhoTaiSanController::class, 'showModal'])->name('kho.show.modal');
     // ======================
     // KHU (Khu vực KTX)
@@ -293,7 +292,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/thong_bao_khu_phong', [ThongBaoKhuPhongController::class, 'index'])->name('thongbao_khu_phong');
     Route::get('/thong-bao-su-co', [ThongBaoSuCoController::class, 'index'])->name('thongbao_su_co.index');
     Route::get('/thongbao-sinhvien', [ThongBaoSinhVienController::class, 'index'])->name('thongbao_sinh_vien.index');
-
 
 
     Route::get('/thong-bao-phong-sv', [ThongBaoPhongSvController::class, 'index'])
@@ -320,9 +318,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('hoadonslot/export/unpaid', [HoaDonSlotController::class, 'exportUnpaid'])->name('hoadonslot.export.unpaid');
 
 
-
-
-
     // ---------------- TIN TỨC ----------------
     Route::prefix('tin-tuc')->group(function () {
         Route::get('/', [TinTucController::class, 'index'])->name('tintuc.index');
@@ -333,7 +328,6 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::put('/{id}', [TinTucController::class, 'update'])->name('tintuc.update');
         Route::delete('/{id}', [TinTucController::class, 'destroy'])->name('tintuc.destroy');
     });
-
 
 
     Route::prefix('hashtags')->group(function () {
@@ -383,6 +377,14 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/hoadon/{id}/send-to-client', [HoaDonController::class, 'sendToClient'])
         ->name('hoadon.sendToClient')
         ->middleware(['auth', 'admin']);
+
+
+    Route::prefix('phan-hoi')->group(function () {
+        Route::get('list', [AdminPhanHoiSinhVienController::class, 'list'])->name('admin.phan_hoi.list');
+        Route::get('show/{id}', [AdminPhanHoiSinhVienController::class, 'show'])->name('admin.phan_hoi.show');
+        Route::put('update/{id}', [AdminPhanHoiSinhVienController::class, 'update'])->name('admin.phan_hoi.update');
+        Route::delete('delete/{id}', [AdminPhanHoiSinhVienController::class, 'delete'])->name('admin.phan_hoi.delete');
+    });
 });
 
 Route::post('/hoadon/gui-email-hang-loat', [HoaDonController::class, 'guiEmailHangLoat'])->name('hoadon.guiemailhangloat');
@@ -430,8 +432,6 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 Route::post('/suco/{id}/dang-xu-ly', [App\Http\Controllers\SuCoController::class, 'dangXuLy'])->name('suco.dangXuLy');
 
 
-
-
 // // TÀI SẢN
 Route::post('/client/bao-hong', [ClientController::class, 'baoHong'])->name('client.baoHong');
 
@@ -462,9 +462,6 @@ Route::prefix('manager')->middleware(['auth', 'manager'])->group(function () {
 });
 
 
-
-
-
 // ---------------- SỰ CỐ ----------------
 // ====== VI PHẠM (violations) ======
 Route::resource('vipham', ViolationController::class);
@@ -478,8 +475,6 @@ Route::resource('loaivipham', ViolationTypeController::class)->except(['show']);
 
 // ---------------- QUẢN LÝ TÀI SẢN ----------------
 // ---------------- TÀI SẢN ----------------
-
-
 
 
 // =================== IMPORT ADMIN EXTRA ===================

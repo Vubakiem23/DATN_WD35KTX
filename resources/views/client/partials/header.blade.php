@@ -14,7 +14,7 @@
 
             <!-- Mobile Toggle Button -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
-                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                    aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -23,99 +23,98 @@
             <!-- Navbar Content -->
             <div class="collapse navbar-collapse" id="navbarContent">
                 @php
-                use App\Models\NotificationRead;
-                use Illuminate\Support\Facades\Auth;
+                    use Illuminate\Support\Facades\Auth;
 
-                $user = auth()->user();
-                $hasStudentRole = $user?->roles?->contains('ma_quyen', 'student') ?? false;
-                $sinhVien = $user?->sinhVien;
-                $studentApproved = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_APPROVED;
-                $studentPendingConfirmation = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION;
+                    $user = auth()->user();
+                    $hasStudentRole = $user?->roles?->contains('ma_quyen', 'student') ?? false;
+                    $sinhVien = $user?->sinhVien;
+                    $studentApproved = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_APPROVED;
+                    $studentPendingConfirmation = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION;
 
 
 
                 @endphp
 
-                <!-- Main Navigation -->
+                    <!-- Main Navigation -->
                 <ul class="navbar-nav main-nav">
                     @if ($studentApproved)
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('client.dashboard') ? 'active' : '' }}"
-                            href="{{ route('client.dashboard') }}">
-                            <i class="fas fa-home"></i>
-                            <span>Tổng quan</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('client.phong*') ? 'active' : '' }}"
-                            href="{{ route('client.phong') }}">
-                            <i class="fas fa-door-open"></i>
-                            <span>Phòng của tôi</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('client.suco*') ? 'active' : '' }}"
-                            href="{{ route('client.suco.index') }}">
-                            <i class="fas fa-tools"></i>
-                            <span>Báo sự cố</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('client.lichbaotri*') ? 'active' : '' }}"
-                            href="{{ route('client.lichbaotri.index') }}">
-                            <i class="fas fa-wrench"></i>
-                            <span>Bảo trì</span>
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('client.hoadon*') ? 'active' : '' }}"
-                            href="javascript:void(0)" id="hoadonDropdown" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            <i class="fa fa-file-invoice me-1"></i> Hóa Đơn
-                        </a>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('client.dashboard') ? 'active' : '' }}"
+                               href="{{ route('client.dashboard') }}">
+                                <i class="fas fa-home"></i>
+                                <span>Tổng quan</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('client.phong*') ? 'active' : '' }}"
+                               href="{{ route('client.phong') }}">
+                                <i class="fas fa-door-open"></i>
+                                <span>Phòng của tôi</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('client.suco*') ? 'active' : '' }}"
+                               href="{{ route('client.suco.index') }}">
+                                <i class="fas fa-tools"></i>
+                                <span>Báo sự cố</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('client.lichbaotri*') ? 'active' : '' }}"
+                               href="{{ route('client.lichbaotri.index') }}">
+                                <i class="fas fa-wrench"></i>
+                                <span>Bảo trì</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {{ request()->routeIs('client.hoadon*') ? 'active' : '' }}"
+                               href="javascript:void(0)" id="hoadonDropdown" role="button" data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                <i class="fa fa-file-invoice me-1"></i> Hóa Đơn
+                            </a>
 
-                        <ul class="dropdown-menu" aria-labelledby="hoadonDropdown">
-                            <li>
-                                <a class="dropdown-item {{ request()->routeIs('client.hoadon.tienphong') ? 'active' : '' }}"
-                                    href="{{ route('client.hoadon.tienphong') }}">
-                                    <i class="fa fa-bed me-1"></i> Tiền phòng
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item {{ request()->routeIs('client.hoadon.diennuoc') ? 'active' : '' }}"
-                                    href="{{ route('client.hoadon.diennuoc') }}">
-                                    <i class="fa fa-bolt me-1"></i> Điện & nước
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                            <ul class="dropdown-menu" aria-labelledby="hoadonDropdown">
+                                <li>
+                                    <a class="dropdown-item {{ request()->routeIs('client.hoadon.tienphong') ? 'active' : '' }}"
+                                       href="{{ route('client.hoadon.tienphong') }}">
+                                        <i class="fa fa-bed me-1"></i> Tiền phòng
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item {{ request()->routeIs('client.hoadon.diennuoc') ? 'active' : '' }}"
+                                       href="{{ route('client.hoadon.diennuoc') }}">
+                                        <i class="fa fa-bolt me-1"></i> Điện & nước
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     @endif
 
                     @if ($studentPendingConfirmation ?? false)
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('client.confirmation.show') ? 'active' : '' }}"
-                            href="{{ route('client.confirmation.show') }}">
-                            <i class="fas fa-clipboard-check"></i>
-                            <span>Xác nhận hồ sơ</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('client.confirmation.show') ? 'active' : '' }}"
+                               href="{{ route('client.confirmation.show') }}">
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Xác nhận hồ sơ</span>
+                            </a>
+                        </li>
                     @endif
 
                     @if(Auth::check())
-                    <li class="nav-item position-relative">
-                        <a class="nav-link {{ request()->routeIs('client.thongbao*') ? 'active' : '' }}"
-                            href="{{ route(name: 'client.thongbao.index') }}">
-                            <i class="fas fa-bell"></i>
-                            <span>Thông báo</span>
+                        <li class="nav-item position-relative">
+                            <a class="nav-link {{ request()->routeIs('client.thongbao*') ? 'active' : '' }}"
+                               href="{{ route(name: 'client.thongbao.index') }}">
+                                <i class="fas fa-bell"></i>
+                                <span>Thông báo</span>
 
-                            @if($unread > 0)
-                            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle"
-                                style="font-size: 10px; padding: 3px 6px;">
+                                @if($unread > 0)
+                                    <span class="badge bg-danger position-absolute top-0 start-100 translate-middle"
+                                          style="font-size: 10px; padding: 3px 6px;">
                                 {{ $unread }}
                             </span>
-                            @endif
-                        </a>
-                    </li>
+                                @endif
+                            </a>
+                        </li>
                     @endif
 
                 </ul>
@@ -123,68 +122,71 @@
                 <!-- User Actions -->
                 <div class="navbar-actions">
                     @auth
-                    <div class="user-dropdown">
-                        <button class="user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <span class="user-name">{{ $user?->name ?? 'Sinh viên' }}</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            @if ($hasStudentRole)
-                            @if ($studentApproved)
-                            <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">
-                                    <i class="fas fa-home"></i> Tổng quan
-                                </a></li>
-                            <li><a class="dropdown-item" href="{{ route('client.phong') }}">
-                                    <i class="fas fa-door-open"></i> Phòng
-                                </a></li>
-                            <li><a class="dropdown-item" href="{{ route('client.profile') }}">
-                                    <i class="fas fa-user"></i> Hồ sơ
-                                </a></li>
-                            <li><a class="dropdown-item" href="{{ route('client.suco.index') }}">
-                                    <i class="fas fa-exclamation-triangle"></i> Sự cố
-                                </a></li>
-                            <li><a class="dropdown-item" href="{{ route('client.lichbaotri.index') }}">
-                                    <i class="fas fa-wrench"></i> Bảo trì
-                                </a></li>
-                            <li><a class="dropdown-item" href="{{ route('client.hoadon.index') }}">
-                                    <i class="fas fa-receipt"></i> Hóa đơn
-                                </a></li>
-                            <li><a class="dropdown-item" href="{{ route('client.thongbao.index') }}">
-                                    <i class="fas fa-bell"></i> Thông báo
-                                </a></li>
-                            @elseif ($studentPendingConfirmation)
-                            <li><a class="dropdown-item" href="{{ route('client.confirmation.show') }}">
-                                    <i class="fas fa-clipboard-check"></i> Xác nhận hồ sơ
-                                </a></li>
-                            <li>
-                                <div class="dropdown-item-text text-warning">
-                                    <i class="fas fa-info-circle"></i> Hồ sơ đang chờ xác nhận
+                        <div class="user-dropdown">
+                            <button class="user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
                                 </div>
-                            </li>
-                            @else
-                            <li>
-                                <div class="dropdown-item-text text-muted">
-                                    <i class="fas fa-info-circle"></i> Hồ sơ chưa được duyệt
-                                </div>
-                            </li>
-                            @endif
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            @endif
-                            <li><a class="dropdown-item text-danger" href="{{ route('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                                </a></li>
-                        </ul>
-                    </div>
+                                <span class="user-name">{{ $user?->name ?? 'Sinh viên' }}</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                @if ($hasStudentRole)
+                                    @if ($studentApproved)
+                                        <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">
+                                                <i class="fas fa-home"></i> Tổng quan
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.phong') }}">
+                                                <i class="fas fa-door-open"></i> Phòng
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.profile') }}">
+                                                <i class="fas fa-user"></i> Hồ sơ
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.suco.index') }}">
+                                                <i class="fas fa-exclamation-triangle"></i> Sự cố
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.lichbaotri.index') }}">
+                                                <i class="fas fa-wrench"></i> Bảo trì
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.hoadon.index') }}">
+                                                <i class="fas fa-receipt"></i> Hóa đơn
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.thongbao.index') }}">
+                                                <i class="fas fa-bell"></i> Thông báo
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.phan_hoi.list') }}">
+                                                <i class="fa-regular fa-pen-to-square"></i>Phản hồi
+                                            </a></li>
+                                    @elseif ($studentPendingConfirmation)
+                                        <li><a class="dropdown-item" href="{{ route('client.confirmation.show') }}">
+                                                <i class="fas fa-clipboard-check"></i> Xác nhận hồ sơ
+                                            </a></li>
+                                        <li>
+                                            <div class="dropdown-item-text text-warning">
+                                                <i class="fas fa-info-circle"></i> Hồ sơ đang chờ xác nhận
+                                            </div>
+                                        </li>
+                                    @else
+                                        <li>
+                                            <div class="dropdown-item-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Hồ sơ chưa được duyệt
+                                            </div>
+                                        </li>
+                                    @endif
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                @endif
+                                <li><a class="dropdown-item text-danger" href="{{ route('auth.logout') }}">
+                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    </a></li>
+                            </ul>
+                        </div>
                     @else
-                    <a class="btn-login" href="{{ route('auth.login') }}">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Đăng nhập</span>
-                    </a>
+                        <a class="btn-login" href="{{ route('auth.login') }}">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Đăng nhập</span>
+                        </a>
                     @endauth
                 </div>
             </div>
