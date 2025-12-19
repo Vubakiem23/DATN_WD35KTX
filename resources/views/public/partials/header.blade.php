@@ -13,7 +13,8 @@
             </a>
 
             <!-- Mobile Toggle Button -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                    aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -28,40 +29,46 @@
                     $studentApproved = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_APPROVED;
                     $studentPendingConfirmation = $hasStudentRole && $sinhVien && $sinhVien->trang_thai_ho_so === \App\Models\SinhVien::STATUS_PENDING_CONFIRMATION;
                 @endphp
-                <!-- Main Navigation -->
+                    <!-- Main Navigation -->
                 <ul class="navbar-nav main-nav">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.home') ? 'active' : '' }}" href="{{ route('public.home') }}">
+                        <a class="nav-link {{ request()->routeIs('public.home') ? 'active' : '' }}"
+                           href="{{ route('public.home') }}">
                             <i class="fas fa-home"></i>
                             <span>Trang chủ</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.about') ? 'active' : '' }}" href="{{ route('public.about') }}">
+                        <a class="nav-link {{ request()->routeIs('public.about') ? 'active' : '' }}"
+                           href="{{ route('public.about') }}">
                             <i class="fas fa-info-circle"></i>
                             <span>Giới thiệu</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.thongbao.*') ? 'active' : '' }}" href="{{ route('public.thongbao.index') }}">
+                        <a class="nav-link {{ request()->routeIs('public.thongbao.*') ? 'active' : '' }}"
+                           href="{{ route('public.thongbao.index') }}">
                             <i class="fas fa-bullhorn"></i>
                             <span>Thông báo</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.tintuc.*') ? 'active' : '' }}" href="{{ route('public.tintuc.index') }}">
+                        <a class="nav-link {{ request()->routeIs('public.tintuc.*') ? 'active' : '' }}"
+                           href="{{ route('public.tintuc.index') }}">
                             <i class="fas fa-newspaper"></i>
                             <span>Tin tức</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.guide') ? 'active' : '' }}" href="{{ route('public.guide') }}">
+                        <a class="nav-link {{ request()->routeIs('public.guide') ? 'active' : '' }}"
+                           href="{{ route('public.guide') }}">
                             <i class="fas fa-book"></i>
                             <span>Hướng dẫn</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('public.rules') ? 'active' : '' }}" href="{{ route('public.rules') }}">
+                        <a class="nav-link {{ request()->routeIs('public.rules') ? 'active' : '' }}"
+                           href="{{ route('public.rules') }}">
                             <i class="fas fa-clipboard-list"></i>
                             <span>Nội quy</span>
                         </a>
@@ -84,40 +91,49 @@
                                 @if ($hasStudentRole)
                                     @if ($studentApproved)
                                         <li><a class="dropdown-item" href="{{ route('client.dashboard') }}">
-                                            <i class="fas fa-home"></i> Tổng quan
-                                        </a></li>
+                                                <i class="fas fa-home"></i> Tổng quan
+                                            </a></li>
                                         <li><a class="dropdown-item" href="{{ route('client.phong') }}">
-                                            <i class="fas fa-door-open"></i> Phòng
-                                        </a></li>
+                                                <i class="fas fa-door-open"></i> Phòng
+                                            </a></li>
                                         <li><a class="dropdown-item" href="{{ route('client.profile') }}">
-                                            <i class="fas fa-user"></i> Hồ sơ
-                                        </a></li>
+                                                <i class="fas fa-user"></i> Hồ sơ
+                                            </a></li>
                                         <li><a class="dropdown-item" href="{{ route('client.suco.index') }}">
-                                            <i class="fas fa-exclamation-triangle"></i> Sự cố
-                                        </a></li>
+                                                <i class="fas fa-exclamation-triangle"></i> Sự cố
+                                            </a></li>
                                         <li><a class="dropdown-item" href="{{ route('client.hoadon.index') }}">
-                                            <i class="fas fa-receipt"></i> Hóa đơn
-                                        </a></li>
+                                                <i class="fas fa-receipt"></i> Hóa đơn
+                                            </a></li>
                                         <li><a class="dropdown-item" href="{{ route('client.thongbao.index') }}">
-                                            <i class="fas fa-bell"></i> Thông báo
-                                        </a></li>
+                                                <i class="fas fa-bell"></i> Thông báo
+                                            </a></li>
+                                        <li><a class="dropdown-item" href="{{ route('client.phan_hoi.list') }}">
+                                                <i class="fa-regular fa-pen-to-square"></i>Phản hồi
+                                            </a></li>
                                     @elseif ($studentPendingConfirmation)
                                         <li><a class="dropdown-item" href="{{ route('client.confirmation.show') }}">
-                                            <i class="fas fa-clipboard-check"></i> Xác nhận hồ sơ
-                                        </a></li>
-                                        <li><div class="dropdown-item-text text-warning">
-                                            <i class="fas fa-info-circle"></i> Hồ sơ đang chờ xác nhận
-                                        </div></li>
+                                                <i class="fas fa-clipboard-check"></i> Xác nhận hồ sơ
+                                            </a></li>
+                                        <li>
+                                            <div class="dropdown-item-text text-warning">
+                                                <i class="fas fa-info-circle"></i> Hồ sơ đang chờ xác nhận
+                                            </div>
+                                        </li>
                                     @else
-                                        <li><div class="dropdown-item-text text-muted">
-                                            <i class="fas fa-info-circle"></i> Hồ sơ chưa được duyệt
-                                        </div></li>
+                                        <li>
+                                            <div class="dropdown-item-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Hồ sơ chưa được duyệt
+                                            </div>
+                                        </li>
                                     @endif
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
                                 @endif
                                 <li><a class="dropdown-item text-danger" href="{{ route('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                                </a></li>
+                                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                                    </a></li>
                             </ul>
                         </div>
                     @else
@@ -189,7 +205,7 @@
         width: 100%;
         height: 100%;
         object-fit: contain;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     }
 
     .brand-info {
