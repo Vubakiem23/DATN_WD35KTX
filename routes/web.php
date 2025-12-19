@@ -383,6 +383,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('list', [AdminPhanHoiSinhVienController::class, 'list'])->name('admin.phan_hoi.list');
         Route::get('show/{id}', [AdminPhanHoiSinhVienController::class, 'show'])->name('admin.phan_hoi.show');
         Route::put('update/{id}', [AdminPhanHoiSinhVienController::class, 'update'])->name('admin.phan_hoi.update');
+        Route::patch('resolve/{id}', [AdminPhanHoiSinhVienController::class, 'resolve'])->name('admin.phan_hoi.resolve');
         Route::delete('delete/{id}', [AdminPhanHoiSinhVienController::class, 'delete'])->name('admin.phan_hoi.delete');
     });
 });

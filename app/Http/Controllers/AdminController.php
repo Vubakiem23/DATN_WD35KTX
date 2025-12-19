@@ -10,6 +10,7 @@ use App\Models\LichBaoTri;
 use App\Models\SinhVien;
 use App\Models\HoaDonSlotPayment;
 use App\Models\HoaDonUtilitiesPayment;
+use App\Models\Violation;
 use Carbon\Carbon;
 
 
@@ -37,7 +38,13 @@ class AdminController extends Controller
         // 3.2. Tiền điện nước: Từ HoaDonUtilitiesPayment đã thanh toán trong tháng
         $tongTienDienNuoc = $this->tinhTongTienDienNuocTuUtilitiesPayments($monthStart, $monthEnd);
         
-        $tongTienThuDuoc = $tongTienPhong + $tongTienDienNuoc;
+        // 3.3. Tiền vi phạm: Từ Violation đã thanh toán (status = resolved) trong tháng
+        $tongTienViPham = Violation::where('status', 'resolved')
+            ->whereNotNull('client_paid_at')
+            ->whereBetween('client_paid_at', [$monthStart, $monthEnd])
+            ->sum('penalty_amount') ?? 0;
+        
+        $tongTienThuDuoc = $tongTienPhong + $tongTienDienNuoc + $tongTienViPham;
         
         // 4. Tổng chi phí bảo trì - sửa chữa
         // Chi phí từ sự cố đã thanh toán (dựa trên ngày thanh toán, không phải ngày gửi)
@@ -101,11 +108,14 @@ class AdminController extends Controller
         // Lợi nhuận ròng
         $loiNhuanRong = $tongTienThuDuoc - $tongChiPhiBaoTriSuaChua;
         
-        // 6. Thống kê hồ sơ sinh viên (tổng tất cả hồ sơ)
-        $tongHoSo = SinhVien::count(); // Tổng số hồ sơ được gửi
-        $daDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_APPROVED)->count(); // Hồ sơ đã duyệt
-        $choDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_APPROVAL)->count(); // Hồ sơ chờ duyệt
-        $choXacNhan = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_CONFIRMATION)->count(); // Hồ sơ chờ xác nhận
+        // 6. Thống kê hồ sơ sinh viên (theo tháng được chọn - dựa trên created_at hoặc updated_at)
+        $tongHoSo = SinhVien::whereBetween('created_at', [$monthStart, $monthEnd])->count(); // Tổng số hồ sơ được gửi trong tháng
+        $daDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_APPROVED)
+            ->whereBetween('updated_at', [$monthStart, $monthEnd])->count(); // Hồ sơ đã duyệt trong tháng
+        $choDuyet = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_APPROVAL)
+            ->whereBetween('created_at', [$monthStart, $monthEnd])->count(); // Hồ sơ chờ duyệt trong tháng
+        $choXacNhan = SinhVien::where('trang_thai_ho_so', SinhVien::STATUS_PENDING_CONFIRMATION)
+            ->whereBetween('created_at', [$monthStart, $monthEnd])->count(); // Hồ sơ chờ xác nhận trong tháng
         $chuaDuyet = $tongHoSo - $daDuyet; // Hồ sơ chưa duyệt = Tổng - Đã duyệt
         $tyLeDuyet = $tongHoSo > 0 ? round(($daDuyet / $tongHoSo) * 100, 1) : 0; // Tỷ lệ duyệt
         
@@ -137,6 +147,7 @@ class AdminController extends Controller
             'tongTienThuDuoc',
             'tongTienPhong',
             'tongTienDienNuoc',
+            'tongTienViPham',
             'tongChiPhiBaoTriSuaChua',
             'tongChiPhiSuCo',
             'tongChiPhiBaoTri',
@@ -170,7 +181,13 @@ class AdminController extends Controller
         // Tiền điện nước từ utilities payments
         $tongTienDienNuoc = $this->tinhTongTienDienNuocTuUtilitiesPayments($monthStart, $monthEnd);
         
-        return $tongTienPhong + $tongTienDienNuoc;
+        // Tiền vi phạm đã thanh toán
+        $tongTienViPham = Violation::where('status', 'resolved')
+            ->whereNotNull('client_paid_at')
+            ->whereBetween('client_paid_at', [$monthStart, $monthEnd])
+            ->sum('penalty_amount') ?? 0;
+        
+        return $tongTienPhong + $tongTienDienNuoc + $tongTienViPham;
     }
 
     /**

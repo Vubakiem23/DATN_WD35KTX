@@ -486,11 +486,17 @@ class PhongController extends Controller
             ];
 
             // Chỉ lấy sinh viên đã duyệt và CHƯA được gán vào slot nào
+            // Lọc theo giới tính của phòng
             $assignedIds = Slot::whereNotNull('sinh_vien_id')->pluck('sinh_vien_id');
-            $sinhViens = SinhVien::where('trang_thai_ho_so', 'Đã duyệt')
-                ->whereNotIn('id', $assignedIds)
-                ->orderBy('ho_ten')
-                ->get();
+            $sinhViensQuery = SinhVien::where('trang_thai_ho_so', 'Đã duyệt')
+                ->whereNotIn('id', $assignedIds);
+            
+            // Lọc theo giới tính phòng (nếu phòng không phải "Cả hai")
+            if ($phong->gioi_tinh && $phong->gioi_tinh !== 'Cả hai') {
+                $sinhViensQuery->where('gioi_tinh', $phong->gioi_tinh);
+            }
+            
+            $sinhViens = $sinhViensQuery->orderBy('ho_ten')->get();
 
             // Lấy hóa đơn mới nhất của phòng
             $hoaDon = HoaDon::with('phong.slots.sinhVien')
