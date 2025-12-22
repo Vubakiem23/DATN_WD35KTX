@@ -93,10 +93,11 @@
             <td>
               <span class="badge 
                 @if($item->tinh_trang == 'mới') bg-success
-                @elseif($item->tinh_trang == 'cũ') bg-secondary text-white
+                @elseif($item->tinh_trang == 'cũ') text-white
                 @elseif($item->tinh_trang == 'bảo trì') bg-warning text-dark
                 @elseif($item->tinh_trang == 'hỏng') bg-danger
-                @else bg-light @endif">
+                @else bg-light @endif"
+                @if($item->tinh_trang == 'cũ') style="background-color: #f59e0b; font-weight: 600;" @endif>
                 {{ ucfirst($item->tinh_trang) }}
               </span>
             </td>
@@ -104,10 +105,11 @@
             <td>
               <span class="badge 
                 @if($item->tinh_trang_hien_tai == 'Bình thường') bg-success text-white
-                @elseif($item->tinh_trang_hien_tai == 'Cũ') bg-secondary text-white
+                @elseif($item->tinh_trang_hien_tai == 'Cũ') text-white
                 @elseif($item->tinh_trang_hien_tai == 'Đang bảo trì') bg-warning text-dark
                 @elseif($item->tinh_trang_hien_tai == 'Hỏng') bg-danger
-                @else bg-light @endif">
+                @else bg-light @endif"
+                @if($item->tinh_trang_hien_tai == 'Cũ') style="background-color: #f59e0b; font-weight: 600;" @endif>
                 {{ ucfirst($item->tinh_trang_hien_tai ?? 'Chưa cập nhật') }}
               </span>
             </td>

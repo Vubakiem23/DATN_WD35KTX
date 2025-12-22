@@ -41,11 +41,24 @@
                                     {{ $phanHoi->noi_dung }}
                                 </div>
                             </td>
-                            <td> {{ $phanHoi->trang_thai == 1 ? 'Đã xác nhận' : 'Chờ xác nhận' }}</td>
+                            <td> 
+                                @if($phanHoi->trang_thai == 1)
+                                    <span class="badge bg-success">Đã xử lý</span>
+                                @elseif($phanHoi->trang_thai == 2)
+                                    <span class="badge bg-danger">Đã từ chối</span>
+                                @else
+                                    <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                @endif
+                            </td>
                             <td>
                                 <div class="d-flex justify-content-center align-items-center gap-2">
-                                    <a class="btn btn-primary btn-sm"
+                                    <a class="btn btn-info btn-sm"
                                        href="{{ route('client.phan_hoi.show', $phanHoi) }}">Xem</a>
+
+                                    @if($phanHoi->trang_thai == 0)
+                                        <a class="btn btn-primary btn-sm"
+                                           href="{{ route('client.phan_hoi.edit', $phanHoi) }}">Sửa</a>
+                                    @endif
 
                                     <form action="{{ route('client.phan_hoi.delete', $phanHoi) }}" method="POST"
                                           class="form-delete">

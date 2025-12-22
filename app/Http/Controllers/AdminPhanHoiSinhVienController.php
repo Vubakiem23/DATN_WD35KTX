@@ -43,6 +43,19 @@ class AdminPhanHoiSinhVienController extends Controller
         }
     }
 
+    public function reject($id)
+    {
+        try {
+            $phanHoi = PhanHoiSinhVien::findOrFail($id);
+            $phanHoi->trang_thai = 2; // 2 = Từ chối
+            $phanHoi->save();
+
+            return redirect()->route('admin.phan_hoi.list')->with('success', 'Đã từ chối phản hồi.');
+        } catch (\Throwable $th) {
+            return redirect()->back()->with('error', $th->getMessage());
+        }
+    }
+
     public function show($id)
     {
         $phanHoi = PhanHoiSinhVien::where('id', $id)->first();

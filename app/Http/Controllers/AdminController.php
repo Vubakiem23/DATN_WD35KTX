@@ -44,38 +44,69 @@ class AdminController extends Controller
             ->whereBetween('client_paid_at', [$monthStart, $monthEnd])
             ->sum('penalty_amount') ?? 0;
         
-        $tongTienThuDuoc = $tongTienPhong + $tongTienDienNuoc + $tongTienViPham;
+        // 4. Tổng chi phí bảo trì - sửa chữa (phân biệt theo nguoi_tao)
+        // ========== SỰ CỐ ==========
+        // Admin tạo → Chi phí (-): admin trả toàn bộ chi_phi_thuc_te
+        // Client tạo + đã thanh toán → Thu nhập (+): sinh viên đền bù payment_amount
         
-        // 4. Tổng chi phí bảo trì - sửa chữa
-        // Chi phí từ sự cố đã thanh toán (dựa trên ngày thanh toán, không phải ngày gửi)
-        // Logic: Nếu payment_amount = 0 → admin trả toàn bộ chi_phi_thuc_te
-        //        Nếu payment_amount > 0 → admin trả chi_phi_thuc_te - payment_amount (phần chênh lệch)
-        $tongChiPhiSuCo = 0;
-        $suCosDaThanhToan = SuCo::where('is_paid', true)
+        $tongChiPhiSuCoAdmin = 0; // Chi phí sự cố admin tạo (trừ tiền)
+        $tongThuNhapSuCoClient = 0; // Thu nhập từ sự cố client tạo đã thanh toán (cộng tiền)
+        
+        // Sự cố admin tạo - đã hoàn thành trong tháng
+        $suCosAdminTao = SuCo::where('nguoi_tao', 'admin')
+            ->where('trang_thai', 'Hoàn thành')
+            ->whereNotNull('ngay_hoan_thanh')
+            ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
+            ->get();
+        
+        foreach ($suCosAdminTao as $suCo) {
+            $tongChiPhiSuCoAdmin += (float) ($suCo->chi_phi_thuc_te ?? 0);
+        }
+        
+        // Sự cố client tạo - đã thanh toán trong tháng
+        $suCosClientDaThanhToan = SuCo::where('nguoi_tao', 'client')
+            ->where('is_paid', true)
             ->whereNotNull('ngay_thanh_toan')
             ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
             ->get();
         
-        foreach ($suCosDaThanhToan as $suCo) {
-            $chiPhiThucTe = (float) ($suCo->chi_phi_thuc_te ?? 0);
-            $paymentAmount = (float) ($suCo->payment_amount ?? 0);
-            
-            if ($paymentAmount == 0) {
-                // Admin trả toàn bộ chi phí thực tế
-                $tongChiPhiSuCo += $chiPhiThucTe;
-            } else {
-                // Admin trả phần chênh lệch (chi phí thực tế - số tiền sinh viên đã trả)
-                $tongChiPhiSuCo += max(0, $chiPhiThucTe - $paymentAmount);
-            }
+        foreach ($suCosClientDaThanhToan as $suCo) {
+            $tongThuNhapSuCoClient += (float) ($suCo->payment_amount ?? 0);
         }
         
-        // Chi phí từ lịch bảo trì (tính từ các lịch bảo trì đã hoàn thành trong tháng)
-        $tongChiPhiBaoTri = LichBaoTri::where('trang_thai', 'Hoàn thành')
+        // ========== BẢO TRÌ ==========
+        // Admin tạo → Chi phí (-): admin trả chi_phi
+        // Client tạo + hóa đơn đã thanh toán → Thu nhập (+): sinh viên đền bù chi_phi
+        
+        $tongChiPhiBaoTriAdmin = 0; // Chi phí bảo trì admin tạo (trừ tiền)
+        $tongThuNhapBaoTriClient = 0; // Thu nhập từ bảo trì client tạo đã thanh toán (cộng tiền)
+        
+        // Bảo trì admin tạo - đã hoàn thành trong tháng
+        $tongChiPhiBaoTriAdmin = LichBaoTri::where('nguoi_tao', 'admin')
+            ->where('trang_thai', 'Hoàn thành')
             ->whereNotNull('ngay_hoan_thanh')
             ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
             ->sum('chi_phi') ?? 0;
         
-        $tongChiPhiBaoTriSuaChua = $tongChiPhiSuCo + $tongChiPhiBaoTri;
+        // Bảo trì client tạo - hóa đơn đã thanh toán trong tháng
+        $baoTriClientDaThanhToan = LichBaoTri::where('nguoi_tao', 'client')
+            ->whereHas('hoaDonBaoTri', function($q) use ($monthStart, $monthEnd) {
+                $q->where('trang_thai_thanh_toan', 'Đã thanh toán')
+                  ->whereBetween('updated_at', [$monthStart, $monthEnd]);
+            })
+            ->sum('chi_phi') ?? 0;
+        $tongThuNhapBaoTriClient = $baoTriClientDaThanhToan;
+        
+        // Tổng hợp
+        $tongChiPhiBaoTriSuaChua = $tongChiPhiSuCoAdmin + $tongChiPhiBaoTriAdmin; // Chi phí (trừ)
+        $tongThuNhapBaoTriSuaChua = $tongThuNhapSuCoClient + $tongThuNhapBaoTriClient; // Thu nhập (cộng)
+        
+        // Giữ lại biến cũ để tương thích
+        $tongChiPhiSuCo = $tongChiPhiSuCoAdmin;
+        $tongChiPhiBaoTri = $tongChiPhiBaoTriAdmin;
+        
+        // Tính tổng tiền thu được (sau khi đã có tongThuNhapBaoTriSuaChua)
+        $tongTienThuDuoc = $tongTienPhong + $tongTienDienNuoc + $tongTienViPham + $tongThuNhapBaoTriSuaChua;
         
         // 5. Số slot đang trống và đang có người ở
         $tongSoSlot = Slot::count();
@@ -149,8 +180,11 @@ class AdminController extends Controller
             'tongTienDienNuoc',
             'tongTienViPham',
             'tongChiPhiBaoTriSuaChua',
+            'tongThuNhapBaoTriSuaChua',
             'tongChiPhiSuCo',
             'tongChiPhiBaoTri',
+            'tongThuNhapSuCoClient',
+            'tongThuNhapBaoTriClient',
             'soSlotTrong',
             'soSlotCoNguoiO',
             'tongSoSlot',
@@ -187,7 +221,22 @@ class AdminController extends Controller
             ->whereBetween('client_paid_at', [$monthStart, $monthEnd])
             ->sum('penalty_amount') ?? 0;
         
-        return $tongTienPhong + $tongTienDienNuoc + $tongTienViPham;
+        // Thu nhập từ sự cố client tạo đã thanh toán
+        $tongThuNhapSuCoClient = SuCo::where('nguoi_tao', 'client')
+            ->where('is_paid', true)
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
+            ->sum('payment_amount') ?? 0;
+        
+        // Thu nhập từ bảo trì client tạo đã thanh toán
+        $tongThuNhapBaoTriClient = LichBaoTri::where('nguoi_tao', 'client')
+            ->whereHas('hoaDonBaoTri', function($q) use ($monthStart, $monthEnd) {
+                $q->where('trang_thai_thanh_toan', 'Đã thanh toán')
+                  ->whereBetween('updated_at', [$monthStart, $monthEnd]);
+            })
+            ->sum('chi_phi') ?? 0;
+        
+        return $tongTienPhong + $tongTienDienNuoc + $tongTienViPham + $tongThuNhapSuCoClient + $tongThuNhapBaoTriClient;
     }
 
     /**
@@ -284,32 +333,20 @@ class AdminController extends Controller
     }
 
     /**
-     * Tính tổng chi phí bảo trì - sửa chữa theo tháng
+     * Tính tổng chi phí bảo trì - sửa chữa theo tháng (chỉ tính admin tạo)
      */
     private function tinhTongChiPhiTheoThang($monthStart, $monthEnd)
     {
-        // Chi phí từ sự cố
-        $tongChiPhiSuCo = 0;
-        $suCosDaThanhToan = SuCo::where('is_paid', true)
-            ->whereNotNull('ngay_thanh_toan')
-            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
-            ->get();
+        // Chi phí từ sự cố admin tạo
+        $tongChiPhiSuCo = SuCo::where('nguoi_tao', 'admin')
+            ->where('trang_thai', 'Hoàn thành')
+            ->whereNotNull('ngay_hoan_thanh')
+            ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
+            ->sum('chi_phi_thuc_te') ?? 0;
         
-        foreach ($suCosDaThanhToan as $suCo) {
-            $chiPhiThucTe = (float) ($suCo->chi_phi_thuc_te ?? 0);
-            $paymentAmount = (float) ($suCo->payment_amount ?? 0);
-            
-            if ($paymentAmount == 0) {
-                // Admin trả toàn bộ chi phí thực tế
-                $tongChiPhiSuCo += $chiPhiThucTe;
-            } else {
-                // Admin trả phần chênh lệch (chi phí thực tế - số tiền sinh viên đã trả)
-                $tongChiPhiSuCo += max(0, $chiPhiThucTe - $paymentAmount);
-            }
-        }
-        
-        // Chi phí từ lịch bảo trì
-        $tongChiPhiBaoTri = LichBaoTri::where('trang_thai', 'Hoàn thành')
+        // Chi phí từ lịch bảo trì admin tạo
+        $tongChiPhiBaoTri = LichBaoTri::where('nguoi_tao', 'admin')
+            ->where('trang_thai', 'Hoàn thành')
             ->whereNotNull('ngay_hoan_thanh')
             ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
             ->sum('chi_phi') ?? 0;

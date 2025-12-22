@@ -193,26 +193,28 @@
                           $statusRaw = $asset->tinh_trang_hien_tai ?? $asset->tinh_trang ?? null;
                           $normalized = $statusRaw ? mb_strtolower(trim($statusRaw), 'UTF-8') : '';
                           $displayStatus = 'Chưa cập nhật';
-                          $badgeClass = 'bg-light';
+                          $badgeClass = 'bg-light text-dark';
+                          $badgeStyle = '';
 
                           if (in_array($normalized, ['mới', 'moi', 'new'])) {
                               $displayStatus = 'Mới';
-                              $badgeClass = 'bg-success';
+                              $badgeClass = 'bg-success text-white';
                           } elseif (in_array($normalized, ['bình thường', 'binh thuong', 'bt', 'hoàn thành', 'hoan thanh'])) {
                               $displayStatus = 'Bình thường';
-                              $badgeClass = 'bg-success text-white';
+                              $badgeClass = 'bg-info text-white';
                           } elseif (in_array($normalized, ['cũ', 'cu'])) {
                               $displayStatus = 'Cũ';
-                              $badgeClass = 'bg-secondary';
+                              $badgeClass = '';
+                              $badgeStyle = 'background-color: #f59e0b; color: #fff; font-weight: 600;';
                           } elseif (in_array($normalized, ['đang bảo trì', 'dang bao tri', 'bảo trì', 'bao tri', 'maintenance'])) {
                               $displayStatus = 'Đang bảo trì';
                               $badgeClass = 'bg-warning text-dark';
                           } elseif (in_array($normalized, ['hỏng', 'hong', 'đã hỏng', 'da hong', 'broken'])) {
                               $displayStatus = 'Hỏng';
-                              $badgeClass = 'bg-danger';
+                              $badgeClass = 'bg-danger text-white';
                           }
                         @endphp
-                        <span class="badge {{ $badgeClass }}">{{ $displayStatus }}</span>
+                        <span class="badge {{ $badgeClass }}" style="{{ $badgeStyle }}">{{ $displayStatus }}</span>
                       </td>
                       <td>{{ $asset->ghi_chu ?? '—' }}</td>
                       <td>

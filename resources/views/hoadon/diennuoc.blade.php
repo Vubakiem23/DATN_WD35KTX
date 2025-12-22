@@ -6,13 +6,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 @section('content')
-<div class="container py-4">
+<div class="container-fluid py-4">
 
-  <div>
-    <h3 class="page-title mb-0"><i class="fa fa-bolt me-2"></i> Quản lý điện · nước</h3>
+  <div class="mb-4">
+    <h3 class="page-title mb-1"><i class="fa fa-bolt me-2"></i> Quản lý điện · nước</h3>
     <p class="text-muted mb-0">Theo dõi chỉ số, đơn giá và chi phí điện nước cho từng phòng.</p>
   </div>
-  <div class="row text-center mb-4">
     <style>
       .room-actions {
         display: flex;
@@ -324,10 +323,9 @@
 
   @push('styles')
   <style>
-    /* Đảm bảo container có khoảng cách với footer */
-    .container.py-4 {
-      padding-bottom: 3rem !important;
-      margin-bottom: 2rem;
+    /* Ẩn footer */
+    footer {
+      display: none !important;
     }
 
     /* Tiêu đề */
@@ -721,7 +719,6 @@
     });
   </script>
 
-  @endsection
   <!-- CSRF token trong <head> -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -855,3 +852,6 @@
       </div>
     </div>
   </div>
+
+
+@endsection

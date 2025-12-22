@@ -20,6 +20,7 @@ class LichBaoTri extends Model
         'ngay_hoan_thanh',
         'chi_phi',
         'trang_thai',
+        'nguoi_tao',
         'mo_ta',
         'hinh_anh_truoc', 
         'hinh_anh',

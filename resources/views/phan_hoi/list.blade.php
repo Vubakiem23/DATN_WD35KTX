@@ -41,7 +41,7 @@
 
         <!-- Thống kê nhanh -->
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card stat-card--total">
                     <div class="stat-card__icon">
                         <i class="fa fa-comments"></i>
@@ -52,7 +52,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card stat-card--pending">
                     <div class="stat-card__icon">
                         <i class="fa fa-clock-o"></i>
@@ -63,7 +63,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="stat-card stat-card--done">
                     <div class="stat-card__icon">
                         <i class="fa fa-check-circle"></i>
@@ -71,6 +71,17 @@
                     <div class="stat-card__content">
                         <div class="stat-card__value">{{ $phanHois->where('trang_thai', 1)->count() }}</div>
                         <div class="stat-card__label">Đã xử lý</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card stat-card--rejected">
+                    <div class="stat-card__icon">
+                        <i class="fa fa-ban"></i>
+                    </div>
+                    <div class="stat-card__content">
+                        <div class="stat-card__value">{{ $phanHois->where('trang_thai', 2)->count() }}</div>
+                        <div class="stat-card__label">Đã từ chối</div>
                     </div>
                 </div>
             </div>
@@ -129,9 +140,13 @@
                                     </div>
                                 </td>
                                 <td class="fit text-center">
-                                    @if($isResolved)
+                                    @if($phanHoi->trang_thai == 1)
                                         <span class="badge badge-soft-success">
                                             <i class="fa fa-check me-1"></i>Đã xử lý
+                                        </span>
+                                    @elseif($phanHoi->trang_thai == 2)
+                                        <span class="badge badge-soft-danger">
+                                            <i class="fa fa-times me-1"></i>Đã từ chối
                                         </span>
                                     @else
                                         <span class="badge badge-soft-warning">
@@ -151,7 +166,7 @@
                                                     <span>Xem chi tiết</span>
                                                 </a>
                                             </li>
-                                            @if(!$isResolved)
+                                            @if($phanHoi->trang_thai == 0)
                                                 <li>
                                                     <form action="{{ route('admin.phan_hoi.resolve', $phanHoi) }}" method="POST">
                                                         @csrf
@@ -159,6 +174,16 @@
                                                         <button type="submit" class="dropdown-item d-flex align-items-center gap-2">
                                                             <i class="fa fa-check text-success"></i>
                                                             <span>Đánh dấu đã xử lý</span>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form action="{{ route('admin.phan_hoi.reject', $phanHoi) }}" method="POST">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="dropdown-item d-flex align-items-center gap-2">
+                                                            <i class="fa fa-ban text-danger"></i>
+                                                            <span>Từ chối</span>
                                                         </button>
                                                     </form>
                                                 </li>
@@ -227,6 +252,7 @@
                                     <option value="">-- Tất cả --</option>
                                     <option value="0" {{ request('trang_thai') === '0' ? 'selected' : '' }}>Chờ xử lý</option>
                                     <option value="1" {{ request('trang_thai') === '1' ? 'selected' : '' }}>Đã xử lý</option>
+                                    <option value="2" {{ request('trang_thai') === '2' ? 'selected' : '' }}>Đã từ chối</option>
                                 </select>
                             </div>
                         </div>
@@ -287,6 +313,11 @@
 
         .stat-card--done .stat-card__icon {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #fff;
+        }
+
+        .stat-card--rejected .stat-card__icon {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: #fff;
         }
 
@@ -386,6 +417,15 @@
         .badge-soft-warning {
             background: #fef3c7;
             color: #92400e;
+            border-radius: 999px;
+            padding: 0.4rem 0.75rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .badge-soft-danger {
+            background: #fee2e2;
+            color: #dc2626;
             border-radius: 999px;
             padding: 0.4rem 0.75rem;
             font-weight: 600;

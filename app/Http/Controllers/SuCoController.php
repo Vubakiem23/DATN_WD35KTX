@@ -235,6 +235,7 @@ class SuCoController extends Controller
             'anh_sau' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'co_thanh_toan' => 'nullable|boolean',
             'payment_amount' => 'nullable|numeric|min:0',
+            'ktx_thanh_toan' => 'nullable|boolean',
         ]);
 
         // Cập nhật trạng thái và ngày hoàn thành
@@ -260,24 +261,39 @@ class SuCoController extends Controller
             $suco->anh_sau = 'uploads/suco/' . $filename;
         }
 
-        // Có thanh toán? nếu có thì ghi số tiền, ngược lại đặt 0 và chưa thanh toán
+        // Có thanh toán?
         if ($request->boolean('co_thanh_toan')) {
             $amount = (float) ($request->payment_amount ?? 0);
             $suco->payment_amount = max(0, $amount);
-            // Khi hoàn thành, chưa thanh toán ngay; sẽ chuyển sang trang hóa đơn
-            $suco->is_paid = false;
+            $suco->chi_phi_thuc_te = max(0, $amount); // Ghi nhận chi phí thực tế
+            
+            // Kiểm tra KTX thanh toán
+            $ktxThanhToan = $request->has('ktx_thanh_toan') && $request->ktx_thanh_toan;
+            
+            if ($ktxThanhToan) {
+                // KTX thanh toán → Hoàn thành luôn, đánh dấu đã thanh toán
+                $suco->is_paid = true;
+                $suco->ngay_thanh_toan = now();
+                $suco->save();
+                
+                return redirect()->back()->with('success', 'Cập nhật hoàn thành thành công! Chi phí do KTX thanh toán.');
+            } else {
+                // Sinh viên thanh toán → Chưa thanh toán, chuyển sang hóa đơn
+                $suco->is_paid = false;
+                $suco->save();
+                
+                // Nếu có số tiền cần thanh toán, điều hướng sang danh sách hóa đơn sự cố
+                if ($suco->payment_amount > 0) {
+                    return redirect()->route('hoadonsuco.index')
+                        ->with('success', 'Đã cập nhật hoàn thành. Vui lòng tiến hành thanh toán hóa đơn sự cố.');
+                }
+            }
         } else {
             $suco->payment_amount = 0;
             $suco->is_paid = false;
         }
 
         $suco->save();
-
-        // Nếu có số tiền cần thanh toán, điều hướng sang danh sách hóa đơn sự cố
-        if ($suco->payment_amount > 0 && !$suco->is_paid) {
-            return redirect()->route('hoadonsuco.index')
-                ->with('success', 'Đã cập nhật hoàn thành. Vui lòng tiến hành thanh toán hóa đơn sự cố.');
-        }
 
         return redirect()->back()->with('success', 'Cập nhật hoàn thành thành công!');
     }

@@ -177,7 +177,8 @@ public function index(Request $request)
                 'mo_ta' => $request->mo_ta[$index] ?? null,
                 'hinh_anh_truoc' => $hinhAnhTruoc,
                 'trang_thai' => $trangThai,
-                'chi_phi' => $request->chi_phi[$index] ?? 0, // ✅ Thêm chi phí
+                'chi_phi' => $request->chi_phi[$index] ?? 0,
+                'nguoi_tao' => 'admin', // Admin tạo lịch bảo trì
             ]);
 
             // Cập nhật trạng thái tài sản
@@ -202,6 +203,7 @@ public function hoanThanhSubmit(Request $request, $id)
         'mo_ta_sau' => 'nullable|string',
         'chi_phi' => 'nullable|numeric|min:0',
         'hinh_anh' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'ktx_thanh_toan' => 'nullable|boolean',
     ]);
 
     // Cập nhật thông tin bảo trì
@@ -223,24 +225,36 @@ public function hoanThanhSubmit(Request $request, $id)
         $lich->hinh_anh = $filename;
     }
 
-    $lich->trang_thai = 'Chờ thanh toán';
-    $lich->save();
-
     // Cập nhật trạng thái tài sản trở về bình thường sau bảo trì
     $lich->loadMissing(['taiSan', 'khoTaiSan']);
     if ($lich->taiSan) $lich->taiSan->update(['tinh_trang_hien_tai' => 'Bình thường']);
     if ($lich->khoTaiSan) $lich->khoTaiSan->update(['tinh_trang' => 'Bình thường']);
 
-    // Tạo hóa đơn bảo trì
-    HoaDonBaoTri::create([
-        'lich_bao_tri_id' => $lich->id,
-        'chi_phi' => $request->chi_phi ?? 0,
-        'trang_thai_thanh_toan' => 'Chưa thanh toán',
-        'phuong_thuc_thanh_toan' => null,
-        'ghi_chu' => 'Tự động tạo khi hoàn thành bảo trì',
-    ]);
+    // Kiểm tra checkbox KTX thanh toán
+    $ktxThanhToan = $request->has('ktx_thanh_toan') && $request->ktx_thanh_toan;
 
-    return redirect()->back()->with('success', 'Hoàn thành bảo trì và lưu hóa đơn thành công!');
+    if ($ktxThanhToan) {
+        // KTX thanh toán → Hoàn thành luôn, không tạo hóa đơn cho sinh viên
+        $lich->trang_thai = 'Hoàn thành';
+        $lich->save();
+
+        return redirect()->back()->with('success', 'Hoàn thành bảo trì thành công! Chi phí do KTX thanh toán.');
+    } else {
+        // Sinh viên thanh toán → Chờ thanh toán, tạo hóa đơn
+        $lich->trang_thai = 'Chờ thanh toán';
+        $lich->save();
+
+        // Tạo hóa đơn bảo trì cho sinh viên
+        HoaDonBaoTri::create([
+            'lich_bao_tri_id' => $lich->id,
+            'chi_phi' => $request->chi_phi ?? 0,
+            'trang_thai_thanh_toan' => 'Chưa thanh toán',
+            'phuong_thuc_thanh_toan' => null,
+            'ghi_chu' => 'Tự động tạo khi hoàn thành bảo trì',
+        ]);
+
+        return redirect()->back()->with('success', 'Hoàn thành bảo trì và tạo hóa đơn cho sinh viên thanh toán!');
+    }
 }
 
 

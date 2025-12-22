@@ -9,13 +9,12 @@
 
 @section('content')
 
-<div class="container py-4">
+<div class="container-fluid py-4">
 
-  <div>
-    <h3 class="page-title mb-0"><i class="fa fa-bed me-2"></i> Quản lý tiền phòng</h3>
+  <div class="mb-4">
+    <h3 class="page-title mb-1"><i class="fa fa-bed me-2"></i> Quản lý tiền phòng</h3>
     <p class="text-muted mb-0">Theo dõi giá trị tiền phòng theo từng phòng và slot.</p>
   </div>
-  <div class="row text-center mb-4">
     <style>
       .room-actions {
         display: flex;
@@ -285,10 +284,9 @@
 
   @push('styles')
   <style>
-    /* Đảm bảo container có khoảng cách với footer */
-    .container.py-4 {
-      padding-bottom: 3rem !important;
-      margin-bottom: 2rem;
+    /* Ẩn footer */
+    footer {
+      display: none !important;
     }
 
     /* Tiêu đề */
