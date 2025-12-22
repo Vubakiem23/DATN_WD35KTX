@@ -437,12 +437,20 @@
                         <span class="text-success fw-bold">+{{ number_format($tongTienViPham ?? 0, 0, ',', '.') }} đ</span>
                     </div>
                     <div class="finance-row">
-                        <span><i class="fa fa-wrench me-2 text-info"></i>SV đền bù bảo trì/sự cố</span>
-                        <span class="text-success fw-bold">+{{ number_format($tongThuNhapBaoTriSuaChua ?? 0, 0, ',', '.') }} đ</span>
+                        <span><i class="fa fa-wrench me-2 text-info"></i>SV đền bù bảo trì</span>
+                        <span class="text-success fw-bold">+{{ number_format($tongThuNhapBaoTriClient ?? 0, 0, ',', '.') }} đ</span>
                     </div>
                     <div class="finance-row">
-                        <span><i class="fa fa-cogs me-2 text-secondary"></i>Chi phí bảo trì/sự cố (KTX)</span>
-                        <span class="text-danger fw-bold">-{{ number_format($tongChiPhiBaoTriSuaChua, 0, ',', '.') }} đ</span>
+                        <span><i class="fa fa-exclamation-circle me-2 text-info"></i>SV đền bù sự cố</span>
+                        <span class="text-success fw-bold">+{{ number_format($tongThuNhapSuCoClient ?? 0, 0, ',', '.') }} đ</span>
+                    </div>
+                    <div class="finance-row">
+                        <span><i class="fa fa-cogs me-2 text-secondary"></i>Chi phí bảo trì (KTX)</span>
+                        <span class="text-danger fw-bold">-{{ number_format($tongChiPhiBaoTri ?? 0, 0, ',', '.') }} đ</span>
+                    </div>
+                    <div class="finance-row">
+                        <span><i class="fa fa-ambulance me-2 text-secondary"></i>Chi phí sự cố (KTX)</span>
+                        <span class="text-danger fw-bold">-{{ number_format($tongChiPhiSuCo ?? 0, 0, ',', '.') }} đ</span>
                     </div>
                     <div class="finance-row finance-row--total">
                         <span>Lợi nhuận ròng</span>

@@ -273,6 +273,7 @@ class SuCoController extends Controller
             if ($ktxThanhToan) {
                 // KTX thanh toán → Hoàn thành luôn, đánh dấu đã thanh toán
                 $suco->is_paid = true;
+                $suco->nguoi_thanh_toan = 'ktx'; // KTX thanh toán
                 $suco->ngay_thanh_toan = now();
                 $suco->save();
                 
@@ -280,6 +281,7 @@ class SuCoController extends Controller
             } else {
                 // Sinh viên thanh toán → Chưa thanh toán, chuyển sang hóa đơn
                 $suco->is_paid = false;
+                $suco->nguoi_thanh_toan = 'client'; // Sinh viên sẽ thanh toán
                 $suco->save();
                 
                 // Nếu có số tiền cần thanh toán, điều hướng sang danh sách hóa đơn sự cố

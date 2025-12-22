@@ -21,6 +21,7 @@ class SuCo extends Model
         'payment_amount',
         'chi_phi_thuc_te',
         'is_paid',
+        'nguoi_thanh_toan',
         'anh',          // ảnh trước sửa (ảnh cũ)
         'anh_sau',      // ảnh sau khi xử lý (ảnh mới)
         'nguoi_tao',
