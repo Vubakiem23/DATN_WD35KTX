@@ -8,74 +8,292 @@
 
 @push('styles')
 <style>
+/* Header */
+.page-header-dark {
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(26, 35, 126, 0.4);
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.page-header-dark h4 {
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 15px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+    border-radius: 15px 15px 0 0 !important;
+    padding: 20px 25px;
+    box-shadow: 0 2px 10px rgba(23, 162, 184, 0.2);
+    color: #fff;
+}
+
+.card-header h5, .card-header .fw-semibold {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: #fff;
+}
+
+.card-body {
+    padding: 30px;
+    background: #ffffff;
+}
+
+/* Bill Summary */
 .bill-hero {
-  background: #fefefe;
+    background: #fefefe;
 }
+
 .bill-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1rem;
 }
+
 .bill-summary__item {
-  border: 1px solid #eef2f7;
-  border-radius: 16px;
-  padding: 1.25rem;
-  background: #f9fbff;
-  min-height: 120px;
+    border: 1px solid #eef2f7;
+    border-radius: 16px;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #f9fbff 0%, #f0f4ff 100%);
+    min-height: 120px;
+    transition: all 0.3s ease;
 }
+
+.bill-summary__item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
 .bill-summary__label {
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.75rem;
-  color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    color: #6c757d;
 }
+
 .bill-summary__value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
 }
+
 .bill-highlight {
-  background: #f3f6ff;
-  border: 1px dashed #c8d7ff;
-  border-radius: 16px;
-  padding: 1rem 1.25rem;
+    background: #f3f6ff;
+    border: 1px dashed #c8d7ff;
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
 }
+
+/* Status Pills */
 .status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.85rem;
-  border-radius: 999px;
-  font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-weight: 600;
 }
+
 .status-pill.success {
-  background: #e8f8ef;
-  color: #1a7f4b;
+    background: linear-gradient(135deg, #e8f8ef 0%, #d4edda 100%);
+    color: #1a7f4b;
 }
+
 .status-pill.warning {
-  background: #fff6e5;
-  color: #c68a04;
+    background: linear-gradient(135deg, #fff6e5 0%, #ffeeba 100%);
+    color: #c68a04;
 }
+
 .bill-note {
-  font-weight: 500;
+    font-weight: 500;
 }
+
+/* Table Styles - Giống trang bảo trì */
+.table {
+    margin-bottom: 0;
+    border-radius: 0;
+}
+
+.table thead {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.table th {
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #495057;
+    padding: 16px 12px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    font-size: 0.9rem;
+    vertical-align: middle;
+    padding: 16px 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(23, 162, 184, 0.03), transparent);
+    transform: translateX(3px);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
 .table-modern thead th {
-  background: #f5f7fb;
-  border-bottom: 0;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 2px solid #dee2e6;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #495057;
+    padding: 16px 12px;
 }
+
 .table-modern tbody tr {
-  border-bottom: 1px solid #f0f2f5;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
 }
+
+.table-modern tbody tr:hover {
+    background: linear-gradient(90deg, rgba(23, 162, 184, 0.03), transparent);
+    transform: translateX(3px);
+}
+
 .table-modern tbody tr:last-child {
-  border-bottom: none;
+    border-bottom: none;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    letter-spacing: 0.3px;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+    color: #212529 !important;
+}
+
+.badge.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%) !important;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    border: none;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .page-header-dark {
+        margin-bottom: 20px;
+        border-radius: 12px;
+    }
+
+    .page-header-dark h4 {
+        font-size: 16px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-header h5, .card-header .fw-semibold {
+        font-size: 16px;
+    }
+
+    .table th,
+    .table td {
+        font-size: 0.8rem;
+        padding: 12px 8px;
+    }
+
+    .table th {
+        font-size: 0.75rem;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
 }
 </style>
 @endpush
 
 @section('content')
+<!-- Header màu xanh teal -->
+<div class="page-header-dark mb-4">
+    <div class="d-flex justify-content-center align-items-center py-4 px-4">
+        <h4 class="mb-0 text-white fw-bold">
+            @if($tab === 'tien-phong')
+                <i class="fas fa-home me-2"></i>
+                Hóa đơn tiền phòng
+            @else
+                <i class="fas fa-bolt me-2"></i>
+                Hóa đơn điện nước
+            @endif
+        </h4>
+    </div>
+</div>
+
 <div class="container py-4">
   <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
     <div class="d-flex justify-content-end mb-3">

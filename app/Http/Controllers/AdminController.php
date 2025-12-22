@@ -44,27 +44,28 @@ class AdminController extends Controller
             ->whereBetween('client_paid_at', [$monthStart, $monthEnd])
             ->sum('penalty_amount') ?? 0;
         
-        // 4. Tổng chi phí bảo trì - sửa chữa (phân biệt theo nguoi_tao)
+        // 4. Tổng chi phí bảo trì - sửa chữa (phân biệt theo nguoi_thanh_toan)
         // ========== SỰ CỐ ==========
-        // Admin tạo → Chi phí (-): admin trả toàn bộ chi_phi_thuc_te
-        // Client tạo + đã thanh toán → Thu nhập (+): sinh viên đền bù payment_amount
+        // KTX thanh toán → Chi phí (-): KTX trả chi_phi_thuc_te
+        // Client thanh toán → Thu nhập (+): sinh viên đền bù payment_amount
         
-        $tongChiPhiSuCoAdmin = 0; // Chi phí sự cố admin tạo (trừ tiền)
-        $tongThuNhapSuCoClient = 0; // Thu nhập từ sự cố client tạo đã thanh toán (cộng tiền)
+        $tongChiPhiSuCoAdmin = 0; // Chi phí sự cố KTX thanh toán (trừ tiền)
+        $tongThuNhapSuCoClient = 0; // Thu nhập từ sự cố client thanh toán (cộng tiền)
         
-        // Sự cố admin tạo - đã hoàn thành trong tháng
-        $suCosAdminTao = SuCo::where('nguoi_tao', 'admin')
+        // Sự cố KTX thanh toán - đã hoàn thành trong tháng
+        $suCosKtxThanhToan = SuCo::where('nguoi_thanh_toan', 'ktx')
+            ->where('is_paid', true)
             ->where('trang_thai', 'Hoàn thành')
-            ->whereNotNull('ngay_hoan_thanh')
-            ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
             ->get();
         
-        foreach ($suCosAdminTao as $suCo) {
+        foreach ($suCosKtxThanhToan as $suCo) {
             $tongChiPhiSuCoAdmin += (float) ($suCo->chi_phi_thuc_te ?? 0);
         }
         
-        // Sự cố client tạo - đã thanh toán trong tháng
-        $suCosClientDaThanhToan = SuCo::where('nguoi_tao', 'client')
+        // Sự cố client thanh toán - đã thanh toán trong tháng
+        $suCosClientDaThanhToan = SuCo::where('nguoi_thanh_toan', 'client')
             ->where('is_paid', true)
             ->whereNotNull('ngay_thanh_toan')
             ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
@@ -221,8 +222,8 @@ class AdminController extends Controller
             ->whereBetween('client_paid_at', [$monthStart, $monthEnd])
             ->sum('penalty_amount') ?? 0;
         
-        // Thu nhập từ sự cố client tạo đã thanh toán
-        $tongThuNhapSuCoClient = SuCo::where('nguoi_tao', 'client')
+        // Thu nhập từ sự cố client thanh toán
+        $tongThuNhapSuCoClient = SuCo::where('nguoi_thanh_toan', 'client')
             ->where('is_paid', true)
             ->whereNotNull('ngay_thanh_toan')
             ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
@@ -333,18 +334,19 @@ class AdminController extends Controller
     }
 
     /**
-     * Tính tổng chi phí bảo trì - sửa chữa theo tháng (chỉ tính admin tạo)
+     * Tính tổng chi phí bảo trì - sửa chữa theo tháng (chỉ tính KTX thanh toán)
      */
     private function tinhTongChiPhiTheoThang($monthStart, $monthEnd)
     {
-        // Chi phí từ sự cố admin tạo
-        $tongChiPhiSuCo = SuCo::where('nguoi_tao', 'admin')
+        // Chi phí từ sự cố KTX thanh toán
+        $tongChiPhiSuCo = SuCo::where('nguoi_thanh_toan', 'ktx')
+            ->where('is_paid', true)
             ->where('trang_thai', 'Hoàn thành')
-            ->whereNotNull('ngay_hoan_thanh')
-            ->whereBetween('ngay_hoan_thanh', [$monthStart, $monthEnd])
+            ->whereNotNull('ngay_thanh_toan')
+            ->whereBetween('ngay_thanh_toan', [$monthStart, $monthEnd])
             ->sum('chi_phi_thuc_te') ?? 0;
         
-        // Chi phí từ lịch bảo trì admin tạo
+        // Chi phí từ lịch bảo trì admin tạo (KTX thanh toán)
         $tongChiPhiBaoTri = LichBaoTri::where('nguoi_tao', 'admin')
             ->where('trang_thai', 'Hoàn thành')
             ->whereNotNull('ngay_hoan_thanh')
