@@ -27,6 +27,9 @@ class SuCo extends Model
         'nguoi_tao',
         'ngay_hoan_thanh',
         'ngay_thanh_toan',
+        'payment_method',
+        'payment_note',
+        'anh_chuyen_khoan', // ảnh minh chứng chuyển khoản
         'rating',
         'feedback',
         'rated_at',

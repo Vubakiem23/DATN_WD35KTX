@@ -210,16 +210,16 @@
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">💳 Thanh toán sự cố</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">💳 Thanh toán sự cố</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-info mb-3">
-                    <strong>Số tiền:</strong> <span id="paymentAmount" class="text-danger fs-5">0 ₫</span>
+                <div class="alert alert-info mb-3" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border: none;">
+                    <strong>Số tiền:</strong> <span id="paymentAmount" class="text-danger fs-5 fw-bold">0 ₫</span>
                 </div>
                 <div class="mb-3">
-                    <label for="paymentMethod" class="form-label">Chọn hình thức</label>
+                    <label for="paymentMethod" class="form-label fw-semibold">Chọn hình thức</label>
                     <select id="paymentMethod" class="form-select" required>
                         <option value="">-- Chọn --</option>
                         <option value="tien_mat">💵 Tiền mặt</option>
@@ -241,9 +241,22 @@
                         </div>
                     </div>
                 </div>
+                
+                {{-- Ảnh minh chứng chuyển khoản --}}
+                <div id="transferImageSection" class="mb-3 mt-3" style="display: none;">
+                    <label for="transfer_image" class="form-label fw-semibold">
+                        <i class="fa fa-camera me-1"></i> Ảnh minh chứng chuyển khoản <span class="text-danger">*</span>
+                    </label>
+                    <input type="file" id="transfer_image" class="form-control" accept="image/*">
+                    <small class="text-muted">Chụp màn hình giao dịch thành công để xác nhận</small>
+                    <div id="transferImagePreview" class="mt-2" style="display: none;">
+                        <img src="" alt="Preview" class="img-fluid rounded border" style="max-height: 150px;">
+                    </div>
+                </div>
+                
                 <div class="mb-3 mt-3">
-                    <label for="ghi_chu_thanh_toan" class="form-label">Ghi chú</label>
-                    <textarea id="ghi_chu_thanh_toan" class="form-control" rows="3" required></textarea>
+                    <label for="ghi_chu_thanh_toan" class="form-label fw-semibold">Ghi chú</label>
+                    <textarea id="ghi_chu_thanh_toan" class="form-control" rows="3" placeholder="Nhập ghi chú thanh toán..." required></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -546,6 +559,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const bankInfo = document.getElementById('bankInfo');
     const ghiChuEl = document.getElementById('ghi_chu_thanh_toan');
     const confirmBtn = document.getElementById('confirmPaymentBtn');
+    const transferImageSection = document.getElementById('transferImageSection');
+    const transferImageInput = document.getElementById('transfer_image');
+    const transferImagePreview = document.getElementById('transferImagePreview');
 
     let actionUrl = '';
 
@@ -559,11 +575,37 @@ document.addEventListener('DOMContentLoaded', function() {
         paymentMethodSelect.value = '';
         ghiChuEl.value = '';
         bankInfo.style.display = 'none';
+        transferImageSection.style.display = 'none';
+        transferImageInput.value = '';
+        transferImagePreview.style.display = 'none';
     });
 
-    // Hiển thị thông tin chuyển khoản
+    // Hiển thị thông tin chuyển khoản và phần upload ảnh
     paymentMethodSelect.addEventListener('change', function() {
-        bankInfo.style.display = this.value === 'chuyen_khoan' ? 'block' : 'none';
+        const isChuyenKhoan = this.value === 'chuyen_khoan';
+        bankInfo.style.display = isChuyenKhoan ? 'block' : 'none';
+        transferImageSection.style.display = isChuyenKhoan ? 'block' : 'none';
+        
+        // Reset ảnh khi đổi phương thức
+        if (!isChuyenKhoan) {
+            transferImageInput.value = '';
+            transferImagePreview.style.display = 'none';
+        }
+    });
+
+    // Preview ảnh chuyển khoản
+    transferImageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                transferImagePreview.querySelector('img').src = e.target.result;
+                transferImagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            transferImagePreview.style.display = 'none';
+        }
     });
 
     // Gửi yêu cầu thanh toán
@@ -573,21 +615,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!hinhThuc) return alert('Chọn hình thức thanh toán!');
         if (!ghiChu) return alert('Nhập ghi chú thanh toán!');
+        
+        // Kiểm tra ảnh chuyển khoản nếu chọn chuyển khoản
+        if (hinhThuc === 'chuyen_khoan' && !transferImageInput.files[0]) {
+            return alert('Vui lòng chụp ảnh minh chứng chuyển khoản!');
+        }
 
         confirmBtn.disabled = true;
         confirmBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang xử lý...';
+
+        // Sử dụng FormData để gửi cả file
+        const formData = new FormData();
+        formData.append('hinh_thuc_thanh_toan', hinhThuc);
+        formData.append('ghi_chu_thanh_toan', ghiChu);
+        
+        if (hinhThuc === 'chuyen_khoan' && transferImageInput.files[0]) {
+            formData.append('anh_chuyen_khoan', transferImageInput.files[0]);
+        }
 
         fetch(actionUrl, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({
-                hinh_thuc_thanh_toan: hinhThuc,
-                ghi_chu_thanh_toan: ghiChu
-            })
+            body: formData
         })
         .then(res => res.json())
         .then(data => {

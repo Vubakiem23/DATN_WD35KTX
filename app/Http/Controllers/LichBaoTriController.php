@@ -104,15 +104,18 @@ public function index(Request $request)
             if (!$taiSan) {
                 return redirect()->route('taisan.index')->with('error', 'Không tìm thấy tài sản.');
             }
+            // Chỉ lấy phòng có tài sản (cơ sở vật chất)
+            $phongs = \App\Models\Phong::whereHas('taiSan')->get();
             return view('lichbaotri.create', [
                 'taiSan' => $taiSan,
                 'taiSans' => [],
-                'phongs' => \App\Models\Phong::all(),
+                'phongs' => $phongs,
             ]);
         }
 
         $taiSans = TaiSan::with(['phong', 'khoTaiSan'])->get();
-        $phongs = \App\Models\Phong::all();
+        // Chỉ lấy phòng có tài sản (cơ sở vật chất)
+        $phongs = \App\Models\Phong::whereHas('taiSan')->get();
 
         return view('lichbaotri.create', [
             'taiSan' => null,

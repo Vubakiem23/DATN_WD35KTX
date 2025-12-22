@@ -24,65 +24,125 @@
     .bulk-table {
         border-collapse: separate;
         border-spacing: 0 8px;
+        width: 100%;
+        table-layout: fixed;
     }
 
     .bulk-table thead th {
-        background: #f1f5f9;
-        padding: 12px 15px;
-        font-size: 13px;
+        background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+        padding: 14px 12px;
+        font-size: 12px;
         text-transform: uppercase;
         letter-spacing: .05em;
-        color: #475569;
+        color: #fff;
         border-bottom: none;
-        border-radius: 12px;
+        text-align: center;
+        font-weight: 600;
     }
+
+    .bulk-table thead th:first-child {
+        border-radius: 12px 0 0 12px;
+    }
+
+    .bulk-table thead th:last-child {
+        border-radius: 0 12px 12px 0;
+    }
+
+    /* Chiều rộng cố định cho từng cột */
+    .bulk-table th:nth-child(1),
+    .bulk-table td:nth-child(1) { width: 14%; } /* Tên tài sản */
+    
+    .bulk-table th:nth-child(2),
+    .bulk-table td:nth-child(2) { width: 10%; } /* Đơn vị */
+    
+    .bulk-table th:nth-child(3),
+    .bulk-table td:nth-child(3) { width: 12%; } /* Tình trạng */
+    
+    .bulk-table th:nth-child(4),
+    .bulk-table td:nth-child(4) { width: 16%; } /* Ghi chú */
+    
+    .bulk-table th:nth-child(5),
+    .bulk-table td:nth-child(5) { width: 14%; } /* Hình ảnh */
+    
+    .bulk-table th:nth-child(6),
+    .bulk-table td:nth-child(6) { width: 10%; } /* Xem trước */
+    
+    .bulk-table th:nth-child(7),
+    .bulk-table td:nth-child(7) { width: 10%; } /* Số lượng */
+    
+    .bulk-table th:nth-child(8),
+    .bulk-table td:nth-child(8) { width: 8%; } /* Xoá */
 
     .bulk-table tbody tr {
         background: #ffffff;
         transition: all 0.2s;
         border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
     .bulk-table tbody tr:hover {
         background: #f0f4f8;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     .bulk-table tbody td {
-        padding: 10px 12px;
+        padding: 12px 10px;
         vertical-align: middle;
+        text-align: center;
+        border-top: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .bulk-table tbody td:first-child {
+        border-left: 1px solid #f1f5f9;
+        border-radius: 12px 0 0 12px;
+    }
+
+    .bulk-table tbody td:last-child {
+        border-right: 1px solid #f1f5f9;
+        border-radius: 0 12px 12px 0;
     }
 
     /* --- Inputs & selects --- */
     .form-control,
     .form-select {
-        border-radius: 12px;
-        height: 42px;
-        border-color: #cbd5e1;
-        padding: 5px 12px;
-        font-size: 14px;
+        border-radius: 10px;
+        height: 40px;
+        border-color: #e2e8f0;
+        padding: 5px 10px;
+        font-size: 13px;
+        width: 100%;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
     textarea.form-control {
-        min-height: 70px;
+        min-height: 60px;
         resize: vertical;
     }
 
     /* --- Preview ảnh --- */
     .img-preview {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
+        width: 56px;
+        height: 56px;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
         object-fit: cover;
-        background: #f1f5f9;
+        background: #f8fafc;
     }
 
     /* --- Dòng trống --- */
     .empty-state td {
         text-align: center;
-        padding: 25px;
+        padding: 30px;
         font-style: italic;
         color: #94a3b8;
+        background: #f8fafc;
+        border-radius: 12px;
     }
 
     /* --- Cột xoá --- */
@@ -94,9 +154,6 @@
         padding: 6px 10px;
         font-size: 13px;
         border-radius: 999px;
-    }
-
-    .bulk-table td.actions-delete .btn-sm {
         width: 38px;
         height: 38px;
         display: inline-flex;
@@ -107,11 +164,49 @@
     /* --- Nút thêm dòng --- */
     #addRow {
         border-radius: 999px;
+        padding: 12px 30px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        border: none;
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+    #addRow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    /* --- Nút lưu --- */
+    .btn-primary {
+        border-radius: 999px;
+        padding: 12px 30px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
     }
 
     /* --- Responsive table --- */
     .table-responsive {
         overflow-x: auto;
+    }
+
+    @media (max-width: 992px) {
+        .bulk-table {
+            table-layout: auto;
+        }
+        .bulk-table th,
+        .bulk-table td {
+            white-space: nowrap;
+        }
     }
 </style>
 
@@ -153,7 +248,7 @@
     const tbody = document.querySelector('#assetTable tbody');
     const addRowBtn = document.getElementById('addRow');
 
-    const tenDefault = @json($loai - > ten_loai);
+    const tenDefault = @json($loai->ten_loai);
     const tinhTrangOptions = @json($tinhTrangOptions);
 
     function buildTinhTrangOptions(selected = "") {
