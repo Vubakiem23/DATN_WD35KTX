@@ -17,6 +17,7 @@ class HoaDonBaoTri extends Model
         'trang_thai_thanh_toan',
         'phuong_thuc_thanh_toan',
         'ghi_chu',
+        'anh_minh_chung',
     ];
 
     // Quan hệ với lịch bảo trì

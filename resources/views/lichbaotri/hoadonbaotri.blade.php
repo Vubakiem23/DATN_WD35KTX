@@ -39,31 +39,33 @@
                     </td>
                     <td>{{ $h->phuong_thuc_thanh_toan ?? '-' }}</td>
                     <td>{{ $h->created_at->format('d/m/Y') }}</td>
-                   <td>
-    @if($h->trang_thai_thanh_toan != 'Đã thanh toán')
-    <button class="btn btn-sm btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#paymentModal"
-        data-id="{{ $h->id }}"
-        data-route="{{ route('hoadonbaotri.update', $h->id) }}"
-        data-amount="{{ $h->chi_phi }}"
-        data-phuongthuc="{{ $h->phuong_thuc_thanh_toan }}">
-        <i class="fa fa-edit"></i> Thanh toán
-    </button>
-    @endif
+                    <td>
+                        <!-- @if($h->trang_thai_thanh_toan != 'Đã thanh toán')
+                        <button class="btn btn-sm btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#paymentModal"
+                            data-id="{{ $h->id }}"
+                            data-route="{{ route('hoadonbaotri.update', $h->id) }}"
+                            data-amount="{{ $h->chi_phi }}"
+                            data-phuongthuc="{{ $h->phuong_thuc_thanh_toan }}">
+                            <i class="fa fa-edit"></i> Thanh toán
+                        </button>
+                        @endif -->
 
-    <button class="btn btn-sm btn-info"
-        data-bs-toggle="modal"
-        data-bs-target="#detailModal"
-        data-mats="{{ $h->lichBaoTri->taiSan->khoTaiSan->ma_tai_san ?? $h->lichBaoTri->khoTaiSan->ma_tai_san ?? 'Không có' }}"
-        data-tents="{{ $h->lichBaoTri->taiSan->ten_tai_san ?? $h->lichBaoTri->khoTaiSan->ten_tai_san ?? 'Không xác định' }}"
-        data-amount="{{ number_format($h->chi_phi,0,',','.') }}"
-        data-status="{{ $h->trang_thai_thanh_toan }}"
-        data-method="{{ $h->phuong_thuc_thanh_toan ?? '---' }}"
-        data-date="{{ $h->created_at->format('d/m/Y H:i') }}">
-        👁 Xem
-    </button>
-</td>
+                        <button class="btn btn-sm btn-info"
+                            data-bs-toggle="modal"
+                            data-bs-target="#detailModal"
+                            data-mats="{{ $h->lichBaoTri->taiSan->khoTaiSan->ma_tai_san ?? '---' }}"
+                            data-tents="{{ $h->lichBaoTri->taiSan->ten_tai_san ?? '---' }}"
+                            data-amount="{{ number_format($h->chi_phi,0,',','.') }}"
+                            data-status="{{ $h->trang_thai_thanh_toan }}"
+                            data-method="{{ $h->phuong_thuc_thanh_toan ?? '---' }}"
+                            data-date="{{ $h->created_at->format('d/m/Y H:i') }}"
+                            data-image="{{ $h->anh_minh_chung ? asset('storage/'.$h->anh_minh_chung) : '' }}">
+                            👁 Xem
+                        </button>
+
+                    </td>
 
                 </tr>
                 @empty
@@ -84,7 +86,7 @@
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
-            <form id="paymentForm" method="POST">
+            <form id="paymentForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="paymentModalLabel">💳 Cập nhật thanh toán hóa đơn</h5>
@@ -125,6 +127,19 @@
                             </div>
                         </div>
                     </div>
+                    <div id="proofImage"
+                        style="display:none; margin-top:15px;">
+                        <label class="form-label fw-bold">
+                            📷 Ảnh minh chứng chuyển khoản
+                        </label>
+                        <input type="file"
+                            name="anh_minh_chung"
+                            class="form-control"
+                            accept="image/*">
+                        <small class="text-muted">
+                            (JPG, PNG – tối đa 2MB)
+                        </small>
+                    </div>
 
                     <div class="mb-3 mt-3">
                         <label for="ghi_chu" class="form-label">Ghi chú thanh toán</label>
@@ -142,68 +157,85 @@
         </div>
     </div>
 </div>
-<!-- //modal xem chi tiết -->
-{{-- Modal Xem Chi Tiết --}}
+<!-- Modal Xem Chi Tiết -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-md">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content shadow-lg rounded-4">
 
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title">📋 Chi tiết hóa đơn bảo trì</h5>
+            <div class="modal-header bg-info text-white rounded-top-4">
+                <h5 class="modal-title">
+                    📋 Chi tiết hóa đơn bảo trì
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <!-- 🔹 Toàn bộ phần modal-body bạn đã viết đặt vào đây -->
-            <div class="modal-body">
-                <div class="row mb-3">
-                    <div class="col-md-12 text-center">
-                        <i class="fa fa-file-invoice-dollar text-info" style="font-size: 45px;"></i>
-                    </div>
+            <div class="modal-body px-4 py-3">
+
+                <!-- ICON -->
+                <div class="text-center mb-4">
+                    <i class="fa fa-file-invoice-dollar text-info" style="font-size:50px;"></i>
                 </div>
 
-                <div class="list-group">
+                <!-- THÔNG TIN -->
+                <div class="list-group list-group-flush mb-4">
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><strong>📌 Mã tài sản</strong></span>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <strong>📌 Mã tài sản</strong>
                         <span id="detailMaTS"></span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><strong>🏷 Tên tài sản</strong></span>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <strong>🏷 Tên tài sản</strong>
                         <span id="detailTS"></span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><strong>💰 Chi phí</strong></span>
-                        <span id="detailAmount" class="text-danger fw-bold"></span>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <strong>💰 Chi phí</strong>
+                        <span id="detailAmount" class="fw-bold text-danger"></span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><strong>📌 Trạng thái</strong></span>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <strong>📌 Trạng thái</strong>
                         <span id="detailStatus"></span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><strong>💳 Thanh toán</strong></span>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <strong>💳 Thanh toán</strong>
                         <span id="detailMethod"></span>
                     </div>
 
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><strong>📅 Ngày tạo</strong></span>
+                    <div class="list-group-item d-flex justify-content-between">
+                        <strong>📅 Ngày tạo</strong>
                         <span id="detailDate"></span>
                     </div>
 
                 </div>
+
+                <!-- ẢNH MINH CHỨNG -->
+                <div id="detailImageWrapper" class="text-center" style="display:none;">
+                    <h6 class="mb-3 fw-bold">📷 Ảnh minh chứng chuyển khoản</h6>
+                    <img id="detailImage"
+                        src=""
+                        class="img-fluid rounded shadow border"
+                        style="max-height:300px; cursor:zoom-in;"
+                        onclick="window.open(this.src,'_blank')">
+                    <p class="text-muted mt-2" style="font-size:0.85rem;">
+                        Click vào ảnh để xem lớn
+                    </p>
+                </div>
+
             </div>
-            <!-- 🔹 Kết thúc phần body -->
 
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">
+                    Đóng
+                </button>
             </div>
 
         </div>
     </div>
 </div>
+
 
 
 
@@ -220,25 +252,33 @@
         detailModal.addEventListener('show.bs.modal', function(event) {
             const button = event.relatedTarget;
 
-            document.getElementById('detailMaTS').textContent = button.getAttribute('data-mats');
-            document.getElementById('detailTS').textContent = button.getAttribute('data-tents');
+            document.getElementById('detailMaTS').textContent = button.dataset.mats;
+            document.getElementById('detailTS').textContent = button.dataset.tents;
             document.getElementById('detailAmount').textContent =
-                button.getAttribute('data-amount') + ' VND';
+                button.dataset.amount + ' VND';
 
-            const status = button.getAttribute('data-status');
+            const status = button.dataset.status;
             document.getElementById('detailStatus').innerHTML =
                 status === 'Đã thanh toán' ?
                 '<span class="badge bg-success">Đã thanh toán</span>' :
                 '<span class="badge bg-warning text-dark">Chưa thanh toán</span>';
 
-            document.getElementById('detailMethod').textContent =
-                button.getAttribute('data-method');
+            document.getElementById('detailMethod').textContent = button.dataset.method;
+            document.getElementById('detailDate').textContent = button.dataset.date;
 
-            document.getElementById('detailDate').textContent =
-                button.getAttribute('data-date');
+            // ẢNH MINH CHỨNG
+            const image = button.dataset.image;
+            const imageWrapper = document.getElementById('detailImageWrapper');
+            const imageTag = document.getElementById('detailImage');
+
+            if (image) {
+                imageTag.src = image;
+                imageWrapper.style.display = 'block';
+            } else {
+                imageWrapper.style.display = 'none';
+            }
         });
     });
-
 
     document.addEventListener('DOMContentLoaded', function() {
         const paymentModal = document.getElementById('paymentModal');
@@ -246,12 +286,16 @@
         const paymentAmount = document.getElementById('paymentAmount');
         const paymentMethod = document.getElementById('paymentMethod');
         const bankInfo = document.getElementById('bankInfo');
+        const proofImage = document.getElementById('proofImage');
         const ghiChu = document.getElementById('ghi_chu');
 
         // Hiển thị bank info khi chọn chuyển khoản
         paymentMethod.addEventListener('change', function() {
-            bankInfo.style.display = this.value === 'Chuyển khoản' ? 'block' : 'none';
+            const isTransfer = this.value === 'Chuyển khoản';
+            bankInfo.style.display = isTransfer ? 'block' : 'none';
+            proofImage.style.display = isTransfer ? 'block' : 'none';
         });
+
 
         // Khi mở modal
         paymentModal.addEventListener('show.bs.modal', function(event) {
@@ -268,7 +312,9 @@
 
             // Chọn phương thức thanh toán
             paymentMethod.value = phuongThuc ?? '';
-            bankInfo.style.display = phuongThuc === 'Chuyển khoản' ? 'block' : 'none';
+            const isTransfer = phuongThuc === 'Chuyển khoản';
+            bankInfo.style.display = isTransfer ? 'block' : 'none';
+            proofImage.style.display = isTransfer ? 'block' : 'none';
 
             // Xóa ghi chú
             ghiChu.value = '';

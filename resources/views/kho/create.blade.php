@@ -153,7 +153,7 @@
     const tbody = document.querySelector('#assetTable tbody');
     const addRowBtn = document.getElementById('addRow');
 
-    const tenDefault = @json($loai -> ten_loai);
+    const tenDefault = @json($loai - > ten_loai);
     const tinhTrangOptions = @json($tinhTrangOptions);
 
     function buildTinhTrangOptions(selected = "") {
@@ -169,7 +169,6 @@
         const tinh_trang_value = copyData?.tinh_trang ?? "";
         const ghi_chu_value = copyData?.ghi_chu ?? "";
         const img_src_value = copyData?.img_src ?? "";
-
         tr.innerHTML = `
         <td><input type="text" name="ten_tai_san[]" class="form-control" value="${tenDefault}" readonly></td>
         <td><input type="text" name="don_vi_tinh[]" class="form-control" value="${don_vi_value}" placeholder="chiếc, bộ..."></td>
