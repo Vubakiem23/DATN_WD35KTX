@@ -193,7 +193,7 @@
                     </li>
 
                     <!-- Thanh Toán -->
-                    <li>
+                    {{-- <li>
                         <a><i class="fa fa-credit-card"></i> Thanh Toán <span class="fa fa-chevron-down"></span></a>
                         <ul class="nav child_menu">
                             <li>
@@ -209,7 +209,7 @@
                                 </a>
                             </li>
                         </ul>
-                    </li>
+                    </li> --}}
 
                     <!-- Thông Báo Sự Cố -->
                     <li>
