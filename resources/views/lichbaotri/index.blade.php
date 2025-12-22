@@ -433,11 +433,14 @@
 
             <td class="text-center">
               <span class="badge 
-                @if($l->trang_thai == 'Hoàn thành') bg-success
+                @if($l->trang_thai == 'Hoàn thành') bg-success text-white
                 @elseif($l->trang_thai == 'Đang bảo trì') bg-warning text-dark
                 @elseif($l->trang_thai == 'Đang lên lịch') bg-info text-white
-                @else bg-secondary @endif">
-                {{ $l->trang_thai }}
+                @elseif($l->trang_thai == 'Chờ bảo trì') bg-primary text-white
+                @elseif($l->trang_thai == 'Chờ thanh toán') bg-danger text-white
+                @elseif($l->trang_thai == 'Đã thanh toán') bg-success text-white
+                @else bg-secondary text-white @endif">
+                {{ $l->trang_thai ?? 'Chưa xác định' }}
               </span>
             </td>
 
@@ -585,6 +588,17 @@
             <textarea name="mo_ta_sau" id="mo_ta_sau" rows="3"
               class="form-control"
               placeholder="Nhập mô tả tình trạng sau khi bảo trì..." required></textarea>
+          </div>
+
+          {{-- Checkbox KTX thanh toán --}}
+          <div class="mb-3">
+            <div class="form-check">
+              <input type="checkbox" name="ktx_thanh_toan" id="ktx_thanh_toan" class="form-check-input" value="1">
+              <label for="ktx_thanh_toan" class="form-check-label fw-semibold">
+                <i class="fa fa-building text-primary"></i> KTX thanh toán (không yêu cầu sinh viên trả)
+              </label>
+            </div>
+            <small class="text-muted">Tích nếu chi phí này do ký túc xá chi trả, không cần sinh viên thanh toán.</small>
           </div>
         </div>
 

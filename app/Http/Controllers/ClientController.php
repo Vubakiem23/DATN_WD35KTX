@@ -689,6 +689,7 @@ class ClientController extends Controller
                 'mo_ta'           => $request->mo_ta,
                 'hinh_anh_truoc'  => $imagePath,
                 'ngay_bao_tri'    => now()->toDateString(),
+                'nguoi_tao'       => 'client', // Sinh viên báo hỏng
             ]);
 
             // Cập nhật trạng thái tài sản
@@ -717,7 +718,8 @@ class ClientController extends Controller
             'mo_ta'           => $request->mo_ta,
             'hinh_anh_truoc'  => $imagePath,
             'ngay_bao_tri'    => now()->toDateString(),
-            'trang_thai'      => 'Đang lên lịch'
+            'trang_thai'      => 'Đang lên lịch',
+            'nguoi_tao'       => 'client' // Sinh viên báo hỏng
         ]);
 
         // Cập nhật trạng thái tài sản

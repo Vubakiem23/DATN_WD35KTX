@@ -141,6 +141,7 @@ Route::prefix('client')->middleware(['auth', 'student'])->group(function () {
     Route::prefix('phan-hoi')->group(function () {
         Route::get('list', [PhanHoiSinhVienController::class, 'list'])->name('client.phan_hoi.list');
         Route::get('show/{id}', [PhanHoiSinhVienController::class, 'show'])->name('client.phan_hoi.show');
+        Route::get('edit/{id}', [PhanHoiSinhVienController::class, 'edit'])->name('client.phan_hoi.edit');
         Route::get('create', [PhanHoiSinhVienController::class, 'create'])->name('client.phan_hoi.create');
         Route::post('store', [PhanHoiSinhVienController::class, 'store'])->name('client.phan_hoi.store');
         Route::put('update/{id}', [PhanHoiSinhVienController::class, 'update'])->name('client.phan_hoi.update');
@@ -384,6 +385,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
         Route::get('show/{id}', [AdminPhanHoiSinhVienController::class, 'show'])->name('admin.phan_hoi.show');
         Route::put('update/{id}', [AdminPhanHoiSinhVienController::class, 'update'])->name('admin.phan_hoi.update');
         Route::patch('resolve/{id}', [AdminPhanHoiSinhVienController::class, 'resolve'])->name('admin.phan_hoi.resolve');
+        Route::patch('reject/{id}', [AdminPhanHoiSinhVienController::class, 'reject'])->name('admin.phan_hoi.reject');
         Route::delete('delete/{id}', [AdminPhanHoiSinhVienController::class, 'delete'])->name('admin.phan_hoi.delete');
     });
 });

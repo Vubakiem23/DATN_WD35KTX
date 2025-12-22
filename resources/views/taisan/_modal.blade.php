@@ -24,10 +24,11 @@
                     <span class="badge 
                         @if($taiSan->tinh_trang == 'Mới') bg-success
                         @elseif($taiSan->tinh_trang == 'Bình thường') bg-success text-white
-                        @elseif($taiSan->tinh_trang == 'Cũ') bg-secondary
+                        @elseif($taiSan->tinh_trang == 'Cũ') text-white
                         @elseif($taiSan->tinh_trang == 'Đang bảo trì') bg-warning text-dark
                         @elseif($taiSan->tinh_trang == 'Hỏng') bg-danger
-                        @else bg-light @endif">
+                        @else bg-light @endif"
+                        @if($taiSan->tinh_trang == 'Cũ') style="background-color: #f59e0b; font-weight: 600;" @endif>
                         {{ $taiSan->tinh_trang ?? '-' }}
                     </span>
                 </p>
@@ -36,10 +37,11 @@
                     <span class="badge 
                         @if($taiSan->tinh_trang_hien_tai == 'Mới') bg-success
                         @elseif($taiSan->tinh_trang_hien_tai == 'Bình thường') bg-success text-white
-                        @elseif($taiSan->tinh_trang_hien_tai == 'Cũ') bg-secondary
+                        @elseif($taiSan->tinh_trang_hien_tai == 'Cũ') text-white
                         @elseif($taiSan->tinh_trang_hien_tai == 'Đang bảo trì') bg-warning text-dark
                         @elseif($taiSan->tinh_trang_hien_tai == 'Hỏng') bg-danger
-                        @else bg-light @endif">
+                        @else bg-light @endif"
+                        @if($taiSan->tinh_trang_hien_tai == 'Cũ') style="background-color: #f59e0b; font-weight: 600;" @endif>
                         {{ $taiSan->tinh_trang_hien_tai ?? '-' }}
                     </span>
                 </p>

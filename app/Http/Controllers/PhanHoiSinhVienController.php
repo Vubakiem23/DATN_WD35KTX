@@ -25,6 +25,20 @@ class PhanHoiSinhVienController extends Controller
         return view('public.phan_hoi.show', compact('phanHoi'));
     }
 
+    public function edit($id)
+    {
+        $user = Auth::user();
+        $phanHoi = PhanHoiSinhVien::where('sinh_vien_id', $user->id)->where('id', $id)->first();
+        if (!$phanHoi) {
+            return redirect()->route('client.phan_hoi.list')->with('error', 'Phản hồi không tồn tại.');
+        }
+        // Không cho sửa nếu đã xử lý hoặc từ chối
+        if ($phanHoi->trang_thai != 0) {
+            return redirect()->route('client.phan_hoi.list')->with('error', 'Không thể sửa phản hồi đã được xử lý.');
+        }
+        return view('public.phan_hoi.edit', compact('phanHoi'));
+    }
+
     public function create()
     {
         return view('public.phan_hoi.create');

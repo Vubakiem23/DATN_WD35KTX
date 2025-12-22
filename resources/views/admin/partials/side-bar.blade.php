@@ -237,7 +237,7 @@
                             <li>
                                 <a href="{{ route('admin.phan_hoi.list') }}"
                                    class="{{ request()->routeIs('admin.phan_hoi.*') ? 'active' : '' }}">
-                                    <i class="fa-regular fa-pen-to-square"></i>Phản hồi
+                                    <i class="fa fa-comments"></i> Phản hồi
                                 </a>
                             </li>
                         </ul>

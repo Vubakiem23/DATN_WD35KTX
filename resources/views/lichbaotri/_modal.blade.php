@@ -96,10 +96,14 @@
       <th>Trạng thái</th>
       <td>
         <span class="badge
-          @if($lich->trang_thai == 'Hoàn thành') bg-success
+          @if($lich->trang_thai == 'Hoàn thành') bg-success text-white
           @elseif($lich->trang_thai == 'Đang bảo trì') bg-warning text-dark
-          @else bg-secondary @endif">
-          {{ $lich->trang_thai }}
+          @elseif($lich->trang_thai == 'Đang lên lịch') bg-info text-white
+          @elseif($lich->trang_thai == 'Chờ bảo trì') bg-primary text-white
+          @elseif($lich->trang_thai == 'Chờ thanh toán') bg-danger text-white
+          @elseif($lich->trang_thai == 'Đã thanh toán') bg-success text-white
+          @else bg-secondary text-white @endif">
+          {{ $lich->trang_thai ?? 'Chưa xác định' }}
         </span>
       </td>
     </tr>

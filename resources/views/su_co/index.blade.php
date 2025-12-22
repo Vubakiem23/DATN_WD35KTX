@@ -261,6 +261,16 @@
                         <input type="number" name="payment_amount" id="payment_amount" class="form-control" min="0" step="1000" placeholder="Nhập số tiền (VNĐ)">
                         <small class="text-muted">Nếu > 0, hệ thống sẽ chuyển sang trang Hóa đơn sự cố để thanh toán.</small>
                     </div>
+                    {{-- Checkbox KTX thanh toán --}}
+                    <div class="mb-3 d-none" id="ktx_thanh_toan_group">
+                        <div class="form-check">
+                            <input type="checkbox" name="ktx_thanh_toan" id="ktx_thanh_toan" class="form-check-input" value="1">
+                            <label for="ktx_thanh_toan" class="form-check-label fw-semibold">
+                                <i class="fa fa-building text-primary"></i> KTX thanh toán (không yêu cầu sinh viên trả)
+                            </label>
+                        </div>
+                        <small class="text-muted">Tích nếu chi phí này do ký túc xá chi trả, không cần sinh viên thanh toán.</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -489,6 +499,8 @@
         const paymentGroup = document.getElementById('payment_amount_group');
         const paymentToggle = document.getElementById('co_thanh_toan');
         const paymentInput = document.getElementById('payment_amount');
+        const ktxThanhToanGroup = document.getElementById('ktx_thanh_toan_group');
+        const ktxThanhToanCheckbox = document.getElementById('ktx_thanh_toan');
         const percentRange = document.getElementById('completion_percent');
         const percentValue = document.getElementById('completion_percent_value');
         if (percentRange && percentValue) {
@@ -501,12 +513,17 @@
             const show = paymentToggle && paymentToggle.checked;
             if (show) {
                 paymentGroup.classList.remove('d-none');
+                ktxThanhToanGroup.classList.remove('d-none');
                 paymentInput && paymentInput.setAttribute('required', 'required');
             } else {
                 paymentGroup.classList.add('d-none');
+                ktxThanhToanGroup.classList.add('d-none');
                 if (paymentInput) {
                     paymentInput.removeAttribute('required');
                     paymentInput.value = '';
+                }
+                if (ktxThanhToanCheckbox) {
+                    ktxThanhToanCheckbox.checked = false;
                 }
             }
         };
@@ -527,6 +544,7 @@
             document.getElementById('ngay_hoan_thanh').value = ngay || '';
             form.action = "{{ route('suco.hoanthanh', ':id') }}".replace(':id', id);
             if (paymentToggle) paymentToggle.checked = false;
+            if (ktxThanhToanCheckbox) ktxThanhToanCheckbox.checked = false;
             updatePaymentVisibility();
             try {
                 const bsModal = bootstrap.Modal.getOrCreateInstance(modal);

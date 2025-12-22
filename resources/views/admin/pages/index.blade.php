@@ -437,7 +437,11 @@
                         <span class="text-success fw-bold">+{{ number_format($tongTienViPham ?? 0, 0, ',', '.') }} đ</span>
                     </div>
                     <div class="finance-row">
-                        <span><i class="fa fa-wrench me-2 text-secondary"></i>Chi phí bảo trì</span>
+                        <span><i class="fa fa-wrench me-2 text-info"></i>SV đền bù bảo trì/sự cố</span>
+                        <span class="text-success fw-bold">+{{ number_format($tongThuNhapBaoTriSuaChua ?? 0, 0, ',', '.') }} đ</span>
+                    </div>
+                    <div class="finance-row">
+                        <span><i class="fa fa-cogs me-2 text-secondary"></i>Chi phí bảo trì/sự cố (KTX)</span>
                         <span class="text-danger fw-bold">-{{ number_format($tongChiPhiBaoTriSuaChua, 0, ',', '.') }} đ</span>
                     </div>
                     <div class="finance-row finance-row--total">
