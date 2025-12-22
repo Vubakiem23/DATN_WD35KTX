@@ -390,7 +390,7 @@
                     </div>
                     {{-- Ảnh minh chứng chuyển khoản --}}
                     <div id="proofImageBox"
-                        style="display:none; margin-top:15px; padding:15px; background:#fff3cd; border-radius:8px; border:1px dashed #ffc107;">
+                        style="">
 
                         <label class="form-label fw-bold">
                             📸 Ảnh minh chứng chuyển khoản

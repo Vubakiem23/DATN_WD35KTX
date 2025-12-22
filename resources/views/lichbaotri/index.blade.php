@@ -131,7 +131,7 @@
       right: 110%;
       left: auto;
       transform: translateY(-50%);
-      z-index: 1050;
+      z-index: 9999;
       min-width: 190px;
       border-radius: 16px;
       padding: .4rem 0;
@@ -144,6 +144,32 @@
 
     .action-menu .dropdown-menu.show {
       display: block;
+    }
+
+    /* Fix dropdown bị che khuất */
+    .listing-table-wrapper {
+      overflow: visible !important;
+    }
+    
+    .table-responsive {
+      overflow: visible !important;
+    }
+    
+    .listing-table tbody tr {
+      position: relative;
+    }
+    
+    .listing-table tbody tr:has(.dropdown-menu.show) {
+      z-index: 100;
+    }
+    
+    .action-cell {
+      overflow: visible !important;
+    }
+    
+    .listing-table tbody tr.dropdown-active {
+      z-index: 100;
+      position: relative;
     }
 
     .action-menu .dropdown-item {
@@ -677,20 +703,28 @@
         const $wrapper = $gear.closest('.action-menu');
         const $menu = $wrapper.find('.dropdown-menu').first();
         const isOpen = $menu.hasClass('show');
+        
+        // Đóng tất cả dropdown và xóa class active
         $('.action-menu .dropdown-menu').removeClass('show');
+        $('.listing-table tbody tr').removeClass('dropdown-active');
+        
         if (!isOpen) {
           $menu.addClass('show');
+          // Thêm class cho row để tăng z-index
+          $wrapper.closest('tr').addClass('dropdown-active');
         }
         return;
       }
 
       if (!$target.closest('.action-menu .dropdown-menu').length) {
         $('.action-menu .dropdown-menu').removeClass('show');
+        $('.listing-table tbody tr').removeClass('dropdown-active');
       }
     });
 
     $(document).on('click', '.action-menu .dropdown-item', function() {
       $('.action-menu .dropdown-menu').removeClass('show');
+      $('.listing-table tbody tr').removeClass('dropdown-active');
     });
 
     $(document).on('click', '.btn-delete-lich', function(e) {
