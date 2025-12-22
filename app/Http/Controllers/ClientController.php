@@ -1278,21 +1278,39 @@ class ClientController extends Controller
                 ->with('info', 'Đã từ chối phòng. Bạn sẽ chờ ban quản lý gán phòng khác.');
         });
     }
-    public function thanhToanBaoTri($id)
-{
-    $hoaDon = HoaDonBaoTri::with('lichBaoTri')->find($id);
 
-    if (!$hoaDon) {
-        return back()->with('error', 'Không tìm thấy hóa đơn bảo trì.');
+ 
+
+public function thanhToanBaoTri(Request $request, $id)
+{
+    $hoaDon = HoaDonBaoTri::with('lichBaoTri')->findOrFail($id);
+
+    // ✅ Validate chung
+    $request->validate([
+        'anh_minh_chung' => 'nullable|image|max:2048',
+    ]);
+
+    // ✅ Upload ảnh minh chứng (nếu có) – CHUẨN STORAGE
+    if ($request->hasFile('anh_minh_chung')) {
+
+        // (Tuỳ chọn) xoá ảnh cũ nếu có
+        if ($hoaDon->anh_minh_chung && Storage::disk('public')->exists($hoaDon->anh_minh_chung)) {
+            Storage::disk('public')->delete($hoaDon->anh_minh_chung);
+        }
+
+        $path = $request->file('anh_minh_chung')
+            ->store('hoa_don_bao_tri', 'public');
+
+        $hoaDon->anh_minh_chung = $path;
     }
 
-    // 🔥 Cập nhật hóa đơn theo đúng tên cột bạn đã dùng trong update()
+    // 🔥 Cập nhật hóa đơn
     $hoaDon->trang_thai_thanh_toan = 'Đã thanh toán';
-    $hoaDon->phuong_thuc_thanh_toan = 'Sinh viên tự thanh toán'; // hoặc null tùy bạn muốn để gì
-    $hoaDon->ghi_chu = null; // hoặc ghi chú gì đó nếu cần
+    $hoaDon->phuong_thuc_thanh_toan = 'Sinh viên tự thanh toán';
+    $hoaDon->ghi_chu = null;
     $hoaDon->save();
 
-    // 🔥 Cập nhật lịch bảo trì về "Hoàn thành"
+    // 🔥 Cập nhật lịch bảo trì → Hoàn thành
     if ($hoaDon->lichBaoTri) {
         $lich = $hoaDon->lichBaoTri;
         $lich->trang_thai = 'Hoàn thành';

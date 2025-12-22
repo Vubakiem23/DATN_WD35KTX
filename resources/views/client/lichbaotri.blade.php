@@ -15,6 +15,7 @@
         font-weight: 600;
         font-size: 0.95rem;
     }
+
     .btn-pay {
         display: inline-flex;
         align-items: center;
@@ -346,7 +347,7 @@
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content">
-            <form id="paymentForm" method="POST">
+            <form id="paymentForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="paymentModalLabel">💳 Cập nhật thanh toán hóa đơn</h5>
@@ -387,6 +388,23 @@
                             </div>
                         </div>
                     </div>
+                    {{-- Ảnh minh chứng chuyển khoản --}}
+                    <div id="proofImageBox"
+                        style="display:none; margin-top:15px; padding:15px; background:#fff3cd; border-radius:8px; border:1px dashed #ffc107;">
+
+                        <label class="form-label fw-bold">
+                            📸 Ảnh minh chứng chuyển khoản
+                        </label>
+
+                        <input type="file"
+                            name="anh_minh_chung"
+                            class="form-control"
+                            accept="image/*">
+
+                        <small class="text-muted">
+                            Vui lòng tải ảnh chụp màn hình giao dịch (jpg, png)
+                        </small>
+                    </div>
 
                     <div class="mb-3 mt-3">
                         <label for="ghi_chu" class="form-label">Ghi chú thanh toán</label>
@@ -412,11 +430,15 @@
         const paymentAmount = document.getElementById('paymentAmount');
         const paymentMethod = document.getElementById('paymentMethod');
         const bankInfo = document.getElementById('bankInfo');
+        const proofImageBox = document.getElementById('proofImageBox');
+
         const ghiChu = document.getElementById('ghi_chu');
 
-        // Hiển thị bank info khi chọn chuyển khoản
         paymentMethod.addEventListener('change', function() {
-            bankInfo.style.display = this.value === 'Chuyển khoản' ? 'block' : 'none';
+            const isTransfer = this.value === 'Chuyển khoản';
+
+            bankInfo.style.display = isTransfer ? 'block' : 'none';
+            proofImageBox.style.display = isTransfer ? 'block' : 'none';
         });
 
         // Khi mở modal
@@ -432,9 +454,11 @@
             // Hiển thị số tiền
             paymentAmount.textContent = new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
 
-            // Chọn phương thức thanh toán
             paymentMethod.value = phuongThuc ?? '';
-            bankInfo.style.display = phuongThuc === 'Chuyển khoản' ? 'block' : 'none';
+            const isTransfer = phuongThuc === 'Chuyển khoản';
+
+            bankInfo.style.display = isTransfer ? 'block' : 'none';
+            proofImageBox.style.display = isTransfer ? 'block' : 'none';
 
             // Xóa ghi chú
             ghiChu.value = '';

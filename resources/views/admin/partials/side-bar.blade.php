@@ -107,7 +107,7 @@
                             <li>
                                 <a href="{{ route('hoadonbaotri.index') }}"
                                    class="{{ request()->routeIs('hoadonbaotri.*') ? 'active' : '' }}">
-                                    <i class="fa fa-tags"></i> Hóa đơn bảo trì
+                                    <i class="fa fa-file-text-o"></i> Hóa đơn bảo trì
                                 </a>
                             </li>
                         </ul>

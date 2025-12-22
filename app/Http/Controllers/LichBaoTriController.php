@@ -443,8 +443,6 @@ public function hoanThanhSubmit(Request $request, $id)
         return redirect()->route('lichbaotri.index')
             ->with('success', "Đã tiếp nhận báo hỏng và chuyển sang trạng thái '{$trangThaiMoi}'.");
     }
-    /** ❌ Từ chối tiếp nhận báo hỏng */
-    /** ❌ Từ chối tiếp nhận báo hỏng */
     public function tuChoi(Request $request, $id)
     {
         $lich = LichBaoTri::findOrFail($id);
