@@ -52,24 +52,29 @@
   }
 
   .asset-info-box {
-    background: #f1f5f9;
-    border: 1px solid #cbd5f5;
-    font-size: 13px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    line-height: 1.4;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    border: 1px solid #c7d2fe;
+    font-size: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    line-height: 1.5;
+    min-height: 90px;
   }
 
   .asset-info-box span {
     display: block;
-    font-weight: 500;
-    color: #1f2937;
+    font-weight: 600;
+    color: #1e40af;
+    font-size: 13px;
+    margin-bottom: 4px;
   }
 
   .asset-info-box small {
     display: block;
     color: #64748b;
     font-weight: 400;
+    font-size: 11px;
+    line-height: 1.6;
   }
 
   .asset-table-wrapper {
@@ -77,55 +82,123 @@
     border-radius: 16px;
     overflow: hidden;
     background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 
   .asset-table {
     margin-bottom: 0;
     border-collapse: separate;
     border-spacing: 0;
+    width: 100%;
+    table-layout: fixed;
   }
 
   .asset-table thead th {
-    background: #f8fafc;
-    font-size: 0.78rem;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    font-size: 0.75rem;
     text-transform: uppercase;
-    color: #64748b;
-    letter-spacing: .03em;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 16px 14px;
+    color: #fff;
+    letter-spacing: .05em;
+    border-bottom: none;
+    padding: 14px 12px;
+    font-weight: 600;
+    text-align: center;
   }
 
+  .asset-table thead th:first-child {
+    border-radius: 16px 0 0 0;
+  }
+
+  .asset-table thead th:last-child {
+    border-radius: 0 16px 0 0;
+  }
+
+  /* Cố định độ rộng các cột */
+  .asset-table thead th:nth-child(1) { width: 22%; } /* Tài sản */
+  .asset-table thead th:nth-child(2) { width: 23%; } /* Thông tin */
+  .asset-table thead th:nth-child(3) { width: 25%; } /* Mô tả */
+  .asset-table thead th:nth-child(4) { width: 22%; } /* Ảnh */
+  .asset-table thead th:nth-child(5) { width: 8%; }  /* Xóa */
+
   .asset-table tbody tr {
-    transition: background .2s ease;
+    transition: all .2s ease;
+    border-bottom: 1px solid #f1f5f9;
   }
 
   .asset-table tbody tr:hover {
-    background: #f9fbff;
+    background: linear-gradient(90deg, #f0f9ff 0%, #fff 100%);
+  }
+
+  .asset-table tbody tr:last-child {
+    border-bottom: none;
   }
 
   .asset-table tbody td {
-    padding: 14px 14px;
+    padding: 16px 12px;
     vertical-align: middle;
   }
 
+  .asset-table tbody td .form-select {
+    font-size: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
   .asset-table textarea {
-    min-height: 80px;
+    min-height: 90px;
     resize: vertical;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .asset-table input[type="file"] {
+    font-size: 11px;
+    padding: 8px 10px;
+    border-radius: 10px;
   }
 
   .asset-table .del {
-    border-radius: 12px;
-    padding-inline: 14px;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+
+  .asset-table .del:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
   }
 
   .empty-state {
     text-align: center;
+    background: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
+  }
+
+  .empty-state td {
+    padding: 40px 20px !important;
+  }
+
+  .empty-state .text-muted {
+    color: #94a3b8 !important;
+    font-size: 14px;
   }
 
   #addRow {
-    border-radius: 999px;
-    padding: 10px 22px;
+    border-radius: 12px;
+    padding: 12px 28px;
     font-weight: 600;
+    font-size: 14px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    color: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  #addRow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   }
 
   @media (max-width: 992px) {
@@ -288,18 +361,20 @@
         <table class="table asset-table align-middle" id="assetTable">
           <thead>
             <tr>
-              <th style="min-width:170px;">Tài sản</th>
-              <th style="min-width:210px;">Thông tin</th>
-              <th style="min-width:220px;">Mô tả</th>
-              <th style="min-width:180px;">Ảnh trước bảo trì</th>
-              <th style="width:80px;">#</th>
+              <th>Tài sản</th>
+              <th>Thông tin</th>
+              <th>Mô tả</th>
+              <th>Ảnh trước bảo trì</th>
+              <th>#</th>
             </tr>
           </thead>
           <tbody>
             <tr class="empty-state">
-              <td colspan="5" class="py-4">
+              <td colspan="5">
                 <div class="text-muted">
-                  Chưa có tài sản nào trong danh sách. Vui lòng chọn vị trí và nhấn <strong>Thêm tài sản</strong>.
+                  <i class="fa fa-inbox" style="font-size: 32px; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
+                  Chưa có tài sản nào trong danh sách.<br>
+                  <small>Vui lòng chọn vị trí và nhấn <strong>+ Thêm tài sản</strong></small>
                 </div>
               </td>
             </tr>
@@ -308,9 +383,11 @@
       </div>
     </div>
 
-    <button type="button" id="addRow" class="btn btn-outline-primary mb-4">
-      ➕ Thêm tài sản
-    </button>
+    <div class="text-center mb-4">
+      <button type="button" id="addRow" class="btn">
+        <i class="fa fa-plus me-2"></i> Thêm tài sản
+      </button>
+    </div>
 
     <h6 class="section-title">Ngày bảo trì</h6>
     <input type="date" name="ngay_bao_tri" class="form-control" required>
@@ -359,8 +436,12 @@
       if (body.children().length) return;
       body.append(`
       <tr class="empty-state">
-        <td colspan="5" class="py-4 text-muted">
-          Chưa có tài sản nào trong danh sách. Vui lòng chọn vị trí và nhấn <strong>Thêm tài sản</strong>.
+        <td colspan="5">
+          <div class="text-muted">
+            <i class="fa fa-inbox" style="font-size: 32px; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
+            Chưa có tài sản nào trong danh sách.<br>
+            <small>Vui lòng chọn vị trí và nhấn <strong>+ Thêm tài sản</strong></small>
+          </div>
         </td>
       </tr>
     `);
@@ -378,19 +459,19 @@
         <td data-title="Thông tin" class="asset-info">
           <div class="asset-info-box">
             <span class="ts-name">Tên tài sản</span>
-            <small class="ts-ma">Mã: -</small>
-            <small class="ts-user">Sinh viên sử dụng: -</small>
-            <small class="ts-slot">Slot: -</small>
+            <small class="ts-ma"><i class="fa fa-barcode me-1"></i>Mã: -</small>
+            <small class="ts-user"><i class="fa fa-user me-1"></i>SV sử dụng: -</small>
+            <small class="ts-slot"><i class="fa fa-cube me-1"></i>Slot: -</small>
           </div>
         </td>
         <td data-title="Mô tả">
-          <textarea name="mo_ta[]" class="form-control" rows="2" placeholder="Mô tả ngắn gọn công việc cần bảo trì..."></textarea>
+          <textarea name="mo_ta[]" class="form-control" rows="3" placeholder="Mô tả công việc cần bảo trì..."></textarea>
         </td>
         <td data-title="Ảnh trước bảo trì">
           <input type="file" name="hinh_anh[]" class="form-control" accept="image/*">
         </td>
         <td data-title="Thao tác" class="text-center">
-          <button type="button" class="btn btn-danger btn-sm del">✖</button>
+          <button type="button" class="btn btn-danger btn-sm del"><i class="fa fa-times"></i></button>
         </td>
       </tr>
     `);

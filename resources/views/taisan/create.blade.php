@@ -1,11 +1,9 @@
 @extends('admin.layouts.admin')
 
-@section('title', 'Thêm tài sản vào phòng')
-
 @section('content')
 <style>/* 🌿 Tổng thể */
 body { background:#f8fafc; }
-.page-title { font-weight:700; color:#0c4a6e; }
+.page-title { font-weight:700; color:#0c4a6e; word-break: break-word; }
 .card { border:none; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
 
 /* 🧩 Nút & form */
@@ -52,17 +50,13 @@ body { background:#f8fafc; }
   .asset-item{grid-template-columns:minmax(0,1fr);row-gap:.75rem}
   .asset-item__actions{justify-content:flex-start}
 }
+@media (max-width: 576px){
+  .page-title { font-size: 1.25rem; }
+}
 </style>
 
 
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="page-title mb-1">🧰 Thêm tài sản vào phòng</h3>
-      <p class="text-muted small mb-0">Chọn tài sản từ kho và gán vào phòng mong muốn.</p>
-    </div>
-    <a href="{{ route('taisan.index') }}" class="btn btn-outline-secondary"><i class="fa fa-arrow-left me-1"></i> Quay lại</a>
-        </div>
+<div class="container-fluid px-4 mt-4">
 
     @if ($errors->any())
     <div class="alert alert-danger rounded-3 shadow-sm">

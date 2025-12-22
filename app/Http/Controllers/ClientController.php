@@ -918,6 +918,7 @@ class ClientController extends Controller
         $validator = Validator::make($request->all(), [
             'hinh_thuc_thanh_toan' => 'required|string|in:tien_mat,chuyen_khoan',
             'ghi_chu_thanh_toan' => 'required|string|max:255',
+            'anh_chuyen_khoan' => 'nullable|image|max:4096',
         ]);
 
         if ($validator->fails()) {
@@ -925,6 +926,14 @@ class ClientController extends Controller
                 'success' => false,
                 'message' => $validator->errors()->first()
             ]);
+        }
+
+        // Xử lý upload ảnh chuyển khoản
+        if ($request->hinh_thuc_thanh_toan === 'chuyen_khoan' && $request->hasFile('anh_chuyen_khoan')) {
+            $file = $request->file('anh_chuyen_khoan');
+            $fileName = 'suco_ck_' . $id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/suco_payments'), $fileName);
+            $suCo->anh_chuyen_khoan = 'uploads/suco_payments/' . $fileName;
         }
 
         $suCo->payment_method = $request->hinh_thuc_thanh_toan;
