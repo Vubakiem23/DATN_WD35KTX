@@ -6,6 +6,8 @@ use App\Models\Violation;
 use App\Models\ViolationType;
 use App\Models\SinhVien;
 use Illuminate\Http\Request;
+use App\Models\ThongBaoSinhVien;
+use Carbon\Carbon;
 
 class ViolationController extends Controller
 {
@@ -74,27 +76,40 @@ class ViolationController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'sinh_vien_id'      => 'required|exists:sinh_vien,id',
-            'violation_type_id' => 'required|exists:violation_types,id',
-            'occurred_at'       => 'required|date',
-            'status'            => 'required|in:open,resolved',
-            'penalty_amount'    => 'nullable|numeric',
-            // 'receipt_no'        => 'nullable|string|max:100',
-            'note'              => 'nullable|string',
-            'image'             => 'nullable|image|max:2048', // thêm validate ảnh
-        ]);
+{
+    $data = $request->validate([
+        'sinh_vien_id'      => 'required|exists:sinh_vien,id',
+        'violation_type_id' => 'required|exists:violation_types,id',
+        'occurred_at'       => 'required|date',
+        'status'            => 'required|in:open,resolved',
+        'penalty_amount'    => 'nullable|numeric',
+        'note'              => 'nullable|string',
+        'image'             => 'nullable|image|max:2048',
+    ]);
 
-        unset($data['receipt_no']);
-
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('violations', 'public');
-        }
-
-        Violation::create($data);
-        return redirect()->route('vipham.index')->with('success', 'Đã ghi vi phạm');
+    if ($request->hasFile('image')) {
+        $data['image'] = $request->file('image')->store('violations', 'public');
     }
+
+    // 1️⃣ LƯU VI PHẠM
+    $violation = Violation::create($data);
+
+    // 2️⃣ LẤY TÊN LOẠI VI PHẠM
+    $typeName = ViolationType::find($violation->violation_type_id)?->name ?? 'Không xác định';
+
+    // 3️⃣ 🔔 TẠO THÔNG BÁO CHO SINH VIÊN
+    ThongBaoSinhVien::create([
+        'sinh_vien_id' => $violation->sinh_vien_id,
+        'noi_dung' => 'Bạn đã vi phạm nội quy ký túc xá. '
+            . 'Loại vi phạm: ' . $typeName
+            . '. Thời gian: ' . Carbon::parse($violation->occurred_at)->format('d/m/Y'),
+        'trang_thai' => 'Mới',
+    ]);
+
+    return redirect()->route('vipham.index')
+        ->with('success', 'Đã ghi vi phạm và gửi thông báo cho sinh viên');
+}
+
 
     public function edit(Violation $vipham)
     {
